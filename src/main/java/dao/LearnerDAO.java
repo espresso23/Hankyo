@@ -85,25 +85,38 @@ public class LearnerDAO {
     }
 
     public boolean updateLearner(Learner learner) throws SQLException {
-        String query = "UPDATE Learner SET userID = ?, username = ?, password = ?, gmail = ?, phone = ?, role = ?, status = ?, fullName = ?, socialID = ?, dateCreate = ?, gender = ?, age = ?, hankyoPoint = ?, honourID = ?, rewardID = ?, vipID = ? WHERE learnerID = ?";
+        String updateUserQuery = "UPDATE [User] SET gmail = ?, phone = ?, fullName = ? WHERE userID = ?";
+
+
+        // Update Users table
+        try (PreparedStatement userStmt = connection.prepareStatement(updateUserQuery)) {
+            userStmt.setString(1, learner.getGmail());
+            userStmt.setString(2, learner.getPhone());
+            userStmt.setString(3, learner.getFullName());
+            userStmt.setInt(4, learner.getUserID());
+            userStmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
+            e.printStackTrace();
+        } finally {
+            connection.close();
+        }
+        return false;
+    }
+
+    public boolean updateHonourByLearnerId(int learnerId, Honour honour) throws SQLException {
+        String query = "UPDATE Honour SET honour_img = ?, honourName = ?, honour_type = ? " +
+                "WHERE honourID = (SELECT honourID FROM Learner WHERE learnerID = ?)";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setInt(1, learner.getUserID());
-            stmt.setString(2, learner.getUsername());
-            stmt.setString(3, learner.getPassword());
-            stmt.setString(4, learner.getGmail());
-            stmt.setString(5, learner.getPhone());
-            stmt.setString(6, learner.getRole());
-            stmt.setString(7, learner.getStatus());
-            stmt.setString(8, learner.getFullName());
-            stmt.setString(9, learner.getSocialID());
-            stmt.setDate(10, new java.sql.Date(learner.getDateCreate().getTime()));
-            stmt.setString(11, learner.getGender());
-            stmt.setInt(12, learner.getAge());
-            stmt.setDouble(13, learner.getHankyoPoint());
-            stmt.setInt(14, learner.getHonour().getHonourID());
-            stmt.setInt(15, learner.getReward().getRewardID());
-            stmt.setInt(16, learner.getVip().getVipID());
-            stmt.setInt(17, learner.getLearnerID());
+            stmt.setString(1, honour.getHonourImg());
+            stmt.setString(2, honour.getHonourName());
+            stmt.setString(3, honour.getHonourType());
+            stmt.setInt(4, learnerId);
             stmt.executeUpdate();
             return true;
         } catch (SQLException e) {
@@ -114,6 +127,41 @@ public class LearnerDAO {
         return false;
     }
 
+    public boolean updateRewardByLearnerId(int learnerId, Reward reward) throws SQLException {
+        String query = "UPDATE Reward SET icon = ?, rewardName = ?, dateCreated = ? " +
+                "WHERE rewardID = (SELECT rewardID FROM Reward WHERE learnerID = ?)";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, reward.getIcon());
+            stmt.setString(2, reward.getRewardName());
+            stmt.setDate(3, new java.sql.Date(reward.getDateCreated().getTime()));
+            stmt.setInt(4, learnerId);
+            stmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            connection.close();
+        }
+        return false;
+    }
+
+    public boolean updateVipByLearnerId(int learnerId, Vip vip) throws SQLException {
+        String query = "UPDATE Vip SET creatAt = ?, endDate = ?, status = ?, vipType = ? WHERE learnerID = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setDate(1, new java.sql.Date(vip.getDateCreated().getTime()));
+            stmt.setDate(2, new java.sql.Date(vip.getEndDate().getTime()));
+            stmt.setString(3, vip.getStatus());
+            stmt.setString(4, vip.getVipType());
+            stmt.setInt(5, learnerId);
+            stmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            connection.close();
+        }
+        return false;
+    }
     public boolean deleteLearner(int learnerId) throws SQLException {
         String query = "UPDATE Learner SET  status = 'deleted' WHERE learnerID = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
