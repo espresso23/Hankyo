@@ -109,50 +109,36 @@ public class LearnerDAO {
         return false;
     }
 
-    public boolean updateHonourByLearnerId(int learnerId, Honour honour) throws SQLException {
-        String query = "UPDATE Honour SET honour_img = ?, honourName = ?, honour_type = ? " +
-                "WHERE honourID = (SELECT honourID FROM Learner WHERE learnerID = ?)";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, honour.getHonourImg());
-            stmt.setString(2, honour.getHonourName());
-            stmt.setString(3, honour.getHonourType());
-            stmt.setInt(4, learnerId);
-            stmt.executeUpdate();
-            return true;
+    //UPDATE HONOUR of LEARNERS READ ALL HONOUR WHOSE BY LEARNERS AND CHANGE -> List ra danh sach danh huu dang so huu va chọn ra 1 danh hiệu sau đó thay đổi
+    public boolean updateHonourByLearnerId(int learnerId, int newHonourOwnedId) throws SQLException {
+        String updateQuery = "UPDATE Learner " +
+                "SET honour_ownedID = ? " +
+                "WHERE learnerID = ?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
+            preparedStatement.setInt(1, newHonourOwnedId);
+            preparedStatement.setInt(2, learnerId);
+
+            int rowsUpdated = preparedStatement.executeUpdate();
+
+            return rowsUpdated > 0;
+
         } catch (SQLException e) {
             e.printStackTrace();
+        return false;
         } finally {
             connection.close();
         }
-        return false;
     }
 
-    public boolean updateRewardByLearnerId(int learnerId, Reward reward) throws SQLException {
-        String query = "UPDATE Reward SET icon = ?, rewardName = ?, dateCreated = ? " +
-                "WHERE rewardID = (SELECT rewardID FROM Reward WHERE learnerID = ?)";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, reward.getIcon());
-            stmt.setString(2, reward.getRewardName());
-            stmt.setDate(3, new java.sql.Date(reward.getDateCreated().getTime()));
-            stmt.setInt(4, learnerId);
-            stmt.executeUpdate();
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            connection.close();
-        }
-        return false;
-    }
 
     public boolean updateVipByLearnerId(int learnerId, Vip vip) throws SQLException {
-        String query = "UPDATE Vip SET creatAt = ?, endDate = ?, status = ?, vipType = ? WHERE learnerID = ?";
+        String query = "UPDATE Vip_User SET dateCreated = ?, endDate = ?, vipStatus = ? WHERE learnerID = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setDate(1, new java.sql.Date(vip.getDateCreated().getTime()));
             stmt.setDate(2, new java.sql.Date(vip.getEndDate().getTime()));
-            stmt.setString(3, vip.getStatus());
-            stmt.setString(4, vip.getVipType());
-            stmt.setInt(5, learnerId);
+            stmt.setString(3, vip.getVipLearnerStatus());//expired || ongoing
+            stmt.setInt(4, learnerId);
             stmt.executeUpdate();
             return true;
         } catch (SQLException e) {

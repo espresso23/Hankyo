@@ -5,6 +5,7 @@ public class Honour {
     private String honourImg;
     private String honourName;
     private String honourType;
+    private int honour_ownedID;
 
     public Honour(int honourID, String honourImg, String honourName, String honourType) {
         this.honourID = honourID;

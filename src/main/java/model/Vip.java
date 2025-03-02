@@ -7,18 +7,29 @@ public class Vip {
     private int vipID;
     private String vipType;
     private String status;
+    private String vipLearnerStatus;
     private Date dateCreated;
     private Date endDate;
+    private String vipImg;
 
     public Vip() {
     }
 
-    public Vip(Date dateCreated, Date endDate, String status, int vipID, String vipType) {
+    //method to add vip to learners
+    public Vip(Date dateCreated, Date endDate, String vipLearnerStatus, int vipID, String vipType) {
         this.dateCreated = dateCreated;
         this.endDate = endDate;
-        this.status = status;
+        this.vipLearnerStatus = vipLearnerStatus;
         this.vipID = vipID;
         this.vipType = vipType;
+    }
+
+    //Method to create a vip object.
+    public Vip(String vipType, String vipImg, String status, Date dateCreated) {
+        this.vipType = vipType;
+        this.vipImg = vipImg;
+        this.status = status;
+        this.dateCreated = dateCreated;
     }
 
     public Vip(Date dateCreated, int month, String status, int vipID, String vipType) {
@@ -35,6 +46,26 @@ public class Vip {
 
     public void setDateCreated(Date dateCreated) {
         this.dateCreated = dateCreated;
+    }
+
+    public String getVipImg() {
+        return vipImg;
+    }
+
+    public void setVipImg(String vipImg) {
+        this.vipImg = vipImg;
+    }
+
+    public String getVipLearnerStatus() {
+        return vipLearnerStatus;
+    }
+
+    public void setVipLearnerStatus(String vipLearnerStatus) {
+        this.vipLearnerStatus = vipLearnerStatus;
+    }
+
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
     }
 
     public Date getEndDate() {
