@@ -35,5 +35,3 @@ Dưới đây là tổng hợp các câu lệnh git phổ biến:
 - `git fetch <tên_remote>`: Tải các thay đổi từ remote repository.
 - `git pull <tên_remote> <nhánh>`: Kéo các thay đổi từ remote repository và hợp nhất với nhánh hiện tại.
 - `git push <tên_remote> <nhánh>`: Đẩy các commit lên remote repository.
-
-Đây chỉ là một vài câu lệnh git cơ bản, còn nhiều câu lệnh nâng cao và tùy chọn khác mà bạn có thể khám phá thêm. Nếu bạn có câu hỏi cụ thể nào về git, mình sẽ sẵn lòng giúp đỡ!
