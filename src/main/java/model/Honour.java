@@ -13,6 +13,9 @@ public class Honour {
         this.honourType = honourType;
     }
 
+    public Honour() {
+
+    }
     // Getters and Setters
     public int getHonourID() {
         return honourID;
