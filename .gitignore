@@ -11,6 +11,9 @@ target/
 *.iws
 *.iml
 *.ipr
+.idea/
+.smarttomcat/Hankyo/conf/
+
 
 ### Eclipse ###
 .apt_generated
