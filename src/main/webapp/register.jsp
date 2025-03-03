@@ -1,23 +1,22 @@
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <title>Sign-Up</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/Asset/Footer.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/Asset/Register.css">
+    <link rel="stylesheet" href="./asset/footer.css">
+    <link rel="stylesheet" href="./asset/register.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <header>
-    <img class="logo" src="Asset/PNG/logo.png" alt="Logo">
+    <img class="logo" src="./asset/png/logo.png" alt="Logo">
     <div class="navbarContainer">
-        <div class="navbarContent"><a href="index.html">Khóa Học</a></div>
-        <div class="navbarContent"><a href="about.html">Giảng Viên</a></div>
-        <div class="navbarContent"><a href="community.html">Cộng Đồng</a></div>
-        <div class="navbarContent"><a href="docs.html">Tài Liệu</a></div>
-        <div class="navbarContent"><a href="test.html">Thi Thử</a></div>
-        <div class="navbarContent"><a href="about-us.html">Về Chúng Tôi</a></div>
+        <div class="navbarContent"><a href="/index.html">Khóa Học</a></div>
+        <div class="navbarContent"><a href="/about.html">Giảng Viên</a></div>
+        <div class="navbarContent"><a href="/community.html">Cộng Đồng</a></div>
+        <div class="navbarContent"><a href="/docs.html">Tài Liệu</a></div>
+        <div class="navbarContent"><a href="/test.html">Thi Thử</a></div>
+        <div class="navbarContent"><a href="/about-us.html">Về Chúng Tôi</a></div>
     </div>
 </header>
 <body>
@@ -25,8 +24,8 @@
             <div class="signUp-form">
                 <h2>Register</h2>
                 <div class="form-group">
-                    <form method="POST" action="${pageContext.request.contextPath}/Register">
-                        <div class="input">
+                    <form method="POST" action="${pageContext.request.contextPath}/register">
+                    <div class="input">
                             <input type="text" id="fullName" name="fullName" placeholder="Enter your full name"
                                    required>
                         </div>
@@ -59,7 +58,7 @@
                             </div>
                         </div>
                         </div>
-                        <a href="${pageContext.request.contextPath}/Register?p=hadaccount" style="margin-left: 5px;">Already
+                        <a href="${pageContext.request.contextPath}/register?p=hadaccount" style="margin-left: 5px;">Already
                             have an account?</a>
                         <button type="submit">Sign Up</button>
                         <c:if test="${not empty msg}">
@@ -83,7 +82,7 @@
             <div class="row d-flex flex-wrap justify-content-between">
                 <!-- Cột 1: Use Cases -->
                 <div class="col-lg-3 col-md-6">
-                    <img src="Asset/PNG/logo.png" alt="Logo" class="footer-logo img-fluid">
+                    <img src="asset/png/logo.png" alt="Logo" class="footer-logo img-fluid">
                 </div>
 
                 <div class="col-lg-3 col-md-6">
