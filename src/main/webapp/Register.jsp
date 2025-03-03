@@ -1,23 +1,25 @@
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%
+    String contextPath = request.getContextPath();
+%>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <title>Sign-Up</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/Asset/Footer.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/Asset/Register.css">
+    <link rel="stylesheet" href="<%= contextPath %>/Asset/Footer.css">
+    <link rel="stylesheet" href="<%= contextPath %>/Asset/Register.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <header>
-    <img class="logo" src="Asset/PNG/logo.png" alt="Logo">
+    <img class="logo" src="<%= contextPath %>/Asset/PNG/logo.png" alt="Logo">
     <div class="navbarContainer">
-        <div class="navbarContent"><a href="index.html">Khóa Học</a></div>
-        <div class="navbarContent"><a href="about.html">Giảng Viên</a></div>
-        <div class="navbarContent"><a href="community.html">Cộng Đồng</a></div>
-        <div class="navbarContent"><a href="docs.html">Tài Liệu</a></div>
-        <div class="navbarContent"><a href="test.html">Thi Thử</a></div>
-        <div class="navbarContent"><a href="about-us.html">Về Chúng Tôi</a></div>
+        <div class="navbarContent"><a href="<%= contextPath %>/index.html">Khóa Học</a></div>
+        <div class="navbarContent"><a href="<%= contextPath %>/about.html">Giảng Viên</a></div>
+        <div class="navbarContent"><a href="<%= contextPath %>/community.html">Cộng Đồng</a></div>
+        <div class="navbarContent"><a href="<%= contextPath %>/docs.html">Tài Liệu</a></div>
+        <div class="navbarContent"><a href="<%= contextPath %>/test.html">Thi Thử</a></div>
+        <div class="navbarContent"><a href="<%= contextPath %>/about-us.html">Về Chúng Tôi</a></div>
     </div>
 </header>
 <body>
