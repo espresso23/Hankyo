@@ -4,12 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Sign-Up</title>
-    <link rel="stylesheet" href="./Asset/Footer.css">
-    <link rel="stylesheet" href="./Asset/Register.css">
+    <link rel="stylesheet" href="./asset/footer.css">
+    <link rel="stylesheet" href="./asset/register.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <header>
-    <img class="logo" src="./Asset/PNG/logo.png" alt="Logo">
+    <img class="logo" src="./asset/png/logo.png" alt="Logo">
     <div class="navbarContainer">
         <div class="navbarContent"><a href="/index.html">Khóa Học</a></div>
         <div class="navbarContent"><a href="/about.html">Giảng Viên</a></div>
@@ -82,7 +82,7 @@
             <div class="row d-flex flex-wrap justify-content-between">
                 <!-- Cột 1: Use Cases -->
                 <div class="col-lg-3 col-md-6">
-                    <img src="Asset/PNG/logo.png" alt="Logo" class="footer-logo img-fluid">
+                    <img src="asset/png/logo.png" alt="Logo" class="footer-logo img-fluid">
                 </div>
 
                 <div class="col-lg-3 col-md-6">
