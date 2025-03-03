@@ -76,11 +76,11 @@ public class Learner extends User {
     }
 
     public static void main(String[] args) {
-        User learner = new Learner();
+        Learner learner = new Learner();
         learner.setGmail("tan@gmail.com");
         learner.setFullName("Tan Pham");
-        ((Learner) learner).setHankyoPoint(100.30);
-        ((Learner) learner).setLearnerID(12345);
+        learner.setHankyoPoint(100.30);
+        learner.setLearnerID(12345);
         learner.setGender("Male");
         learner.setPhone("0987654321");
         learner.setRole("Learner");
@@ -89,11 +89,11 @@ public class Learner extends User {
         learner.setSocialID("1234567890");
         learner.setDateCreate(new Date());
         Honour honour = new Honour(1, "IMG1", "SLIVER", "normal");
-        ((Learner) learner).setHonour(honour);
+        learner.setHonour(honour);
         Vip vip = new Vip(new Date(), 3, "active", 123, "VIP");
-        ((Learner) learner).setVip(vip);
+        learner.setVip(vip);
         Reward reward = new Reward(3, "Hard-Working", "IMG", new Date());
-        ((Learner) learner).setReward(reward);
+        learner.setReward(reward);
         System.out.println(learner.displayInfo());
 
     }

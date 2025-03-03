@@ -32,7 +32,7 @@ public class LearnerDAO {
     }
 
     public boolean createLearner(Learner learner) throws SQLException {
-        String insertUserQuery = "INSERT INTO [User] (username, password, gmail, phone, role, status, fullName, socialID, dateCreate, gender, age) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String insertUserQuery = "INSERT INTO [User] (username, password, gmail, phone, role, status, fullName, socialID, dateCreate, gender) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         String insertLearnerQuery = "INSERT INTO Learner (userID, hankyoPoint, honour_ownedID) VALUES (?, ?, ?)";
 
         try {
@@ -50,7 +50,6 @@ public class LearnerDAO {
                 userStmt.setString(8, learner.getSocialID());
                 userStmt.setDate(9, new java.sql.Date(learner.getDateCreate().getTime()));
                 userStmt.setString(10, learner.getGender());
-                userStmt.setInt(11, learner.getAge());
                 userStmt.executeUpdate();
 
                 ResultSet generatedKeys = userStmt.getGeneratedKeys();
