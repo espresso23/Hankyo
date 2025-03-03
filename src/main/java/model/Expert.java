@@ -54,7 +54,7 @@ public class Expert extends User {
     }
 
     public static void main(String[] args) {
-        User expert = new Expert();
+        Expert expert = new Expert();
         expert.setFullName("Pham Tan");
         expert.setGmail("tan@gmail.com");
         expert.setPhone("0987654321");
@@ -63,10 +63,10 @@ public class Expert extends User {
         expert.setSocialID("ABC123");
         expert.setDateCreate(new Date());
         expert.setGender("Male");
-        ((Expert) expert).setExpertID(1);
-        ((Expert) expert).setCertificate("TOPIK 5");
+        expert.setExpertID(1);
+        expert.setCertificate("TOPIK 5");
         Honour honour = new Honour(1, "Honour1", "Image1", "Type1");
-        ((Expert) expert).setHonour(honour);
+        expert.setHonour(honour);
         System.out.println(expert.displayInfo());
     }
 }
