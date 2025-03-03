@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <header>
-    <img class="logo" src="${pageContext.request.contextPath}/Asset/PNG/logo.png" alt="Logo">
+    <img class="logo" src="./Asset/PNG/logo.png" alt="Logo">
     <div class="navbarContainer">
         <div class="navbarContent"><a href="/index.html">Khóa Học</a></div>
         <div class="navbarContent"><a href="/about.html">Giảng Viên</a></div>
@@ -58,7 +58,7 @@
                             </div>
                         </div>
                         </div>
-                        <a href="${pageContext.request.contextPath}/Register?p=hadaccount" style="margin-left: 5px;">Already
+                        <a href="${pageContext.request.contextPath}/register?p=hadaccount" style="margin-left: 5px;">Already
                             have an account?</a>
                         <button type="submit">Sign Up</button>
                         <c:if test="${not empty msg}">
