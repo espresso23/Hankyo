@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebServlet("/Verify")
+@WebServlet("/verify")
 public class VerifyServlet extends HttpServlet {
 
     @Override
@@ -25,7 +25,7 @@ public class VerifyServlet extends HttpServlet {
         if (session == null || session.getAttribute("otpCode") == null || session.getAttribute("user") == null) {
 
             request.setAttribute("errorMsg", "Session expired or invalid request. Please try again.");
-            request.getRequestDispatcher("Verify.jsp").forward(request, response);
+            request.getRequestDispatcher("verify.jsp").forward(request, response);
             return;
         }
 
@@ -38,7 +38,7 @@ public class VerifyServlet extends HttpServlet {
             SmtpProtocol smtpProtocol = new SmtpProtocol();
             otp = smtpProtocol.sendMail(email);
             session.setAttribute("otpCode", otp);
-            request.getRequestDispatcher("Verify.jsp").forward(request, response);
+            request.getRequestDispatcher("verify.jsp").forward(request, response);
             return;
         }
 
@@ -50,19 +50,19 @@ public class VerifyServlet extends HttpServlet {
                 try {
                     String result = userDao.Register(user);
                     request.setAttribute("msg", result);
-                    request.getRequestDispatcher("Welcome.jsp").forward(request, response);
+                    request.getRequestDispatcher("welcome.jsp").forward(request, response);
                 } catch (Exception e) {
                     // Xử lý lỗi khi đăng ký thất bại
                     request.setAttribute("errorMsg", "Registration failed: " + e.getMessage());
-                    request.getRequestDispatcher("Verify.jsp").forward(request, response);
+                    request.getRequestDispatcher("verify.jsp").forward(request, response);
                 }
             } else {
                 request.setAttribute("errorMsg", "Invalid OTP. Please try again.");
-                request.getRequestDispatcher("Verify.jsp").forward(request, response);
+                request.getRequestDispatcher("verify.jsp").forward(request, response);
             }
         } catch (NumberFormatException e) {
             request.setAttribute("errorMsg", "Invalid OTP format. Please enter a valid number.");
-            request.getRequestDispatcher("Verify.jsp").forward(request, response);
+            request.getRequestDispatcher("verify.jsp").forward(request, response);
         }
     }
 

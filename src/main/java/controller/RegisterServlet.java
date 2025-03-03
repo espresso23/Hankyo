@@ -5,23 +5,25 @@ import model.User;
 import util.SmtpProtocol;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
+@WebServlet("/register")
 public class RegisterServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 //        String p = request.getParameter("p");
 //        if ("hadaccount".equals(p)) {
-//            request.getRequestDispatcher("Welcome.jsp").forward(request, response);
+//            request.getRequestDispatcher("welcome.jsp").forward(request, response);
 //        } else {
-//            request.getRequestDispatcher("Register.jsp").forward(request, response);
+//            request.getRequestDispatcher("register.jsp").forward(request, response);
 //        }
-        request.getRequestDispatcher("Register.jsp").forward(request, response);
+        request.getRequestDispatcher("register.jsp").forward(request, response);
     }
 
 
@@ -39,22 +41,28 @@ public class RegisterServlet extends HttpServlet {
 
         if (fullName.isEmpty() || username.isEmpty() || email.isEmpty() || password.isEmpty() || phone.isEmpty() || gender.isEmpty()) {
             request.setAttribute("message", "Please fill out all fields");
-            request.getRequestDispatcher("Register.jsp").forward(request, response);
+            request.getRequestDispatcher("register.jsp").forward(request, response);
             return;
         }
 
         if (!password.equals(confirmPassword)) {
             request.setAttribute("message", "Passwords do not match");
-            request.getRequestDispatcher("Register.jsp").forward(request, response);
+            request.getRequestDispatcher("register.jsp").forward(request, response);
             return;
         }
+        if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            request.setAttribute("msg", "Invalid email format.");
+            request.getRequestDispatcher("register.jsp").forward(request, response);
+            return;
+        }
+
 
         UserDAO dao = new UserDAO();
         try {
             System.out.println("Checking if email exists: " + email);
             if (dao.userExists(email)) {
                 request.setAttribute("msg", "Email already exists.");
-                request.getRequestDispatcher("Register.jsp").forward(request, response);
+                request.getRequestDispatcher("register.jsp").forward(request, response);
                 return;
             }
 
@@ -81,7 +89,7 @@ public class RegisterServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("message", "Error occurred: " + e.getMessage());
-            request.getRequestDispatcher("Register.jsp").forward(request, response);
+            request.getRequestDispatcher("register.jsp").forward(request, response);
         }
     }
 
