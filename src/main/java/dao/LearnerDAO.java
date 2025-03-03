@@ -32,8 +32,8 @@ public class LearnerDAO {
     }
 
     public boolean createLearner(Learner learner) throws SQLException {
-        String insertUserQuery = "INSERT INTO Users (username, password, gmail, phone, role, status, fullName, socialID, dateCreate, gender, age) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        String insertLearnerQuery = "INSERT INTO Learners (userID, hankyoPoint, honourID, rewardID, vipID) VALUES (?, ?, ?, ?, ?)";
+        String insertUserQuery = "INSERT INTO [User] (username, password, gmail, phone, role, status, fullName, socialID, dateCreate, gender, age) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String insertLearnerQuery = "INSERT INTO Learner (userID, hankyoPoint, honour_ownedID) VALUES (?, ?, ?)";
 
         try {
             connection.setAutoCommit(false);
@@ -64,8 +64,6 @@ public class LearnerDAO {
                 learnerStmt.setInt(1, learner.getUserID());
                 learnerStmt.setDouble(2, learner.getHankyoPoint());
                 learnerStmt.setInt(3, learner.getHonour() != null ? learner.getHonour().getHonourID() : Types.NULL);
-                learnerStmt.setInt(4, learner.getReward() != null ? learner.getReward().getRewardID() : Types.NULL);
-                learnerStmt.setInt(5, learner.getVip() != null ? learner.getVip().getVipID() : Types.NULL);
                 learnerStmt.executeUpdate();
             }
 
