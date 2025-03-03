@@ -5,8 +5,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Sign-Up</title>
-    <link rel="stylesheet" href="Asset/Footer.css">
-    <link rel="stylesheet" href="Asset/Register.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/Asset/Footer.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/Asset/Register.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <header>
