@@ -161,6 +161,42 @@ public class UserDAO {
         }
         return false;
     }
+    public User getUserByEmail(String gmail) throws SQLException {
+        User user = null;
+        String query = "SELECT * FROM [User] WHERE gmail = ?";
 
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement st = conn.prepareStatement(query)) {
+            st.setString(1, gmail);
+            try (ResultSet rs = st.executeQuery()) {
+                if (rs.next()) {
+                    user = new User();
+                    user.setUserID(rs.getInt("userID"));
+                    user.setUsername(rs.getString("username"));
+                    user.setPassword(rs.getString("password"));
+                    user.setGmail(rs.getString("gmail"));  // Đồng bộ với trường `gmail`
+                    user.setPhone(rs.getString("phone"));
+                    user.setRole(rs.getString("role"));
+                    user.setStatus(rs.getString("status"));
+                    user.setFullName(rs.getString("fullName"));
+                    user.setDateCreate(rs.getDate("dateCreate"));
+                    user.setGender(rs.getString("gender"));
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Action Failed: " + e.getMessage());
+        }
+        return user;
+    }
+
+    public void updatePassword(User user, String newPassword) throws SQLException {
+        String hashPass = util.Encrypt.hashPassword(newPassword);
+        String sql = "UPDATE [User] SET password = ? WHERE userID = ?";
+        try (Connection con = DBConnect.getInstance().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, hashPass);
+            ps.setInt(2, user.getUserID());
+            ps.executeUpdate();
+        }
+    }
 
 }
