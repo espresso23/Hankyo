@@ -26,7 +26,6 @@ public class RegisterServlet extends HttpServlet {
 
     }
 
-
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String fullName = request.getParameter("fullName");
@@ -84,7 +83,7 @@ public class RegisterServlet extends HttpServlet {
             session.setAttribute("user", user);
             session.setAttribute("otpCode", verifyCode);
             System.out.println("Redirecting to Verify page...");
-            request.getRequestDispatcher("Verify").forward(request, response);
+            request.getRequestDispatcher("verify.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();

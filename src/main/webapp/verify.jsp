@@ -6,7 +6,7 @@
   To change this template use File | Settings | File Templates.
 --%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isELIgnored="false" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -35,7 +35,6 @@
             </div>
         </div>
     </div>
-<script src="${pageContext.request.contextPath}/assets/bootstrap.bundle.min.js"></script>
-<script src="${pageContext.request.contextPath}/js/Welcome.js"></script>
+
 </body>
 </html>
