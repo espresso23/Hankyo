@@ -31,55 +31,6 @@ public class LearnerDAO {
         return null;
     }
 
-    public boolean createLearner(Learner learner) throws SQLException {
-        String insertUserQuery = "INSERT INTO [User] (username, password, gmail, phone, role, status, fullName, socialID, dateCreate, gender) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        String insertLearnerQuery = "INSERT INTO Learner (userID, hankyoPoint, honour_ownedID) VALUES (?, ?, ?)";
-
-        try {
-            connection.setAutoCommit(false);
-
-            // Insert into Users table
-            try (PreparedStatement userStmt = connection.prepareStatement(insertUserQuery, Statement.RETURN_GENERATED_KEYS)) {
-                userStmt.setString(1, learner.getUsername());
-                userStmt.setString(2, learner.getPassword());
-                userStmt.setString(3, learner.getGmail());
-                userStmt.setString(4, learner.getPhone());
-                userStmt.setString(5, learner.getRole());
-                userStmt.setString(6, learner.getStatus());
-                userStmt.setString(7, learner.getFullName());
-                userStmt.setString(8, learner.getSocialID());
-                userStmt.setDate(9, new java.sql.Date(learner.getDateCreate().getTime()));
-                userStmt.setString(10, learner.getGender());
-                userStmt.executeUpdate();
-
-                ResultSet generatedKeys = userStmt.getGeneratedKeys();
-                if (generatedKeys.next()) {
-                    learner.setUserID(generatedKeys.getInt(1));
-                }
-            }
-
-            // Insert into Learners table
-            try (PreparedStatement learnerStmt = connection.prepareStatement(insertLearnerQuery)) {
-                learnerStmt.setInt(1, learner.getUserID());
-                learnerStmt.setDouble(2, learner.getHankyoPoint());
-                learnerStmt.setInt(3, learner.getHonour() != null ? learner.getHonour().getHonourID() : Types.NULL);
-                learnerStmt.executeUpdate();
-            }
-
-            connection.commit();
-            return true;
-        } catch (SQLException e) {
-            try {
-                connection.rollback();
-            } catch (SQLException rollbackEx) {
-                rollbackEx.printStackTrace();
-            }
-            e.printStackTrace();
-        } finally {
-            connection.close();
-        }
-        return false;
-    }
 
     public boolean updateLearner(Learner learner) throws SQLException {
         String updateUserQuery = "UPDATE [User] SET gmail = ?, phone = ?, fullName = ? WHERE userID = ?";
