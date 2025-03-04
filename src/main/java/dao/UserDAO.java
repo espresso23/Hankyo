@@ -148,4 +148,19 @@ public class UserDAO {
         return null;
     }
 
+    public boolean usernameExists(String username) throws SQLException {
+        String query = "SELECT COUNT(*) FROM users WHERE username = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, username);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
+    }
+
+
 }

@@ -72,11 +72,6 @@
 
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-
-
 <div>
     <footer class="footer mt-auto py-4 bg-light border-top">
         <div class="container">
