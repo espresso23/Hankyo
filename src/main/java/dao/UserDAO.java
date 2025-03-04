@@ -103,4 +103,49 @@ public class UserDAO {
             throw new RuntimeException(e);
         }
     }
+    public boolean login(String Username, String Password) {
+        boolean result = false;
+        try {
+            String hashedPassword = Encrypt.hashPassword(Password);
+            Connection conn = DBConnect.getInstance().getConnection();  // Updated to use DatabaseConnect
+            PreparedStatement st = conn.prepareStatement("SELECT * FROM [User] WHERE username=? AND password=?");
+            st.setString(1, Username);
+            st.setString(2, hashedPassword);
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) {
+                result = true;
+            }
+        } catch (Exception e) {
+            System.out.println("Connection Failed: " + e.getMessage());
+        }
+        return result;
+    }
+    public User getUserByUserName(String Username) throws SQLException {
+        User u = new User();
+        try {
+            Connection conn = DBConnect.getInstance().getConnection();
+            PreparedStatement st = conn.prepareStatement("SELECT * FROM [User] WHERE username = ?");
+            st.setString(1, Username);
+            ResultSet rs = st.executeQuery();
+
+            if (rs.next()) {
+                u.setUserID(rs.getInt("userID"));
+                u.setUsername(rs.getString("Username"));
+                u.setPassword(rs.getString("Password"));
+                u.setGmail(rs.getString("Gmail"));
+                u.setPhone(rs.getString("Phone"));
+                u.setRole(rs.getString("role"));
+                u.setStatus(rs.getString("status"));
+                u.setFullName(rs.getString("fullName"));
+                u.setDateCreate(rs.getDate("dateCreate"));
+                u.setGender(rs.getString("gender"));
+                return u;
+            }
+
+        } catch (Exception e) {
+            System.out.println("Action Failed: " + e.getMessage());
+        }
+        return null;
+    }
+
 }

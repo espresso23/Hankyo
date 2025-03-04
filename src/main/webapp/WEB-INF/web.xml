@@ -8,4 +8,8 @@
     <servlet-name>default</servlet-name>
     <url-pattern>/asset/*</url-pattern>
   </servlet-mapping>
+  <welcome-file-list>
+    <welcome-file>Welcome.jsp</welcome-file> <!-- Specify your default welcome page -->
+  </welcome-file-list>
 </web-app>
+

@@ -17,13 +17,13 @@ public class RegisterServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-//        String p = request.getParameter("p");
-//        if ("hadaccount".equals(p)) {
-//            request.getRequestDispatcher("welcome.jsp").forward(request, response);
-//        } else {
-//            request.getRequestDispatcher("register.jsp").forward(request, response);
-//        }
-        request.getRequestDispatcher("register.jsp").forward(request, response);
+       String p = request.getParameter("p");
+        if ("hadaccount".equals(p)) {
+            request.getRequestDispatcher("/welcome.jsp").forward(request, response);
+        } else {
+            request.getRequestDispatcher("/register.jsp").forward(request, response);
+        }
+
     }
 
 

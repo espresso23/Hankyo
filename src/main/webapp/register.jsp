@@ -1,4 +1,5 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isELIgnored="false" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -58,7 +59,7 @@
                             </div>
                         </div>
                         </div>
-                        <a href="${pageContext.request.contextPath}/register?p=hadaccount" style="margin-left: 5px;">Already
+                        <a href="${pageContext.request.contextPath}/Register?p=hadaccount" style="margin-left: 5px;">Already
                             have an account?</a>
                         <button type="submit">Sign Up</button>
                         <c:if test="${not empty msg}">
