@@ -21,8 +21,8 @@ public class Learner extends User {
         this.vip = vip;
     }
 
-    public Learner(int userID, String username, String password, String gmail, String phone, String role, String status, String fullName, String socialID, Date dateCreate, String gender, int age, double hankyoPoint, Honour honour, int learnerID, Reward reward, Vip vip) {
-        super(userID, username, password, gmail, phone, role, status, fullName, socialID, dateCreate, gender, age);
+    public Learner(int userID, String username, String password, String gmail, String phone, String role, String status, String fullName, String socialID, Date dateCreate, String gender, int age, String avatar, double hankyoPoint, Honour honour, int learnerID, Reward reward, Vip vip) {
+        super(userID, username, password, gmail, phone, role, status, fullName, socialID, dateCreate, gender, age, avatar);
         this.hankyoPoint = hankyoPoint;
         this.honour = honour;
         this.learnerID = learnerID;

@@ -16,6 +16,16 @@
         </div>
         <div>
             <button type="submit">Login</button>
+            <div class="btn btn-outline-danger d-flex align-items-center p-2 mb-2" onclick="location.href='https://accounts.google.com/o/oauth2/v2/auth?client_id=830752377691-2voobquum0stjf13a9sc5mr8oiivkebc.apps.googleusercontent.com&redirect_uri=http://localhost:8080/Hankyo/google&response_type=code&scope=profile email'">
+                <img src="https://www.google.com/favicon.ico" alt="Google Logo" width="20" class="me-2">
+                Đăng nhập bằng Google
+            </div>
+
+            <div class="btn btn-outline-primary d-flex align-items-center p-2" onclick="location.href='https://www.facebook.com/v19.0/dialog/oauth?client_id=512051824934535&redirect_uri=http://localhost:8080/Hankyo/facebook&scope=email,public_profile'">
+                <img src="https://www.facebook.com/favicon.ico" alt="Facebook Logo" width="20" class="me-2">
+                Đăng nhập bằng Facebook
+            </div>
+
             <a href="${pageContext.request.contextPath}/register">Sign Up</a>
         </div>
     </form>

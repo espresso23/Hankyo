@@ -48,7 +48,7 @@ public class VerifyServlet extends HttpServlet {
             if (otp != null && otp.equals(inputOtp)) {
                 UserDAO userDao = new UserDAO();
                 try {
-                    String result = userDao.Register(user);
+                    String result = userDao.register(user);
                     request.setAttribute("msg", result);
                     request.getRequestDispatcher("welcome.jsp").forward(request, response);
                 } catch (Exception e) {

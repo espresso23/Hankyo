@@ -7,8 +7,8 @@ public class Expert extends User {
     private Honour honour;//from class Honour
     private String certificate;
 
-    public Expert(int userID, String username, String password, String gmail, String phone, String role, String status, String fullName, String socialID, Date dateCreate, String gender, int age, int expertID, Honour honour, String certificate) {
-        super(userID, username, password, gmail, phone, role, status, fullName, socialID, dateCreate, gender, age);
+    public Expert(int userID, String username, String password, String gmail, String phone, String role, String status, String fullName, String socialID, Date dateCreate, String gender, int age, String avatar, int expertID, Honour honour, String certificate) {
+        super(userID, username, password, gmail, phone, role, status, fullName, socialID, dateCreate, gender, age, avatar);
         this.expertID = expertID;
         this.honour = honour;
         this.certificate = certificate;
