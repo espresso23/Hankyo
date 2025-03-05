@@ -1,5 +1,4 @@
 package controller;
-
 import dao.UserDAO;
 import model.User;
 import util.SmtpProtocol;
@@ -11,20 +10,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-
 @WebServlet("/register")
 public class RegisterServlet extends HttpServlet {
-
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-       String p = request.getParameter("p");
+        String p = request.getParameter("p");
         if ("hadaccount".equals(p)) {
-           request.getRequestDispatcher("welcome.jsp").forward(request, response);
+            request.getRequestDispatcher("login").forward(request, response);
         } else {
-            request.getRequestDispatcher("register.jsp").forward(request, response);
-       }
-        request.getRequestDispatcher("register.jsp").forward(request, response);
-    }
+            request.getRequestDispatcher("/register.jsp").forward(request, response);
+        }
 
     }
 
@@ -88,12 +83,12 @@ public class RegisterServlet extends HttpServlet {
                 int verifyCode = smtpProtocol.sendMail(email);
                 System.out.println("Verification code sent: " + verifyCode);
 
-            HttpSession session = request.getSession();
-            session.setAttribute("gmail", email);
-            session.setAttribute("user", user);
-            session.setAttribute("otpCode", verifyCode);
-            System.out.println("Redirecting to Verify page...");
-            request.getRequestDispatcher("verify").forward(request, response);
+                HttpSession session = request.getSession();
+                session.setAttribute("gmail", email);
+                session.setAttribute("user", user);
+                session.setAttribute("otpCode", verifyCode);
+                System.out.println("Redirecting to Verify page...");
+                request.getRequestDispatcher("verify").forward(request, response);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -108,4 +103,3 @@ public class RegisterServlet extends HttpServlet {
 
     }
 }
-

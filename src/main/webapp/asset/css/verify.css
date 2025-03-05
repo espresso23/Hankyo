@@ -1,0 +1,56 @@
+
+.form{
+
+    font-family: 'Poppins';
+}
+.background-verify {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 70vh;
+    margin: 7vh;
+}
+.verify-form {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 50px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+.form input {
+    font-size: 20px;
+    height: 3rem;
+    width: 50%;
+    margin-top: 50px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+.d-flex {
+    display: block;
+    margin: 0 auto;
+    margin-top: 50px;
+}
+.submitBtn{
+    margin-left: 10px;
+    background-color: #B4EBE6;
+    padding-top: 1rem ;
+    padding-bottom: 0.75rem;
+    padding-right: 1rem;
+    padding-left: 1rem;
+    border-radius: 5px;
+    font-weight: bold;
+}
+.sendBtn {
+    font-size: 18px;
+    background-color: #FFEDFA;
+    width: 60%;
+    padding: 1rem 2rem;
+    border-radius: 5px;
+    font-weight: bold;
+}
+button {
+    border: none; /* Loại bỏ viền */
+    outline: none; /* Loại bỏ outline khi focus */
+    box-shadow: none; /* Loại bỏ hiệu ứng bóng */
+}

@@ -4,24 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <title>Sign-Up</title>
-    <link rel="stylesheet" href="./asset/footer.css">
-    <link rel="stylesheet" href="./asset/register.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="asset/css/register.css">
 </head>
-<header>
-    <img class="logo" src="./asset/png/logo.png" alt="Logo">
-    <div class="navbarContainer">
-        <div class="navbarContent"><a href="/index.html">Khóa Học</a></div>
-        <div class="navbarContent"><a href="/about.html">Giảng Viên</a></div>
-        <div class="navbarContent"><a href="/community.html">Cộng Đồng</a></div>
-        <div class="navbarContent"><a href="/docs.html">Tài Liệu</a></div>
-        <div class="navbarContent"><a href="/test.html">Thi Thử</a></div>
-        <div class="navbarContent"><a href="/about-us.html">Về Chúng Tôi</a></div>
-    </div>
-</header>
+<jsp:include page="/header.jsp" />
 <style>
+    @font-face {
+        font-family: 'Poppins';
+        src: url('${pageContext.request.contextPath}/assets/fonts/Poppins-Regular.ttf') format('ttf');
+    }
     body{
-        background-image: url("./asset/png/background.png");
+        font-family: 'Poppins',sans-serif;
+    }
+    body{
+        background-image: url("asset/png/background/background.png");
         background-repeat: no-repeat;
         background-size: auto;
     }
@@ -29,7 +24,7 @@
 <body>
 <div class="container-fluid">
     <div class="loginGirl">
-        <img src="./asset/png/loginGirl.png">
+        <img src="asset/png/loginPage/loginGirl.png">
     </div>
             <div class="signUp-form">
                 <h2>Register</h2>
@@ -83,47 +78,6 @@
                    </div>
             </div>
 </div>
-    <footer class="footer mt-auto py-4 bg-light border-top">
-        <div class="container">
-            <div class="row d-flex flex-wrap justify-content-between">
-                <!-- Cột 1: Use Cases -->
-                <div class="col-lg-3 col-md-6">
-                    <img src="asset/png/logo.png" alt="Logo" class="footer-logo img-fluid">
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <h5 class="footer-heading">Use Cases</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="#" class="footer-link">UI Design</a></li>
-                        <li><a href="#" class="footer-link">UX Design</a></li>
-                        <li><a href="#" class="footer-link">Wireframing</a></li>
-                    </ul>
-                </div>
-
-                <!-- Cột 2: Explore -->
-                <div class="col-lg-3 col-md-6">
-                    <h5 class="footer-heading">Explore</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="#" class="footer-link">Design</a></li>
-                        <li><a href="#" class="footer-link">Prototyping</a></li>
-                        <li><a href="#" class="footer-link">Development Features</a></li>
-                    </ul>
-                </div>
-
-                <!-- Cột 3: Resources -->
-                <div class="col-lg-3 col-md-6">
-                    <h5 class="footer-heading">Resources</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="#" class="footer-link">Blog</a></li>
-                        <li><a href="#" class="footer-link">Best Practices</a></li>
-                        <li><a href="#" class="footer-link">Colors</a></li>
-                        <li><a href="#" class="footer-link">Color Wheel</a></li>
-                        <li><a href="#" class="footer-link">Support</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </footer>
-
+<jsp:include page="/footer.jsp" />
 </body>
 </html>

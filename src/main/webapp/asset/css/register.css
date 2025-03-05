@@ -34,8 +34,6 @@ body{
     justify-content: center;
     width: 100%;
 }
-
-
 /* Định dạng input */
 .signUp-form .input {
     width: 100%;
@@ -52,7 +50,7 @@ body{
     color: #333;
 }
 .loginGirl {
-    margin-top: 2.5rem;
+    margin-top: 2rem;
     grid-column: 2/7;
 }
 .loginGirl img{
