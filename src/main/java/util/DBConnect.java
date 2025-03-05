@@ -9,7 +9,7 @@ public class DBConnect {
     private Connection connection;
     private static final String USERNAME = "sa";
     private static final String PASSWORD = "123";
-    private static final String DB_URL = "jdbc:sqlserver://PLQTAN\\SQLEXPRESS;databaseName=Hankyo;encrypt=true;trustServerCertificate=true";
+    private static final String DB_URL = "jdbc:sqlserver://BEARXAM\\MSSQLSERVER01:1433;databaseName=Hankyo;encrypt=true;trustServerCertificate=true";
     private static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
 
     private DBConnect() {

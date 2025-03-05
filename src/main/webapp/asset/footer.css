@@ -72,8 +72,8 @@ header {
 }
 
 /* Responsive: Footer luôn giữ ngang khi đủ chỗ */
-@media (max-width: 768px) {
-    .footer .row {
-        text-align: center;
-    }
-}
+/*@media (max-width: 768px) {*/
+/*    .footer .row {*/
+/*        text-align: center;*/
+/*    }*/
+/*}*/

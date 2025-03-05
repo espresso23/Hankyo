@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isELIgnored="false" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -19,64 +19,70 @@
         <div class="navbarContent"><a href="/about-us.html">Về Chúng Tôi</a></div>
     </div>
 </header>
+<style>
+    body{
+        background-image: url("./asset/png/background.png");
+        background-repeat: no-repeat;
+        background-size: auto;
+    }
+</style>
 <body>
 <div class="container-fluid">
+    <div class="loginGirl">
+        <img src="./asset/png/loginGirl.png">
+    </div>
             <div class="signUp-form">
                 <h2>Register</h2>
-                <div class="form-group">
-                    <form method="POST" action="${pageContext.request.contextPath}/register">
-                    <div class="input">
-                            <input type="text" id="fullName" name="fullName" placeholder="Enter your full name"
-                                   required>
-                        </div>
-                        <div class="input">
-                            <input type="text" id="username" name="username" placeholder="Username" required>
-                        </div>
-                        <div class="input">
-                            <input type="email" id="gmail" name="gmail" placeholder="gmail" required>
-                        </div>
-                        <div class="input">
-                            <input type="password" id="password" name="password" placeholder="Password" required>
-                        </div>
-                        <div class="input">
-                            <input type="password" id="confirmPassword" name="confirmPassword"
-                                   placeholder="Re-enter Password" required>
-                        </div>
-                        <div class="input">
-                            <input type="tel" id="phone" name="phone" placeholder="Phone Number" required>
-                        </div>
-                        <div>
-                        <h6>Gender:</h6>
-                        <div class="gender-selection">
-                            <div class="gender-labels">
-                                <label for="male">Male</label>
-                                <label for="female">Female</label>
-                            </div>
-                            <div class="gender-radios">
-                                <input type="radio" id="male" name="gender" value="Male" required>
-                                <input type="radio" id="female" name="gender" value="Female" required>
-                            </div>
-                        </div>
-                        </div>
-                        <a href="${pageContext.request.contextPath}/register?p=hadaccount" style="margin-left: 5px;">Already
-                            have an account?</a>
-                        <button type="submit">Sign Up</button>
-                        <c:if test="${not empty msg}">
-                            <div class="alert alert-danger">
-                                <c:out value="${msg}"/>
-                            </div>
-                        </c:if>
-                    </form>
-                </div>
+                   <div>
+                       <form method="POST" action="${pageContext.request.contextPath}/register">
+                           <div class="input">
+                               <input type="text" id="fullName" name="fullName" placeholder="Enter your full name"
+                                      required>
+                           </div>
+                           <div class="input">
+                               <input type="text" id="username" name="username" placeholder="Username" required>
+                           </div>
+                           <div class="input">
+                               <input type="email" id="gmail" name="gmail" placeholder="Gmail" required>
+                           </div>
+                           <div class="input">
+                               <input type="password" id="password" name="password" placeholder="Password" required>
+                           </div>
+                           <div class="input">
+                               <input type="password" id="confirmPassword" name="confirmPassword"
+                                      placeholder="Re-enter Password" required>
+                           </div>
+                           <div class="input">
+                               <input type="tel" id="phone" name="phone" placeholder="Phone Number" required>
+                           </div>
+                           <h6>Gender:</h6>
+                           <div class="gender-selection">
+                               <label for="male">
+                                   <input type="radio" id="male" name="gender" value="Male" required>
+                                   Male
+                               </label>
 
-                </div>
+                               <label for="female">
+                                   <input type="radio" id="female" name="gender" value="Female" required>
+                                   Female
+                               </label>
+                           </div>
+                           <a href="${pageContext.request.contextPath}/register?p=hadaccount" style="margin-left: 5px;">Already
+                               have an account?</a>
+                           <div class="button">
+                               <button type="submit">Sign Up</button>
+                           </div>
+                           <div class="isHidden">
+                               <c:if test="${not empty msg}">
+                                   <div class="alert alert-danger">
+                                       <c:out value="${msg}"/>
+                                   </div>
+                               </c:if>
+                           </div>
+                       </form>
+                   </div>
             </div>
-        </div>
-    </div>
 </div>
-
-
-<div>
     <footer class="footer mt-auto py-4 bg-light border-top">
         <div class="container">
             <div class="row d-flex flex-wrap justify-content-between">
@@ -119,6 +125,5 @@
         </div>
     </footer>
 
-</div>
 </body>
 </html>

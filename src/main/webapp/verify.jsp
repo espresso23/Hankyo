@@ -6,7 +6,7 @@
   To change this template use File | Settings | File Templates.
 --%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isELIgnored="false"  %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -21,7 +21,7 @@
                     <p>Enter the code Sent to ${sessionScope['gmail']}.</p>
                 </div>
                 <!-- Form to submit OTP for verification -->
-                <form class="form" method="post" action="${pageContext.request.contextPath}/Verify">
+                <form class="form" method="post" action="${pageContext.request.contextPath}/verify">
                     <label for="code" style="font-family: Pixelfred">OTP Code:</label>
                     <input type="text" id="code" name="otp-code">
                     <div style="margin-top: 10px;" class="d-flex">
