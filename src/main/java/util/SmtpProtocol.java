@@ -15,8 +15,8 @@ import java.util.Random;
 
 public class SmtpProtocol {
 
-    final String from = "Trietvmde180687@fpt.edu.vn";
-    final String password = "sdaj ujbt cjun krqk";
+    final String from = "hankyoforumn@gmail.com";
+    final String password = "ptal temq acdf dmwp";
 
     public Session setupProtocol() {
 
@@ -47,8 +47,8 @@ public class SmtpProtocol {
             Message message = new MimeMessage(setupProtocol());
             message.setFrom(new InternetAddress(from));
             message.setRecipient(Message.RecipientType.TO, new InternetAddress(userEmail));
-            message.setSubject("Confirm your account on Struggle");
-            message.setText("Welcome new Struggle-er, your verification code is " + userOtp);
+            message.setSubject("Confirm your account on HanKyo");
+            message.setText("Welcome new Hankyo-leaner, your verification code is " + userOtp);
             Transport.send(message);
         } catch (Exception e) {
             System.out.println("Verify failed");
@@ -62,7 +62,7 @@ public class SmtpProtocol {
             Message message = new MimeMessage(setupProtocol());
             message.setFrom(new InternetAddress(from));
             message.setRecipient(Message.RecipientType.TO, new InternetAddress(userEmail));
-            message.setSubject("Confirm your account on Struggle");
+            message.setSubject("Confirm your account on Hankyo to be come a leaner");
             message.setText("Your verification code is " + userOtp);
             Transport.send(message);
         } catch (Exception e) {

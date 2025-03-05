@@ -272,7 +272,7 @@ public class UserDAO {
     }
 
     public boolean usernameExists(String username) throws SQLException {
-        String query = "SELECT COUNT(*) FROM users WHERE username = ?";
+        String query = "SELECT COUNT(*) FROM [User] WHERE username = ?";
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, username);
