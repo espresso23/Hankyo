@@ -15,8 +15,9 @@ public class User {
     private Date dateCreate;
     private String gender;
     private int age;
+    private String avatar;
 
-    public User(int userID, String username, String password, String gmail, String phone, String role, String status, String fullName, String socialID, Date dateCreate, String gender, int age) {
+    public User(int userID, String username, String password, String gmail, String phone, String role, String status, String fullName, String socialID, Date dateCreate, String gender, int age, String avatar) {
         this.userID = userID;
         this.username = username;
         this.password = password;
@@ -29,10 +30,19 @@ public class User {
         this.dateCreate = dateCreate;
         this.gender = gender;
         this.age = age;
+        this.avatar = avatar;
     }
 
     public User() {
 
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 
     public int getAge() {
