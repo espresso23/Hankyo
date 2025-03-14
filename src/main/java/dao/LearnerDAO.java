@@ -172,7 +172,7 @@ public class LearnerDAO {
         learner.setSocialID(rs.getString("socialID"));
         learner.setDateCreate(new Date(rs.getDate("dateCreate").getTime()));
         learner.setGender(rs.getString("gender"));
-        learner.setAge(rs.getInt("age"));
+        learner.setDateOfBirth(new Date(rs.getDate("age").getTime()));
         learner.setHankyoPoint(rs.getDouble("hankyoPoint"));
 
         int honourID = rs.getInt("honourID");

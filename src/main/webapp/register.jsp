@@ -1,5 +1,5 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isELIgnored="false"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isELIgnored="false" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -22,56 +22,55 @@
 </header>
 <body>
 <div class="container-fluid">
-            <div class="signUp-form">
-                <h2>Register</h2>
-                <div class="form-group">
-                    <form method="POST" action="${pageContext.request.contextPath}/register">
-                    <div class="input">
-                            <input type="text" id="fullName" name="fullName" placeholder="Enter your full name"
-                                   required>
-                        </div>
-                        <div class="input">
-                            <input type="text" id="username" name="username" placeholder="Username" required>
-                        </div>
-                        <div class="input">
-                            <input type="email" id="gmail" name="gmail" placeholder="gmail" required>
-                        </div>
-                        <div class="input">
-                            <input type="password" id="password" name="password" placeholder="Password" required>
-                        </div>
-                        <div class="input">
-                            <input type="password" id="confirmPassword" name="confirmPassword"
-                                   placeholder="Re-enter Password" required>
-                        </div>
-                        <div class="input">
-                            <input type="tel" id="phone" name="phone" placeholder="Phone Number" required>
-                        </div>
-                        <div>
-                        <h6>Gender:</h6>
-                        <div class="gender-selection">
-                            <div class="gender-labels">
-                                <label for="male">Male</label>
-                                <label for="female">Female</label>
-                            </div>
-                            <div class="gender-radios">
-                                <input type="radio" id="male" name="gender" value="Male" required>
-                                <input type="radio" id="female" name="gender" value="Female" required>
-                            </div>
-                        </div>
-                        </div>
-                        <a href="${pageContext.request.contextPath}/register?p=hadaccount" style="margin-left: 5px;">Already
-                            have an account?</a>
-                        <button type="submit">Sign Up</button>
-                        <c:if test="${not empty msg}">
-                            <div class="alert alert-danger">
-                                <c:out value="${msg}"/>
-                            </div>
-                        </c:if>
-                    </form>
+    <div class="signUp-form">
+        <h2>Register</h2>
+        <div class="form-group">
+            <form method="POST" action="${pageContext.request.contextPath}/register">
+                <div class="input">
+                    <input type="text" id="fullName" name="fullName" placeholder="Enter your full name"
+                           required>
                 </div>
-
+                <div class="input">
+                    <input type="text" id="username" name="username" placeholder="Username" required>
                 </div>
-            </div>
+                <div class="input">
+                    <input type="email" id="gmail" name="gmail" placeholder="gmail" required>
+                </div>
+                <div class="input">
+                    <input type="password" id="password" name="password" placeholder="Password" required>
+                </div>
+                <div class="input">
+                    <input type="password" id="confirmPassword" name="confirmPassword"
+                           placeholder="Re-enter Password" required>
+                </div>
+                <div class="input">
+                    <input type="tel" id="phone" name="phone" placeholder="Phone Number" required>
+                </div>
+                <div>
+                    <h6>Gender:</h6>
+                    <div class="gender-selection">
+                        <div class="gender-labels">
+                            <label for="male">Male</label>
+                            <label for="female">Female</label>
+                        </div>
+                        <div class="gender-radios">
+                            <input type="radio" id="male" name="gender" value="Male" required>
+                            <input type="radio" id="female" name="gender" value="Female" required>
+                        </div>
+                    </div>
+                </div>
+                <a href="${pageContext.request.contextPath}/register?p=hadaccount" style="margin-left: 5px;">Already
+                    have an account?</a>
+                <button type="submit">Sign Up</button>
+                <c:if test="${not empty msg}">
+                    <div class="alert alert-danger">
+                        <c:out value="${msg}"/>
+                    </div>
+                </c:if>
+            </form>
+        </div>
+    </div>
+</div>
 <div>
     <footer class="footer mt-auto py-4 bg-light border-top">
         <div class="container">

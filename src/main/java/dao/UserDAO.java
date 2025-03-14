@@ -5,6 +5,9 @@ import util.DBConnect;
 import util.Encrypt;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class UserDAO {
     public String register(User user) throws Exception {
@@ -226,6 +229,7 @@ public class UserDAO {
         }
         return false; // User not found or not banned
     }
+
     public boolean login(String Username, String Password) {
         boolean result = false;
         try {
@@ -243,6 +247,7 @@ public class UserDAO {
         }
         return result;
     }
+
     public User getUserByUserName(String Username) throws SQLException {
         User u = new User();
         try {
@@ -284,6 +289,7 @@ public class UserDAO {
         }
         return false;
     }
+
     public User getUserByEmail(String gmail) throws SQLException {
         User user = null;
         String query = "SELECT * FROM [User] WHERE gmail = ?";
@@ -318,6 +324,91 @@ public class UserDAO {
         try (Connection con = DBConnect.getInstance().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, hashPass);
             ps.setInt(2, user.getUserID());
+            ps.executeUpdate();
+        }
+    }
+
+    public  User getUserByID(int userID) throws SQLException {
+        User user = null;
+        String query = "SELECT * FROM [User] WHERE userID = ?";
+
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement st = conn.prepareStatement(query)) {
+            st.setInt(1, userID);
+            try (ResultSet rs = st.executeQuery()) {
+                if (rs.next()) {
+                    user = new User();
+                    user.setUserID(rs.getInt("userID"));
+                    user.setUsername(rs.getString("username"));
+                    user.setPassword(rs.getString("password"));
+                    user.setGmail(rs.getString("gmail"));
+                    user.setPhone(rs.getString("phone"));
+                    user.setRole(rs.getString("role"));
+                    user.setStatus(rs.getString("status"));
+                    user.setFullName(rs.getString("fullName"));
+                    user.setDateCreate(rs.getDate("dateCreate"));
+                    user.setGender(rs.getString("gender"));
+                    user.setDateOfBirth(rs.getDate("dateOfBirth"));
+                    user.setAvatar(rs.getString("avatar"));
+
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Action Failed: " + e.getMessage());
+        }
+        return user;
+    }
+    public boolean verifyPassword(User user, String oldPassword) {
+        try {
+            String hashedOldPassword = Encrypt.hashPassword(oldPassword); // Mã hóa mật khẩu cũ
+            Connection conn = DBConnect.getInstance().getConnection();
+            PreparedStatement st = conn.prepareStatement("SELECT * FROM [USER] WHERE userID=? AND password=?");
+            st.setInt(1, user.getUserID());
+            st.setString(2, hashedOldPassword);
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) {
+                return true; // Mật khẩu cũ đúng
+            }
+        } catch (SQLException e) {
+            System.out.println("Error verifying old password: " + e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return false; // Mật khẩu cũ sai
+    }
+    public void updateUserProfile(User user) throws SQLException {
+        StringBuilder sql = new StringBuilder("UPDATE [User] SET ");
+        List<Object> params = new ArrayList<>();
+        if (user.getPhone() != null) {
+            sql.append("phone = ?, ");
+            params.add(user.getPhone());
+        }
+        if (user.getAvatar() != null) {
+            sql.append("avatar = ?, ");
+            params.add(user.getAvatar());
+        }
+        if(user.getDateOfBirth() !=null){
+            sql.append("dateOfBirth = ?, ");
+            params.add("dateOfBirth = ? ,");
+        }
+        if(user.getGender() != null){
+            sql.append("gender = ?, ");
+            params.add("gender = ?, ");
+        }
+        if (user.getFullName() != null){
+            sql.append("fullName = ?, ");
+            params.add("fullName = ?, ");
+        }
+
+        // Remove the last comma and space
+        sql.setLength(sql.length() - 2);
+        sql.append(" WHERE userID = ?");
+        params.add(user.getUserID());
+
+        try (Connection con = DBConnect.getInstance().getConnection(); PreparedStatement ps = con.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
             ps.executeUpdate();
         }
     }

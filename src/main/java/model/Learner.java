@@ -21,8 +21,8 @@ public class Learner extends User {
         this.vip = vip;
     }
 
-    public Learner(int userID, String username, String password, String gmail, String phone, String role, String status, String fullName, String socialID, Date dateCreate, String gender, int age, String avatar, double hankyoPoint, Honour honour, int learnerID, Reward reward, Vip vip) {
-        super(userID, username, password, gmail, phone, role, status, fullName, socialID, dateCreate, gender, age, avatar);
+    public Learner(int userID, String username, String password, String gmail, String phone, String role, String status, String fullName, String socialID, Date dateCreate, String gender, Date dateOfBirth, String avatar, double hankyoPoint, Honour honour, int learnerID, Reward reward, Vip vip) {
+        super(userID, username, password, gmail, phone, role, status, fullName, socialID, dateCreate, gender, dateOfBirth, avatar);
         this.hankyoPoint = hankyoPoint;
         this.honour = honour;
         this.learnerID = learnerID;
@@ -84,7 +84,6 @@ public class Learner extends User {
         learner.setGender("Male");
         learner.setPhone("0987654321");
         learner.setRole("Learner");
-        learner.setAge(20);
         learner.setStatus("Active");
         learner.setSocialID("1234567890");
         learner.setDateCreate(new Date());
