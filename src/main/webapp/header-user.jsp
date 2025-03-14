@@ -21,13 +21,18 @@
     <div class="navbarContent"><a href="/docs.html">Tài Liệu</a></div>
     <div class="navbarContent"><a href="/test.html">Thi Thử</a></div>
     <div class="navbarContent"><a href="/about-us.html">Về Chúng Tôi</a></div>
-  </div>
-  <div class="auth">
     <span>Xin chào, <%= session.getAttribute("username") %>!</span>
-    <a href="/profile.jsp" class="btn">Hồ Sơ</a>
-    <a href="/logout.jsp" class="btn">Đăng Xuất</a>
+    <img src="asset/png/avatar/monkey.jpg" onclick="profile()">
   </div>
 </header>
+<div class="popupContainer">
+  <div class="profile">
+    <div class="profileContent"><a href="/profiel.html">Tài Khoản</a></div>
+    <div class="profileContent"><a href="/logout.html">Đăng Xuất</a></div>
+  </div>
+</div>
+
 
 </body>
+<script src="myscripts.js"></script>
 </html>
