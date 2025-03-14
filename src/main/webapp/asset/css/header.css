@@ -1,0 +1,82 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.loginBtn{
+    background-color: #B4EBE6;
+    border-radius: 10px;
+}
+.registerBtn{
+    background-color: #F8ED8C;
+    border-radius: 10px;
+}
+header {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    align-items: center;
+    background-color: #f8f8f8;
+    position: sticky;
+    padding: 10px 5px;
+}
+
+.logo {
+    grid-column: 1 / 3;
+    justify-self: start;
+    width: 50px;
+}
+.navbarContainer {
+    padding-top: 5px;
+    grid-column: 4 / 12;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.navbarContainer span{
+    text-decoration: Highlight;
+    color: #B4EBE6;
+}
+.navbarContent a {
+    text-decoration: none;
+    font-weight: bold;
+    color: #333;
+    transition: 0.3s;
+}
+.navbarContainer img{
+    transition: border 0.3s ease-in-out;
+    width: 5%;
+    border-radius: 100%;
+    cursor: pointer;
+}
+.navbarContainer img:hover{
+    border: 5px solid black;
+}
+.navbarContent a:hover {
+    color: #007BFF;
+}
+.popupContainer{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+.profileContent a{
+    text-decoration: none;
+    color: #333;
+}
+.profileContent a:hover{
+    color: #F6DC43;
+}
+.profileContent{
+    padding : 10px;
+}
+.isHidden{
+    display: none;
+}
+.profile{
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    width: fit-content(150%);
+    margin-right: 8.5em;
+    border: 2px solid black;
+}

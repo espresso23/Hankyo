@@ -1,5 +1,4 @@
 package controller;
-
 import dao.UserDAO;
 import model.User;
 import util.SmtpProtocol;
@@ -11,21 +10,18 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-
 @WebServlet("/register")
 public class RegisterServlet extends HttpServlet {
-
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-//        String p = request.getParameter("p");
-//        if ("hadaccount".equals(p)) {
-//            request.getRequestDispatcher("welcome.jsp").forward(request, response);
-//        } else {
-//            request.getRequestDispatcher("register.jsp").forward(request, response);
-//        }
-        request.getRequestDispatcher("register.jsp").forward(request, response);
-    }
+        String p = request.getParameter("p");
+        if ("hadaccount".equals(p)) {
+            request.getRequestDispatcher("login").forward(request, response);
+        } else {
+            request.getRequestDispatcher("/register.jsp").forward(request, response);
+        }
 
+    }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -59,39 +55,51 @@ public class RegisterServlet extends HttpServlet {
 
         UserDAO dao = new UserDAO();
         try {
-            System.out.println("Checking if email exists: " + email);
-            if (dao.userExists(email)) {
-                request.setAttribute("msg", "Email already exists.");
+            System.out.println("Checking if username exists: " + username);
+            if (dao.usernameExists(username)) {
+                request.setAttribute("message", "Username already exists.");
                 request.getRequestDispatcher("register.jsp").forward(request, response);
                 return;
             }
 
-            User user = new User();
-            user.setFullName(fullName);
-            user.setUsername(username);
-            user.setGmail(email);
-            user.setPassword(password);
-            user.setPhone(phone);
-            user.setGender(gender);
+            try {
+                System.out.println("Checking if email exists: " + email);
+                if (dao.userExists(email)) {
+                    request.setAttribute("msg", "Email already exists.");
+                    request.getRequestDispatcher("register.jsp").forward(request, response);
+                    return;
+                }
 
-            SmtpProtocol smtpProtocol = new SmtpProtocol();
-            System.out.println("Sending verification email...");
-            int verifyCode = smtpProtocol.sendMail(email);
-            System.out.println("Verification code sent: " + verifyCode);
+                User user = new User();
+                user.setFullName(fullName);
+                user.setUsername(username);
+                user.setGmail(email);
+                user.setPassword(password);
+                user.setPhone(phone);
+                user.setGender(gender);
 
-            HttpSession session = request.getSession();
-            session.setAttribute("gmail", email);
-            session.setAttribute("user", user);
-            session.setAttribute("otpCode", verifyCode);
-            System.out.println("Redirecting to Verify page...");
-            request.getRequestDispatcher("Verify").forward(request, response);
+                SmtpProtocol smtpProtocol = new SmtpProtocol();
+                System.out.println("Sending verification email...");
+                int verifyCode = smtpProtocol.sendMail(email);
+                System.out.println("Verification code sent: " + verifyCode);
 
+                HttpSession session = request.getSession();
+                session.setAttribute("gmail", email);
+                session.setAttribute("user", user);
+                session.setAttribute("otpCode", verifyCode);
+                System.out.println("Redirecting to Verify page...");
+                request.getRequestDispatcher("verify").forward(request, response);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                request.setAttribute("message", "Error occurred: " + e.getMessage());
+                request.getRequestDispatcher("register.jsp").forward(request, response);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("message", "Error occurred: " + e.getMessage());
             request.getRequestDispatcher("register.jsp").forward(request, response);
         }
+
     }
-
 }
-
