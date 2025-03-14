@@ -21,17 +21,21 @@ public class AuthenFilter implements Filter {
         User user = (session != null) ? (User) session.getAttribute("user") : null;
         String requestURI = httpRequest.getRequestURI();
 
-        if (requestURI.endsWith("homepage.jsp") || requestURI.contains("/home") ||
+        if (requestURI.endsWith("home.jsp") || requestURI.contains("/home") ||
                 requestURI.endsWith("register.jsp") || requestURI.contains("/register") ||
-                requestURI.endsWith("login.jsp")) {
+                requestURI.endsWith("login.jsp") || requestURI.contains("/login") ||
+           requestURI.contains("/google") || requestURI.contains("/asset/") || requestURI.contains("css") || requestURI.contains("js") || requestURI.contains("images"))
+        {
             chain.doFilter(request, response);
             return;
         }
 
         if (user == null) {
             httpResponse.sendRedirect("login.jsp");
+
             return;
         }
+
         if (requestURI.contains("admin.jsp") && !"Admin".equals(user.getRole())) {
             httpResponse.sendRedirect("home.jsp");
             return;

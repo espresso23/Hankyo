@@ -14,10 +14,10 @@ public class User {
     private String socialID;
     private Date dateCreate;
     private String gender;
-    private int age;
+    private Date dateOfBirth;
     private String avatar;
 
-    public User(int userID, String username, String password, String gmail, String phone, String role, String status, String fullName, String socialID, Date dateCreate, String gender, int age, String avatar) {
+    public User(int userID, String username, String password, String gmail, String phone, String role, String status, String fullName, String socialID, Date dateCreate, String gender, Date dateOfBirth, String avatar) {
         this.userID = userID;
         this.username = username;
         this.password = password;
@@ -29,7 +29,7 @@ public class User {
         this.socialID = socialID;
         this.dateCreate = dateCreate;
         this.gender = gender;
-        this.age = age;
+        this.dateOfBirth = dateOfBirth;
         this.avatar = avatar;
     }
 
@@ -45,12 +45,12 @@ public class User {
         this.avatar = avatar;
     }
 
-    public int getAge() {
-        return age;
+    public Date getDateOfBirth() {
+        return dateOfBirth;
     }
 
-    public void setAge(int age) {
-        this.age = age;
+    public void setDateOfBirth(Date dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
 
     // Getters and Setters
@@ -151,7 +151,7 @@ public class User {
                 "Full Name: " + fullName + "\n" +
                 "Social ID: " + socialID + "\n" +
                 "Date Created: " + dateCreate + "\n" +
-                "Gender: " + gender + "\n" + "Age: " + age + "\n";
+                "Gender: " + gender + "\n" + "Date Of Birth: " + dateOfBirth + "\n";
     }
 }
 
