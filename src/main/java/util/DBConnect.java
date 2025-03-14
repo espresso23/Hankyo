@@ -9,10 +9,10 @@ public class DBConnect {
     private Connection connection;
     private static final String USERNAME = "sa";
     private static final String PASSWORD = "123";
-    private static final String DB_URL = "jdbc:sqlserver://PLQTAN\\SQLEXPRESS;databaseName=Hankyo;encrypt=true;trustServerCertificate=true";
+    private static final String DB_URL = "jdbc:sqlserver://DESKTOP-I5FECSK\\SQLEXPRESS;databaseName=Hankyo;encrypt=true;trustServerCertificate=true";
     private static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
 
-    private DBConnect() {
+    private DBConnect() throws RuntimeException {
         try {
             Class.forName(DRIVER_CLASS);
             this.connection = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
