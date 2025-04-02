@@ -12,7 +12,7 @@
 </head>
 <body>
 <%
-  if (session.getAttribute("username") == null) {
+  if (session.getAttribute("username") != null) {
     request.getRequestDispatcher("/header-user.jsp").include(request, response);
   } else {
     request.getRequestDispatcher("/header-guest.jsp").include(request, response);

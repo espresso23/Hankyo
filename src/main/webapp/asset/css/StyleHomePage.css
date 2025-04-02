@@ -1,0 +1,122 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body {
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.wrapper {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: repeat(12, 1fr);
+    height: 100vh;
+    position: relative;
+}
+
+header {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    align-items: center;
+    background-color: #f8f8f8;
+    padding: 10px 20px;
+}
+
+.logo {
+    grid-column: 1 / 3;
+    justify-self: start;
+    width: 30px;
+}
+
+.navbarContainer {
+    grid-column: 4 / 10;
+    display: flex;
+    justify-content: space-between;
+}
+
+.navbarContent a {
+    text-decoration: none;
+    font-weight: bold;
+    color: #333;
+    padding: 10px 15px;
+    transition: 0.3s;
+}
+
+.navbarContent a:hover {
+    color: #007BFF;
+}
+
+.sideContent {
+    grid-row: 2 / 13;
+    grid-column: 10 / 13;
+    overflow-y: auto;
+    max-height: 80vh;
+    padding: 10px;
+}
+
+.sideContent img {
+    transition: transform 0.3s;
+}
+
+.sideContent img:hover {
+    transform: scale(1.2);
+}
+
+.mainContent {
+    grid-row: 7 / 13;
+    grid-column: 3 / 9;
+    grid-template-columns: repeat(2, 1fr);
+    display: grid;
+    gap: 10px;
+    overflow-y: auto;
+    max-height: 80vh;
+    padding: 10px;
+}
+
+.bigContent {
+    grid-column: span 2;
+    width: 100%;
+}
+
+.bigContent img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.smallContent {
+    width: 100%;
+    padding: 10px;
+}
+
+.smallContent img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.searchBar {
+    grid-row: 5 / 6;
+    grid-column: 4 / 8;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.searchBar input {
+    height: 40px;
+    width: 80%;
+    font-size: 16px;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}

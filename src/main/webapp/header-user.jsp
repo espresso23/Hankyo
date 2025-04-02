@@ -13,12 +13,13 @@
 </head>
 <body>
 <header>
-  <img class="logo" src="asset/png/loginPage/logo.png" alt="Logo">
+  <img class="logo" src="asset/png/loginPage/logo.png"  alt="Logo" onclick="window.location.href='home.jsp'">
   <div class="navbarContainer">
     <div class="navbarContent"><a href="/index.html">Khóa Học</a></div>
     <div class="navbarContent"><a href="/about.html">Giảng Viên</a></div>
     <div class="navbarContent"><a href="/community.html">Cộng Đồng</a></div>
-    <div class="navbarContent"><a href="/docs.html">Tài Liệu</a></div>
+    <div class="navbarContent"> <a href="dictionary">Tài Liệu</a></div>
+
     <div class="navbarContent"><a href="/test.html">Thi Thử</a></div>
     <div class="navbarContent"><a href="/about-us.html">Về Chúng Tôi</a></div>
     <span>Xin chào, <%= session.getAttribute("username") %>!</span>
