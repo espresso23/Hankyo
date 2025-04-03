@@ -18,7 +18,6 @@ public class DictionaryServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         List<Dictionary> dictionaryList = dictionaryDAO.getAllDictionary();
-        System.out.println("Servlet: dictionaryList size = " + dictionaryList.size());
         request.setAttribute("dictionaryList", dictionaryList);
         request.getRequestDispatcher("dictionary.jsp").forward(request, response);
     }

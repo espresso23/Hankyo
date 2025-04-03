@@ -40,7 +40,7 @@ public class DictionaryDAO {
     }
 
     public void saveToDatabase(List<Dictionary> dictionaryList) {
-        String query = "INSERT INTO dictionary ( word, definition, type, mean) VALUES ( ?, ?, ?, ?)";
+        String query = "INSERT INTO dictionary ( word, mean, type, definition) VALUES ( ?, ?, ?, ?)";
 
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             for (Dictionary word : dictionaryList) {
@@ -82,7 +82,14 @@ public class DictionaryDAO {
     public static void main(String[] args) {
         DictionaryDAO dao = new DictionaryDAO();
         String filePath = "src/main/webapp/asset/font/DanhSachTuVung.txt";
-        List<Dictionary> dictionaryList = dao.getAllDictionary();
-        System.out.println(dictionaryList);
+
+        // Đọc danh sách từ file
+        List<Dictionary> dictionaryList = dao.readDictionaryFile(filePath);
+
+        // Lưu vào database
+        dao.saveToDatabase(dictionaryList);
+
+        System.out.println("Quá trình nhập dữ liệu hoàn tất!");
     }
+
 }

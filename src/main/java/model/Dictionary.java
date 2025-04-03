@@ -1,13 +1,13 @@
 package model;
 
 public class Dictionary {
-    private String wordID;
+    private int wordID;
     private String word;
     private String definition;
     private String type;
     private String mean;
 
-    public Dictionary(String wordID, String word, String definition, String type, String mean) {
+    public Dictionary(int wordID, String word, String definition, String type, String mean) {
         this.wordID = wordID;
         this.word = word;
         this.definition = definition;
@@ -25,11 +25,11 @@ public class Dictionary {
     public Dictionary() {
     }
 
-    public String getWordID() {
+    public int getWordID() {
         return wordID;
     }
 
-    public void setWordID(String wordID) {
+    public void setWordID(int wordID) {
         this.wordID = wordID;
     }
 

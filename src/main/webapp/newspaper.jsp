@@ -4,7 +4,7 @@
 <html lang="vi">
 <head>
   <link rel="stylesheet" href="asset/css/newspaper.css">
-  <title>Đọc báo</title>
+
 </head>
 <style>
   body{
@@ -21,6 +21,7 @@
 </style>
 <jsp:include page="header.jsp"></jsp:include>
 <body>
+<title>Đọc báo</title>
 <div class="container">
   <div class="contentContainer">
     <div class="title">
