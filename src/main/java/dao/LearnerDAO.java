@@ -16,6 +16,27 @@ public class LearnerDAO {
     public LearnerDAO() {
         this.connection = DBConnect.getInstance().getConnection();
     }
+    public Learner getLearnerByUserID(int userID) {
+        String query = "SELECT l.*, u.*, r.*, v.*, h.* " +
+                "FROM Learner l " +
+                "JOIN [User] u ON l.userID = u.userID " +
+                "LEFT JOIN Reward r ON l.learnerID = r.learnerID " +
+                "LEFT JOIN VipDetails v ON l.learnerID = v.learnerID " +
+                "LEFT JOIN Honour h ON l.honourID = h.honourID " +
+                "WHERE u.userID = ? AND l.status = 'active'";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, userID);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return mapResultSetToLearner(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     public Learner getLearnerById(int learnerId) {
         String query = "SELECT l.*, u.*, r.*, v.*, h.* FROM Learner l JOIN [User] u ON l.userID = u.userID LEFT JOIN Reward r ON l.learnerID = r.learnerID LEFT JOIN VipDetails v ON l.learnerID = v.learnerID LEFT JOIN Honour h ON l.honourID = h.honourID WHERE l.learnerID = ? AND l.status = 'active'";

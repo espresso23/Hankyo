@@ -2,6 +2,7 @@ package controller;
 
 import dao.UserDAO;
 import model.GoogleLogin;
+import model.Learner;
 import model.User;
 
 import javax.servlet.ServletException;
@@ -11,6 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.sql.SQLException;
+
 @WebServlet("/google")
 public class GoogleLoginServlet extends HttpServlet {
 
@@ -49,7 +52,8 @@ public class GoogleLoginServlet extends HttpServlet {
         }
     }
 
-    private void createUserSession(HttpServletRequest request, User user) {
+    private void createUserSession(HttpServletRequest request, User user) throws SQLException {
+        UserDAO userDao = new UserDAO();
         HttpSession session = request.getSession(true);
         session.setMaxInactiveInterval(1800);
         session.setAttribute("user", user);
@@ -58,7 +62,8 @@ public class GoogleLoginServlet extends HttpServlet {
         session.setAttribute("email", user.getGmail());
         session.setAttribute("phone", user.getPhone());
         session.setAttribute("avatar", user.getAvatar());
-
+        Learner learner = userDao.getLearnerByUserID(user.getUserID());
+        session.setAttribute("learnerID", learner.getLearnerID());
         System.out.println("Session Created: " + user.getFullName() + " (ID: " + user.getUserID() + ")"); // Log session
     }
 

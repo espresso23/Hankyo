@@ -9,7 +9,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isELIgnored="false"%>
 <html>
 <head>
-  <title>Select Topic</title>
+  <title>FlashCard tự tạo</title>
   <link rel="icon" href="asset/png/icon/logo.jpg">
   <style>
     body {
@@ -112,12 +112,6 @@
 <body>
 <div class="container">
   <h1>Select a Topic</h1>
-
-  <!-- Thành phần 1: Favorite Flashcard và Custom FlashCard -->
-  <div class="favorite-section">
-    <a href="flashCard?topic=favorite&flashCardID=1" class="favorite-btn">Favorite Flashcard</a>
-    <a href="customFlashCard" class="custom-btn">Custom FlashCard</a>
-  </div>
 
   <!-- Thành phần 2: Thanh cuộn ngang các topic -->
   <div class="topics-scroll">

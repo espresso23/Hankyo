@@ -4,6 +4,7 @@
 <head>
     <title>Quizlet Flashcards</title>
     <link rel="stylesheet" href="./asset/css/selectTopic.css">
+    <link rel="icon" href="asset/png/icon/logo.jpg">
     <style>
         @font-face {
             font-family: 'Poppins';
@@ -52,7 +53,6 @@
             <tr>
                 <th>Từ vựng</th>
                 <th>Nghĩa</th>
-                <th>Chú thích</th>
             </tr>
             </thead>
             <tbody>
@@ -60,7 +60,6 @@
                 <tr>
                     <td>${flashcard.dictionary.word}</td>
                     <td>${flashcard.dictionary.mean}</td>
-                    <td>${flashcard.dictionary.definition}</td>
                 </tr>
             </c:forEach>
             </tbody>

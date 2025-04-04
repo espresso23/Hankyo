@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="./asset/css/footer.css">
     <link rel="stylesheet" href="./asset/css/register.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="icon" href="asset/png/icon/logo.jpg">
 </head>
 <header>
     <img class="logo" src="./asset/png/loginPage/logo.png" alt="Logo">

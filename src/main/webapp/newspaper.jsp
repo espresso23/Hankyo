@@ -4,6 +4,7 @@
 <html lang="vi">
 <head>
   <link rel="stylesheet" href="asset/css/newspaper.css">
+  <link rel="icon" href="asset/png/icon/logo.jpg">
 
 </head>
 <style>

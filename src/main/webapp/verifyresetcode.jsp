@@ -3,6 +3,7 @@
 
 <!DOCTYPE html>
 <html>
+<link rel="icon" href="asset/png/icon/logo.jpg">
 <head>
     <title>Email Verification</title>
 </head>

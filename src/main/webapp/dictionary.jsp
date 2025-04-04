@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <title>Từ điển</title>
     <link href="asset/css/StyleHomePage.css" rel="stylesheet" type="text/css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -28,7 +29,6 @@
             font-size: 28px;
             font-weight: 600;
         }
-        /* CSS cho bảng */
         table {
             width: 100%;
             margin: 0 auto 30px;
@@ -44,7 +44,7 @@
             border-bottom: 1px solid #e0e0e0;
         }
         th {
-            background-color: #007bff; /* Màu xanh dương */
+            background-color: #007bff;
             color: white;
             font-weight: 600;
             text-transform: uppercase;
@@ -61,7 +61,6 @@
             background-color: #f1f1f1;
             transition: background-color 0.3s ease;
         }
-        /* CSS cho phân trang */
         .pagination {
             text-align: center;
             margin: 30px 0;
@@ -92,6 +91,9 @@
         .pagination a:active {
             transform: scale(0.95);
         }
+        .favorite-toggle {
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -110,7 +112,7 @@
             <th>Định nghĩa</th>
             <th>Loại từ</th>
             <th>Ý nghĩa</th>
-            <th>add to favorite</th>
+            <th>Add to Favorite</th>
         </tr>
         <c:forEach var="word" items="${dictionaryList}" begin="${startIndex}" end="${endIndex}">
             <tr>
@@ -118,25 +120,74 @@
                 <td>${word.definition}</td>
                 <td>${word.type}</td>
                 <td>${word.mean}</td>
-                <td><img src="asset/png/icon/star.png" style="width: 18px"></td>
+                <td>
+                    <c:set var="isFavorite" value="false" />
+                    <c:forEach var="FC" items="${FavoriteFlashCardList}">
+                        <c:if test="${word.wordID == FC.dictionary.wordID}">
+                            <c:set var="isFavorite" value="true" />
+                        </c:if>
+                    </c:forEach>
+                    <c:choose>
+                        <c:when test="${isFavorite}">
+                            <img src="asset/png/icon/star-on.png" style="width: 18px" class="favorite-toggle" data-wordid="${word.wordID}">
+                        </c:when>
+                        <c:otherwise>
+                            <img src="asset/png/icon/star.png" style="width: 18px" class="favorite-toggle" data-wordid="${word.wordID}">
+                        </c:otherwise>
+                    </c:choose>
+                </td>
             </tr>
         </c:forEach>
     </table>
 
-    <%-- Hiển thị các nút phân trang --%>
     <div class="pagination">
         <c:if test="${currentPage > 1}">
             <a href="?page=${currentPage - 1}">Trước</a>
         </c:if>
-
         <c:forEach var="i" begin="1" end="${totalPages}">
             <a href="?page=${i}" class="${i == currentPage ? 'active' : ''}">${i}</a>
         </c:forEach>
-
         <c:if test="${currentPage < totalPages}">
             <a href="?page=${currentPage + 1}">Sau</a>
         </c:if>
     </div>
 </div>
+
+<script>
+    $(document).ready(function() {
+        $('.favorite-toggle').on('click', function() {
+            const $star = $(this); // Lưu tham chiếu đến phần tử ngôi sao
+            const wordID = $star.data('wordid');
+            const isFavorite = $star.attr('src').includes('star-on.png');
+            const action = isFavorite ? 'removeFavoriteFlashCard' : 'addFavoriteFlashCard';
+            const newSrc = isFavorite ? 'asset/png/icon/star.png' : 'asset/png/icon/star-on.png';
+            const oldSrc = $star.attr('src'); // Lưu trạng thái ban đầu để rollback nếu cần
+
+            // Đổi ảnh ngay lập tức khi click
+            $star.attr('src', newSrc);
+
+            $.ajax({
+                url: 'dictionary',
+                type: 'POST',
+                data: { wordID: wordID, action: action },
+                dataType: 'json',
+                success: function(response) {
+                    if (!response.success) {
+                        // Nếu thất bại, hoàn tác thay đổi
+                        $star.attr('src', oldSrc);
+                        console.error('Error: ' + (response.error || 'Unknown error'));
+                        alert('Failed to update favorite: ' + (response.error || 'Unknown error'));
+                    }
+                },
+                error: function(xhr, status, error) {
+                    // Nếu có lỗi AJAX, hoàn tác thay đổi
+                    $star.attr('src', oldSrc);
+                    console.error('AJAX error: ' + error);
+                    alert('An error occurred while processing your request.');
+                }
+            });
+        });
+    });
+</script>
 </body>
 </html>

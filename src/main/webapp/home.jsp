@@ -3,6 +3,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <link rel="icon" href="asset/png/icon/logo.jpg">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trang Chủ</title>

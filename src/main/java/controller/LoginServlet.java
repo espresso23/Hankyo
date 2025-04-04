@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import dao.UserDAO;
+import model.Learner;
 import model.User;
 
 @WebServlet("/login")
@@ -79,7 +80,10 @@ public class LoginServlet extends HttpServlet {
                         response.sendRedirect("admin.jsp");
                     }
                     else {
+                        Learner learner = userDao.getLearnerByUserID(user.getUserID());
+                        session.setAttribute("learnerID", learner.getLearnerID());
                         response.sendRedirect("home.jsp");
+                        System.out.println("learnID" + learner.getLearnerID());
                     }
 
                 } else {

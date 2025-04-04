@@ -1,5 +1,6 @@
 package dao;
 
+import model.CustomFlashCard;
 import model.Dictionary;
 import model.SystemFlashCard;
 import util.DBConnect;
@@ -83,15 +84,81 @@ public class QuizletDAO {
         return list;
     }
 
+    public boolean addCustomFlashCard(CustomFlashCard cf) {
+        String insertQuery = "INSERT INTO CustomFlashCard (learnerID, word, mean, topic) VALUES (?, ?, ?, ?)";
+            try (PreparedStatement insertStmt = connection.prepareStatement(insertQuery)) {
+                insertStmt.setInt(1, cf.getLearnerID());
+                insertStmt.setString(2, cf.getWord());
+                insertStmt.setString(3, cf.getMean());
+                insertStmt.setString(4, cf.getTopic());
+                int rowsAffected = insertStmt.executeUpdate();
+                return rowsAffected > 0;
+            }
+             catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public List<CustomFlashCard> getAllCustomFlashCardByTopic(String topic) {
+        List<CustomFlashCard> list = new ArrayList<>();
+        String insertQuery = "SELECT * FROM CustomFlashCard WHERE topic = ?";
+        try (PreparedStatement statement = connection.prepareStatement(insertQuery)){
+            statement.setString(1, topic);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    CustomFlashCard customFlashCard = new CustomFlashCard(
+                            resultSet.getInt("learnerID"),
+                            resultSet.getString("word"),
+                            resultSet.getString("mean"),
+                            topic);
+                    list.add(customFlashCard);
+                }
+                }
+        }catch (SQLException e) {}
+        return list;
+    }
+
+
+    public List<String> getAllTopics() throws SQLException {
+        List<String> list = new ArrayList<>();
+        String query = "SELECT DISTINCT topic FROM SystemFlashCard";
+        try (Connection con = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = con.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(rs.getString("topic"));
+            }
+        }
+        return list;
+    }
+
+    public List<String> getAllTopicsCustomFlashCardByLearnerID(int learnerID) throws SQLException {
+        List<String> list = new ArrayList<>();
+        String query = "SELECT DISTINCT topic FROM CustomFlashCard WHERE learnerID = ?";
+
+        try (Connection con = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = con.prepareStatement(query)) {
+
+            ps.setInt(1, learnerID);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(rs.getString("topic"));
+                }
+            }
+        }
+        return list;
+    }
 
     public static void main(String[] args) {
         QuizletDAO dao = new QuizletDAO();
         List<SystemFlashCard> systemFlashCards = dao.getAllSystemFlashCardByTopic("Nature");
-       SystemFlashCard so = systemFlashCards.get(1);
+        SystemFlashCard so = systemFlashCards.get(1);
         System.out.println(so.getDictionary().getWord()+ so.getDictionary().getMean());
         for (SystemFlashCard card : systemFlashCards) {
             System.out.println(
-                     " SFCID: " + card.getSFCID() + ", Word: " + card.getDictionary().getWord() + ", Mean: " + card.getDictionary().getMean());
+                    " SFCID: " + card.getSFCID() + ", Word: " + card.getDictionary().getWord() + ", Mean: " + card.getDictionary().getMean());
         }
     }
 }

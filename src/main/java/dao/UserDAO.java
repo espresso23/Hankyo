@@ -1,5 +1,6 @@
 package dao;
 
+import model.Learner;
 import model.User;
 import util.DBConnect;
 import util.Encrypt;
@@ -10,6 +11,25 @@ import java.util.Arrays;
 import java.util.List;
 
 public class UserDAO {
+    public Learner getLearnerByUserID(int UserID) throws SQLException {
+        String query = "SELECT * FROM Learner WHERE userID = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, UserID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Learner learner = new Learner();
+                    learner.setUserID(rs.getInt("userID"));
+                    learner.setLearnerID(rs.getInt("learnerID"));
+                    return learner;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error fetching learner: " + e.getMessage());
+        }
+        return null;
+    }
+
     public String register(User user) throws Exception {
         Connection conn = null;
         try {

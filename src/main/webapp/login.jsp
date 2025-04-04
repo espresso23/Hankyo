@@ -3,6 +3,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" href="asset/png/icon/logo.jpg">
     <link rel="stylesheet" href="asset/css/login.css">
     <title>Login Page</title>
 </head>

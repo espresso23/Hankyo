@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trang Chủ</title>
     <link href="asset/css/StyleHomePage.css" rel="stylesheet" type="text/css">
+    <link rel="icon" href="asset/png/icon/logo.jpg">
 </head>
 <style>
     body {
