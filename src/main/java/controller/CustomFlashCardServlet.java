@@ -45,46 +45,72 @@ public class CustomFlashCardServlet extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();
 
-        String topic = request.getParameter("topic");
-        String flashCardInput = request.getParameter("flashCards");
-
         HttpSession session = request.getSession();
         Integer learnerID = (Integer) session.getAttribute("learnerID");
 
-        if (topic == null || topic.trim().isEmpty() || flashCardInput == null || flashCardInput.trim().isEmpty()) {
-            out.println("<h3>Lỗi: Vui lòng nhập đầy đủ topic và flashcard!</h3>");
-            return;
-        }
         if (learnerID == null) {
-            out.println("<h3>Lỗi: Bạn cần đăng nhập để thêm flashcard!</h3>");
             response.sendRedirect("login.jsp");
             return;
         }
 
-        try {
-            String[] flashCardPairs = flashCardInput.split(";");
-            List<String> successMessages = new ArrayList<>();
-            List<String> errorMessages = new ArrayList<>();
+        String topic = request.getParameter("topic"); // Manual mode topic
+        String flashCardInput = request.getParameter("flashCards"); // Manual mode flashcards
+        String individualTopic = request.getParameter("individualTopic"); // Individual mode topic
+        String word = request.getParameter("word"); // Individual mode word
+        String mean = request.getParameter("mean"); // Individual mode meaning
 
-            for (String pair : flashCardPairs) {
-                String trimmedPair = pair.trim();
-                if (trimmedPair.isEmpty()) continue; // Bỏ qua cặp rỗng
+        List<String> successMessages = new ArrayList<>();
+        List<String> errorMessages = new ArrayList<>();
 
-                String[] parts = trimmedPair.split(":");
-                if (parts.length != 2) {
-                    errorMessages.add("Cú pháp không đúng cho: " + trimmedPair);
-                    continue;
+        if (topic != null && flashCardInput != null) {
+            // Manual Mode
+            if (topic.trim().isEmpty() || flashCardInput.trim().isEmpty()) {
+                out.println("<h3>Lỗi: Vui lòng nhập đầy đủ topic và flashcard!</h3>");
+                return;
+            }
+
+            try {
+                String[] flashCardPairs = flashCardInput.split(";");
+                for (String pair : flashCardPairs) {
+                    String trimmedPair = pair.trim();
+                    if (trimmedPair.isEmpty()) continue;
+
+                    String[] parts = trimmedPair.split(":");
+                    if (parts.length != 2) {
+                        errorMessages.add("Cú pháp không đúng cho: " + trimmedPair);
+                        continue;
+                    }
+
+                    String w = parts[0].trim();
+                    String m = parts[1].trim();
+
+                    if (w.isEmpty() || m.isEmpty()) {
+                        errorMessages.add("Từ hoặc nghĩa trống cho: " + trimmedPair);
+                        continue;
+                    }
+
+                    CustomFlashCard customFlashCard = new CustomFlashCard(learnerID, w, m, topic);
+                    boolean success = quizletDAO.addCustomFlashCard(customFlashCard);
+
+                    if (success) {
+                        successMessages.add("Từ vựng: " + w + " - Nghĩa: " + m);
+                    } else {
+                        errorMessages.add("Không thể thêm: " + w + ":" + m);
+                    }
                 }
+            } catch (Exception e) {
+                out.println("<h3>Lỗi xử lý: " + e.getMessage() + "</h3>");
+                e.printStackTrace();
+            }
+        } else if (individualTopic != null && word != null && mean != null) {
+            // Individual Mode
+            if (individualTopic.trim().isEmpty() || word.trim().isEmpty() || mean.trim().isEmpty()) {
+                out.println("<h3>Lỗi: Vui lòng nhập đầy đủ topic, từ và nghĩa!</h3>");
+                return;
+            }
 
-                String word = parts[0].trim();
-                String mean = parts[1].trim();
-
-                if (word.isEmpty() || mean.isEmpty()) {
-                    errorMessages.add("Từ hoặc nghĩa trống cho: " + trimmedPair);
-                    continue;
-                }
-
-                CustomFlashCard customFlashCard = new CustomFlashCard(learnerID, word, mean, topic);
+            try {
+                CustomFlashCard customFlashCard = new CustomFlashCard(learnerID, word.trim(), mean.trim(), individualTopic.trim());
                 boolean success = quizletDAO.addCustomFlashCard(customFlashCard);
 
                 if (success) {
@@ -92,33 +118,35 @@ public class CustomFlashCardServlet extends HttpServlet {
                 } else {
                     errorMessages.add("Không thể thêm: " + word + ":" + mean);
                 }
+            } catch (Exception e) {
+                out.println("<h3>Lỗi xử lý: " + e.getMessage() + "</h3>");
+                e.printStackTrace();
             }
-
-            // Phản hồi kết quả
-            out.println("<h3>Kết quả thêm flashcard</h3>");
-            if (!successMessages.isEmpty()) {
-                out.println("<p style='color: green;'>Thêm thành công:</p>");
-                out.println("<ul>");
-                for (String msg : successMessages) {
-                    out.println("<li>" + msg + "</li>");
-                }
-                out.println("</ul>");
-            }
-            if (!errorMessages.isEmpty()) {
-                out.println("<p style='color: red;'>Lỗi:</p>");
-                out.println("<ul>");
-                for (String msg : errorMessages) {
-                    out.println("<li>" + msg + "</li>");
-                }
-                out.println("</ul>");
-            }
-            out.println("<p>Topic: " + topic + "</p>");
-            out.println("<a href='quizlet'>Quay lại danh sách flashcard</a>");
-            out.println("<a href='addFlashCard'>Thêm flashcard khác</a>");
-
-        } catch (Exception e) {
-            out.println("<h3>Lỗi xử lý: " + e.getMessage() + "</h3>");
-            e.printStackTrace();
+        } else {
+            out.println("<h3>Lỗi: Dữ liệu không hợp lệ!</h3>");
+            return;
         }
+
+        // Phản hồi kết quả
+        out.println("<h3>Kết quả thêm flashcard</h3>");
+        if (!successMessages.isEmpty()) {
+            out.println("<p style='color: green;'>Thêm thành công:</p>");
+            out.println("<ul>");
+            for (String msg : successMessages) {
+                out.println("<li>" + msg + "</li>");
+            }
+            out.println("</ul>");
+        }
+        if (!errorMessages.isEmpty()) {
+            out.println("<p style='color: red;'>Lỗi:</p>");
+            out.println("<ul>");
+            for (String msg : errorMessages) {
+                out.println("<li>" + msg + "</li>");
+            }
+            out.println("</ul>");
+        }
+        out.println("<p>Topic: " + (topic != null ? topic : individualTopic) + "</p>");
+        out.println("<a href='quizlet'>Quay lại danh sách flashcard</a>");
+        out.println("<a href='addFlashCard'>Thêm flashcard khác</a>");
     }
 }

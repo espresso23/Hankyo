@@ -15,9 +15,13 @@ import java.util.List;
 public class ListCustomFlashCardServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        super.doGet(request, response);
         HttpSession session = request.getSession();
         Integer learnerID = (Integer) session.getAttribute("learnerID");
+
+        if (learnerID == null) {
+            response.sendRedirect("login.jsp"); // Chuyển hướng nếu chưa đăng nhập
+            return;
+        }
 
         QuizletDAO quizletDAO = new QuizletDAO();
         try {
@@ -26,8 +30,9 @@ public class ListCustomFlashCardServlet extends HttpServlet {
             request.setAttribute("learnerID", learnerID);
             request.getRequestDispatcher("listCustomFlashCard.jsp").forward(request, response);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new ServletException("Lỗi truy vấn CSDL", e);
         }
-
     }
 }
+
+

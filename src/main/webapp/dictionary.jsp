@@ -7,95 +7,21 @@
     <link href="asset/css/StyleHomePage.css" rel="stylesheet" type="text/css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-            min-height: 100vh;
+            background-image: url("asset/png/background/background-2.png");
+            background-size: auto;
         }
-        .mainContainer {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+        @font-face {
+            font-family: 'Poppins';
+            src: url('${pageContext.request.contextPath}/assets/fonts/Poppins-Regular.ttf') format('ttf');
         }
-        h2 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 28px;
-            font-weight: 600;
+        body{
+            font-family: 'Poppins', sans-serif;
         }
-        table {
-            width: 100%;
-            margin: 0 auto 30px;
-            border-collapse: collapse;
-            background-color: #fff;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        th, td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        th {
-            background-color: #007bff;
-            color: white;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 14px;
-        }
-        td {
-            color: #555;
-            font-size: 14px;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        tr:hover {
-            background-color: #f1f1f1;
-            transition: background-color 0.3s ease;
-        }
-        .pagination {
-            text-align: center;
-            margin: 30px 0;
-        }
-        .pagination a {
-            display: inline-block;
-            margin: 0 5px;
-            padding: 8px 14px;
-            text-decoration: none;
-            color: #007bff;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-        .pagination a:hover {
-            background-color: #007bff;
-            color: white;
-            border-color: #007bff;
-        }
-        .pagination a.active {
-            background-color: #007bff;
-            color: white;
-            border-color: #007bff;
-            cursor: default;
-        }
-        .pagination a:active {
-            transform: scale(0.95);
-        }
-        .favorite-toggle {
-            cursor: pointer;
-        }
+
     </style>
 </head>
+<link rel="stylesheet" href="asset/css/dictionary.css">
 <body>
 <jsp:include page="header.jsp"></jsp:include>
 <div class="mainContainer">
@@ -121,20 +47,7 @@
                 <td>${word.type}</td>
                 <td>${word.mean}</td>
                 <td>
-                    <c:set var="isFavorite" value="false" />
-                    <c:forEach var="FC" items="${FavoriteFlashCardList}">
-                        <c:if test="${word.wordID == FC.dictionary.wordID}">
-                            <c:set var="isFavorite" value="true" />
-                        </c:if>
-                    </c:forEach>
-                    <c:choose>
-                        <c:when test="${isFavorite}">
-                            <img src="asset/png/icon/star-on.png" style="width: 18px" class="favorite-toggle" data-wordid="${word.wordID}">
-                        </c:when>
-                        <c:otherwise>
-                            <img src="asset/png/icon/star.png" style="width: 18px" class="favorite-toggle" data-wordid="${word.wordID}">
-                        </c:otherwise>
-                    </c:choose>
+                    <span class="add-toggle" data-wordid="${word.wordID}">+</span>
                 </td>
             </tr>
         </c:forEach>
@@ -153,40 +66,119 @@
     </div>
 </div>
 
+<!-- Popup để chọn hoặc tạo danh sách yêu thích -->
+<div class="popup-overlay" id="popupOverlay"></div>
+<div class="popup" id="favoritePopup">
+    <h3>Chọn danh sách yêu thích</h3>
+    <ul id="favoriteList">
+        <c:forEach var="listName" items="${favoriteListNames}">
+            <li data-name="${listName}">${listName}<span class="status"></span></li>
+        </c:forEach>
+    </ul>
+    <input type="text" id="newListName" placeholder="Tạo danh sách mới">
+    <button id="addToListBtn">Thêm</button>
+</div>
+
 <script>
     $(document).ready(function() {
-        $('.favorite-toggle').on('click', function() {
-            const $star = $(this); // Lưu tham chiếu đến phần tử ngôi sao
-            const wordID = $star.data('wordid');
-            const isFavorite = $star.attr('src').includes('star-on.png');
-            const action = isFavorite ? 'removeFavoriteFlashCard' : 'addFavoriteFlashCard';
-            const newSrc = isFavorite ? 'asset/png/icon/star.png' : 'asset/png/icon/star-on.png';
-            const oldSrc = $star.attr('src'); // Lưu trạng thái ban đầu để rollback nếu cần
+        let currentWordID = null;
 
-            // Đổi ảnh ngay lập tức khi click
-            $star.attr('src', newSrc);
+        $('.add-toggle').on('click', function() {
+            const $addSign = $(this);
+            currentWordID = $addSign.data('wordid');
+            checkFavoriteStatus(currentWordID);
+        });
 
+        $('#favoriteList').on('click', 'li', function() {
+            const nameOfList = $(this).data('name');
+            addToFavorite(currentWordID, nameOfList);
+        });
+
+        $('#addToListBtn').on('click', function() {
+            const nameOfList = $('#newListName').val().trim();
+            if (nameOfList) {
+                addToFavorite(currentWordID, nameOfList);
+            } else {
+                alert('Vui lòng nhập tên danh sách!');
+            }
+        });
+
+        $('#popupOverlay').on('click', function() {
+            $('#popupOverlay, #favoritePopup').hide();
+            $('#newListName').val('');
+        });
+
+        function checkFavoriteStatus(wordID) {
             $.ajax({
                 url: 'dictionary',
                 type: 'POST',
-                data: { wordID: wordID, action: action },
+                data: { wordID: wordID, action: 'checkFavoriteStatus' },
                 dataType: 'json',
                 success: function(response) {
-                    if (!response.success) {
-                        // Nếu thất bại, hoàn tác thay đổi
-                        $star.attr('src', oldSrc);
-                        console.error('Error: ' + (response.error || 'Unknown error'));
-                        alert('Failed to update favorite: ' + (response.error || 'Unknown error'));
+                    console.log('Server response:', response);
+                    if (response.success) {
+                        updatePopup(response.lists);
+                        $('#popupOverlay, #favoritePopup').show();
+                    } else {
+                        console.error('Failed to check status: ' + (response.error || 'Unknown error'));
+                        $('#favoriteList li').find('.status').text('');
+                        $('#popupOverlay, #favoritePopup').show();
                     }
                 },
                 error: function(xhr, status, error) {
-                    // Nếu có lỗi AJAX, hoàn tác thay đổi
-                    $star.attr('src', oldSrc);
                     console.error('AJAX error: ' + error);
-                    alert('An error occurred while processing your request.');
+                    $('#favoriteList li').find('.status').text('');
+                    $('#popupOverlay, #favoritePopup').show();
                 }
             });
-        });
+        }
+
+        function updatePopup(lists) {
+            console.log('Lists from server:', lists);
+            $('#favoriteList li').each(function() {
+                const nameOfList = $(this).data('name');
+                const $status = $(this).find('.status');
+                if (lists && lists.includes(nameOfList)) {
+                    $status.text('X');
+                } else {
+                    $status.text('');
+                }
+            });
+        }
+
+        function addToFavorite(wordID, nameOfList) {
+            const $addSign = $('.add-toggle[data-wordid="' + wordID + '"]');
+            $.ajax({
+                url: 'dictionary',
+                type: 'POST',
+                data: { wordID: wordID, action: 'addFavoriteFlashCard', nameOfList: nameOfList },
+                dataType: 'json',
+                beforeSend: function() {
+                    $('#addToListBtn').prop('disabled', true).text('Đang thêm...');
+                },
+                success: function(response) {
+                    if (response.success) {
+                        if (!$('#favoriteList li[data-name="' + nameOfList + '"]').length) {
+                            $('#favoriteList').append('<li data-name="' + nameOfList + '">' + nameOfList + '<span class="status">✓</span></li>');
+                        } else {
+                            $('#favoriteList li[data-name="' + nameOfList + '"]').find('.status').text('✓');
+                        }
+                        $('#popupOverlay, #favoritePopup').hide();
+                        $('#newListName').val('');
+                        alert('Đã thêm vào danh sách: ' + nameOfList);
+                    } else {
+                        alert('Failed to add: ' + (response.error || 'Unknown error'));
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX error: ' + error);
+                    alert('An error occurred.');
+                },
+                complete: function() {
+                    $('#addToListBtn').prop('disabled', false).text('Thêm');
+                }
+            });
+        }
     });
 </script>
 </body>

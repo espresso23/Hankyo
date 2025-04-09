@@ -32,6 +32,8 @@ public  Learner(int learnerID){
         this.vip = vip;
     }
 
+
+
     public double getHankyoPoint() {
         return hankyoPoint;
     }

@@ -31,11 +31,13 @@ public class DictionaryServlet extends HttpServlet {
             return;
         }
 
-        List<FavoriteFlashCard> favoriteFlashCards = dictionaryDAO.getAllFavoriteFlashCardByLearnerID(learnerID);
+        List<FavoriteFlashCard> favoriteFlashCards = dictionaryDAO.getAllFavoriteFlashCardByLearnerID(learnerID, "favorite"); // Giả sử mặc định là "favorite"
         List<Dictionary> dictionaryList = dictionaryDAO.getAllDictionary();
+        List<String> favoriteListNames = dictionaryDAO.getFavoriteListNamesByLearnerID(learnerID);
 
         request.setAttribute("FavoriteFlashCardList", favoriteFlashCards);
         request.setAttribute("dictionaryList", dictionaryList);
+        request.setAttribute("favoriteListNames", favoriteListNames); // Gửi danh sách nameOfList
         request.getRequestDispatcher("dictionary.jsp").forward(request, response);
     }
 
@@ -56,10 +58,11 @@ public class DictionaryServlet extends HttpServlet {
 
         String action = request.getParameter("action");
         String wordIDStr = request.getParameter("wordID");
+        String nameOfList = request.getParameter("nameOfList"); // Lấy nameOfList từ yêu cầu
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();
 
-        if (wordIDStr == null || action == null) {
+        if (wordIDStr == null || action == null || (nameOfList == null && "addFavoriteFlashCard".equals(action))) {
             out.print("{\"success\": false, \"error\": \"Missing parameters\"}");
             out.flush();
             return;
@@ -71,14 +74,15 @@ public class DictionaryServlet extends HttpServlet {
             if ("addFavoriteFlashCard".equals(action)) {
                 Dictionary dictionary = dictionaryDAO.getDictionaryByWordID(wordID);
                 if (dictionary != null) {
-                    FavoriteFlashCard fc = new FavoriteFlashCard(dictionary, new Learner(learnerID)); // Không truyền FCID
+                    FavoriteFlashCard fc = new FavoriteFlashCard(dictionary, new Learner(learnerID));
+                    fc.setNameOfList(nameOfList); // Đặt nameOfList
                     boolean success = dictionaryDAO.addFavoriteFlashCard(fc);
                     out.print("{\"success\": " + success + "}");
                 } else {
                     out.print("{\"success\": false, \"error\": \"Word not found\"}");
                 }
             } else if ("removeFavoriteFlashCard".equals(action)) {
-                boolean success = dictionaryDAO.removeFavoriteFlashCard(learnerID, wordID);
+                boolean success = dictionaryDAO.removeFavoriteFlashCard(learnerID, wordID, nameOfList != null ? nameOfList : "favorite");
                 out.print("{\"success\": " + success + "}");
             } else {
                 out.print("{\"success\": false, \"error\": \"Invalid action\"}");

@@ -3,17 +3,41 @@ package model;
 public class FavoriteFlashCard {
     private int FCID;
     private Dictionary dictionary;
+    private String nameOfList;
     private Learner learner;
+
+    public FavoriteFlashCard(int FCID, Dictionary dictionary, Learner learner) {
+        this.FCID = FCID;
+        this.dictionary = dictionary;
+        this.learner = learner;
+    }
+
+    public FavoriteFlashCard(int FCID, Dictionary dictionary, String nameOfList) {
+        this.FCID = FCID;
+        this.dictionary = dictionary;
+        this.nameOfList = nameOfList;
+    }
 
     public FavoriteFlashCard(Dictionary dictionary, Learner learner) {
         this.dictionary = dictionary;
         this.learner = learner;
     }
 
-    // Constructor
-    public FavoriteFlashCard(int FCID, Dictionary dictionary, Learner learner) {
+    public FavoriteFlashCard(Dictionary dictionary, String nameOfList) {
+        this.dictionary = dictionary;
+        this.nameOfList = nameOfList;
+    }
+
+    public FavoriteFlashCard(int FCID, Dictionary dictionary, String nameOfList, Learner learner) {
         this.FCID = FCID;
         this.dictionary = dictionary;
+        this.nameOfList = nameOfList;
+        this.learner = learner;
+    }
+
+    public FavoriteFlashCard(Dictionary dictionary, String nameOfList, Learner learner) {
+        this.dictionary = dictionary;
+        this.nameOfList = nameOfList;
         this.learner = learner;
     }
 
@@ -42,13 +66,21 @@ public class FavoriteFlashCard {
         this.learner = learner;
     }
 
-    // Optional: toString() để dễ debug
+    public String getNameOfList() {
+        return nameOfList;
+    }
+
+    public void setNameOfList(String nameOfList) {
+        this.nameOfList = nameOfList;
+    }
+
     @Override
     public String toString() {
         return "FavoriteFlashCard{" +
                 "FCID=" + FCID +
                 ", dictionary=" + dictionary +
                 ", learner=" + learner +
+                ", nameOfList='" + nameOfList + '\'' +
                 '}';
     }
 }
