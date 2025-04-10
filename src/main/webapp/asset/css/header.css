@@ -1,26 +1,22 @@
+
+/* CSS được di chuyển vào đây hoặc bạn có thể giữ trong file riêng */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
-.loginBtn {
-    background-color: #B4EBE6;
-    border-radius: 10px;
-}
-.registerBtn {
-    background-color: #F8ED8C;
-    border-radius: 10px;
-}
 header {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
     align-items: center;
-    background-color: #f8f8f8;
+    background-color: #f8f8f8 ;
     position: sticky;
     padding: 10px 5px;
 }
+
+
 .logo {
-    grid-column: 1 / 3;
+    grid-column: 2 / 3; /* Đẩy logo sang cột tiếp theo */
     justify-self: start;
     width: 50px;
 }
@@ -33,7 +29,7 @@ header {
 }
 .navbarContainer span {
     text-decoration: Highlight;
-    color: #B4EBE6;
+    color: #8AACFF;
 }
 .navbarContent a {
     text-decoration: none;
@@ -54,9 +50,9 @@ header {
     color: #007BFF;
 }
 .popupContainer {
-    display: none; /* Hidden by default */
+    display: none;
     position: absolute;
-    top: 60px; /* Adjust based on header height */
+    top: 60px;
     right: 10px;
     background-color: #fff;
     border: 1px solid #ddd;
@@ -68,7 +64,7 @@ header {
     flex-direction: column;
     display: flex;
     align-items: center;
-    width: fit-content; /* Adjusted from fit-content(150%) */
+    width: fit-content;
     margin-right: 8.5em;
     border: 2px solid black;
 }
@@ -85,7 +81,7 @@ header {
 .menu-btn {
     max-width: 80px;
     display: block;
-    margin: 10px 0 10px 20px; /* Moved to left with left margin */
+    margin: 10px 0 10px 20px;
     padding: 10px 20px;
     background-color: #4CAF50;
     color: white;
@@ -93,14 +89,13 @@ header {
     border-radius: 5px;
     cursor: pointer;
 }
-
 .menu-btn:hover {
     background-color: #45a049;
 }
 .vertical-menu {
-    display: none; /* Hidden by default */
+    display: none;
     position: absolute;
-    top: 100px; /* Adjust based on header and button height */
+    top: 100px;
     left: 10%;
     transform: translateX(-50%);
     width: 200px;
@@ -110,8 +105,8 @@ header {
     border-radius: 5px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     z-index: 1000;
-    max-height: 200px; /* Limit height for scrolling */
-    overflow-y: auto; /* Enable vertical scrolling */
+    max-height: 200px;
+    overflow-y: auto;
 }
 .menu-item {
     padding: 10px;
