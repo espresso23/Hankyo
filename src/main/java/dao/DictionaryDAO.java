@@ -96,6 +96,8 @@ public class DictionaryDAO {
 
         return favoriteFlashCardList;
     }
+
+
     public List<FavoriteFlashCard> getAllFavoriteFlashCardByLearnerIDWithoutnameOfList(int learnerID) {
         List<FavoriteFlashCard> favoriteFlashCardList = new ArrayList<>();
         String query = "SELECT d.wordID, f.FCID, l.learnerID, f.nameOfList, d.word, d.mean, d.definition, d.type " +

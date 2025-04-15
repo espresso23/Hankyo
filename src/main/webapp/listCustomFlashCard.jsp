@@ -112,12 +112,11 @@
 <body>
 <div class="container">
   <h1>Select a Topic</h1>
-
   <!-- Thành phần 2: Thanh cuộn ngang các topic -->
   <div class="topics-scroll">
     <c:forEach var="item" items="${listTopic}">
       <div class="topic-box">
-        <a href="flashCard?topic=${item}&flashCardID=1">${item}</a>
+        <a href="flashCard?topic=${item}&type=${type}">${item}</a>
       </div>
     </c:forEach>
   </div>

@@ -2,6 +2,7 @@ package dao;
 
 import model.CustomFlashCard;
 import model.Dictionary;
+import model.FavoriteFlashCard;
 import model.SystemFlashCard;
 import util.DBConnect;
 
@@ -100,16 +101,16 @@ public class QuizletDAO {
         }
     }
 
-    public List<CustomFlashCard> getAllCustomFlashCardByTopic(String topic) {
+    public List<CustomFlashCard> getAllCustomFlashCardByTopicAndLeanerID(int LearnerID,String topic) {
         List<CustomFlashCard> list = new ArrayList<>();
-        String insertQuery = "SELECT * FROM CustomFlashCard WHERE topic = ?";
+        String insertQuery = "SELECT * FROM CustomFlashCard WHERE topic = ? WHERE learnerID = ? ";
         try (PreparedStatement statement = connection.prepareStatement(insertQuery)){
             statement.setString(1, topic);
+            statement.setInt(2, LearnerID);
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     CustomFlashCard customFlashCard = new CustomFlashCard(
-                            resultSet.getInt("learnerID"),
                             resultSet.getString("word"),
                             resultSet.getString("mean"),
                             topic);
@@ -120,6 +121,21 @@ public class QuizletDAO {
         return list;
     }
 
+    public List<String> getAllFavoriteFlashCardListNameByLearnerID(int learnerID) throws SQLException     {
+        List<String> list = new ArrayList<>();
+        String query = "SELECT DISTINCT nameOfList FROM favoriteFlashCard where learnerID = ?";
+        try (Connection con = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = con.prepareStatement(query)) {
+
+            ps.setInt(1, learnerID);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(rs.getString("nameOfList"));
+                }
+            }
+        }
+        return list;
+    }
 
     public List<String> getAllTopics() throws SQLException {
         List<String> list = new ArrayList<>();

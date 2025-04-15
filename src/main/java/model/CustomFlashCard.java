@@ -25,6 +25,9 @@ public class CustomFlashCard {
         this.learnerID = learnerID;
     }
 
+    public CustomFlashCard(String word, String mean, String topic) {
+    }
+
     public int getCFCID() {
         return CFCID;
     }

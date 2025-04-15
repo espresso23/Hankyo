@@ -16,15 +16,15 @@
 <jsp:include page="header.jsp"></jsp:include>
 <body>
 <div class="container">
-  <h1>Select a Topic</h1>
+  <h1>Chọn các Topic tự tạo của bản thân: </h1>
 
-  <!-- Favorite Flashcard and Custom FlashCard -->
+
   <div class="favorite-section">
-    <a href="flashCard?topic=favorite&flashCardID=1" class="favorite-btn">Favorite Flashcard</a>
-    <a href="customFlashCard" class="custom-btn">Custom FlashCard</a>
+    <a href="customFlashCard?topic=favorite" class="favorite-btn">Favorite Flashcard</a>
+    <a href="customFlashCard?topic=custom" class="custom-btn">Custom FlashCard</a>
   </div>
+  <h1>Bạn có thể chọn theo Topic có sẵn: </h1>
 
-  <!-- Horizontal scrollable topics -->
   <div class="topics-scroll" id="topicsScroll">
     <c:forEach var="item" items="${listTopic}">
       <div class="topic-box">
