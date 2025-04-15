@@ -4,6 +4,7 @@ import dao.LearnerDAO;
 import model.*;
 import service.CartService;
 import service.PaymentService;
+import vn.payos.type.PaymentData;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -30,17 +31,18 @@ public class PaymentSuccessServlet extends HttpServlet {
             String orderCode = request.getParameter("orderCode");
             Integer learnerID = Integer.parseInt(request.getParameter("learnerID"));
             String[] courseIDs = request.getParameter("courses").split(",");
-
+            PaymentData paymentData = (PaymentData) request.getSession().getAttribute("paymentData");
             // Lấy thông tin người học
             Learner learner = learnerDAO.getLearnerById(learnerID);
             if (learner == null) {
                 throw new Exception("Không tìm thấy thông tin người học");
             }
 
-            // Tạo đối tượng Payment
+            // Tạo đối tượng Payment - setup thông tin payment
             Payment payment = new Payment();
             payment.setPaymentID(orderCode);
             payment.setLearnerID(learnerID);
+            payment.setDescription(paymentData.getDescription());
             payment.setPayDate(Timestamp.valueOf(LocalDateTime.now()).toLocalDateTime());
             payment.setStatus("Completed");
 

@@ -91,6 +91,13 @@ public class CreatePaymentLinkServlet extends HttpServlet {
         try {
             // Tạo payment link từ PayOS
             CheckoutResponseData result = payOS.createPaymentLink(paymentData);
+
+            // Lưu thông tin payment data vào session
+            request.getSession().setAttribute("paymentData", paymentData);
+            request.getSession().setAttribute("courseDescriptions", courseDescriptions);
+            request.getSession().setAttribute("coursePrices", coursePrices);
+
+            // Chuyển hướng đến trang thanh toán PayOS
             response.sendRedirect(result.getCheckoutUrl());
         } catch (Exception e) {
             e.printStackTrace();

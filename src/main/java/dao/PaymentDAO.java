@@ -86,7 +86,7 @@ public class PaymentDAO {
     }
 
     public boolean addPaymentWithCourses(Payment payment, List<CoursePaid> coursePaidList) {
-        String paymentSQL = "INSERT INTO Payment (paymentID,amount, paymentDate,description,learnerID) VALUES (?,?, ?, ?, ?)";
+        String paymentSQL = "INSERT INTO Payment (paymentID,amount, paymentDate,description,learnerID,status) VALUES (?,?, ?, ?, ?,?)";
         String coursePaidSQL = "INSERT INTO Course_Paid (paymentID, courseID, learnerID, datePaid) VALUES (?, ?, ?, ?)";
         String expertSQL = "SELECT expertID, price FROM Course WHERE courseID = ?";
         String updateRevenueSQL = "INSERT INTO ExpertRevenue  (expertID, totalRevenue, lastUpdated) VALUES (?, ?,?);";
@@ -102,6 +102,7 @@ public class PaymentDAO {
             psPayment.setTimestamp(3, Timestamp.valueOf(payment.getPayDate()));
             psPayment.setString(4, payment.getDescription());
             psPayment.setInt(5, payment.getLearnerID());
+            psPayment.setString(6,payment.getStatus());
             psPayment.executeUpdate();
 
             ResultSet generatedKeys = psPayment.getGeneratedKeys();
