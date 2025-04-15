@@ -6,6 +6,7 @@ public class CoursePaid {
     private int course_paidID;
     private int courseID;//get courseID
     private int learnerID;//get learnerID
+    private Course course;
     private String paymentID;
     private LocalDateTime datePaid;
 
@@ -24,6 +25,14 @@ public class CoursePaid {
 
     public void setCourseID(int courseID) {
         this.courseID = courseID;
+    }
+
+    public Course getCourse() {
+        return course;
+    }
+
+    public void setCourse(Course course) {
+        this.course = course;
     }
 
     public int getLearnerID() {

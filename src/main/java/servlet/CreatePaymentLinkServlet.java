@@ -68,6 +68,7 @@ public class CreatePaymentLinkServlet extends HttpServlet {
                     .build();
             items.add(item);
         }
+        items.forEach(System.out::println);
 
         // Tính tổng tiền
         int totalAmount = 0;
@@ -84,7 +85,7 @@ public class CreatePaymentLinkServlet extends HttpServlet {
                 .cancelUrl(cancelUrl)
                 .items(items)
                 .build();
-
+        paymentData.toString();
         try {
             // Tạo payment link từ PayOS
             CheckoutResponseData result = payOS.createPaymentLink(paymentData);

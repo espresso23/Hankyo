@@ -72,9 +72,17 @@ public class Learner extends User {
 
     @Override
     public String displayInfo() {
-        return super.displayInfo() + "Learner ID: " + getLearnerID() + "\n" + "Full Name: " + getFullName() + "\n" + "Hankyo Point: " + getHankyoPoint() + "\n" + reward.displayInfo() + "\n" + vip.displayInfo() + "\n";
-    }
+        StringBuilder info = new StringBuilder(super.displayInfo());
 
+        if (reward != null && reward.displayInfo() != null) {
+            info.append(reward.displayInfo()).append("\n");
+        }
+        if (vip != null && vip.displayInfo() != null) {
+            info.append(vip.displayInfo()).append("\n");
+        }
+
+        return info.toString();
+    }
     public static void main(String[] args) {
         Learner learner = new Learner();
         learner.setGmail("tan@gmail.com");
