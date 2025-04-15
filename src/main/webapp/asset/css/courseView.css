@@ -1,0 +1,134 @@
+.course-card {
+    transition: transform 0.3s;
+    margin-bottom: 20px;
+    height: 100%;
+    cursor: pointer;
+}
+
+.bg-secondary {
+    background-color: rgb(65 181 255) !important;
+}
+
+.course-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+.price-tag {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #1c1d1f;
+}
+
+.original-price {
+    text-decoration: line-through;
+    color: #6a6f73;
+    font-size: 0.9em;
+}
+
+.search-box {
+    margin: 20px 0;
+}
+
+.filter-section {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.category-nav {
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 20px;
+    white-space: nowrap;
+    overflow-x: auto;
+}
+
+.category-nav .nav-link {
+    color: #1c1d1f;
+    padding: 8px 16px;
+    margin: 0 5px;
+    border-radius: 20px;
+}
+
+.category-nav .nav-link.active {
+    background-color: #1c1d1f;
+    color: white;
+}
+
+.card-title {
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 10px;
+    height: 2.4em;
+    overflow: hidden;
+}
+
+.card-text {
+    color: #6a6f73;
+    font-size: 0.9em;
+    height: 3em;
+    overflow: hidden;
+}
+
+.rating {
+    color: #b4690e;
+    font-weight: bold;
+}
+
+.rating-count {
+    color: #6a6f73;
+    font-size: 0.9em;
+}
+
+.learners-count {
+    font-size: 0.9em;
+    color: #6a6f73;
+}
+
+.alert {
+    min-width: 300px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    animation: slideIn 0.3s ease-out forwards;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.btn-primary.add-to-cart {
+    transition: all 0.3s ease;
+}
+
+.btn-primary.add-to-cart:disabled {
+    opacity: 0.7;
+}
+
+/* Ngăn sự kiện click trên nút */
+.add-to-cart {
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 10;
+}
+
+.card-body {
+    pointer-events: none; /* Áp dụng cho toàn bộ card-body */
+}
+
+/* Riêng nút giỏ hàng vẫn nhận sự kiện */
+.card-body .add-to-cart {
+    pointer-events: auto;
+}

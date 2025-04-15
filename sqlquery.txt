@@ -1,0 +1,25 @@
+view details assignment_question"
+  SELECT
+    AQ.assignmentContentID,
+    AQ.assignmentID,
+    AQ.assignmentTitle,
+    AQ.media,
+    AQ.description,
+    Q.questionID,
+    Q.questionText,
+    Q.questionImg,
+    Q.audio_file,
+    Q.questionType,
+    ANS.answerID,
+    ANS.answerText,
+    ANS.isCorrect,
+    ANS.option_label
+FROM
+    Assignment_Question AQ
+JOIN
+    Question Q ON AQ.questionID = Q.questionID
+JOIN
+    Answer ANS ON AQ.answerID = ANS.answerID
+WHERE
+    AQ.assignmentID = 5
+;
