@@ -71,21 +71,10 @@
                 <a href="${pageContext.request.contextPath}/forgot">Forgot Password?</a>
             </div>
         </div>
-        <!-- or login with... -->
-<%--        <p>- Or Sign In With -</p>--%>
-<%--        <!-- Social Login -->--%>
-<%--        <div>--%>
-<%--            <a href="https://www.facebook.com/v19.0/dialog/oauth?client_id=511369765177582&redirect_uri=http://localhost:8080/Struggle/facebook&scope=email,public_profile">--%>
-<%--                <button type="button">Facebook</button>--%>
-<%--            </a>--%>
-<%--            <a href="https://accounts.google.com/o/oauth2/v2/auth?client_id=795533140932-3a154s92gk1jr5haqpit326raetl2g7u.apps.googleusercontent.com&redirect_uri=http://localhost:8080/Struggle/google&response_type=code&scope=profile email">--%>
-<%--                <button type="button">Google</button>--%>
-<%--            </a>--%>
-<%--        </div>--%>
+
     </div>
 
 </div>
-
 </body>
-<jsp:include page="/footer.jsp" />
+<jsp:include page="footer.jsp"></jsp:include>
 </html>

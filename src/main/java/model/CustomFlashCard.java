@@ -17,15 +17,11 @@ public class CustomFlashCard {
         this.topic = topic;
     }
 
-    public CustomFlashCard(int CFCID, String topic, String word, String mean, Integer learnerID) {
-        this.CFCID = CFCID;
-        this.topic = topic;
-        this.word = word;
-        this.mean = mean;
-        this.learnerID = learnerID;
-    }
 
     public CustomFlashCard(String word, String mean, String topic) {
+        this.word = word;
+        this.mean = mean;
+        this.topic = topic;
     }
 
     public int getCFCID() {

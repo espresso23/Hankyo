@@ -29,22 +29,28 @@
 <div class="container">
     <div class="containerSmall">
         <h1>Flashcards - ${topic}</h1>
+        <!-- Debug output -->
+        <p class="debug">Type: ${type}</p>
+        <p class="debug">FlashCards size: <c:out value="${flashCards != null ? flashCards.size() : 'null'}" /></p>
         <div class="flashcard-container">
             <c:choose>
                 <c:when test="${empty flashCardsJson}">
                     <p class="no-data">No flashcards available for this topic.</p>
                 </c:when>
                 <c:otherwise>
-                    <div class="previousButton"><---</div>
+                    <div class="previousButton">←</div>
                     <div class="flashcard">
                         <div class="flashcard-inner">
                             <div class="flashcard-front"></div>
                             <div class="flashcard-back"></div>
                         </div>
                     </div>
-                    <div class="nextButton">---></div>
+                    <div class="nextButton">→</div>
                 </c:otherwise>
             </c:choose>
+            <c:if test="${not empty flashCardsJson}">
+                <div class="flashcard-counter"></div>
+            </c:if>
         </div>
     </div>
     <div class="wordContainer">
@@ -58,8 +64,24 @@
             <tbody>
             <c:forEach items="${flashCards}" var="flashcard">
                 <tr>
-                    <td>${flashcard.dictionary.word}</td>
-                    <td>${flashcard.dictionary.mean}</td>
+                    <c:choose>
+                        <c:when test="${type == 'system'}">
+                            <td><c:out value="${flashcard.dictionary.word}" /></td>
+                            <td><c:out value="${flashcard.dictionary.mean}" /></td>
+                        </c:when>
+                        <c:when test="${type == 'favorite'}">
+                            <td><c:out value="${flashcard.dictionary.word}" /></td>
+                            <td><c:out value="${flashcard.dictionary.mean}" /></td>
+                        </c:when>
+                        <c:when test="${type == 'custom'}">
+                            <td><c:out value="${flashcard.word}" /></td>
+                            <td><c:out value="${flashcard.mean}" /></td>
+                        </c:when>
+                        <c:otherwise>
+                            <td>Error: Unknown type</td>
+                            <td>Error: Unknown type</td>
+                        </c:otherwise>
+                    </c:choose>
                 </tr>
             </c:forEach>
             </tbody>
@@ -68,8 +90,12 @@
 </div>
 
 <script>
-    const flashCards = ${flashCardsJson};
+    const flashCards = ${flashCardsJson != null ? flashCardsJson : '[]'};
+    const flashCardType = "${type}";
     let currentIndex = 0;
+
+    console.log("FlashCards:", flashCards);
+    console.log("FlashCardType:", flashCardType);
 
     const flashcardInner = document.querySelector('.flashcard-inner');
     const frontElement = document.querySelector('.flashcard-front');
@@ -79,14 +105,31 @@
 
     function showFlashcard(index) {
         if (flashCards && flashCards[index]) {
-            frontElement.textContent = flashCards[index].dictionary.word;
-            backElement.textContent = flashCards[index].dictionary.mean;
-            flashcardInner.classList.remove('flipped'); // Reset về mặt trước
+            console.log("Showing flashcard at index:", index, flashCards[index]);
+            if (flashCardType === 'system' || flashCardType === 'favorite') {
+                frontElement.textContent = flashCards[index].dictionary && flashCards[index].dictionary.word ? flashCards[index].dictionary.word : 'No word';
+                backElement.textContent = flashCards[index].dictionary && flashCards[index].dictionary.mean ? flashCards[index].dictionary.mean : 'No mean';
+            } else if (flashCardType === 'custom') {
+                frontElement.textContent = flashCards[index].word ? flashCards[index].word : 'No word';
+                backElement.textContent = flashCards[index].mean ? flashCards[index].mean : 'No mean';
+            } else {
+                frontElement.textContent = 'Error: Unknown type';
+                backElement.textContent = 'Error: Unknown type';
+            }
+            flashcardInner.classList.remove('flipped');
+        } else {
+            console.error("No flashcard data at index:", index);
+            frontElement.textContent = 'No data';
+            backElement.textContent = 'No data';
         }
     }
 
     if (flashCards && flashCards.length > 0) {
         showFlashcard(currentIndex);
+    } else {
+        console.error("FlashCards is empty or null");
+        frontElement.textContent = 'No flashcards';
+        backElement.textContent = 'No flashcards';
     }
 
     nextButton.addEventListener('click', function() {

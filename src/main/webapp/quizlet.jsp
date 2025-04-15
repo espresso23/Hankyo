@@ -3,29 +3,37 @@
 <html>
 <head>
   <link rel="stylesheet" href="asset/css/quizlet.css">
+  <link rel="icon" href="asset/png/icon/logo.jpg">
   <title>Select Topic</title>
   <link rel="icon" href="asset/png/icon/logo.jpg">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f0f0f0;
+      font-family: 'Inter', sans-serif;
+      background-image: url("asset/png/background/background.png");
+      background-size: auto;
+      margin: 0;
+      min-height: 100vh;
     }
 
   </style>
 </head>
-<jsp:include page="header.jsp"></jsp:include>
+
 <body>
+<jsp:include page="header.jsp"></jsp:include>
 <div class="container">
-  <h1>Chọn các Topic tự tạo của bản thân: </h1>
-
-
-  <div class="favorite-section">
-    <a href="customFlashCard?topic=favorite" class="favorite-btn">Favorite Flashcard</a>
-    <a href="customFlashCard?topic=custom" class="custom-btn">Custom FlashCard</a>
+  <div class="custom-topics-section">
+    <div class="custom-topics-content">
+      <h1 class="custom-topics-title">Chọn các Topic tự tạo của bản thân:</h1>
+      <div class="favorite-section">
+        <a href="customFlashCard?topic=favorite" class="favorite-btn">Favorite Flashcard</a>
+        <a href="customFlashCard?topic=custom" class="custom-btn">Custom FlashCard</a>
+      </div>
+    </div>
+    <img src="asset/png/icon/logo.jpg" alt="Custom Topics Illustration">
   </div>
-  <h1>Bạn có thể chọn theo Topic có sẵn: </h1>
-
-  <div class="topics-scroll" id="topicsScroll">
+  <img src="asset/images/separator.jpg" alt="Separator Illustration" class="separator-image">
+  <h1 class="system-topics">Bạn có thể chọn theo Topic có sẵn:</h1>
+  <div class="system-topics-scroll" id="systemTopicsScroll" aria-label="System topic selection">
     <c:forEach var="item" items="${listTopic}">
       <div class="topic-box">
         <a href="flashCard?topic=${item}&flashCardID=1">${item}</a>
@@ -35,36 +43,44 @@
 </div>
 
 <script>
-  const scrollContainer = document.getElementById('topicsScroll');
-  const scrollAmount = 165; // Width of topic-box (150px) + gap (15px)
-  let autoScroll;
+  const systemScrollContainer = document.getElementById('systemTopicsScroll');
+  const scrollAmount = 176;
+  let systemAutoScroll;
+  let isSystemAutoScrolling = true;
 
-  // Function to scroll automatically
-  function startAutoScroll() {
-    autoScroll = setInterval(() => {
-      scrollContainer.scrollLeft += scrollAmount;
-
-      // If reached the end, scroll back to start
-      if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth) {
-        scrollContainer.scrollLeft = 0;
+  function startSystemAutoScroll() {
+    systemAutoScroll = setInterval(() => {
+      systemScrollContainer.scrollLeft += scrollAmount;
+      if (systemScrollContainer.scrollLeft + systemScrollContainer.clientWidth >= systemScrollContainer.scrollWidth) {
+        systemScrollContainer.scrollLeft = 0;
       }
-    }, 3000); // Scrolls every 3 seconds
+    }, 3000);
   }
 
-  // Stop auto-scroll on hover
-  scrollContainer.addEventListener('mouseenter', () => {
-    clearInterval(autoScroll);
+  function toggleSystemAutoScroll() {
+    if (isSystemAutoScrolling) {
+      clearInterval(systemAutoScroll);
+      isSystemAutoScrolling = false;
+    } else {
+      startSystemAutoScroll();
+      isSystemAutoScrolling = true;
+    }
+  }
+
+  systemScrollContainer.addEventListener('mouseenter', () => {
+    clearInterval(systemAutoScroll);
   });
 
-  // Resume auto-scroll when mouse leaves
-  scrollContainer.addEventListener('mouseleave', () => {
-    startAutoScroll();
+  systemScrollContainer.addEventListener('mouseleave', () => {
+    if (isSystemAutoScrolling) {
+      startSystemAutoScroll();
+    }
   });
 
-  // Start auto-scrolling when page loads
-  startAutoScroll();
+  systemScrollContainer.addEventListener('click', toggleSystemAutoScroll);
+
+  startSystemAutoScroll();
 </script>
-
 </body>
 <jsp:include page="footer.jsp"></jsp:include>
 </html>
