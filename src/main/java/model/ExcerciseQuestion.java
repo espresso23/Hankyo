@@ -89,27 +89,27 @@ public class ExcerciseQuestion extends Excercise {
         System.out.println("-----------------------------------------------------------");
     }
 
-    public static void main(String[] args) {
-        Question question = new Question();
-        question.setQuestionID(1);
-        question.setQuestionType("Multiple Choice");
-        question.setQuestionText("What is the capital of France?");
-        Answer answerA = new Answer(1, "Paris", true, 'A');// Đáp án đúng
-        Answer answerB = new Answer(2, "London", false, 'B');
-        Answer answerC = new Answer(3, "Berlin", false, 'C');
-        Answer answerD = new Answer(4, "Seoul", false, 'D');
-        List<Answer> answers = new ArrayList<Answer>();
-        answers.add(answerA);
-        answers.add(answerB);
-        answers.add(answerC);
-        answers.add(answerD);
-
-
-        ExcerciseQuestion excerciseQuestion = new ExcerciseQuestion(1, question, answers, "This exercise is about the capital of France.", 1);
-        excerciseQuestion.setExcerciseID(1);
-        excerciseQuestion.setExerciseTitle("Capital of France");
-        excerciseQuestion.setExcerciseImage("image.jpg");
-        excerciseQuestion.setDateCreated(new Date());
-        excerciseQuestion.displayQuestion();
-    }
+//    public static void main(String[] args) {
+//        Question question = new Question();
+//        question.setQuestionID(1);
+//        question.setQuestionType("Multiple Choice");
+//        question.setQuestionText("What is the capital of France?");
+//        Answer answerA = new Answer(1, "Paris", true, 'A');// Đáp án đúng
+//        Answer answerB = new Answer(2, "London", false, 'B');
+//        Answer answerC = new Answer(3, "Berlin", false, 'C');
+//        Answer answerD = new Answer(4, "Seoul", false, 'D');
+//        List<Answer> answers = new ArrayList<Answer>();
+//        answers.add(answerA);
+//        answers.add(answerB);
+//        answers.add(answerC);
+//        answers.add(answerD);
+//
+//
+//        ExcerciseQuestion excerciseQuestion = new ExcerciseQuestion(1, question, answers, "This exercise is about the capital of France.", 1);
+//        excerciseQuestion.setExcerciseID(1);
+//        excerciseQuestion.setExerciseTitle("Capital of France");
+//        excerciseQuestion.setExcerciseImage("image.jpg");
+//        excerciseQuestion.setDateCreated(new Date());
+//        excerciseQuestion.displayQuestion();
+//    }
 }

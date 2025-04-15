@@ -8,7 +8,8 @@ public class Exam {
     private String examName;
     private String examDescription;
     private Date dateCreated;
-    private int orderIndex;
+    private String examType;
+    private int numCompleted;
 
     public Exam(String examName, String examDescription, int expertID) {
         this.examName = examName;
@@ -16,21 +17,21 @@ public class Exam {
         this.expertID = expertID;
     }
 
-    public Exam(int examID, String examName, String examDescription) {
+    public Exam(String examName, String examDescription, int expertID, String examType) {
+        this.examName = examName;
+        this.examDescription = examDescription;
+        this.expertID = expertID;
+        this.examType = examType;
+    }
+
+    public Exam(int examID, String examName, String examDescription, String examType) {
         this.examID = examID;
         this.examName = examName;
         this.examDescription = examDescription;
+        this.examType = examType;
     }
 
     public Exam() {
-    }
-
-    public int getOrderIndex() {
-        return orderIndex;
-    }
-
-    public void setOrderIndex(int orderIndex) {
-        this.orderIndex = orderIndex;
     }
 
     public String getExamDescription() {
@@ -71,5 +72,40 @@ public class Exam {
 
     public void setExpertID(int expertID) {
         this.expertID = expertID;
+    }
+
+    public String getExamType() {
+        return examType;
+    }
+
+    public void setExamType(String examType) {
+        this.examType = examType;
+    }
+
+    public int getNumCompleted() {
+        return numCompleted;
+    }
+
+    public void setNumCompleted(int numCompleted) {
+        this.numCompleted = numCompleted;
+    }
+
+    @Override
+    public String toString() {
+        return "Exam{" +
+                "examID=" + examID +
+                ", expertID=" + expertID +
+                ", examName='" + examName + '\'' +
+                ", examDescription='" + examDescription + '\'' +
+                ", dateCreated=" + dateCreated +
+                ", examType='" + examType + '\'' +
+                ", numCompleted=" + numCompleted +
+                '}';
+    }
+
+    public Exam(int examID, String examName, String examDescription) {
+        this.examID = examID;
+        this.examName = examName;
+        this.examDescription = examDescription;
     }
 }

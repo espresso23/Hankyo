@@ -257,114 +257,24 @@ public class CourseContentDAO {
                         currentQuestion.setAudioFile(rs.getString("audio_file"));
                         currentQuestion.setQuestionType(rs.getString("questionType"));
                         currentQuestion.setQuestionMark(rs.getDouble("questionMark"));
-                        currentQuestion.setAnswers(new ArrayList<>());
+                        //     currentQuestion.setAnswers(new ArrayList<>());
                         questions.add(currentQuestion);
                     }
 
-                    // Thêm câu trả lời vào câu hỏi hiện tại
-                    Answer answer = new Answer();
-                    answer.setAnswerID(rs.getInt("answerID"));
-                    answer.setAnswerText(rs.getString("answerText"));
-                    answer.setCorrect(rs.getBoolean("isCorrect"));
-                    answer.setOptionLabel(rs.getString("option_label").charAt(0));
-                    currentQuestion.getAnswers().add(answer);
+//                    // Thêm câu trả lời vào câu hỏi hiện tại
+//                    Answer answer = new Answer();
+//                    answer.setAnswerID(rs.getInt("answerID"));
+//                    answer.setAnswerText(rs.getString("answerText"));
+//                    answer.setCorrect(rs.getBoolean("isCorrect"));
+//                    answer.setOptionLabel(rs.getString("option_label").charAt(0));
+//                    currentQuestion.getAnswers().add(answer);
+//                }
                 }
             }
+
+            return questions;
         }
 
-        return questions;
-    }
 
-    public int addQuestion(Question question) throws SQLException {
-        String sqlQuestion = "INSERT INTO Question (questionText, questionImg, audio_file, questionType, questionMark) VALUES (?, ?, ?, ?, ?)";
-        String sqlAnswer = "INSERT INTO Answer (answerText, isCorrect, option_label, questionID) VALUES (?, ?, ?, ?)";
-        String sqlAssignmentQuestion = "INSERT INTO Assignment_Question (assignmentID, questionID, answerID) VALUES (?, ?, ?)";
-
-        PreparedStatement pstmtQuestion = null;
-        PreparedStatement pstmtAnswer = null;
-        PreparedStatement pstmtAssignmentQuestion = null;
-        ResultSet generatedKeys = null;
-
-        try {
-            // Bắt đầu transaction
-            connection.setAutoCommit(false);
-
-            // Lưu Question
-            pstmtQuestion = connection.prepareStatement(sqlQuestion, PreparedStatement.RETURN_GENERATED_KEYS);
-            pstmtQuestion.setString(1, question.getQuestionText());
-            pstmtQuestion.setString(2, question.getQuestionImage() != null ? question.getQuestionImage() : null);
-            pstmtQuestion.setString(3, question.getAudioFile() != null ? question.getAudioFile() : null);
-            pstmtQuestion.setString(4, question.getQuestionType());
-            pstmtQuestion.setDouble(5, question.getQuestionMark());
-            pstmtQuestion.executeUpdate();
-
-            // Lấy questionID vừa được tạo
-            int questionID;
-            generatedKeys = pstmtQuestion.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                questionID = generatedKeys.getInt(1);
-            } else {
-                throw new SQLException("Không thể lấy ID của câu hỏi mới");
-            }
-
-            // Lưu Answers
-            pstmtAnswer = connection.prepareStatement(sqlAnswer, PreparedStatement.RETURN_GENERATED_KEYS);
-            pstmtAssignmentQuestion = connection.prepareStatement(sqlAssignmentQuestion);
-
-            for (Answer answer : question.getAnswers()) {
-                pstmtAnswer.setString(1, answer.getAnswerText());
-                pstmtAnswer.setBoolean(2, answer.isCorrect());
-                pstmtAnswer.setString(3, String.valueOf(answer.getOptionLabel()));
-                pstmtAnswer.setInt(4, questionID);
-                pstmtAnswer.executeUpdate();
-
-                // Lấy answerID vừa được tạo
-                int answerID;
-                generatedKeys = pstmtAnswer.getGeneratedKeys();
-                if (generatedKeys.next()) {
-                    answerID = generatedKeys.getInt(1);
-                } else {
-                    throw new SQLException("Không thể lấy ID của câu trả lời mới");
-                }
-
-                // Lưu vào bảng Assignment_Question
-                pstmtAssignmentQuestion.setInt(1, question.getAssignmentID());
-                pstmtAssignmentQuestion.setInt(2, questionID);
-                pstmtAssignmentQuestion.setInt(3, answerID);
-                pstmtAssignmentQuestion.executeUpdate();
-            }
-
-            // Commit transaction
-            connection.commit();
-            return questionID;
-
-        } catch (SQLException e) {
-            // Rollback nếu có lỗi
-            if (connection != null) {
-                try {
-                    connection.rollback();
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
-            throw e;
-        } finally {
-            // Đóng các PreparedStatement
-            if (pstmtQuestion != null) pstmtQuestion.close();
-            if (pstmtAnswer != null) pstmtAnswer.close();
-            if (pstmtAssignmentQuestion != null) pstmtAssignmentQuestion.close();
-            if (generatedKeys != null) generatedKeys.close();
-
-            // Reset auto-commit
-            if (connection != null) {
-                connection.setAutoCommit(true);
-            }
-        }
-    }
-
-    public void closeConnection() throws SQLException {
-        if (connection != null && !connection.isClosed()) {
-            connection.close();
-        }
     }
 }

@@ -2,20 +2,20 @@ package model;
 
 public class Answer {
     private int answerID;
+    private int questionID;
     private String answerText;
     private boolean isCorrect;
     private char optionLabel;
-    private int questionID;
 
+    public Answer() {
+    }
 
-    public Answer(int answerID, String answerText, boolean isCorrect, char optionLabel) {
+    public Answer(int answerID, int questionID, String answerText, boolean isCorrect, char optionLabel) {
         this.answerID = answerID;
+        this.questionID = questionID;
         this.answerText = answerText;
         this.isCorrect = isCorrect;
         this.optionLabel = optionLabel;
-    }
-
-    public Answer() {
     }
 
     public Answer(String answerText, boolean isCorrect, char optionLabel) {
@@ -31,6 +31,15 @@ public class Answer {
     public void setAnswerID(int answerID) {
         this.answerID = answerID;
     }
+
+    public int getQuestionID() {
+        return questionID;
+    }
+
+    public void setQuestionID(int questionID) {
+        this.questionID = questionID;
+    }
+
 
     public String getAnswerText() {
         return answerText;
@@ -56,19 +65,11 @@ public class Answer {
         this.optionLabel = optionLabel;
     }
 
-    public int getQuestionID() {
-        return questionID;
-    }
-
-    public void setQuestionID(int questionID) {
-        this.questionID = questionID;
-    }
-
-
     @Override
     public String toString() {
         return "Answer{" +
                 "answerID=" + answerID +
+                ", questionID=" + questionID +
                 ", answerText='" + answerText + '\'' +
                 ", isCorrect=" + isCorrect +
                 ", optionLabel=" + optionLabel +

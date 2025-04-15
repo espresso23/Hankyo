@@ -8,7 +8,9 @@ import util.DBConnect;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ExamDAO {
     private Connection connection;
@@ -16,6 +18,7 @@ public class ExamDAO {
     public ExamDAO(Connection connection) {
         this.connection = DBConnect.getInstance().getConnection();
     }
+
 
     public int createEmptyExam(Exam exam) throws SQLException {
         String query = "INSERT INTO Exam(examName, description, dateCreate, expertID) values(?, ?,?,?)";
@@ -166,7 +169,7 @@ public class ExamDAO {
                 exam.setExamDescription(rs.getString("description"));
                 exam.setDateCreated(rs.getDate("dateCreate"));
                 exam.setExpertID(rs.getInt("expertID"));
-
+                exam.setExamType(rs.getString("examType"));
                 exams.add(exam);
             }
         } catch (SQLException e) {
@@ -185,6 +188,132 @@ public class ExamDAO {
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    public Exam getExamById(int examID) {
+        String query = "SELECT * FROM Exam WHERE examID = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, examID);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                Exam exam = new Exam();
+                exam.setExamID(rs.getInt("examID"));
+                exam.setExamName(rs.getString("examName"));
+                exam.setExamDescription(rs.getString("description"));
+                exam.setDateCreated(rs.getDate("dateCreate"));
+                exam.setExpertID(rs.getInt("expertID"));
+                exam.setExamType(rs.getString("examType"));
+                return exam;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<Exam> getExamsByType(String examType) {
+        List<Exam> exams = new ArrayList<>();
+        String query = "SELECT * FROM Exam WHERE examType = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, examType);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Exam exam = new Exam();
+                exam.setExamID(rs.getInt("examID"));
+                exam.setExamName(rs.getString("examName"));
+                exam.setExamDescription(rs.getString("description"));
+                exam.setDateCreated(rs.getDate("dateCreate"));
+                exam.setExpertID(rs.getInt("expertID"));
+                exam.setExamType(rs.getString("examType"));
+                exams.add(exam);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return exams;
+    }
+
+    public List<Question> getQuestionsByExamId(int examID) {
+        List<Question> questions = new ArrayList<>();
+        String query = "SELECT * FROM Exam e " +
+                "JOIN Exam_Question eq ON e.examID = eq.examID " +
+                "JOIN Question q ON q.questionID = eq.questionID " +
+                "JOIN Answer a ON a.answerID = eq.answerID " +
+                "WHERE e.examID = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, examID);
+            ResultSet rs = stmt.executeQuery();
+
+            Map<Integer, Question> questionMap = new HashMap<>();
+
+            while (rs.next()) {
+                int questionId = rs.getInt("questionID");
+                Question question;
+                if (!questionMap.containsKey(questionId)) {
+                    question = new Question();
+                    question.setQuestionID(questionId);
+                    question.setQuestionText(rs.getString("questionText"));
+                    question.setQuestionType(rs.getString("questionType"));
+                    //    question.setAnswers(new ArrayList<model.Answer>());
+                    questionMap.put(questionId, question);
+                    questions.add(question);
+                } else {
+                    question = questionMap.get(questionId);
+                }
+
+//                Answer answer = new Answer();
+//                answer.setAnswerID(rs.getInt("answerID"));
+//                answer.setAnswerText(rs.getString("answerText"));
+//                answer.setIsCorrect(rs.getBoolean("isCorrect"));
+//                answer.setAnswerLabel(rs.getString("answerLabel"));
+//                answer.setQuestionID(questionId);
+//
+//                question.getAnswers().add(answer);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return questions;
+    }
+
+    public int getTotalQuestionsByExamId(int examID) {
+        String query = "SELECT COUNT(*) as total FROM Exam_Question WHERE examID = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, examID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("total");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public List<Exam> searchExamsByName(String searchName) {
+        List<Exam> exams = new ArrayList<>();
+        String query = "SELECT * FROM Exam WHERE examName LIKE ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, "%" + searchName + "%");
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Exam exam = new Exam();
+                exam.setExamID(rs.getInt("examID"));
+                exam.setExamName(rs.getString("examName"));
+                exam.setExamDescription(rs.getString("description"));
+            }
+            return exams;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }
