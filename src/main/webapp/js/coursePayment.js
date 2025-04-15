@@ -11,7 +11,7 @@ let paymentHistory = [{
 }];
 async function fetchNewestPaymentID(){
     return $.ajax({
-        url: 'http://localhost:8080/Hankyo/payment',
+        url: 'http://localhost:8080/Struggle/payment',
         type: 'GET',
         data: {action: 'getPaymentID'},
         dataType: 'json',

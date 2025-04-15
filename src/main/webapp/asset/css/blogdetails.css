@@ -1,0 +1,341 @@
+/*
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css to edit this template
+*/
+/* 
+    Created on : Oct 2, 2024, 1:55:55 PM
+    Author     : phuct
+*/
+
+.blog-ad {
+    width: 100%;
+}
+
+#footer {
+    margin-top: 0;
+}
+
+div#blog-details {
+    padding: 40px 15%;
+}
+
+.blog-details-title {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+i.ti-more-alt {
+    align-items: center;
+    display: flex;
+    color: #ccc;
+    cursor: pointer;
+}
+
+/* Basic styling for the dropdown */
+.dropdown-container {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 100px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+.dropdown-menu a {
+    color: black;
+    padding: 8px 12px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+}
+
+.dropdown-menu a:hover {
+    background-color: #ddd;
+}
+
+.dropdown-container {
+    display: flex;
+    justify-content: center;
+}
+
+.blog-details-title h1 {
+    font-size: 37px;
+    line-height: 1.4;
+    font-weight: 600;
+}
+
+.blog-details-author {
+    display: flex;
+    padding: 15px 0;
+}
+
+img.details-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 25px;
+    margin-right: 10px;
+}
+
+p.details-name {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+    color: var(--Secondary-500, #696a75);
+    font-weight: 500;
+}
+
+.blog-details-date {
+    padding: 0 30px;
+    display: flex;
+    align-items: center;
+    color: var(--Secondary-500, #696a75);
+    font-weight: 400;
+}
+
+img.blog-content-img {
+    width: 100%;
+    height: 550px;
+    border-radius: 15px;
+}
+
+/* COMMENT */
+.comment-container {
+    width: 70%;
+    margin: 10px auto 50px auto;
+    border: 1px solid #CCB2B0;
+    padding: 20px;
+    border-radius: 30px;
+    background-color: #5eae5317;
+}
+
+.comment-container h2 {
+    text-align: center;
+}
+.comment-box {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 8px;
+}
+.comment-box textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+.comment-box button {
+    padding: 10px 20px;
+    background-color: #CCB2B0;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.comment-box button:hover {
+    background-color: #CCB2B0;
+}
+.comments-display {
+    margin-top: 20px;
+}
+.comment {
+    background-color: #f8f9fa;
+    border: 1px solid #e2e6ea;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+#login-text {
+    font-size: 16px;
+    color: #CCB2B0;
+    justify-content: center;
+    display: flex;
+    padding-bottom: 7px;
+}
+
+/*COMMENT*/
+img.comment-avt {
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+}
+
+.comment-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.comment-author {
+    font-weight: 600;
+}
+
+.comment-time {
+    color: #cccc;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+}
+
+.comment {
+    background-color: #f8f9fa;
+    border: 1px solid #e2e6ea;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    width: fit-content;
+}
+
+.comment-time {
+    margin-top: -10px;
+}
+
+.comment-options-menu {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    z-index: 100;
+    display: none;
+}
+
+.comment-options-dropdown {
+    position: relative;
+}
+
+.comment-options-menu {
+    top: 20px;
+    right: 0;
+}
+
+.comment-box textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    max-height: 58px;
+}
+
+input.btn.btn-primary {
+    padding: 16px !important;
+    background-color: white;
+    color: #CCB2B0;
+    border: 1px solid;
+    border-radius: 30px;
+    cursor: pointer;
+}
+
+input.btn.btn-primary:hover {
+    background-color: #CCB2B0;
+    color: white;
+}
+
+.comment-box textarea {
+    border: 1px solid #CCB2B0;
+    border-radius: 30px;
+}
+
+.comment-combine {
+    display: flex;
+    gap: 5px;
+    max-height: 58px;
+}
+
+textarea#edit-comment-content {
+    padding: 10px;
+    border-radius: 30px;
+    border: 1px solid #CCB2B0;
+    width: 100%;
+    resize: none;
+}
+
+#edit-comment-modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.modal-content.modal-content-comment {
+    width: 70%;
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.close-modal {
+    cursor: pointer;
+    font-size: 20px;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+}
+
+button.btn.btn-primary {
+    padding: 16px !important;
+    background-color: white;
+    color: #CCB2B0;
+    border: 1px solid;
+    border-radius: 30px;
+    width: 100%;
+    cursor: pointer;
+}
+
+button.btn.btn-primary:hover {
+    background-color:#CCB2B0;
+    color: white;
+}
+
+
+@media (max-width: 768px) {
+    .modal-content.modal-content-comment {
+        width: 90%;
+    }
+}
+
+.comment-options {
+    display: flex;
+    gap: 15px;
+}
+
+.edit-comment-option,
+.delete-comment-option {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+    color: #CCB2B0;
+    font-weight: 500;
+}
+
+.edit-comment-option:hover {
+    background-color: #e2f3e9;
+    color:#CCB2B0;
+}
+
+.delete-comment-option {
+    color: #e74c3c;
+}
+
+.delete-comment-option:hover {
+    background-color: #fce4e4;
+    color: #c0392b;
+}
+
+.comment-options i {
+    margin-right: 5px;
+}
