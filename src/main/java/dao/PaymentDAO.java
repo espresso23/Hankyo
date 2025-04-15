@@ -96,7 +96,7 @@ public class PaymentDAO {
             connection.setAutoCommit(false);
 
             // 1. Insert Payment
-            PreparedStatement psPayment = connection.prepareStatement(paymentSQL, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement psPayment = connection.prepareStatement(paymentSQL);
             psPayment.setString(1,payment.getPaymentID());
             psPayment.setBigDecimal(2, payment.getTotalAmount());
             psPayment.setTimestamp(3, Timestamp.valueOf(payment.getPayDate()));
@@ -105,21 +105,12 @@ public class PaymentDAO {
             psPayment.setString(6,payment.getStatus());
             psPayment.executeUpdate();
 
-            ResultSet generatedKeys = psPayment.getGeneratedKeys();
-            int paymentID = -1;
-            if (generatedKeys.next()) {
-                paymentID = generatedKeys.getInt(1);
-            } else {
-                connection.rollback();
-                throw new SQLException("Không lấy được paymentID.");
-            }
-
             double totalPlatformRevenue = 0.0;
 
             for (CoursePaid cp : coursePaidList) {
                 // 2. Insert vào Course_Paid
                 PreparedStatement psCoursePaid = connection.prepareStatement(coursePaidSQL);
-                psCoursePaid.setInt(1, paymentID);
+                psCoursePaid.setString(1, payment.getPaymentID());
                 psCoursePaid.setInt(2, cp.getCourseID());
                 psCoursePaid.setInt(3, cp.getLearnerID());
                 psCoursePaid.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));

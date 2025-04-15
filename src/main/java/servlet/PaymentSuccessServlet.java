@@ -32,6 +32,7 @@ public class PaymentSuccessServlet extends HttpServlet {
             Integer learnerID = Integer.parseInt(request.getParameter("learnerID"));
             String[] courseIDs = request.getParameter("courses").split(",");
             PaymentData paymentData = (PaymentData) request.getSession().getAttribute("paymentData");
+            String transactionDescription = (String) request.getSession().getAttribute("transactionCode");
             // Lấy thông tin người học
             Learner learner = learnerDAO.getLearnerById(learnerID);
             if (learner == null) {
@@ -42,7 +43,7 @@ public class PaymentSuccessServlet extends HttpServlet {
             Payment payment = new Payment();
             payment.setPaymentID(orderCode);
             payment.setLearnerID(learnerID);
-            payment.setDescription(paymentData.getDescription());
+            payment.setDescription(transactionDescription);
             payment.setPayDate(Timestamp.valueOf(LocalDateTime.now()).toLocalDateTime());
             payment.setStatus("Completed");
 
@@ -83,6 +84,11 @@ public class PaymentSuccessServlet extends HttpServlet {
             if (!paymentSuccess) {
                 throw new Exception("Lỗi khi lưu thông tin thanh toán");
             }
+// Xóa session sau khi thanh toán thành công
+            request.getSession().removeAttribute("paymentData");
+            request.getSession().removeAttribute("courseDescriptions");
+            request.getSession().removeAttribute("coursePrices");
+            request.getSession().removeAttribute("transactionCode"); // nếu có
 
             // Chuyển hướng đến trang thông báo thành công
             response.sendRedirect("payment-success.jsp");
