@@ -123,8 +123,7 @@ pageEncoding="UTF-8"%>
                                             </c:if>
                                         </div>
                                         <c:choose>
-                                            <c:when
-                                                test="${sessionScope.user != null && course.purchased}">
+                                            <c:when test="${not empty sessionScope.learner && course.purchased}">
                                                 <a
                                                     href="course-details?courseID=${course.courseID}"
                                                     class="btn btn-success">Tham

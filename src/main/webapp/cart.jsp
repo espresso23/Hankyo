@@ -21,8 +21,9 @@
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-body">
-                        <c:forEach items="${cartItems}" var="item">
+                        <c:forEach items="${cartItems}" var="item" varStatus="status">
                             <div class="row mb-3 border-bottom pb-3 cart-item" id="cart-item-${item.cartID}">
+                                <span><p>#${status.count}</p></span>
                                 <div class="col-md-3">
                                     <div class="course-image-container">
                                         <img src="${item.course.courseImg}" class="course-image" alt="${item.course.courseTitle}">
@@ -68,7 +69,7 @@
                         </form>
                     </div>
                 </div>
-                <div id="embeded-payment-container" style="height: 350px"></div>
+                <div id="embeded-payment-container" style="height: 200px"></div>
             </div>
         </div>
     </div>
