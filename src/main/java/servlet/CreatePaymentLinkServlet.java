@@ -29,7 +29,7 @@ public class CreatePaymentLinkServlet extends HttpServlet {
         String[] courseNames = request.getParameterValues("courseNames");
         String[] coursePrices = request.getParameterValues("coursePrices");
         String learnerID = request.getParameter("learnerID");
-
+        System.out.println("leanrerID=  " + learnerID);
         // Lấy thông tin description từ giỏ hàng
         List<Cart> cartItems = cartDAO.getCartItems(learnerID);
         List<String> courseDescriptions = new ArrayList<>();

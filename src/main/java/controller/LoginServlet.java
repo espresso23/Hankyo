@@ -86,10 +86,10 @@ public class LoginServlet extends HttpServlet {
                         response.sendRedirect("admin.jsp");
                     } else if ("learner".equalsIgnoreCase(user.getRole())) {
                         LearnerDAO learnerDAO = new LearnerDAO();
-                        Learner learner = learnerDAO.getLearnerById(user.getUserID());
+                        Learner learner = learnerDAO.getLearnerByUserId(user.getUserID());
                         if (learner != null) {
                             session.setAttribute("learner", learner);
-                            System.out.println(learner.displayInfo());
+                            System.out.println(learner.toString());
                         } else {
                             System.out.println("Learner is null for User ID: " + user.getUserID());
                             session.setAttribute("errorMsg", "Không tìm thấy hồ sơ người học.");

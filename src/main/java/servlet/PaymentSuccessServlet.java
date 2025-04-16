@@ -33,6 +33,7 @@ public class PaymentSuccessServlet extends HttpServlet {
             String[] courseIDs = request.getParameter("courses").split(",");
             PaymentData paymentData = (PaymentData) request.getSession().getAttribute("paymentData");
             String transactionDescription = (String) request.getSession().getAttribute("transactionCode");
+            System.out.println("leanerIDpayment= " + learnerID);
             // Lấy thông tin người học
             Learner learner = learnerDAO.getLearnerById(learnerID);
             if (learner == null) {

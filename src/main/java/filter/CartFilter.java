@@ -1,6 +1,7 @@
 package filter;
 
 import dao.CartDAO;
+import model.Learner;
 import model.User;
 import util.DBConnect;
 
@@ -25,10 +26,10 @@ public class CartFilter implements Filter {
         HttpSession session = httpRequest.getSession(false);
 
         if (session != null) {
-            User user = (User) session.getAttribute("user");
-            if (user != null) {
+            Learner learner = (Learner) session.getAttribute("learner");
+            if (learner != null) {
                 CartDAO cartDAO = new CartDAO();
-                int cartItemCount = cartDAO.getCartItemCount(user.getUserID());
+                int cartItemCount = cartDAO.getCartItemCount(learner.getLearnerID());
                 request.setAttribute("cartItemCount", cartItemCount);
             }
         }

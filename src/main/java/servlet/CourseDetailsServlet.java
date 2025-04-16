@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import dao.*;
 import model.Course;
 import model.CourseContent;
+import model.CourseFeedback;
 import model.Expert;
 import model.Learner;
 
@@ -99,6 +100,10 @@ public class CourseDetailsServlet extends HttpServlet {
 
             // Thông tin nội dung khóa học
             courseDetail.put("c_content", courseContents);
+
+            // Lấy thông tin đánh giá
+            List<CourseFeedback> feedbacks = new CourseFeedbackDAO().getFeedbacksByCourseID(course.getCourseID());
+            request.setAttribute("feedbacks", feedbacks);
 
             // Thiết lập response
             response.setContentType("application/json");

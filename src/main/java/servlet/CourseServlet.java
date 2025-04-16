@@ -208,15 +208,15 @@ public class CourseServlet extends HttpServlet {
 
 
     private void handleRemoveFromCart(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        User user = (User) request.getSession().getAttribute("user");
-        if (user == null) {
+        Learner learner = (Learner) request.getSession().getAttribute("learner");
+        if (learner == null) {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Bạn cần đăng nhập");
             return;
         }
 
         try {
             int cartID = Integer.parseInt(request.getParameter("cartID"));
-            boolean success = cartService.removeFromCart(cartID, user.getUserID());
+            boolean success = cartService.removeFromCart(cartID, learner.getLearnerID());
 
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");

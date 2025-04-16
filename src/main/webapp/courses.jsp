@@ -268,6 +268,49 @@ pageEncoding="UTF-8"%>
                 });
             }, 3000);
         }
+
+        // Xử lý đăng ký khóa học
+        $('.btn-success:contains("Tham gia học")').click(function(e) {
+            if (!$(this).hasClass('enrolled')) {
+                e.preventDefault();
+                const button = $(this);
+                const courseID = button.data('course-id');
+
+                button.html('<i class="bi bi-arrow-repeat spin me-2"></i>Đang xử lý...').prop('disabled', true);
+
+                $.ajax({
+                    url: 'enroll-course',
+                    type: 'POST',
+                    data: {courseID: courseID},
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            showMessage(response.message, 'success');
+                            button.addClass('enrolled');
+                            // Chuyển hướng đến trang nội dung khóa học sau 1 giây
+                            setTimeout(function() {
+                                window.location.href = 'course-content?courseID=' + courseID;
+                            }, 1000);
+                        } else {
+                            showMessage(response.message, 'error');
+                            if (response.message.includes('đăng nhập')) {
+                                setTimeout(function() {
+                                    window.location.href = 'login';
+                                }, 1000);
+                            }
+                        }
+                    },
+                    error: function() {
+                        showMessage('Lỗi kết nối', 'error');
+                    },
+                    complete: function() {
+                        if (!button.hasClass('enrolled')) {
+                            button.html('Tham gia học').prop('disabled', false);
+                        }
+                    }
+                });
+            }
+        });
     });
 </script>
 </html>

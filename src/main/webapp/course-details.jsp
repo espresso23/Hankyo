@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -12,200 +13,7 @@
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <!-- Custom CSS -->
-    <style>
-        body {
-            font-family: 'Helvetica Neue', sans-serif;
-            background-color: #f9f9f9;
-        }
-
-        /* Course Image */
-        .course-preview {
-            position: relative;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            margin-bottom: 1.5rem;
-        }
-
-        .course-preview img {
-            width: 100%;
-            height: 400px;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-
-        .course-preview:hover img {
-            transform: scale(1.02);
-        }
-
-        /* Accordion improvements */
-        .accordion-item {
-            border: 1px solid rgba(0, 0, 0, 0.08);
-            margin-bottom: 0.5rem;
-            border-radius: 6px !important;
-        }
-
-        .accordion-button {
-            font-weight: 500;
-            padding: 1rem 1.25rem;
-        }
-
-        .accordion-button:not(.collapsed) {
-            background-color: rgba(0, 123, 255, 0.05);
-            color: #0d6efd;
-        }
-
-        /* Content type icons */
-        .content-icon {
-            width: 24px;
-            height: 24px;
-            margin-right: 10px;
-            color: #6c757d;
-        }
-
-        .accordion-button:not(.collapsed) .content-icon {
-            color: #0d6efd;
-        }
-
-        /* Instructor card */
-        .instructor-card {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 1.25rem;
-        }
-
-        /* Message container style */
-        #message-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1100;
-        }
-
-        .message {
-            padding: 10px 20px;
-            margin: 5px 0;
-            border-radius: 4px;
-            color: white;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .message.success {
-            background-color: #28a745;
-        }
-
-        .message.error {
-            background-color: #dc3545;
-        }
-
-        /* Loading spinner */
-        .spin {
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Course content styles */
-        .content-hidden {
-            display: none;
-        }
-
-        .course-stats {
-            font-size: 0.9rem;
-            padding: 5px 10px;
-            background-color: #f8f9fa;
-            border-radius: 4px;
-        }
-
-        /* Nút hiển thị thêm */
-        #show-more-content, #show-less-content {
-            padding: 8px 16px;
-            transition: all 0.2s ease;
-        }
-
-        /* Style mỗi phần content để thêm thời lượng */
-        .content-duration {
-            font-size: 0.85rem;
-            color: #6c757d;
-            margin-left: auto;
-            padding-left: 10px;
-        }
-
-        /* Improved accordion appearance */
-        .accordion-item {
-            transition: all 0.2s ease;
-        }
-
-        .accordion-button .content-info {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-        }
-
-        .accordion-button:hover {
-            background-color: rgba(0, 123, 255, 0.03);
-        }
-
-        .content-duration {
-            font-size: 0.85rem;
-            color: #6c757d;
-            margin-left: auto;
-            padding-left: 15px;
-            white-space: nowrap;
-        }
-
-        .content-info {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-        }
-
-        /* Style cho phần hiển thị tổng thời lượng */
-        #total-duration {
-            font-weight: 500;
-        }
-
-        /* Style cho loading indicator */
-        #total-duration.loading:after {
-            content: "";
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border: 2px solid rgba(0, 0, 0, 0.1);
-            border-radius: 50%;
-            border-top-color: #0d6efd;
-            animation: spin 1s ease-in-out infinite;
-            margin-left: 5px;
-            vertical-align: middle;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Cải thiện hiển thị trên màn hình nhỏ */
-        @media (max-width: 576px) {
-            .course-stats {
-                display: flex;
-                flex-direction: column;
-                align-items: flex-end;
-            }
-
-            .content-info {
-                flex-wrap: wrap;
-            }
-
-            .content-duration {
-                margin-top: 5px;
-                margin-left: 25px;
-                width: 100%;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="asset/css/courseDetails.css">
 </head>
 <body>
     <c:import url="header.jsp"/>
@@ -387,6 +195,116 @@
         </div>
     </div>
 
+    <!-- Course Reviews Section -->
+    <div class="container mb-5">
+        <div class="row">
+            <div class="col-lg-8">
+                <h4 class="mb-4">Đánh giá và bình luận</h4>
+                
+                <!-- Rating Summary -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-4 text-center">
+                                <h2 class="display-4 fw-bold text-warning mb-0">
+                                    <fmt:formatNumber value="${course.rating}" pattern="#.#" />
+                                </h2>
+                                <div class="stars mb-2">
+                                    <c:forEach begin="1" end="5" var="i">
+                                        <i class="bi bi-star-fill ${i <= course.rating ? 'text-warning' : 'text-muted'}"></i>
+                                    </c:forEach>
+                                </div>
+                                <p class="text-muted mb-0">${course.ratingCount} đánh giá</p>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="rating-bars">
+                                    <c:forEach begin="1" end="5" var="star">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="text-warning me-2" style="min-width: 70px;">
+                                                ${6-star} <i class="bi bi-star-fill"></i>
+                                            </div>
+                                            <div class="progress flex-grow-1" style="height: 6px;">
+                                                <c:set var="ratingPercentage" value="${course.ratingCount > 0 ? (course.ratingCount * (6-star) / course.ratingCount) : 0}" />
+                                                <div class="progress-bar bg-warning" role="progressbar" 
+                                                     style="width: ${ratingPercentage * 100}%">
+                                                </div>
+                                            </div>
+                                            <span class="ms-2 text-muted small" style="min-width: 30px;">
+                                                <fmt:formatNumber value="${ratingPercentage * course.ratingCount}" pattern="#" />
+                                            </span>
+                                        </div>
+                                    </c:forEach>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Review Form -->
+                <c:if test="${not empty sessionScope.learner && course.enrolled}">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Viết đánh giá của bạn</h5>
+                            <form id="reviewForm" class="review-form">
+                                <div class="mb-3">
+                                    <label class="form-label">Đánh giá của bạn</label>
+                                    <div class="rating-input">
+                                        <c:forEach begin="1" end="5" var="i">
+                                            <i class="bi bi-star rating-star" data-value="${i}"></i>
+                                        </c:forEach>
+                                    </div>
+                                    <input type="hidden" name="rating" id="ratingValue" value="0">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="comment" class="form-label">Bình luận</label>
+                                    <textarea class="form-control" id="comment" name="comment" rows="3" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
+                            </form>
+                        </div>
+                    </div>
+                </c:if>
+
+                <!-- Reviews List -->
+                <div class="reviews-list">
+                    <c:set var="totalFeedbacks" value="${fn:length(feedbacks)}" />
+                    <c:forEach items="${feedbacks}" var="feedback" varStatus="status">
+                        <div class="card mb-3 review-card ${status.index >= 5 ? 'review-hidden' : ''}">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <img src="${feedback.learner.avatar}" alt="User Avatar" class="rounded-circle me-3" width="50" height="50">
+                                    <div>
+                                        <h6 class="mb-0">${feedback.learner.fullName}</h6>
+                                        <small class="text-muted">
+                                            <fmt:formatDate value="${feedback.createdAt}" pattern="dd/MM/yyyy"/>
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="stars mb-2">
+                                    <c:forEach begin="1" end="5" var="i">
+                                        <i class="bi bi-star-fill ${i <= feedback.rating ? 'text-warning' : 'text-muted'}"></i>
+                                    </c:forEach>
+                                </div>
+                                <p class="mb-0">${feedback.comment}</p>
+                            </div>
+                        </div>
+                    </c:forEach>
+
+                    <c:if test="${totalFeedbacks > 5}">
+                        <div class="text-center mt-4">
+                            <button id="load-more-reviews" class="btn btn-outline-primary">
+                                <i class="bi bi-plus-circle me-2"></i>Xem thêm đánh giá
+                            </button>
+                            <button id="show-less-reviews" class="btn btn-outline-secondary d-none">
+                                <i class="bi bi-dash-circle me-2"></i>Thu gọn
+                            </button>
+                        </div>
+                    </c:if>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <c:import url="footer.jsp"/>
 
     <!-- JavaScript Libraries -->
@@ -538,6 +456,139 @@
 
                 $('#total-duration').text(formattedTotalDuration);
             }
+
+            // Xử lý đánh giá sao
+            $('.rating-star').hover(
+                function() {
+                    const value = $(this).data('value');
+                    $('.rating-star').each(function(i) {
+                        $(this).toggleClass('text-warning', i < value);
+                    });
+                },
+                function() {
+                    const currentValue = $('#ratingValue').val();
+                    $('.rating-star').each(function(i) {
+                        $(this).toggleClass('text-warning', i < currentValue);
+                    });
+                }
+            );
+
+            $('.rating-star').click(function() {
+                const value = $(this).data('value');
+                $('#ratingValue').val(value);
+                $('.rating-star').each(function(i) {
+                    $(this).toggleClass('text-warning', i < value);
+                });
+            });
+
+            // Xử lý gửi đánh giá
+            $('#reviewForm').submit(function(e) {
+                e.preventDefault();
+                
+                const rating = $('#ratingValue').val();
+                const comment = $('#comment').val();
+                const courseID = ${course.courseID};
+
+                if (rating == 0) {
+                    showMessage('Vui lòng chọn số sao đánh giá', 'error');
+                    return;
+                }
+
+                $.ajax({
+                    url: 'course-feedback',
+                    type: 'POST',
+                    data: {
+                        courseID: courseID,
+                        rating: rating,
+                        comment: comment
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            showMessage('Cảm ơn bạn đã đánh giá!', 'success');
+                            $('#reviewForm')[0].reset();
+                            $('#ratingValue').val(0);
+                            $('.rating-star').removeClass('text-warning');
+                            // Reload page to show new review
+                            location.reload();
+                        } else {
+                            showMessage(response.message || 'Có lỗi xảy ra', 'error');
+                        }
+                    },
+                    error: function() {
+                        showMessage('Lỗi kết nối', 'error');
+                    }
+                });
+            });
+
+            // Xử lý xem thêm đánh giá
+            const reviewsPerPage = 5;
+            const $reviewCards = $('.review-card');
+            const $loadMoreBtn = $('#load-more-reviews');
+            const $showLessBtn = $('#show-less-reviews');
+            
+            if ($reviewCards.length > reviewsPerPage) {
+                $reviewCards.slice(reviewsPerPage).addClass('review-hidden');
+            }
+
+            $loadMoreBtn.click(function() {
+                $('.review-hidden').slideDown(300);
+                $(this).addClass('d-none');
+                $showLessBtn.removeClass('d-none');
+            });
+
+            $showLessBtn.click(function() {
+                $reviewCards.slice(reviewsPerPage).slideUp(300);
+                $(this).addClass('d-none');
+                $loadMoreBtn.removeClass('d-none');
+                
+                // Scroll back to reviews section
+                $('html, body').animate({
+                    scrollTop: $('.reviews-list').offset().top - 100
+                }, 300);
+            });
+
+            // Xử lý đăng ký khóa học
+            $('.btn-success:contains("Tham gia học")').click(function(e) {
+                if (!$(this).hasClass('enrolled')) {
+                    e.preventDefault();
+                    const button = $(this);
+                    const courseID = ${course.courseID};
+
+                    button.html('<i class="bi bi-arrow-repeat spin me-2"></i>Đang xử lý...').prop('disabled', true);
+
+                    $.ajax({
+                        url: 'enroll-course',
+                        type: 'POST',
+                        data: {courseID: courseID},
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.success) {
+                                showMessage(response.message, 'success');
+                                button.addClass('enrolled');
+                                // Chuyển hướng đến trang nội dung khóa học sau 1 giây
+                                setTimeout(function() {
+                                    window.location.href = 'course-content?courseID=' + courseID;
+                                }, 1000);
+                            } else {
+                                showMessage(response.message, 'error');
+                                if (response.message.includes('đăng nhập')) {
+                                    setTimeout(function() {
+                                        window.location.href = 'login';
+                                    }, 1000);
+                                }
+                            }
+                        },
+                        error: function() {
+                            showMessage('Lỗi kết nối', 'error');
+                        },
+                        complete: function() {
+                            if (!button.hasClass('enrolled')) {
+                                button.html('Tham gia học').prop('disabled', false);
+                            }
+                        }
+                    });
+                }
+            });
         });
     </script>
 </body>

@@ -83,6 +83,18 @@ public class Learner extends User {
 
         return info.toString();
     }
+
+    @Override
+    public String toString() {
+        return "Learner{" +
+                "hankyoPoint=" + hankyoPoint +
+                ", learnerID=" + learnerID +
+                ", honour=" + honour +
+                ", reward=" + reward +
+                ", vip=" + vip +
+                '}';
+    }
+
     public static void main(String[] args) {
         Learner learner = new Learner();
         learner.setGmail("tan@gmail.com");
