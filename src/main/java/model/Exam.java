@@ -6,6 +6,7 @@ public class Exam {
     private int examID;
     private int expertID;
     private String examName;
+    private String examType;
     private String examDescription;
     private Date dateCreated;
     private int orderIndex;
@@ -23,6 +24,14 @@ public class Exam {
     }
 
     public Exam() {
+    }
+
+    public String getExamType() {
+        return examType;
+    }
+
+    public void setExamType(String examType) {
+        this.examType = examType;
     }
 
     public int getOrderIndex() {

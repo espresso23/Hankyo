@@ -1,15 +1,12 @@
 package servlet;
 
+import dao.CartDAO;
 import model.Cart;
+import service.PaymentService;
 import vn.payos.PayOS;
 import vn.payos.type.CheckoutResponseData;
 import vn.payos.type.ItemData;
 import vn.payos.type.PaymentData;
-import dao.CartDAO;
-import model.Course;
-import model.Payment;
-import model.CoursePaid;
-import service.PaymentService;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -17,7 +14,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,7 +51,9 @@ public class CreatePaymentLinkServlet extends HttpServlet {
         String returnUrl = domain + "/payment-success?orderCode=" + orderCode + 
                           "&learnerID=" + learnerID + 
                           "&courses=" + courseInfo.toString();
-        String cancelUrl = domain + "/payment-cancel";
+        System.out.println("returnUrl= " + returnUrl);
+        String cancelUrl = domain + "/cart";
+        System.out.println("cancelUrl= " + cancelUrl);
 
         // Tạo danh sách items cho PayOS
         List<ItemData> items = new ArrayList<>();
@@ -70,6 +68,7 @@ public class CreatePaymentLinkServlet extends HttpServlet {
                     .build();
             items.add(item);
         }
+        items.forEach(System.out::println);
 
         // Tính tổng tiền
         int totalAmount = 0;
@@ -77,26 +76,26 @@ public class CreatePaymentLinkServlet extends HttpServlet {
             double priceValue = Double.parseDouble(price);
             totalAmount += Math.round(priceValue);
         }
-
         // Tạo payment data cho PayOS
         PaymentData paymentData = PaymentData.builder()
                 .orderCode(orderCode)
                 .amount(totalAmount)
-                .description("Thanh toán khóa học")
+                .description("TT don hang so " + orderCode)
                 .returnUrl(returnUrl)
                 .cancelUrl(cancelUrl)
                 .items(items)
                 .build();
-
+        paymentData.toString();
         try {
             // Tạo payment link từ PayOS
             CheckoutResponseData result = payOS.createPaymentLink(paymentData);
-
             // Lưu thông tin payment data vào session
+            String transactionCode = result.getDescription();
+            String fullDescription = "TT đơn hàng #" + orderCode + " - Mã GD: " + transactionCode;
+            request.getSession().setAttribute("transactionCode", fullDescription);
             request.getSession().setAttribute("paymentData", paymentData);
             request.getSession().setAttribute("courseDescriptions", courseDescriptions);
             request.getSession().setAttribute("coursePrices", coursePrices);
-
             // Chuyển hướng đến trang thanh toán PayOS
             response.sendRedirect(result.getCheckoutUrl());
         } catch (Exception e) {

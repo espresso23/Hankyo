@@ -1,12 +1,11 @@
 package servlet;
 
 import com.google.gson.Gson;
-import dao.CourseContentDAO;
-import dao.CourseDAO;
-import dao.ExpertDAO;
+import dao.*;
 import model.Course;
 import model.CourseContent;
 import model.Expert;
+import model.Learner;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -24,6 +23,8 @@ public class CourseDetailsServlet extends HttpServlet {
     private CourseDAO courseDAO;
     private CourseContentDAO courseContentDAO;
     private ExpertDAO expertDAO;
+    private CoursePaidDAO coursePaidDAO;
+    private EnrollmentDAO enrollmentDAO;
 
     @Override
     public void init() throws ServletException {
@@ -31,6 +32,8 @@ public class CourseDetailsServlet extends HttpServlet {
             courseDAO = new CourseDAO();
             courseContentDAO = new CourseContentDAO();
             expertDAO = new ExpertDAO();
+            coursePaidDAO = new CoursePaidDAO();
+            enrollmentDAO = new EnrollmentDAO();
         } catch (Exception e) {
             throw new ServletException("Không thể khởi tạo DAO", e);
         }
@@ -48,14 +51,20 @@ public class CourseDetailsServlet extends HttpServlet {
 
             int courseId = Integer.parseInt(courseID);
             Course course = courseDAO.getCourseById(courseId);
-
+            Learner learner = (Learner) request.getSession().getAttribute("learner");
+            if (learner != null) {
+                course.setPurchased(coursePaidDAO.isCoursePurchased(learner.getLearnerID(), course.getCourseID()));//da mua hay chua
+                course.setEnrolled(enrollmentDAO.isEnroll(learner.getLearnerID(), course.getCourseID()));//da tham gia hay chua
+                course.setLearnersCount(enrollmentDAO.countEnrolledLearners(course.getCourseID()));//co bao nhieu hoc vien
+            }
+            System.out.println(course.toString());
             if (course == null) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy khóa học");
                 return;
             }
 
-            Expert expert = expertDAO.getExpertById(course.getExpertID());
-            List<CourseContent> courseContents = courseContentDAO.listCourseContentsByCourseID(courseId);
+            Expert expert = expertDAO.getExpertById(course.getExpertID());//thong tin giang vien
+            List<CourseContent> courseContents = courseContentDAO.listCourseContentsByCourseID(courseId);//noi dung khoa hoc
 
             // Tạo đối tượng JSON phù hợp với courseDetail
             Map<String, Object> courseDetail = new HashMap<>();

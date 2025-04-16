@@ -87,7 +87,14 @@ public class LoginServlet extends HttpServlet {
                     } else if ("learner".equalsIgnoreCase(user.getRole())) {
                         LearnerDAO learnerDAO = new LearnerDAO();
                         Learner learner = learnerDAO.getLearnerById(user.getUserID());
-                        session.setAttribute("learner", learner);
+                        if (learner != null) {
+                            session.setAttribute("learner", learner);
+                            System.out.println(learner.displayInfo());
+                        } else {
+                            System.out.println("Learner is null for User ID: " + user.getUserID());
+                            session.setAttribute("errorMsg", "Không tìm thấy hồ sơ người học.");
+                        }
+
                         response.sendRedirect("home.jsp");
                     }
                 } else {
