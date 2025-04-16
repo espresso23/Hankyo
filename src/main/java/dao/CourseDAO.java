@@ -200,14 +200,25 @@ public class CourseDAO {
     // Lấy danh sách khóa học theo khoảng giá
     public List<Course> getCoursesByPriceRange(double minPrice, double maxPrice) throws SQLException {
         List<Course> courses = new ArrayList<>();
-        String sql = "SELECT * FROM Course WHERE price BETWEEN ? AND ? AND status = 'active'";
+        String sql = "SELECT c.*, " +
+                    "       (SELECT COUNT(*) FROM enrollments e WHERE e.courseID = c.courseID AND e.status = 'active') AS student_count, " +
+                    "       (SELECT AVG(CAST(f.rating AS FLOAT)) FROM CourseFeedback f WHERE f.courseID = c.courseID) AS avg_rating, " +
+                    "       (SELECT COUNT(*) FROM CourseFeedback f WHERE f.courseID = c.courseID) AS rating_count, " +
+                    "       ct.categoryName AS category_name, " +
+                    "       u.fullName AS expert_name " +
+                    "FROM Course c " +
+                    "JOIN Category ct ON c.categoryID = ct.categoryID " +
+                    "JOIN Expert ep ON c.expertID = ep.expertID " +
+                    "JOIN [User] u ON ep.userID = u.userID " +
+                    "WHERE c.status = 'active' AND c.price BETWEEN ? AND ?";
 
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
             pstmt.setDouble(1, minPrice);
             pstmt.setDouble(2, maxPrice);
+            
             ResultSet rs = pstmt.executeQuery();
-
             while (rs.next()) {
                 Course course = extractCourseFromResultSet(rs);
                 courses.add(course);
@@ -584,6 +595,69 @@ public class CourseDAO {
             
             while (rs.next()) {
                 courses.add(extractCourseFromResultSet(rs));
+            }
+        }
+        return courses;
+    }
+
+    public List<Course> getPurchasedCourses(int learnerID) throws SQLException {
+        List<Course> courses = new ArrayList<>();
+        String sql = "SELECT c.*, \n" +
+                "       cat.categoryName, \n" +
+                "       u.fullName, \n" +
+                "       u.avatar, \n" +
+                "       e.certificate,\n" +
+                "       (SELECT COUNT(*) \n" +
+                "        FROM Enrollments \n" +
+                "        WHERE courseID = c.courseID) AS learnersCount,\n" +
+                "       (SELECT AVG(rating) \n" +
+                "        FROM CourseFeedback f \n" +
+                "        WHERE f.courseID = c.courseID) AS rating,\n" +
+                "       (SELECT COUNT(*) \n" +
+                "        FROM CourseFeedback \n" +
+                "        WHERE courseID = c.courseID) AS ratingCount\n" +
+                "FROM Course c\n" +
+                "JOIN Category cat ON c.categoryID = cat.categoryID\n" +
+                "JOIN Expert e ON c.expertID = e.expertID\n" +
+                "JOIN [User] u ON u.userID = e.userID\n" +
+                "JOIN Course_Paid cp on cp.courseID = c.courseID\n" +
+                "WHERE cp.learnerID = ? ";
+
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, learnerID);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Course course = new Course();
+                course.setCourseID(rs.getInt("courseID"));
+                course.setCourseTitle(rs.getString("title"));
+                course.setCourseDescription(rs.getString("course_description"));
+                course.setCourseImg(rs.getString("course_img"));
+                course.setPrice(rs.getBigDecimal("price"));
+                course.setOriginalPrice(rs.getBigDecimal("original_price"));
+                course.setLastUpdated(rs.getTimestamp("updateAt"));
+                
+                // Set category
+                Category category = new Category();
+                category.setCategoryID(rs.getInt("categoryID"));
+                category.setCategoryName(rs.getString("categoryName"));
+                course.setCategory(category);
+                
+                // Set expert
+                Expert expert = new Expert();
+                expert.setExpertID(rs.getInt("expertID"));
+                expert.setFullName(rs.getString("fullName"));
+                expert.setAvatar(rs.getString("avatar"));
+                expert.setCertificate(rs.getString("certificate"));
+                course.setExpert(expert);
+                
+                // Set additional info
+                course.setLearnersCount(rs.getInt("learnersCount"));
+                course.setRating(rs.getDouble("rating"));
+                course.setRatingCount(rs.getInt("ratingCount"));
+                
+                courses.add(course);
             }
         }
         return courses;

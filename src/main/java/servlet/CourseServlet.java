@@ -22,7 +22,7 @@ import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.List;
 
-@WebServlet(name = "CourseServlet", urlPatterns = {"/courses", "/purchase", "/my-courses", "/cart", "/cart/add", "/cart/remove"})
+@WebServlet(name = "CourseServlet", urlPatterns = {"/courses", "/purchase", "/cart", "/cart/add", "/cart/remove"})
 public class CourseServlet extends HttpServlet {
     private CourseDAO courseDAO;
     private CartService cartService;
@@ -46,9 +46,6 @@ public class CourseServlet extends HttpServlet {
         switch (path) {
             case "/courses":
                 handleCourseList(request, response);
-                break;
-            case "/my-courses":
-                handleMyCourses(request, response);
                 break;
             case "/cart":
                 handleViewCart(request, response);
@@ -153,22 +150,22 @@ public class CourseServlet extends HttpServlet {
             out.write("{\"success\":false,\"message\":\"Lỗi server: " + e.getMessage() + "\"}");
         }
     }
-    private void handleMyCourses(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Learner learner = (Learner) request.getSession().getAttribute("learner");
-        if (learner == null) {
-            response.sendRedirect("login.jsp");
-            return;
-        }
-
-        try {
-            List<Course> enrolledCourses = courseDAO.getEnrolledCourses(learner.getLearnerID());
-            request.setAttribute("purchasedCourses", enrolledCourses);
-            request.getRequestDispatcher("/my-courses.jsp").forward(request, response);
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
+//    private void handleMyCourses(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+//        Learner learner = (Learner) request.getSession().getAttribute("learner");
+//        if (learner == null) {
+//            response.sendRedirect("login.jsp");
+//            return;
+//        }
+//
+//        try {
+//            List<Course> enrolledCourses = courseDAO.getEnrolledCourses(learner.getLearnerID());
+//            request.setAttribute("purchasedCourses", enrolledCourses);
+//            request.getRequestDispatcher("/my-courses.jsp").forward(request, response);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+//        }
+//    }
 
     private void handlePurchase(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         User user = (User) request.getSession().getAttribute("user");
