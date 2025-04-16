@@ -79,7 +79,7 @@ public class CourseDAO {
                 "WHERE e.expertID = ?";
 
         String courseStatsSQL = "SELECT " +
-                "(SELECT COUNT(*) FROM enrollments en WHERE en.courseID = ? AND en.status = 'active') as student_count, " +
+                "(SELECT COUNT(*) FROM enrollments en WHERE en.courseID = ? ) as student_count, " +
                 "(SELECT AVG(CAST(f.rating AS FLOAT)) FROM CourseFeedback f WHERE f.courseID = ?) as avg_rating, " +
                 "(SELECT COUNT(*) FROM CourseFeedback f WHERE f.courseID = ?) as rating_count";//dem so nguoi da feedback
 
@@ -664,15 +664,22 @@ public class CourseDAO {
     }
 
     public int getFirstContentID(int courseID) throws SQLException {
-        String sql = "SELECT MIN(course_contentID) FROM Course_Content WHERE courseID = ?";
+        String sql = "SELECT TOP 1 course_contentID FROM Course_Content WHERE courseID = ? ORDER BY course_contentID ASC";
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, courseID);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                return rs.getInt(1);
+                int contentID = rs.getInt(1);
+                System.out.println("First Content ID for Course " + courseID + ": " + contentID);
+                return contentID;
             }
-            return 0;
+            System.out.println("No content found for Course " + courseID);
+            return -1;
+        } catch (Exception e) {
+            System.out.println("Error getting first content ID for Course " + courseID + ": " + e.getMessage());
+            e.printStackTrace();
+            return -1;
         }
     }
 }

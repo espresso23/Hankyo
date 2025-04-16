@@ -9,34 +9,82 @@
 body {
     background-color: #f7f9fa;
     color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.course-container {
+    display: flex;
+    min-height: calc(100vh - 56px);
+    position: relative;
 }
 
 .course-sidebar {
+    width: 300px;
     background-color: white;
     border-right: 1px solid #d1d7dc;
     height: calc(100vh - 56px);
     position: fixed;
-    width: 300px;
+    left: 0;
+    top: 56px;
+    display: flex;
+    flex-direction: column;
     overflow-y: auto;
 }
 
+.sidebar-header {
+    padding: 15px;
+    background: #f7f9fa;
+    border-bottom: 1px solid #d1d7dc;
+}
+
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 20px;
+}
+
 .course-content {
+    flex: 1;
     margin-left: 300px;
-    padding: 20px;
+    min-height: calc(100vh - 56px);
+    overflow-y: auto;
+    padding-top: 56px;
+    padding-bottom: 20px;
 }
 
 .video-container {
-    background-color: #000;
     position: relative;
-    padding-top: 56.25%; /* 16:9 Aspect Ratio */
+    width: 100%;
+    height: 720px; /* Chiều cao cố định */
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    margin-bottom: 24px;
 }
 
-.video-container iframe {
+.video-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.video-wrapper iframe {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
+    border: 0;
+}
+
+.content-section {
+    padding: 20px;
+    background: white;
+    margin-top: 20px;
 }
 
 .content-description {
@@ -44,6 +92,7 @@ body {
     padding: 20px;
     border-radius: 4px;
     margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 .section-title {
@@ -56,9 +105,11 @@ body {
 }
 
 .lesson-item {
-    padding: 10px 15px;
+    padding: 12px 15px;
     border-bottom: 1px solid #d1d7dc;
     cursor: pointer;
+    display: flex;
+    align-items: center;
     transition: background-color 0.2s;
 }
 
@@ -75,9 +126,11 @@ body {
     color: var(--accent-color);
 }
 
-.lesson-item .lesson-icon {
+.lesson-icon {
     margin-right: 10px;
     color: var(--light-text);
+    width: 20px;
+    text-align: center;
 }
 
 .lesson-item.completed .lesson-icon {
@@ -95,6 +148,7 @@ body {
     height: 100%;
     background-color: var(--accent-color);
     border-radius: 2px;
+    transition: width 0.3s ease;
 }
 
 .course-header {
@@ -117,4 +171,227 @@ body {
 
 .course-meta i {
     margin-right: 5px;
+}
+
+/* Scrollbar styling */
+.sidebar-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.course-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.course-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.course-content::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.course-content::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+.sidebar-toggle {
+    background: none;
+    border: none;
+    color: #1a73e8;
+    font-size: 20px; /* Tăng kích thước font */
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Căn giữa nội dung */
+    padding: 8px;
+    cursor: pointer;
+    width: 40px; /* Cố định chiều rộng */
+    height: 40px; /* Cố định chiều cao */
+    border-radius: 50%; /* Làm tròn */
+    transition: background-color 0.3s;
+}
+
+.sidebar-toggle:hover {
+    background-color: rgba(26, 115, 232, 0.1);
+}
+
+.sidebar-toggle-container.collapsed {
+    width: 40px; /* Thu nhỏ container khi collapsed */
+    justify-content: center;
+}
+
+.hide-menu-text {
+    font-weight: bold;
+    font-size: 20px; /* Tăng kích thước chữ */
+    margin: 0; /* Loại bỏ margin */
+}
+/* Chỉ giữ lại các style không có trong learn-course.css */
+.sidebar-toggle-container {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    height: 56px;
+    z-index: 1001;
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    width: 320px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.sidebar-toggle-container.collapsed {
+    width: auto;
+    border-right: 1px solid #e0e0e0;
+    box-shadow: 2px 0 4px rgba(0,0,0,0.08);
+}
+
+.sidebar-hidden {
+    transform: translateX(-320px);
+}
+
+.course-content.full-width {
+    margin-left: 0;
+}
+
+/* Video Player Styles - Chỉ giữ lại các style không có trong learn-course.css */
+.video-controls, 
+.video-progress, 
+.video-buttons, 
+.video-time, 
+.video-volume, 
+.volume-slider, 
+.volume-level, 
+.video-quality, 
+.quality-menu, 
+.quality-option, 
+.video-title, 
+.video-fullscreen {
+    display: none !important;
+}
+
+/* Ẩn các elements video controls không sử dụng nữa */
+.video-controls, 
+.video-progress, 
+.video-buttons, 
+.video-time, 
+.video-volume, 
+.volume-slider, 
+.volume-level, 
+.video-quality, 
+.quality-menu, 
+.quality-option, 
+.video-title, 
+.video-fullscreen {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    .sidebar-hidden {
+        transform: translateX(-320px);
+    }
+    .course-content.full-width {
+        margin-left: 0;
+    }
+    .sidebar-visible {
+        transform: translateX(0);
+    }
+    .sidebar-toggle-container {
+        width: auto;
+    }
+    .fixed-video-container {
+        position: relative;
+        width: 100%;
+        right: auto;
+        top: 0;
+        margin-bottom: 20px;
+    }
+
+    .video-controls {
+        padding: 15px 10px 5px;
+    }
+
+    .video-buttons {
+        gap: 10px;
+    }
+
+    .volume-slider {
+        width: 60px;
+    }
+
+    .video-container {
+        height: 200px;
+    }
+}
+
+.video-section {
+    position: sticky;
+    top: 56px;
+    background: #000;
+    z-index: 10;
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+/* Fixed Video Container */
+.fixed-video-container {
+    position: relative;
+    z-index: 100;
+    background-color: #fff;
+    padding: 12px;
+    margin-bottom: 24px;
+    border-radius: 8px;
+    max-width: 854px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.video-container {
+    position: relative;
+    width: 100%;
+    height: 480px; /* Tỉ lệ 16:9 cho kích thước tiêu chuẩn 854px */
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    margin-bottom: 0;
+}
+
+.video-container.expanded {
+    height: 100%;
+    border-radius: 0;
+}
+
+.fixed-video-container.expanded {
+    position: fixed;
+    top: 76px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    height: calc(100vh - 76px);
+    z-index: 1100;
+    padding: 0;
+    border-radius: 0;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .video-container {
+        height: 250px;
+    }
 }

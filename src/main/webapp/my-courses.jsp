@@ -69,7 +69,7 @@
                 <c:forEach items="${courses}" var="course">
                     <div class="col">
                         <div class="card course-card h-100">
-                            <img src="${course.courseImg}" class="card-img-top" alt="${course.courseTitle}">
+                            <img src="${course.courseImg}" class="card-img-top" alt="${course.courseTitle}" onclick="window.location.href = '${pageContext.request.contextPath}/learn-course?courseID=${course.courseID}&contentID=${course.firstContentID}'">
                             <div class="card-body d-flex flex-column">
                                 <h5 class="card-title">${course.courseTitle}</h5>
                                 <p class="card-text">${course.courseDescription}</p>
@@ -105,9 +105,10 @@
                                                     <i class="fas fa-users me-1"></i>${course.learnersCount} học viên
                                                 </span>
                                         </div>
-                                        <a href="learn-course?courseID=${course.courseID}&contentID=${course.firstContentID}" class="btn btn-success">
+                                        <button class="btn btn-success" onclick="window.location.href = '${pageContext.request.contextPath}/learn-course?courseID=${course.courseID}&contentID=${course.firstContentID}'">
                                             <i class="fas fa-play me-2"></i>Tiếp tục học
-                                        </a>
+                                        </button>
+
                                     </div>
                                 </div>
                             </div>
