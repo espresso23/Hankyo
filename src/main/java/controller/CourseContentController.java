@@ -72,11 +72,7 @@ public class CourseContentController extends HttpServlet {
             request.getRequestDispatcher("addCourseContent.jsp").forward(request, response);
         } finally {
             if (dao != null) {
-                try {
-                    dao.closeConnection();
-                } catch (SQLException e) {
-                    System.out.println("Lỗi khi đóng kết nối: " + e.getMessage());
-                }
+                dao.closeConnection();
             }
         }
     }
@@ -138,11 +134,7 @@ public class CourseContentController extends HttpServlet {
             response.sendRedirect("course-content?action=addContentView&courseID=" + courseID);
         } finally {
             if (dao != null) {
-                try {
-                    dao.closeConnection();
-                } catch (SQLException e) {
-                    System.out.println("Lỗi khi đóng kết nối: " + e.getMessage());
-                }
+                dao.closeConnection();
             }
         }
     }
@@ -201,11 +193,7 @@ public class CourseContentController extends HttpServlet {
                 }
             }
             if (courseContentDAO != null) {
-                try {
-                    courseContentDAO.closeConnection();
-                } catch (SQLException e) {
-                    System.out.println("Lỗi khi đóng kết nối: " + e.getMessage());
-                }
+                courseContentDAO.closeConnection();
             }
         }
     }
@@ -304,11 +292,7 @@ public class CourseContentController extends HttpServlet {
                     "course-content?action=addContentView&courseID=" + courseID);
         } finally {
             if (dao != null) {
-                try {
-                    dao.closeConnection();
-                } catch (SQLException e) {
-                    System.out.println("Lỗi khi đóng kết nối: " + e.getMessage());
-                }
+                dao.closeConnection();
             }
         }
     }
@@ -526,11 +510,7 @@ public class CourseContentController extends HttpServlet {
             response.getWriter().write("Lỗi database: " + e.getMessage());
         } finally {
             if (courseContentDAO != null) {
-                try {
-                    courseContentDAO.closeConnection();
-                } catch (SQLException e) {
-                    System.out.println("Lỗi khi đóng kết nối CourseContentDAO: " + e.getMessage());
-                }
+                courseContentDAO.closeConnection();
             }
             if (assignmentDAO != null) {
                 try {

@@ -9,6 +9,7 @@ public class CourseContent {
     private String media;
     private Assignment assignment;
     private Exam exam;
+    private boolean completed;
 
     public CourseContent(){}
 
@@ -81,6 +82,14 @@ public class CourseContent {
 
     public String getTitle() {
         return title;
+    }
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
     }
 
     @Override

@@ -361,7 +361,7 @@ public class CourseDAO {
 
     // Kiểm tra xem học viên đã đăng ký khóa học chưa
     public boolean isEnrolled(int learnerID, int courseID) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM enrollments WHERE learnerID = ? AND courseID = ? AND status = 'active'";
+        String sql = "SELECT COUNT(*) FROM enrollments WHERE learnerID = ? AND courseID = ?";
         
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -661,5 +661,18 @@ public class CourseDAO {
             }
         }
         return courses;
+    }
+
+    public int getFirstContentID(int courseID) throws SQLException {
+        String sql = "SELECT MIN(course_contentID) FROM Course_Content WHERE courseID = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, courseID);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+            return 0;
+        }
     }
 }

@@ -38,6 +38,10 @@ public class MyCoursesServlet extends HttpServlet {
             for (model.Course course : purchasedCourses) {
                 int progress = enrollmentService.calculateCourseProgress(learner.getLearnerID(), course.getCourseID());
                 course.setProgress(progress);
+                
+                // Lấy ID của nội dung đầu tiên
+                int firstContentID = courseDAO.getFirstContentID(course.getCourseID());
+                course.setFirstContentID(firstContentID);
             }
 
             request.setAttribute("courses", purchasedCourses);

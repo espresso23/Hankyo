@@ -105,7 +105,7 @@
                                                     <i class="fas fa-users me-1"></i>${course.learnersCount} học viên
                                                 </span>
                                         </div>
-                                        <a href="course-content?courseID=${course.courseID}" class="btn btn-success">
+                                        <a href="learn-course?courseID=${course.courseID}&contentID=${course.firstContentID}" class="btn btn-success">
                                             <i class="fas fa-play me-2"></i>Tiếp tục học
                                         </a>
                                     </div>

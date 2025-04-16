@@ -25,6 +25,7 @@ public class Course {
     private boolean enrolled;// type of course
     private Expert expert;
     private int progress;
+    private int firstContentID;
     // Số lượng học viên
 
     public Course() {
@@ -229,6 +230,14 @@ public class Course {
 
     public void setProgress(int progress) {
         this.progress = progress;
+    }
+
+    public int getFirstContentID() {
+        return firstContentID;
+    }
+
+    public void setFirstContentID(int firstContentID) {
+        this.firstContentID = firstContentID;
     }
 
     public static void main(String[] args) {
