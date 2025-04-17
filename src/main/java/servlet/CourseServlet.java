@@ -2,10 +2,14 @@ package servlet;
 
 import com.google.gson.Gson;
 import dao.CourseDAO;
+import dao.CoursePaidDAO;
+import dao.CategoryDAO;
+import dao.EnrollmentDAO;
 import model.Cart;
 import model.Course;
 import model.Learner;
 import model.User;
+import model.Category;
 import service.CartService;
 
 import javax.servlet.ServletException;
@@ -18,15 +22,21 @@ import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.List;
 
-@WebServlet(name = "CourseServlet", urlPatterns = {"/courses", "/purchase", "/my-courses", "/cart", "/cart/add", "/cart/remove"})
+@WebServlet(name = "CourseServlet", urlPatterns = {"/courses", "/purchase", "/cart", "/cart/add", "/cart/remove"})
 public class CourseServlet extends HttpServlet {
     private CourseDAO courseDAO;
     private CartService cartService;
+    private CoursePaidDAO coursePaidDAO;
+    private CategoryDAO categoryDAO;
+    private EnrollmentDAO enrollmentDAO;
 
     @Override
     public void init() throws ServletException {
         courseDAO = new CourseDAO();
         cartService = new CartService();
+        coursePaidDAO = new CoursePaidDAO();
+        categoryDAO = new CategoryDAO();
+        enrollmentDAO = new EnrollmentDAO();
     }
 
     @Override
@@ -36,9 +46,6 @@ public class CourseServlet extends HttpServlet {
         switch (path) {
             case "/courses":
                 handleCourseList(request, response);
-                break;
-            case "/my-courses":
-                handleMyCourses(request, response);
                 break;
             case "/cart":
                 handleViewCart(request, response);
@@ -64,27 +71,44 @@ public class CourseServlet extends HttpServlet {
     private void handleCourseList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String search = request.getParameter("search");
         String priceRange = request.getParameter("priceRange");
+        String categoryID = request.getParameter("categoryID");
 
         try {
             List<Course> courses;
-            if (search != null && !search.isEmpty()) {
+
+            // Lọc theo category nếu có
+            if (categoryID != null && !categoryID.isEmpty()) {
+                courses = courseDAO.getCoursesByCategory(Integer.parseInt(categoryID));
+            }
+            // Lọc theo search nếu có
+            else if (search != null && !search.isEmpty()) {
                 courses = courseDAO.searchCourses(search);
-            } else if (priceRange != null && !priceRange.isEmpty()) {
+            }
+            // Lọc theo khoảng giá nếu có
+            else if (priceRange != null && !priceRange.isEmpty()) {
                 String[] range = priceRange.split("-");
                 double minPrice = Double.parseDouble(range[0]);
                 double maxPrice = Double.parseDouble(range[1]);
                 courses = courseDAO.getCoursesByPriceRange(minPrice, maxPrice);
-            } else {
-                courses = courseDAO.getNewestCourses(12); // Hiển thị 12 khóa học mới nhất
+            }
+            // Mặc định lấy khóa học mới nhất
+            else {
+                courses = courseDAO.getNewestCourses(12);
             }
 
-            // Kiểm tra xem người dùng đã đăng ký khóa học nào chưa
+            // Kiểm tra xem người dùng đã mua khóa học nào chưa
             Learner learner = (Learner) request.getSession().getAttribute("learner");
             if (learner != null) {
                 for (Course course : courses) {
-                    course.setPurchased(courseDAO.isEnrolled(learner.getLearnerID(), course.getCourseID()));
+                    course.setPurchased(coursePaidDAO.isCoursePurchased(learner.getLearnerID(), course.getCourseID()));//da mua hay chua
+                    course.setEnrolled(enrollmentDAO.isEnroll(learner.getLearnerID(), course.getCourseID()));//da tham gia hay chua
+                    course.setLearnersCount(enrollmentDAO.countEnrolledLearners(course.getCourseID()));//co bao nhieu hoc vien
                 }
             }
+
+            // Lấy danh sách category để hiển thị trong navigation
+            List<Category> categories = categoryDAO.getAllCategories();
+            request.setAttribute("categories", categories);
 
             request.setAttribute("courses", courses);
             request.getRequestDispatcher("/courses.jsp").forward(request, response);
@@ -126,22 +150,22 @@ public class CourseServlet extends HttpServlet {
             out.write("{\"success\":false,\"message\":\"Lỗi server: " + e.getMessage() + "\"}");
         }
     }
-    private void handleMyCourses(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Learner learner = (Learner) request.getSession().getAttribute("learner");
-        if (learner == null) {
-            response.sendRedirect("login.jsp");
-            return;
-        }
-
-        try {
-            List<Course> enrolledCourses = courseDAO.getEnrolledCourses(learner.getLearnerID());
-            request.setAttribute("purchasedCourses", enrolledCourses);
-            request.getRequestDispatcher("/my-courses.jsp").forward(request, response);
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
+//    private void handleMyCourses(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+//        Learner learner = (Learner) request.getSession().getAttribute("learner");
+//        if (learner == null) {
+//            response.sendRedirect("login.jsp");
+//            return;
+//        }
+//
+//        try {
+//            List<Course> enrolledCourses = courseDAO.getEnrolledCourses(learner.getLearnerID());
+//            request.setAttribute("purchasedCourses", enrolledCourses);
+//            request.getRequestDispatcher("/my-courses.jsp").forward(request, response);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+//        }
+//    }
 
     private void handlePurchase(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         User user = (User) request.getSession().getAttribute("user");
@@ -181,15 +205,15 @@ public class CourseServlet extends HttpServlet {
 
 
     private void handleRemoveFromCart(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        User user = (User) request.getSession().getAttribute("user");
-        if (user == null) {
+        Learner learner = (Learner) request.getSession().getAttribute("learner");
+        if (learner == null) {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Bạn cần đăng nhập");
             return;
         }
 
         try {
             int cartID = Integer.parseInt(request.getParameter("cartID"));
-            boolean success = cartService.removeFromCart(cartID, user.getUserID());
+            boolean success = cartService.removeFromCart(cartID, learner.getLearnerID());
 
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");

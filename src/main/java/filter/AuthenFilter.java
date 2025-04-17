@@ -23,7 +23,7 @@
 //        Expert expert = (session != null) ? (Expert) session.getAttribute("expert") : null;
 //        String requestURI = httpRequest.getRequestURI();
 //
-//        if (requestURI.endsWith("home.jsp") || requestURI.contains("/home") ||
+//        if (requestURI.endsWith("courseHeader.jsp") || requestURI.contains("/home") ||
 //               requestURI.contains("/register") ||
 //                requestURI.endsWith("login.jsp") || requestURI.contains("/login") ||
 //           requestURI.contains("/google") || requestURI.contains("asset/ ") || requestURI.contains("css") || requestURI.contains("js") || requestURI.contains("images"))
@@ -39,12 +39,12 @@
 //        }
 //
 //        if (requestURI.contains("admin.jsp") && !"Admin".equals(user.getRole())) {
-//            httpResponse.sendRedirect("home.jsp");
+//            httpResponse.sendRedirect("courseHeader.jsp");
 //            return;
 //        }
 //
 //        if (requestURI.contains("expert.jsp") && !"expert".equals(user.getRole())) {
-//            httpResponse.sendRedirect("home.jsp");
+//            httpResponse.sendRedirect("courseHeader.jsp");
 //            return;
 //        }
 //

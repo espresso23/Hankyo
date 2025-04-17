@@ -19,11 +19,28 @@ public class LearnerDAO {
 
     public Learner getLearnerById(int learnerId) {
         String query = "SELECT l.*, u.* FROM Learner l JOIN [User] u ON l.userID = u.userID WHERE l.learnerID = ? AND u.status = 'active'";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, learnerId);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return mapResultSetToLearner(rs);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToLearner(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    public Learner getLearnerByUserId(int userID) {
+        String query = "SELECT l.*, u.* FROM Learner l JOIN [User] u ON l.userID = u.userID WHERE l.userID = ? AND u.status = 'active'";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, userID);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToLearner(rs);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();

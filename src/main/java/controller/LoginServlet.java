@@ -32,7 +32,7 @@ public class LoginServlet extends HttpServlet {
             } else if ("admin".equalsIgnoreCase(user.getRole())) {
                 response.sendRedirect("admin.jsp");
             } else {
-                response.sendRedirect("home.jsp");
+                response.sendRedirect("courseHeader.jsp");
             }
         } else {
             request.getRequestDispatcher("login.jsp").forward(request, response);
@@ -80,15 +80,22 @@ public class LoginServlet extends HttpServlet {
                             request.getRequestDispatcher("expert.jsp").forward(request, response);
                         } else {
                             session.setAttribute("errorMsg", "Không tìm thấy hồ sơ chuyên gia.");
-                            response.sendRedirect("home.jsp");
+                            response.sendRedirect("courseHeader.jsp");
                         }
                     } else if ("admin".equalsIgnoreCase(user.getRole())) {
                         response.sendRedirect("admin.jsp");
                     } else if ("learner".equalsIgnoreCase(user.getRole())) {
                         LearnerDAO learnerDAO = new LearnerDAO();
-                        Learner learner = learnerDAO.getLearnerById(user.getUserID());
-                        session.setAttribute("learner", learner);
-                        response.sendRedirect("home.jsp");
+                        Learner learner = learnerDAO.getLearnerByUserId(user.getUserID());
+                        if (learner != null) {
+                            session.setAttribute("learner", learner);
+                            System.out.println(learner.toString());
+                        } else {
+                            System.out.println("Learner is null for User ID: " + user.getUserID());
+                            session.setAttribute("errorMsg", "Không tìm thấy hồ sơ người học.");
+                        }
+
+                        response.sendRedirect("courseHeader.jsp");
                     }
                 } else {
                     request.setAttribute("errorMsg", "Đăng nhập thất bại. Không tìm thấy người dùng.");

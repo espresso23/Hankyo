@@ -38,7 +38,7 @@ public class AssignmentDAO {
     public void addQuestionsToAssignment(int assignmentID, Assignment assignment, List<Question> questions, List<List<Answer>> answersForQuestions) {
         String sqlQuestion = "INSERT INTO Question (questionText, questionImg, audio_file, questionType, questionMark) VALUES (?, ?, ?, ?, ?)";
         String sqlAnswer = "INSERT INTO Answer (answerText, isCorrect, option_label, questionID) VALUES (?, ?, ?, ?)";
-        String sqlAssignmentQuestion = "INSERT INTO Assignment_Question (assignmentID, questionID, answerID) VALUES (?, ?, ?)";
+        String sqlAssignmentQuestion = "INSERT INTO Assignment_Question (assignmentID, questionID) VALUES (?, ?, ?)";
 
         PreparedStatement pstmtQuestion = null;
         PreparedStatement pstmtAnswer = null;

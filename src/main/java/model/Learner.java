@@ -12,7 +12,9 @@ public class Learner extends User {
     public Learner() {
 
     }
-
+public Learner(int learnerID){
+        this.learnerID = learnerID;
+}
     public Learner(double hankyoPoint, Honour honour, int learnerID, Reward reward, Vip vip) {
         this.hankyoPoint = hankyoPoint;
         this.honour = honour;
@@ -29,6 +31,8 @@ public class Learner extends User {
         this.reward = reward;
         this.vip = vip;
     }
+
+
 
     public double getHankyoPoint() {
         return hankyoPoint;
@@ -72,7 +76,27 @@ public class Learner extends User {
 
     @Override
     public String displayInfo() {
-        return super.displayInfo() + "Learner ID: " + getLearnerID() + "\n" + "Full Name: " + getFullName() + "\n" + "Hankyo Point: " + getHankyoPoint() + "\n" + reward.displayInfo() + "\n" + vip.displayInfo() + "\n";
+        StringBuilder info = new StringBuilder(super.displayInfo());
+
+        if (reward != null && reward.displayInfo() != null) {
+            info.append(reward.displayInfo()).append("\n");
+        }
+        if (vip != null && vip.displayInfo() != null) {
+            info.append(vip.displayInfo()).append("\n");
+        }
+
+        return info.toString();
+    }
+
+    @Override
+    public String toString() {
+        return "Learner{" +
+                "hankyoPoint=" + hankyoPoint +
+                ", learnerID=" + learnerID +
+                ", honour=" + honour +
+                ", reward=" + reward +
+                ", vip=" + vip +
+                '}';
     }
 
     public static void main(String[] args) {

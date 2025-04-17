@@ -14,11 +14,10 @@ public class Category {
     public Category() {
     }
 
-    public Category(int categoryID, String categoryName, String description, Integer parentID) {
+    public Category(int categoryID, String categoryName, String description) {
         this.categoryID = categoryID;
         this.categoryName = categoryName;
         this.description = description;
-        this.parentID = parentID;
     }
 
     // Getters and Setters

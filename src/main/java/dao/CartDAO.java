@@ -71,7 +71,7 @@ public class CartDAO {
     }
 
     public List<Cart> getPendingCartItems(int learnerID) {
-        String query = "SELECT c.*, co.title, co.price, co.course_img FROM Cart c " +
+        String query = "SELECT c.*, co.title, co.course_description as description, co.price, co.course_img FROM Cart c " +
                 "JOIN Course co ON c.courseID = co.courseID " +
                 "WHERE c.learnerID = ? AND c.status = 'pending'";
         List<Cart> cartItems = new ArrayList<>();
@@ -90,6 +90,7 @@ public class CartDAO {
                 course.setCourseTitle(rs.getString("title"));
                 course.setPrice(rs.getBigDecimal("price"));
                 course.setCourseImg(rs.getString("course_img"));
+                course.setCourseDescription(rs.getString("description"));
 
                 cart.setCourse(course);
                 cartItems.add(cart);

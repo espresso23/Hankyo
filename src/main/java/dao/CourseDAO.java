@@ -79,7 +79,7 @@ public class CourseDAO {
                 "WHERE e.expertID = ?";
 
         String courseStatsSQL = "SELECT " +
-                "(SELECT COUNT(*) FROM enrollments en WHERE en.courseID = ? AND en.status = 'active') as student_count, " +
+                "(SELECT COUNT(*) FROM enrollments en WHERE en.courseID = ? ) as student_count, " +
                 "(SELECT AVG(CAST(f.rating AS FLOAT)) FROM CourseFeedback f WHERE f.courseID = ?) as avg_rating, " +
                 "(SELECT COUNT(*) FROM CourseFeedback f WHERE f.courseID = ?) as rating_count";//dem so nguoi da feedback
 
@@ -200,14 +200,25 @@ public class CourseDAO {
     // Lấy danh sách khóa học theo khoảng giá
     public List<Course> getCoursesByPriceRange(double minPrice, double maxPrice) throws SQLException {
         List<Course> courses = new ArrayList<>();
-        String sql = "SELECT * FROM Course WHERE price BETWEEN ? AND ? AND status = 'active'";
+        String sql = "SELECT c.*, " +
+                    "       (SELECT COUNT(*) FROM enrollments e WHERE e.courseID = c.courseID AND e.status = 'active') AS student_count, " +
+                    "       (SELECT AVG(CAST(f.rating AS FLOAT)) FROM CourseFeedback f WHERE f.courseID = c.courseID) AS avg_rating, " +
+                    "       (SELECT COUNT(*) FROM CourseFeedback f WHERE f.courseID = c.courseID) AS rating_count, " +
+                    "       ct.categoryName AS category_name, " +
+                    "       u.fullName AS expert_name " +
+                    "FROM Course c " +
+                    "JOIN Category ct ON c.categoryID = ct.categoryID " +
+                    "JOIN Expert ep ON c.expertID = ep.expertID " +
+                    "JOIN [User] u ON ep.userID = u.userID " +
+                    "WHERE c.status = 'active' AND c.price BETWEEN ? AND ?";
 
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
             pstmt.setDouble(1, minPrice);
             pstmt.setDouble(2, maxPrice);
+            
             ResultSet rs = pstmt.executeQuery();
-
             while (rs.next()) {
                 Course course = extractCourseFromResultSet(rs);
                 courses.add(course);
@@ -304,7 +315,8 @@ public class CourseDAO {
     // Phương thức hỗ trợ để trích xuất thông tin khóa học từ ResultSet
     private Course extractCourseFromResultSet(ResultSet rs) throws SQLException {
         Course course = new Course();
-        course.setCourseID(rs.getInt("courseID"));
+
+        course.setCourseID(rs.getObject("courseID") != null ? rs.getInt("courseID") : null);
         course.setCourseTitle(rs.getString("title"));
         course.setCourseDescription(rs.getString("course_description"));
         course.setCourseImg(rs.getString("course_img"));
@@ -313,20 +325,25 @@ public class CourseDAO {
         course.setOriginalPrice(rs.getBigDecimal("original_price"));
         course.setDateCreated(rs.getDate("createdAt"));
         course.setLastUpdated(rs.getDate("updateAt"));
-        course.setExpertID(rs.getInt("expertID"));
-        // Lấy thông tin thống kê từ subquery
-        Category category = new Category();
-        category.setCategoryName(rs.getString("category_name"));
-        course.setCategory(category);
-        course.setLearnersCount(rs.getInt("student_count"));
-        Expert expert = new Expert();
-        expert.setFullName(rs.getString("expert_name"));
-        course.setExpert(expert);
-        double rating = rs.getDouble("avg_rating");
-        course.setRating(rating != 0 ? rating : 0.0);
-        course.setRatingCount(rs.getInt("rating_count"));
+        course.setExpertID(rs.getObject("expertID") != null ? rs.getInt("expertID") : null);
 
-        
+        // Handle Category object
+        Category category = new Category();
+        category.setCategoryName(rs.getString("category_name") != null ? rs.getString("category_name") : null);
+        course.setCategory(category);
+
+        course.setLearnersCount(rs.getObject("student_count") != null ? rs.getInt("student_count") : 0);
+
+        // Handle Expert object
+        Expert expert = new Expert();
+        expert.setFullName(rs.getString("expert_name") != null ? rs.getString("expert_name") : null);
+        course.setExpert(expert);
+
+        Double rating = rs.getObject("avg_rating") != null ? rs.getDouble("avg_rating") : 0;
+        course.setRating(rating);
+
+        course.setRatingCount(rs.getObject("rating_count") != null ? rs.getInt("rating_count") : 0);
+
         return course;
     }
 
@@ -344,7 +361,7 @@ public class CourseDAO {
 
     // Kiểm tra xem học viên đã đăng ký khóa học chưa
     public boolean isEnrolled(int learnerID, int courseID) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM enrollments WHERE learnerID = ? AND courseID = ? AND status = 'active'";
+        String sql = "SELECT COUNT(*) FROM enrollments WHERE learnerID = ? AND courseID = ?";
         
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -512,21 +529,53 @@ public class CourseDAO {
     }
 
     // Lấy khóa học theo category
-    public List<Course> getCoursesByCategory(int categoryID) throws SQLException {
+    public List<Course> getCoursesByCategory(int categoryID) {
         List<Course> courses = new ArrayList<>();
-        String sql = "SELECT c.*, " +
-                    "(SELECT COUNT(*) FROM enrollments e WHERE e.courseID = c.courseID AND e.status = 'active') as student_count, " +
-                    "(SELECT AVG(CAST(f.rating AS FLOAT)) FROM CourseFeedback f WHERE f.courseID = c.courseID) as avg_rating " +
-                    "FROM Course c WHERE c.categoryID = ? AND c.status = 'active'";
+        String sql = "SELECT c.*, u.fullName as expertName, cat.categoryName, " +
+                    "(SELECT COUNT(*) FROM Course_Paid cp WHERE cp.courseID = c.courseID) as learnersCount, " +
+                    "(SELECT AVG(rating) FROM CourseFeedback cf WHERE cf.courseID = c.courseID) as rating, " +
+                    "(SELECT COUNT(*) FROM CourseFeedback cf WHERE cf.courseID = c.courseID) as ratingCount " +
+                    "FROM Course c " +
+                    "JOIN Expert e ON c.expertID = e.expertID " +
+                    "JOIN Category cat ON c.categoryID = cat.categoryID " +
+                    "JOIN [User] u ON u.userID = e.userID " +
+                    "WHERE c.categoryID = ? " +
+                    "ORDER BY c.createdAt DESC";
         
         try (Connection conn = DBConnect.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, categoryID);
-            ResultSet rs = pstmt.executeQuery();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             
-            while (rs.next()) {
-                courses.add(extractCourseFromResultSet(rs));
+            ps.setInt(1, categoryID);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Course course = new Course();
+                    course.setCourseID(rs.getInt("courseID"));
+                    course.setCourseTitle(rs.getString("title"));
+                    course.setCourseDescription(rs.getString("course_description"));
+                    course.setCourseImg(rs.getString("course_img"));
+                    course.setPrice(rs.getBigDecimal("price"));
+                    course.setRating(rs.getDouble("rating"));
+                    course.setRatingCount(rs.getInt("ratingCount"));
+                    course.setLearnersCount(rs.getInt("learnersCount"));
+                    course.setDateCreated(rs.getTimestamp("createdAt"));
+                    
+                    // Set expert info
+                    Expert expert = new Expert();
+                    expert.setExpertID(rs.getInt("expertID"));
+                    expert.setFullName(rs.getString("expertName"));
+                    course.setExpert(expert);
+                    
+                    // Set category info
+                    Category category = new Category();
+                    category.setCategoryID(rs.getInt("categoryID"));
+                    category.setCategoryName(rs.getString("categoryName"));
+                    course.setCategory(category);
+                    
+                    courses.add(course);
+                }
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return courses;
     }
@@ -549,5 +598,88 @@ public class CourseDAO {
             }
         }
         return courses;
+    }
+
+    public List<Course> getPurchasedCourses(int learnerID) throws SQLException {
+        List<Course> courses = new ArrayList<>();
+        String sql = "SELECT c.*, \n" +
+                "       cat.categoryName, \n" +
+                "       u.fullName, \n" +
+                "       u.avatar, \n" +
+                "       e.certificate,\n" +
+                "       (SELECT COUNT(*) \n" +
+                "        FROM Enrollments \n" +
+                "        WHERE courseID = c.courseID) AS learnersCount,\n" +
+                "       (SELECT AVG(rating) \n" +
+                "        FROM CourseFeedback f \n" +
+                "        WHERE f.courseID = c.courseID) AS rating,\n" +
+                "       (SELECT COUNT(*) \n" +
+                "        FROM CourseFeedback \n" +
+                "        WHERE courseID = c.courseID) AS ratingCount\n" +
+                "FROM Course c\n" +
+                "JOIN Category cat ON c.categoryID = cat.categoryID\n" +
+                "JOIN Expert e ON c.expertID = e.expertID\n" +
+                "JOIN [User] u ON u.userID = e.userID\n" +
+                "JOIN Course_Paid cp on cp.courseID = c.courseID\n" +
+                "WHERE cp.learnerID = ? ";
+
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, learnerID);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Course course = new Course();
+                course.setCourseID(rs.getInt("courseID"));
+                course.setCourseTitle(rs.getString("title"));
+                course.setCourseDescription(rs.getString("course_description"));
+                course.setCourseImg(rs.getString("course_img"));
+                course.setPrice(rs.getBigDecimal("price"));
+                course.setOriginalPrice(rs.getBigDecimal("original_price"));
+                course.setLastUpdated(rs.getTimestamp("updateAt"));
+                
+                // Set category
+                Category category = new Category();
+                category.setCategoryID(rs.getInt("categoryID"));
+                category.setCategoryName(rs.getString("categoryName"));
+                course.setCategory(category);
+                
+                // Set expert
+                Expert expert = new Expert();
+                expert.setExpertID(rs.getInt("expertID"));
+                expert.setFullName(rs.getString("fullName"));
+                expert.setAvatar(rs.getString("avatar"));
+                expert.setCertificate(rs.getString("certificate"));
+                course.setExpert(expert);
+                
+                // Set additional info
+                course.setLearnersCount(rs.getInt("learnersCount"));
+                course.setRating(rs.getDouble("rating"));
+                course.setRatingCount(rs.getInt("ratingCount"));
+                
+                courses.add(course);
+            }
+        }
+        return courses;
+    }
+
+    public int getFirstContentID(int courseID) throws SQLException {
+        String sql = "SELECT TOP 1 course_contentID FROM Course_Content WHERE courseID = ? ORDER BY course_contentID ASC";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, courseID);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                int contentID = rs.getInt(1);
+                System.out.println("First Content ID for Course " + courseID + ": " + contentID);
+                return contentID;
+            }
+            System.out.println("No content found for Course " + courseID);
+            return -1;
+        } catch (Exception e) {
+            System.out.println("Error getting first content ID for Course " + courseID + ": " + e.getMessage());
+            e.printStackTrace();
+            return -1;
+        }
     }
 }
