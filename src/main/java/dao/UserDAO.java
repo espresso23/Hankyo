@@ -1,15 +1,34 @@
 package dao;
 
+import model.Learner;
 import model.User;
 import util.DBConnect;
 import util.Encrypt;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class UserDAO {
+    public Learner getLearnerByUserID(int UserID) throws SQLException {
+        String query = "SELECT * FROM Learner WHERE userID = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, UserID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Learner learner = new Learner();
+                    learner.setUserID(rs.getInt("userID"));
+                    learner.setLearnerID(rs.getInt("learnerID"));
+                    return learner;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error fetching learner: " + e.getMessage());
+        }
+        return null;
+    }
+
     public String register(User user) throws Exception {
         Connection conn = null;
         try {
@@ -121,47 +140,43 @@ public class UserDAO {
         String saveUserQuery = "INSERT INTO [User] (fullName, gmail, socialID, role, dateCreate, avatar, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
         String insertLearnerQuery = "INSERT INTO Learner (userID, hankyoPoint, honour_ownedID) VALUES (?, ?, ?)";
 
-        Connection con = null;
-        try {
-            con = DBConnect.getInstance().getConnection();
-            con.setAutoCommit(false); // Bắt đầu transaction
+        try (Connection con = DBConnect.getInstance().getConnection()) {
+            con.setAutoCommit(false);
 
-            // Kiểm tra xem email đã tồn tại chưa
+            // Check if email exists
             try (PreparedStatement checkEmailStmt = con.prepareStatement(checkEmailQuery)) {
                 checkEmailStmt.setString(1, user.getGmail());
                 try (ResultSet rs = checkEmailStmt.executeQuery()) {
                     if (rs.next() && rs.getInt(1) > 0) {
-                        return false; // Email đã tồn tại
+                        return false;
                     }
                 }
             }
 
-            // Thêm user vào bảng User
+            // Add user to User table
             int userID;
             try (PreparedStatement ps = con.prepareStatement(saveUserQuery, Statement.RETURN_GENERATED_KEYS)) {
                 ps.setString(1, user.getFullName());
                 ps.setString(2, user.getGmail());
                 ps.setString(3, user.getSocialID());
                 ps.setString(4, "Learner");
-                ps.setDate(5, new java.sql.Date(new java.util.Date().getTime()));
+                ps.setDate(5, new Date(new java.util.Date().getTime()));
                 ps.setString(6, user.getAvatar());
                 ps.setString(7, "active");
-                int rowAffected = ps.executeUpdate();
-
-                if (rowAffected == 0) {
+                
+                if (ps.executeUpdate() == 0) {
                     throw new SQLException("Creating user failed, no rows affected.");
                 }
 
                 try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        userID = generatedKeys.getInt(1);
-                    } else {
+                    if (!generatedKeys.next()) {
                         throw new SQLException("Creating user failed, no ID obtained.");
                     }
+                    userID = generatedKeys.getInt(1);
                 }
             }
 
-            // Thêm user vào bảng Learner
+            // Add user to Learner table
             try (PreparedStatement learnerStmt = con.prepareStatement(insertLearnerQuery)) {
                 learnerStmt.setInt(1, userID);
                 learnerStmt.setDouble(2, 0.0);
@@ -169,27 +184,11 @@ public class UserDAO {
                 learnerStmt.executeUpdate();
             }
 
-            con.commit(); // Xác nhận transaction
+            con.commit();
             return true;
 
         } catch (SQLException e) {
-            if (con != null) {
-                try {
-                    con.rollback(); // Hoàn tác nếu có lỗi
-                } catch (SQLException rollbackEx) {
-                    rollbackEx.printStackTrace();
-                }
-            }
-            e.printStackTrace();
-            return false;
-        } finally {
-            if (con != null) {
-                try {
-                    con.close(); // Đóng kết nối
-                } catch (SQLException closeEx) {
-                    closeEx.printStackTrace();
-                }
-            }
+            throw new RuntimeException("Failed to save social media user: " + e.getMessage(), e);
         }
     }
 
@@ -318,7 +317,7 @@ public class UserDAO {
     }
 
     public void updatePassword(User user, String newPassword) throws SQLException {
-        String hashPass = util.Encrypt.hashPassword(newPassword);
+        String hashPass = Encrypt.hashPassword(newPassword);
         String sql = "UPDATE [User] SET password = ? WHERE userID = ?";
         try (Connection con = DBConnect.getInstance().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, hashPass);
@@ -419,6 +418,44 @@ public class UserDAO {
             ps.executeUpdate();
         }
 
+    }
+
+    // Lấy tên đầy đủ của người dùng theo UserID
+    public String getFullNameByUserId(int userId) {
+        String fullName = null;
+        String sql = "SELECT fullName FROM [User] WHERE UserID = ?";
+
+        try (Connection con = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = con.prepareStatement(sql.toString())) {
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                fullName = rs.getString("fullName");
+            }
+        } catch (Exception e) {
+            System.out.println("Error while retrieving full name: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return fullName;
+    }
+    // Get the avatar image URL of the user based on the UserID
+    public String getAvatarByUserId(int userID) throws Exception {
+        String avatarImg = null;
+        String sql = "SELECT avatar FROM [User] WHERE UserID = ?";
+
+        try (Connection con = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = con.prepareStatement(sql.toString())) {
+            ps.setInt(1, userID);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    avatarImg = rs.getString("avatar");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return avatarImg;
     }
 
 }
