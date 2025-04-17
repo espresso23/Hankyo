@@ -1,52 +1,59 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isELIgnored="false"%>
-<html>
+<!DOCTYPE html>
+<html lang="vi">
 <head>
-    <title>Trang chủ</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .btn-custom {
-            margin: 10px;
-            padding: 15px 30px;
-            font-size: 1.1em;
-        }
-        .container {
-            margin-top: 50px;
-            text-align: center;
-        }
-        .btn-group-vertical {
-            width: 100%;
-            max-width: 300px;
-            margin: 0 auto;
-        }
-        .welcome-text {
-            color: #2c3e50;
-            margin-bottom: 30px;
-        }
-    </style>
+    <link rel="icon" href="asset/png/icon/logo.jpg">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Chủ</title>
+    <link href="asset/css/StyleHomePage.css" rel="stylesheet" type="text/css">
 </head>
+<style>
+    @font-face {
+        font-family: 'Poppins';
+        src: url('${pageContext.request.contextPath}/assets/fonts/Poppins-Regular.ttf') format('ttf');
+    }
+    body{
+        font-family: 'Poppins',sans-serif;
+    }
+    body{
+        background-image:url('asset/png/contentHomePage/background.png');
+        background-repeat:no-repeat;
+    }
+</style>
 <body>
-    <div class="container">
-        <h2 class="welcome-text mb-4">Chào mừng đến với Hệ thống học trực tuyến</h2>
-        <div class="btn-group-vertical">
-            <button type="button" class="btn btn-primary btn-custom mb-3" 
-                    onclick="window.location.href='${pageContext.request.contextPath}/courses'">
-                <i class="fas fa-graduation-cap"></i> Xem tất cả khóa học
-            </button>
-            
-            <button type="button" class="btn btn-success btn-custom mb-3" 
-                    onclick="window.location.href='${pageContext.request.contextPath}/my-courses'">
-                <i class="fas fa-book-reader"></i> Khóa học của tôi
-            </button>
-            
-            <button type="button" class="btn btn-info btn-custom" 
-                    onclick="window.location.href='${pageContext.request.contextPath}/update'">
-                <i class="fas fa-user-edit"></i> Thay đổi thông tin
-            </button>
-        </div>
+<jsp:include page="header.jsp"></jsp:include>
+<div class="wrapper">
+    <div class="searchBar">
+        <form action="search.jsp" method="GET">
+            <input type="text" name="query" placeholder="Tìm kiếm..." required>
+            <button type="submit">🔍</button>
+        </form>
     </div>
+    <div class="sideContent">
+        <div class="smallContent"><img src="asset/png/contentHomePage/TIENG-HAN-SO-CAP-CHO-NGUOI-MOI-BAT-DAU.jpg"></div>
+        <div class="smallContent"><img src="asset/png/contentHomePage/img.png" onclick="window.location.href='NewspaperServlet?id=1'" ></div>
+        <div class="smallContent"><img src="asset/png/contentHomePage/img_1.png"></div>
+        <div class="smallContent"><img src="asset/png/contentHomePage/img_2.png"></div>
+        <div class="smallContent"><img src="asset/png/contentHomePage/img_3.png"></div>
+        <div class="smallContent"><img src="asset/png/contentHomePage/img_4.png"></div>
+        <div class="smallContent"><img src="asset/png/contentHomePage/img_5.png"></div>
+        <div class="smallContent"><img src="asset/png/contentHomePage/img_6.png"></div>
+        <div class="smallContent"><img src="asset/png/contentHomePage/img_7.png"></div>
+        <div class="smallContent"><img src="asset/png/contentHomePage/img_8.png"></div>
+    </div>
+    <div class="mainContent">
+        <div class="bigContent" ><img src="asset/png/contentHomePage/banner-south-korea.jpg"></div>
+        <div class="smallContent"><img src="asset/png/contentHomePage/img_9.png"></div>
+        <div class="smallContent"><img src="asset/png/contentHomePage/img_10.png"></div>
+        <div class="smallContent"><img src="asset/png/contentHomePage/img_12.png"></div>
+        <div class="smallContent"><img src="asset/png/contentHomePage/img_13.png"></div>
+        <div class="smallContent"><img src="asset/png/contentHomePage/img_14.png"></div>
+        <div class="smallContent"><img src="asset/png/contentHomePage/img_15.png"></div>
+        <div class="smallContent"><img src="asset/png/contentHomePage/img_16.png"></div>
+    </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
 </body>
 </html>
