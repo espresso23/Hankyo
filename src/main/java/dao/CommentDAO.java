@@ -20,7 +20,7 @@ public class CommentDAO {
     private DBConnect dbContext;
 
     public CommentDAO() {
-        dbContext = DBConnect.getInstance();
+        dbContext = DBConnect.getInstance();g
     }
 
     // Method to add a comment
