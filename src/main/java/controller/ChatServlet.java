@@ -76,7 +76,7 @@ public class ChatServlet extends HttpServlet {
         // Lấy userID từ URL
         String pathInfo = request.getPathInfo();
         if (pathInfo == null || pathInfo.length() <= 1) {
-            response.sendRedirect(request.getContextPath() + "/home.jsp");
+            response.sendRedirect(request.getContextPath() + "/courseHeader.jsp");
             return;
         }
 
@@ -85,7 +85,7 @@ public class ChatServlet extends HttpServlet {
 
         // Kiểm tra userID từ URL có khớp với session không
         if (!userID.equals(sessionUserID.toString())) {
-            response.sendRedirect(request.getContextPath() + "/home.jsp");
+            response.sendRedirect(request.getContextPath() + "/courseHeader.jsp");
             return;
         }
 

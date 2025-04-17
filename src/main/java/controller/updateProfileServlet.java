@@ -39,7 +39,7 @@ public class updateProfileServlet extends HttpServlet {
                 }
             } catch (NumberFormatException e) {
                 request.setAttribute("errorMsg", "User ID không hợp lệ.");
-                request.getRequestDispatcher("home.jsp").forward(request, response);
+                request.getRequestDispatcher("courseHeader.jsp").forward(request, response);
                 return;
             }
         }
@@ -54,7 +54,7 @@ public class updateProfileServlet extends HttpServlet {
             }
         } else {
             request.setAttribute("errorMsg", "User ID bị thiếu.");
-            request.getRequestDispatcher("home.jsp").forward(request, response);
+            request.getRequestDispatcher("courseHeader.jsp").forward(request, response);
         }
     }
 
@@ -161,7 +161,7 @@ public class updateProfileServlet extends HttpServlet {
                 } else {
                     session.setAttribute("msg", "Không có thay đổi nào được lưu.");
                 }
-                response.sendRedirect("home.jsp");
+                response.sendRedirect("courseHeader.jsp");
             } catch (Exception e) {
                 session.setAttribute("errorMsg", "Lỗi cập nhật hồ sơ: " + e.getMessage());
                 response.sendRedirect("updateprofile.jsp");

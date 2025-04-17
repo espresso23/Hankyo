@@ -46,7 +46,7 @@ public class FacebookLoginServlet extends HttpServlet {
             createUserSession(request, user);
 
             // Redirect to home page after successful login
-            response.sendRedirect("home.jsp");
+            response.sendRedirect("courseHeader.jsp");
 
         } catch (Exception e) {
             e.printStackTrace(); // Log lỗi đầy đủ trong console
