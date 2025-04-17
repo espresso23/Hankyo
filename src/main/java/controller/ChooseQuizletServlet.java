@@ -6,6 +6,7 @@ import dao.QuizletDAO;
 import model.CustomFlashCard;
 import model.FavoriteFlashCard;
 import model.SystemFlashCard;
+import util.DBConnect;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -14,6 +15,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 @WebServlet("/flashCard")
@@ -23,6 +29,10 @@ public class ChooseQuizletServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html; charset=UTF-8");
+
         HttpSession session = request.getSession();
         Integer learnerID = (Integer) session.getAttribute("learnerID");
         String topic = request.getParameter("topic");
@@ -50,31 +60,34 @@ public class ChooseQuizletServlet extends HttpServlet {
                 request.setAttribute("error", "No favorite flashcards found for list: " + topic);
             } else {
                 String flashCardsJson = gson.toJson(flashCards);
+                System.out.println("Favorite flashCardsJson: " + flashCardsJson);
                 request.setAttribute("flashCardsJson", flashCardsJson);
                 request.setAttribute("flashCards", flashCards);
                 request.setAttribute("topic", topic);
-                request.setAttribute("nameOfList", topic);
                 request.setAttribute("type", "favorite");
             }
+            request.getRequestDispatcher("selectTopic.jsp").forward(request, response);
         } else if ("custom".equals(type)) {
             if (learnerID == null) {
                 response.sendRedirect("login.jsp");
                 return;
             }
-            System.out.println("Fetching custom flashcards for learnerID: " + learnerID + ", nameOfList: " + topic);
+            System.out.println("Fetching custom flashcards for learnerID: " + learnerID + ", topic: " + topic);
 
             List<CustomFlashCard> flashCards = quizletDAO.getAllCustomFlashCardByTopicAndLeanerID(learnerID, topic);
+            System.out.println("Custom flashCards: " + flashCards);
 
             if (flashCards == null || flashCards.isEmpty()) {
-                request.setAttribute("error", "No custom flashcards found for list: " + topic);
+                request.setAttribute("error", "No custom flashcards found for topic: " + topic);
             } else {
                 String flashCardsJson = gson.toJson(flashCards);
+                System.out.println("Custom flashCardsJson: " + flashCardsJson);
                 request.setAttribute("flashCardsJson", flashCardsJson);
                 request.setAttribute("flashCards", flashCards);
                 request.setAttribute("topic", topic);
-                request.setAttribute("nameOfList", topic);
                 request.setAttribute("type", "custom");
             }
+            request.getRequestDispatcher("customQuizlet.jsp").forward(request, response);
         } else {
             System.out.println("Fetching system flashcards for topic: " + topic);
 
@@ -84,21 +97,33 @@ public class ChooseQuizletServlet extends HttpServlet {
                 request.setAttribute("error", "No system flashcards found for topic: " + topic);
             } else {
                 String flashCardsJson = gson.toJson(flashCards);
+                System.out.println("System flashCardsJson: " + flashCardsJson);
                 request.setAttribute("flashCardsJson", flashCardsJson);
                 request.setAttribute("flashCards", flashCards);
                 request.setAttribute("topic", topic);
                 request.setAttribute("type", "system");
             }
+            request.getRequestDispatcher("selectTopic.jsp").forward(request, response);
         }
-
-        request.getRequestDispatcher("selectTopic.jsp").forward(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("application/json; charset=UTF-8");
+
         String action = request.getParameter("action");
         QuizletDAO dao = new QuizletDAO();
+        HttpSession session = request.getSession();
+        Integer learnerID = (Integer) session.getAttribute("learnerID");
+
+        if (learnerID == null) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"error\": \"Please login first\"}");
+            return;
+        }
 
         if (action != null) {
             switch (action) {
@@ -109,11 +134,14 @@ public class ChooseQuizletServlet extends HttpServlet {
                         boolean success = dao.deleteCustomFlashCard(cfcid);
                         if (success) {
                             response.setStatus(HttpServletResponse.SC_OK);
+                            response.getWriter().write("{\"message\": \"Delete successful\"}");
                         } else {
                             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                            response.getWriter().write("{\"error\": \"Delete failed: Flashcard not found\"}");
                         }
                     } catch (NumberFormatException e) {
                         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        response.getWriter().write("{\"error\": \"Invalid cfcid\"}");
                     }
                     break;
 
@@ -127,23 +155,109 @@ public class ChooseQuizletServlet extends HttpServlet {
                             boolean success = dao.updateCustomFlashCard(cfcid, word, mean);
                             if (success) {
                                 response.setStatus(HttpServletResponse.SC_OK);
+                                response.getWriter().write("{\"message\": \"Update successful\"}");
                             } else {
                                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                                response.getWriter().write("{\"error\": \"Update failed: Flashcard not found\"}");
                             }
                         } else {
                             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                            response.getWriter().write("{\"error\": \"Word or mean cannot be empty\"}");
                         }
                     } catch (NumberFormatException e) {
                         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        response.getWriter().write("{\"error\": \"Invalid cfcid\"}");
+                    }
+                    break;
+
+                case "add":
+                    String mode = request.getParameter("mode");
+                    String topic = request.getParameter("topic");
+                    List<CustomFlashCard> newFlashcards = new ArrayList<>();
+
+                    if (topic == null || topic.trim().isEmpty()) {
+                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        response.getWriter().write("{\"error\": \"Topic is required\"}");
+                        return;
+                    }
+
+                    if ("manual".equals(mode)) {
+                        String flashCardsInput = request.getParameter("flashCards");
+                        if (flashCardsInput == null || flashCardsInput.trim().isEmpty()) {
+                            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                            response.getWriter().write("{\"error\": \"Flashcards input is required\"}");
+                            return;
+                        }
+
+                        String[] pairs = flashCardsInput.split(";");
+                        for (String pair : pairs) {
+                            String[] parts = pair.split(":");
+                            if (parts.length != 2 || parts[0].trim().isEmpty() || parts[1].trim().isEmpty()) {
+                                continue; // Skip invalid pairs
+                            }
+                            String newWord = parts[0].trim();
+                            String newMean = parts[1].trim();
+                            CustomFlashCard cf = new CustomFlashCard(learnerID, newWord, newMean, topic);
+                            if (dao.addCustomFlashCard(cf)) {
+                                // Get the new CFCID
+                                int newCfcid = getLastInsertedCfcid(dao);
+                                cf.setCFCID(newCfcid);
+                                newFlashcards.add(cf);
+                            }
+                        }
+                    } else if ("individual".equals(mode)) {
+                        word = request.getParameter("word");
+                        mean = request.getParameter("mean");
+                        if (word == null || word.trim().isEmpty() || mean == null || mean.trim().isEmpty()) {
+                            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                            response.getWriter().write("{\"error\": \"Word and mean are required\"}");
+                            return;
+                        }
+                        CustomFlashCard cf = new CustomFlashCard(learnerID, word, mean, topic);
+                        if (dao.addCustomFlashCard(cf)) {
+                            int newCfcid = getLastInsertedCfcid(dao);
+                            cf.setCFCID(newCfcid);
+                            newFlashcards.add(cf);
+                        }
+                    } else {
+                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        response.getWriter().write("{\"error\": \"Invalid mode\"}");
+                        return;
+                    }
+
+                    if (!newFlashcards.isEmpty()) {
+                        response.setStatus(HttpServletResponse.SC_OK);
+                        response.getWriter().write(new Gson().toJson(newFlashcards));
+                    } else {
+                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        response.getWriter().write("{\"error\": \"No flashcards added\"}");
                     }
                     break;
 
                 default:
-                    doGet(request, response);
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().write("{\"error\": \"Invalid action\"}");
                     break;
             }
         } else {
-            doGet(request, response);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\": \"Missing action\"}");
         }
+    }
+
+    private int getLastInsertedCfcid(QuizletDAO dao) {
+        try {
+            Connection connection =  DBConnect.getInstance().getConnection();;
+
+
+            PreparedStatement stmt = connection.prepareStatement("SELECT LAST_INSERT_ID() as cfcid");
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("cfcid");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 }

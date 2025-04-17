@@ -1,14 +1,11 @@
 package model;
 
 public class CustomFlashCard {
-   private int CFCID;
+    private int CFCID;
     private Integer learnerID;
-   private String word;
-   private String mean;
+    private String word;
+    private String mean;
     private String topic;
-    public CustomFlashCard(int learnerID) {
-    }
-
 
     public CustomFlashCard(Integer learnerID, String word, String mean, String topic) {
         this.learnerID = learnerID;
@@ -17,8 +14,9 @@ public class CustomFlashCard {
         this.topic = topic;
     }
 
-
-    public CustomFlashCard(String word, String mean, String topic) {
+    public CustomFlashCard(int CFCID, Integer learnerID, String word, String mean, String topic) {
+        this.CFCID = CFCID;
+        this.learnerID = learnerID;
         this.word = word;
         this.mean = mean;
         this.topic = topic;
@@ -68,10 +66,10 @@ public class CustomFlashCard {
     public String toString() {
         return "CustomFlashCard{" +
                 "CFCID=" + CFCID +
-                ", topic='" + topic + '\'' +
+                ", learnerID=" + learnerID +
                 ", word='" + word + '\'' +
                 ", mean='" + mean + '\'' +
-                ", learnerID=" + learnerID +
+                ", topic='" + topic + '\'' +
                 '}';
     }
 }

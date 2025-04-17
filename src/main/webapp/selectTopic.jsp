@@ -1,3 +1,4 @@
+
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" isELIgnored="false" %>
 <html>
@@ -8,7 +9,7 @@
     <style>
         @font-face {
             font-family: 'Poppins';
-            src: url('${pageContext.request.contextPath}/assets/fonts/Poppins-Regular.ttf') format('ttf');
+            src: url('${pageContext.request.contextPath}/assets/fonts/Poppins-Regular.ttf') format('truetype');
         }
         * {
             margin: 0;
@@ -21,7 +22,16 @@
             min-height: 100vh;
             background-position: left center;
         }
-
+        .debug {
+            color: #888;
+            font-size: 0.9rem;
+            margin: 5px 0;
+        }
+        .no-data {
+            text-align: center;
+            color: #888;
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <jsp:include page="header.jsp"></jsp:include>
@@ -29,7 +39,6 @@
 <div class="container">
     <div class="containerSmall">
         <h1>Flashcards - ${topic}</h1>
-        <!-- Debug output -->
         <p class="debug">Type: ${type}</p>
         <p class="debug">FlashCards size: <c:out value="${flashCards != null ? flashCards.size() : 'null'}" /></p>
         <div class="flashcard-container">
@@ -46,11 +55,9 @@
                         </div>
                     </div>
                     <div class="nextButton">→</div>
+                    <div class="flashcard-counter"></div>
                 </c:otherwise>
             </c:choose>
-            <c:if test="${not empty flashCardsJson}">
-                <div class="flashcard-counter"></div>
-            </c:if>
         </div>
     </div>
     <div class="wordContainer">
@@ -64,24 +71,8 @@
             <tbody>
             <c:forEach items="${flashCards}" var="flashcard">
                 <tr>
-                    <c:choose>
-                        <c:when test="${type == 'system'}">
-                            <td><c:out value="${flashcard.dictionary.word}" /></td>
-                            <td><c:out value="${flashcard.dictionary.mean}" /></td>
-                        </c:when>
-                        <c:when test="${type == 'favorite'}">
-                            <td><c:out value="${flashcard.dictionary.word}" /></td>
-                            <td><c:out value="${flashcard.dictionary.mean}" /></td>
-                        </c:when>
-                        <c:when test="${type == 'custom'}">
-                            <td><c:out value="${flashcard.word}" /></td>
-                            <td><c:out value="${flashcard.mean}" /></td>
-                        </c:when>
-                        <c:otherwise>
-                            <td>Error: Unknown type</td>
-                            <td>Error: Unknown type</td>
-                        </c:otherwise>
-                    </c:choose>
+                    <td><c:out value="${flashcard.dictionary.word}" /></td>
+                    <td><c:out value="${flashcard.dictionary.mean}" /></td>
                 </tr>
             </c:forEach>
             </tbody>

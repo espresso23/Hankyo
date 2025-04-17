@@ -14,11 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class QuizletDAO {
-    private Connection connection;
-
-    public QuizletDAO() {
-        this.connection = DBConnect.getInstance().getConnection();
-    }
 
     public List<SystemFlashCard> getAllSystemFlashCardByTopic(String topic) {
         List<SystemFlashCard> list = new ArrayList<>();
@@ -28,7 +23,11 @@ public class QuizletDAO {
                 "JOIN Dictionary d ON s.wordID = d.wordID " +
                 "WHERE s.topic = ?";
 
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            if (connection.isClosed()) {
+                throw new SQLException("Connection is closed before use");
+            }
             statement.setString(1, topic);
 
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -62,7 +61,11 @@ public class QuizletDAO {
         List<Dictionary> list = new ArrayList<>();
         String query = "SELECT wordID, word, definition, type, mean FROM Dictionary WHERE wordID = ?";
 
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            if (connection.isClosed()) {
+                throw new SQLException("Connection is closed before use");
+            }
             statement.setInt(1, wordID);
 
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -85,7 +88,11 @@ public class QuizletDAO {
 
     public boolean addCustomFlashCard(CustomFlashCard cf) {
         String insertQuery = "INSERT INTO CustomFlashCard (learnerID, word, mean, topic) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement insertStmt = connection.prepareStatement(insertQuery)) {
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement insertStmt = connection.prepareStatement(insertQuery)) {
+            if (connection.isClosed()) {
+                throw new SQLException("Connection is closed before use");
+            }
             insertStmt.setInt(1, cf.getLearnerID());
             insertStmt.setString(2, cf.getWord());
             insertStmt.setString(3, cf.getMean());
@@ -100,7 +107,11 @@ public class QuizletDAO {
 
     public boolean deleteCustomFlashCard(int cfcid) {
         String query = "DELETE FROM CustomFlashCard WHERE CFCID = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            if (connection.isClosed()) {
+                throw new SQLException("Connection is closed before use");
+            }
             stmt.setInt(1, cfcid);
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -112,7 +123,11 @@ public class QuizletDAO {
 
     public boolean updateCustomFlashCard(int cfcid, String word, String mean) {
         String query = "UPDATE CustomFlashCard SET word = ?, mean = ? WHERE CFCID = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            if (connection.isClosed()) {
+                throw new SQLException("Connection is closed before use");
+            }
             stmt.setString(1, word);
             stmt.setString(2, mean);
             stmt.setInt(3, cfcid);
@@ -128,7 +143,11 @@ public class QuizletDAO {
         List<CustomFlashCard> list = new ArrayList<>();
         String query = "SELECT CFCID, word, mean, topic, learnerID FROM CustomFlashCard WHERE topic = ? AND learnerID = ?";
 
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            if (connection.isClosed()) {
+                throw new SQLException("Connection is closed before use");
+            }
             statement.setString(1, topic);
             statement.setInt(2, learnerID);
 
@@ -141,26 +160,30 @@ public class QuizletDAO {
                     System.out.println("Raw learnerID: " + resultSet.getInt("learnerID"));
 
                     CustomFlashCard customFlashCard = new CustomFlashCard(
+                            resultSet.getInt("learnerID"),
                             resultSet.getString("word") != null ? resultSet.getString("word").trim() : "",
                             resultSet.getString("mean") != null ? resultSet.getString("mean").trim() : "",
                             resultSet.getString("topic") != null ? resultSet.getString("topic").trim() : ""
                     );
                     customFlashCard.setCFCID(resultSet.getInt("CFCID"));
-                    customFlashCard.setLearnerID(resultSet.getInt("learnerID"));
                     list.add(customFlashCard);
                 }
             }
         } catch (SQLException e) {
             throw new RuntimeException("Error fetching custom flashcards: " + e.getMessage(), e);
         }
+        System.out.println("CustomFlashCard list: " + list); // Debug
         return list;
     }
 
     public List<String> getAllFavoriteFlashCardListNameByLearnerID(int learnerID) throws SQLException {
         List<String> list = new ArrayList<>();
         String query = "SELECT DISTINCT nameOfList FROM favoriteFlashCard WHERE learnerID = ?";
-        try (Connection con = DBConnect.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(query)) {
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = connection.prepareStatement(query)) {
+            if (connection.isClosed()) {
+                throw new SQLException("Connection is closed before use");
+            }
             ps.setInt(1, learnerID);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -174,9 +197,12 @@ public class QuizletDAO {
     public List<String> getAllTopics() throws SQLException {
         List<String> list = new ArrayList<>();
         String query = "SELECT DISTINCT topic FROM SystemFlashCard";
-        try (Connection con = DBConnect.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(query);
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = connection.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
+            if (connection.isClosed()) {
+                throw new SQLException("Connection is closed before use");
+            }
             while (rs.next()) {
                 list.add(rs.getString("topic"));
             }
@@ -187,8 +213,11 @@ public class QuizletDAO {
     public List<String> getAllTopicsCustomFlashCardByLearnerID(int learnerID) throws SQLException {
         List<String> list = new ArrayList<>();
         String query = "SELECT DISTINCT topic FROM CustomFlashCard WHERE learnerID = ?";
-        try (Connection con = DBConnect.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(query)) {
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = connection.prepareStatement(query)) {
+            if (connection.isClosed()) {
+                throw new SQLException("Connection is closed before use");
+            }
             ps.setInt(1, learnerID);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
