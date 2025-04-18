@@ -24,8 +24,8 @@ public class DictionaryServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         HttpSession session = request.getSession();
-        Integer learnerID = (Integer) session.getAttribute("learnerID");
-
+        Learner learner = (Learner) session.getAttribute("learner");
+        Integer learnerID = learner.getLearnerID();
         if (learnerID == null) {
             response.sendRedirect("login.jsp");
             return;

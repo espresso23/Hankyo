@@ -47,9 +47,9 @@ public class CustomFlashCardServlet extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
 
-
         HttpSession session = request.getSession();
-        Integer learnerID = (Integer) session.getAttribute("learnerID");
+        Learner learner = (Learner) session.getAttribute("learner");
+        Integer learnerID = learner.getLearnerID();
 
         if (learnerID == null) {
             response.sendRedirect("login.jsp");

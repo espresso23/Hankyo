@@ -80,7 +80,8 @@ public class QuizletServlet extends HttpServlet {
         response.setContentType("application/json");
 
         HttpSession session = request.getSession();
-        Integer learnerID = (Integer) session.getAttribute("learnerID");
+        Learner learner = (Learner) session.getAttribute("learner");
+        Integer learnerID = learner.getLearnerID();
         if (learnerID == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("{\"count\": 0}");

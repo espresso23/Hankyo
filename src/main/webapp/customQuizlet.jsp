@@ -106,7 +106,7 @@
   window.contextPath = '${pageContext.request.contextPath}';
   window.flashCardsJson = ${flashCardsJson != null ? flashCardsJson : '[]'};
 </script>
-<script src="${pageContext.request.contextPath}/asset/js/customQuizlet.js"></script>
+<script src="asset/js/customQuizlet.js"></script>
 <jsp:include page="footer.jsp"></jsp:include>
 </body>
 </html>
