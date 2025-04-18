@@ -268,7 +268,7 @@
 <body>
 <jsp:include page="header.jsp"></jsp:include>
 <div class="container">
-  <img class="overlay-image" src="${pageContext.request.contextPath}/asset/png/quizlet/cuteRabbit.png" alt="Quizlet Logo">
+  <img class="overlay-image" src="asset/png/quizlet/cuteRabbit.png" alt="Quizlet Logo">
   <h1>Chọn Topic Flashcard</h1>
   <div class="tabs">
     <div class="tab active" data-tab="system">System Flashcards</div>
@@ -362,7 +362,7 @@
         </div>
       </c:if>
       <button class="toggle-btn" onclick="toggleInputMode()">Chuyển sang nhập từng ô</button>
-      <form id="flashcardForm" action="addFlashCard" method="post">
+      <form id="flashcardForm"  method="post">
         <div class="manual-input active">
           <input type="text" id="manualTopic" name="topic" placeholder="Nhập Topic" required />
           <input type="text" id="manualFlashCards" name="flashCards"

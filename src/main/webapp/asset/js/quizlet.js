@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         console.log('Sending add request:', body);
-        fetch(`${window.contextPath}/addFlashCard`, {
+        fetch(`addFlashCard`,    {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'

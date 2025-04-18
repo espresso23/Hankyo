@@ -2,6 +2,7 @@ package controller;
 
 import dao.QuizletDAO;
 import model.CustomFlashCard;
+import org.json.JSONObject;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -10,8 +11,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @WebServlet("/addFlashCard")
 public class CustomFlashCardServlet extends HttpServlet {
@@ -41,7 +44,7 @@ public class CustomFlashCardServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
-        response.setContentType("text/html;charset=UTF-8");
+
 
         HttpSession session = request.getSession();
         Integer learnerID = (Integer) session.getAttribute("learnerID");
@@ -121,9 +124,24 @@ public class CustomFlashCardServlet extends HttpServlet {
         } else {
             errorMessages.add("Dữ liệu không hợp lệ.");
         }
-
+        response.setContentType("application/json;charset=UTF-8");
+        PrintWriter out = response.getWriter();
+        JSONObject jsonResponse = new JSONObject();
+        jsonResponse.put("success", !successMessages.isEmpty());
+        jsonResponse.put("flashcards", successMessages.stream()
+                .map(msg -> {
+                    String[] parts = msg.split(" - Nghĩa: ");
+                    JSONObject card = new JSONObject();
+                    card.put("word", parts[0].replace("Từ vựng: ", ""));
+                    card.put("mean", parts[1]);
+                    return card;
+                })
+                .collect(Collectors.toList()));
+        jsonResponse.put("errorMessages", errorMessages);
+        out.print(jsonResponse.toString());
+        out.flush();
         request.setAttribute("successMessages", successMessages);
         request.setAttribute("errorMessages", errorMessages);
-        request.getRequestDispatcher("quizlet").forward(request, response);
+       // request.getRequestDispatcher("quizlet").forward(request, response);
     }
 }
