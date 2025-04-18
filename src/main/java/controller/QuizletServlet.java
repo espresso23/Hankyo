@@ -1,14 +1,11 @@
 package controller;
 
-<<<<<<< HEAD
-import dao.QuizletDAO;
-=======
 import dao.DictionaryDAO;
 import dao.QuizletDAO;
 import model.CustomFlashCard;
 import model.FavoriteFlashCard;
+import model.Learner;
 import model.SystemFlashCard;
->>>>>>> 880bb7bc0259975e40dc8b8108c3d0689bcde447
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -17,43 +14,25 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-<<<<<<< HEAD
-import java.sql.SQLException;
-=======
 import java.util.ArrayList;
->>>>>>> 880bb7bc0259975e40dc8b8108c3d0689bcde447
 import java.util.List;
 
 @WebServlet("/quizlet")
 public class QuizletServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-<<<<<<< HEAD
-=======
         request.setCharacterEncoding("UTF-8");
         response.setContentType("text/html; charset=UTF-8");
 
->>>>>>> 880bb7bc0259975e40dc8b8108c3d0689bcde447
         HttpSession session = request.getSession();
-        Integer learnerID = (Integer) session.getAttribute("learnerID");
+
+        Learner learner = (Learner) session.getAttribute("learner");
+        Integer learnerID = learner.getLearnerID();
         if (learnerID == null) {
             response.sendRedirect("login.jsp");
             return;
         }
 
         QuizletDAO quizletDAO = new QuizletDAO();
-<<<<<<< HEAD
-        try {
-            List<String> listTopic = quizletDAO.getAllTopics();
-            request.setAttribute("listTopic", listTopic);
-            request.setAttribute("learnerID", learnerID);
-            request.getRequestDispatcher("quizlet.jsp").forward(request, response);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error");
-        }
-    }
-}
-=======
         DictionaryDAO dictionaryDAO = new DictionaryDAO();
 
         try {
@@ -138,4 +117,3 @@ public class QuizletServlet extends HttpServlet {
         }
     }
 }
->>>>>>> 880bb7bc0259975e40dc8b8108c3d0689bcde447

@@ -135,6 +135,16 @@
     <div class="navbarContent"><a href="dictionary">Thi Thử</a></div>
     <div class="navbarContent"><a href="/about-us.html">Về Chúng Tôi</a></div>
     <div class="navbarContent"><a href="${pageContext.request.contextPath}/chat/<%= session.getAttribute("userID") %>">Phòng Chat</a></div>
+    <!-- Thêm icon giỏ hàng vào đây -->
+    <div class="navbarContent">
+      <a class="nav-link position-relative" href="cart">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="cart-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+              style="display: ${cartItemCount > 0 ? 'block' : 'none'}">
+          ${cartItemCount}
+        </span>
+      </a>
+    </div>
 
 
     <span>Xin chào, <%= session.getAttribute("username") %>!</span>

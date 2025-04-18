@@ -1,6 +1,7 @@
 package controller;
 
 import dao.QuizletDAO;
+import model.Learner;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -17,22 +18,15 @@ public class ListCustomFlashCardServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession();
-        Integer learnerID = (Integer) session.getAttribute("learnerID");
-<<<<<<< HEAD
-=======
+        Learner learner = (Learner) session.getAttribute("learner");
+        Integer learnerID = learner.getLearnerID();
         String topic = request.getParameter("topic"); // Lấy topic từ URL
->>>>>>> 880bb7bc0259975e40dc8b8108c3d0689bcde447
 
         if (learnerID == null) {
             response.sendRedirect("login.jsp"); // Chuyển hướng nếu chưa đăng nhập
             return;
         }
 
-<<<<<<< HEAD
-        QuizletDAO quizletDAO = new QuizletDAO();
-        try {
-            List<String> listTopic = quizletDAO.getAllTopicsCustomFlashCardByLearnerID(learnerID);
-=======
         if (topic == null) {
             request.setAttribute("error", "Topic parameter is missing");
             request.getRequestDispatcher("error.jsp").forward(request, response);
@@ -51,7 +45,6 @@ public class ListCustomFlashCardServlet extends HttpServlet {
                 String type = "custom";
                 request.setAttribute("type", type);
             }
->>>>>>> 880bb7bc0259975e40dc8b8108c3d0689bcde447
             request.setAttribute("listTopic", listTopic);
             request.setAttribute("learnerID", learnerID);
             request.getRequestDispatcher("listCustomFlashCard.jsp").forward(request, response);
@@ -59,10 +52,4 @@ public class ListCustomFlashCardServlet extends HttpServlet {
             throw new ServletException("Lỗi truy vấn CSDL", e);
         }
     }
-<<<<<<< HEAD
 }
-
-
-=======
-}
->>>>>>> 880bb7bc0259975e40dc8b8108c3d0689bcde447
