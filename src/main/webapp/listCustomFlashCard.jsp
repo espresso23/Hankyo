@@ -112,12 +112,19 @@
 <body>
 <div class="container">
   <h1>Select a Topic</h1>
+<<<<<<< HEAD
 
+=======
+>>>>>>> 880bb7bc0259975e40dc8b8108c3d0689bcde447
   <!-- Thành phần 2: Thanh cuộn ngang các topic -->
   <div class="topics-scroll">
     <c:forEach var="item" items="${listTopic}">
       <div class="topic-box">
+<<<<<<< HEAD
         <a href="flashCard?topic=${item}&flashCardID=1">${item}</a>
+=======
+        <a href="flashCard?topic=${item}&type=${type}">${item}</a>
+>>>>>>> 880bb7bc0259975e40dc8b8108c3d0689bcde447
       </div>
     </c:forEach>
   </div>

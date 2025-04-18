@@ -1,6 +1,7 @@
 package model;
 
 public class CustomFlashCard {
+<<<<<<< HEAD
    private int CFCID;
     private Integer learnerID;
    private String word;
@@ -9,6 +10,13 @@ public class CustomFlashCard {
     public CustomFlashCard(int learnerID) {
     }
 
+=======
+    private int CFCID;
+    private Integer learnerID;
+    private String word;
+    private String mean;
+    private String topic;
+>>>>>>> 880bb7bc0259975e40dc8b8108c3d0689bcde447
 
     public CustomFlashCard(Integer learnerID, String word, String mean, String topic) {
         this.learnerID = learnerID;
@@ -17,12 +25,21 @@ public class CustomFlashCard {
         this.topic = topic;
     }
 
+<<<<<<< HEAD
     public CustomFlashCard(int CFCID, String topic, String word, String mean, Integer learnerID) {
         this.CFCID = CFCID;
         this.topic = topic;
         this.word = word;
         this.mean = mean;
         this.learnerID = learnerID;
+=======
+    public CustomFlashCard(int CFCID, Integer learnerID, String word, String mean, String topic) {
+        this.CFCID = CFCID;
+        this.learnerID = learnerID;
+        this.word = word;
+        this.mean = mean;
+        this.topic = topic;
+>>>>>>> 880bb7bc0259975e40dc8b8108c3d0689bcde447
     }
 
     public int getCFCID() {
@@ -69,6 +86,7 @@ public class CustomFlashCard {
     public String toString() {
         return "CustomFlashCard{" +
                 "CFCID=" + CFCID +
+<<<<<<< HEAD
                 ", topic='" + topic + '\'' +
                 ", word='" + word + '\'' +
                 ", mean='" + mean + '\'' +
@@ -76,3 +94,12 @@ public class CustomFlashCard {
                 '}';
     }
 }
+=======
+                ", learnerID=" + learnerID +
+                ", word='" + word + '\'' +
+                ", mean='" + mean + '\'' +
+                ", topic='" + topic + '\'' +
+                '}';
+    }
+}
+>>>>>>> 880bb7bc0259975e40dc8b8108c3d0689bcde447
