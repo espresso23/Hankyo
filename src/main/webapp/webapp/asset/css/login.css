@@ -1,0 +1,69 @@
+.container-fluid{
+    display: grid;
+    grid-template-columns: repeat(12, 1fr) ;
+    height: 62vh;
+}
+
+
+
+.login-form{
+    display: flex;
+    flex-direction: column;
+    margin: 50px;
+    background-color: #f8f8f8;
+    border-radius: 5px;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+    grid-column: 4/13;
+    width: 80vh;
+    height: fit-content;
+    padding: 5vh;
+}
+h2{
+    margin: 2vh;
+    align-self: center;
+}
+button{
+    border: none;
+    padding: 0.5rem;
+    background-color: #F8ED8C;
+    border-radius: 10px;
+}
+.nameInput input{
+    border-radius: 15px;
+    width: 100%;
+    padding: 15px 20px;
+    margin: 0.5rem ;
+}
+.passInput input{
+    border-radius: 15px;
+    width: 100%;
+    padding: 15px 20px;
+    margin: 0.5rem ;
+}
+.loginButton{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+.loginButton label{
+    margin: 1rem;
+}
+.loginButton button{
+    font-size: 18px;
+    width: 7rem;
+    height: 3rem;
+}
+.loginFacebook{
+    margin-left: 35px;
+}
+.loginMethod{
+    display: flex;
+    justify-content: center;
+    margin: 15px;
+}
+.forgotPassword{
+    display: flex;
+    justify-content: center;
+    margin: 15px;
+}
+

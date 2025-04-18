@@ -1,0 +1,217 @@
+
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    margin-bottom: 70px;
+    padding: 32px;
+    background-image: linear-gradient(#FFB8E0, #B4EBE6);
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.custom-topics-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 32px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.custom-topics-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.custom-topics-section img {
+    width: 300px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+h1.custom-topics-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+    text-align: left;
+}
+
+h1.system-topics {
+    font-family: 'Inter', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 32px;
+    text-align: center;
+}
+
+.favorite-section {
+    display: flex;
+    gap: 16px;
+}
+
+.favorite-btn, .custom-btn {
+    width: 100px;
+    height: 100px;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: transform 0.2s, background-color 0.3s;
+}
+
+.favorite-btn {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+}
+
+.custom-btn {
+    background: linear-gradient(135deg, #2196F3, #1976D2);
+}
+
+.favorite-btn:hover, .custom-btn:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+.favorite-btn:focus, .custom-btn:focus, .topic-box a:focus {
+    outline: 2px solid #2196F3;
+    outline-offset: 2px;
+}
+
+.separator-image {
+    width: 100%;
+    max-width: 600px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 32px 0;
+}
+
+.system-topics-scroll {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding: 16px;
+    width: 100%;
+    scroll-behavior: smooth;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.topic-box {
+    flex: 0 0 160px;
+    height: 160px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.topic-box:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.topic-box a {
+    font-size: 1rem;
+    color: #333;
+    text-decoration: none;
+    padding: 16px;
+    text-align: center;
+}
+
+.system-topics-scroll::-webkit-scrollbar {
+    height: 8px;
+}
+
+.system-topics-scroll::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 4px;
+}
+
+.system-topics-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+}
+
+@media (min-width: 768px) {
+    .system-topics-scroll {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        overflow-x: visible;
+    }
+}
+
+@media (max-width: 600px) {
+    h1.custom-topics-title {
+        font-size: 1.4rem;
+    }
+
+    h1.system-topics {
+        font-size: 1.8rem;
+    }
+
+    .custom-topics-section img {
+        width: 100%;
+        height: auto;
+    }
+
+    .favorite-section {
+        flex-direction: row;
+        gap: 12px;
+    }
+
+    .favorite-btn, .custom-btn {
+        width: 80px;
+        height: 80px;
+        font-size: 0.9rem;
+    }
+
+    .topic-box {
+        width: 140px;
+        height: 140px;
+    }
+
+    .separator-image {
+        height: 100px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+    .container {
+        padding: 24px;
+    }
+
+    .topic-box {
+        width: 150px;
+        height: 150px;
+    }
+}
+.flashcard-counter {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 1rem;
+    color: #333;
+    font-weight: 500;
+}
