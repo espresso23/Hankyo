@@ -1,6 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
+<%@taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -10,6 +11,37 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="asset/css/addCourseContent.css">
+    <style>
+        .image-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .fixed-size-image {
+            width: 200px;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        
+        .fixed-size-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+        
+        .fixed-size-image:hover img {
+            transform: scale(1.05);
+        }
+    </style>
 </head>
 <body>
 <c:import url="header.jsp"/>
@@ -40,31 +72,85 @@
         <div class="col-md-4">
             <div class="card sticky-top" style="top: 20px;">
                 <div class="card-header">
-                    <i class="fas fa-plus-circle me-2"></i>Thêm nội dung mới
-                </div>
-                <div class="card-body">
-                    <ul class="nav nav-tabs" id="contentTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
+            <i class="fas fa-plus-circle me-2"></i>Thêm nội dung mới
+        </div>
+        <div class="card-body">
+            <ul class="nav nav-tabs" id="contentTabs" role="tablist">
+                <li class="nav-item" role="presentation">
                             <button class="nav-link active" id="video-tab" data-bs-toggle="tab" data-bs-target="#video" type="button">
-                                <i class="fas fa-video me-1"></i> Video
+                        <i class="fas fa-video me-1"></i> Video
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="image-tab" data-bs-toggle="tab" data-bs-target="#image" type="button">
+                                <i class="fas fa-image me-1"></i> Hình ảnh
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="assignment-tab" data-bs-toggle="tab" data-bs-target="#assignment" type="button">
-                                <i class="fas fa-tasks me-1"></i> Assignment
-                            </button>
-                        </li>
-                    </ul>
+                        <i class="fas fa-tasks me-1"></i> Assignment
+                    </button>
+                </li>
+            </ul>
 
                     <div class="tab-content mt-3">
-                        <!-- Tab Video -->
-                        <div class="tab-pane fade show active" id="video" role="tabpanel">
+                <!-- Tab Video -->
+                <div class="tab-pane fade show active" id="video" role="tabpanel">
                             <form id="videoForm" action="course-content" method="post" enctype="multipart/form-data">
-                                <input type="hidden" name="action" value="addVideo">
+                        <input type="hidden" name="action" value="addVideo">
+                        <input type="hidden" name="courseID" value="${param.courseID}">
+
+                        <div class="mb-3">
+                            <label class="form-label">Tiêu đề video <span class="text-danger">*</span></label>
+                            <input type="text" name="title" class="form-control" required maxlength="100">
+                            <small class="text-muted">Tối đa 100 ký tự</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Mô tả</label>
+                            <textarea name="description" class="form-control" rows="3" maxlength="500"></textarea>
+                            <small class="text-muted">Tối đa 500 ký tự</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">File video <span class="text-danger">*</span></label>
+                            <label for="videoFile" class="file-upload-label">
+                                <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i>
+                                <p class="mb-1">Kéo thả file video vào đây hoặc click để chọn</p>
+                                <p class="text-muted small">Hỗ trợ: MP4, MOV, AVI (Tối đa 100MB)</p>
+                                <span id="fileName" class="text-primary fw-bold"></span>
+                            </label>
+                                    <input type="file" id="videoFile" name="video" class="form-control d-none" accept="video/mp4,video/quicktime,video/x-msvideo" required>
+
+                            <div class="progress" id="uploadProgress">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                            </div>
+
+                                    <div class="upload-success" id="uploadSuccess" style="display: none;">
+                                        <i class="fas fa-check-circle me-1"></i> Video đã tải lên thành công và sẵn sàng để submit!
+                            </div>
+
+                                    <video id="videoPreview" style="display: none;" class="video-preview" controls></video>
+                        </div>
+
+                        <div class="alert alert-warning small">
+                                    <i class="fas fa-info-circle me-1"></i> Video sẽ được tải lên Cloudinary và có thể mất vài phút để xử lý.
+                        </div>
+
+                                <button type="submit" class="btn btn-primary w-100" id="videoSubmitBtn">
+                            <i class="fas fa-upload me-1"></i> Tải lên Video
+                        </button>
+                    </form>
+                </div>
+
+                        <!-- Tab Image -->
+                        <div class="tab-pane fade" id="image" role="tabpanel">
+                            <form id="imageForm" action="course-content" method="post" enctype="multipart/form-data">
+                                <input type="hidden" name="action" value="addImage">
                                 <input type="hidden" name="courseID" value="${param.courseID}">
 
                                 <div class="mb-3">
-                                    <label class="form-label">Tiêu đề video <span class="text-danger">*</span></label>
+                                    <label class="form-label">Tiêu đề hình ảnh <span class="text-danger">*</span></label>
                                     <input type="text" name="title" class="form-control" required maxlength="100">
                                     <small class="text-muted">Tối đa 100 ký tự</small>
                                 </div>
@@ -76,107 +162,106 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">File video <span class="text-danger">*</span></label>
-                                    <label for="videoFile" class="file-upload-label">
+                                    <label class="form-label">File hình ảnh <span class="text-danger">*</span></label>
+                                    <label for="imageFile" class="file-upload-label">
                                         <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i>
-                                        <p class="mb-1">Kéo thả file video vào đây hoặc click để chọn</p>
-                                        <p class="text-muted small">Hỗ trợ: MP4, MOV, AVI (Tối đa 100MB)</p>
-                                        <span id="fileName" class="text-primary fw-bold"></span>
+                                        <p class="mb-1">Kéo thả hình ảnh vào đây hoặc click để chọn</p>
+                                        <p class="text-muted small">Hỗ trợ: JPG, PNG, GIF (Tối đa 10MB)</p>
+                                        <span id="imageFileName" class="text-primary fw-bold"></span>
                                     </label>
-                                    <input type="file" id="videoFile" name="video" class="form-control d-none" accept="video/mp4,video/quicktime,video/x-msvideo" required>
+                                    <input type="file" id="imageFile" name="image" class="form-control d-none" 
+                                           accept="image/jpeg,image/png,image/gif" required>
 
-                                    <div class="progress" id="uploadProgress">
+                                    <div class="progress" id="imageUploadProgress" style="display: none;">
                                         <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
                                     </div>
 
-                                    <div class="upload-success" id="uploadSuccess" style="display: none;">
-                                        <i class="fas fa-check-circle me-1"></i> Video đã tải lên thành công và sẵn sàng để submit!
+                                    <div class="upload-success" id="imageUploadSuccess" style="display: none;">
+                                        <i class="fas fa-check-circle me-1"></i> Hình ảnh đã tải lên thành công và sẵn sàng để submit!
                                     </div>
 
-                                    <video id="videoPreview" style="display: none;" class="video-preview" controls></video>
+                                    <img id="imagePreview" class="img-preview" style="display: none; max-width: 100%; max-height: 200px; margin-top: 10px; border-radius: 8px;">
                                 </div>
 
-                                <div class="alert alert-warning small">
-                                    <i class="fas fa-info-circle me-1"></i> Video sẽ được tải lên Cloudinary và có thể mất vài phút để xử lý.
-                                </div>
+                                <button type="submit" class="btn btn-primary w-100" id="imageSubmitBtn">
+                                    <i class="fas fa-upload me-1"></i> Tải lên Hình ảnh
+                        </button>
+                    </form>
+                </div>
 
-                                <button type="submit" class="btn btn-primary w-100" id="videoSubmitBtn">
-                                    <i class="fas fa-upload me-1"></i> Tải lên Video
-                                </button>
-                            </form>
+                <!-- Tab Assignment -->
+                <div class="tab-pane fade" id="assignment" role="tabpanel">
+                    <form action="course-content" method="post">
+                        <input type="hidden" name="action" value="createEmptyAssignment">
+                        <input type="hidden" name="courseID" value="${param.courseID}">
+
+                        <div class="mb-3">
+                            <label class="form-label">Tiêu đề assignment <span class="text-danger">*</span></label>
+                            <input type="text" name="titleA" class="form-control" required maxlength="100">
                         </div>
 
-                        <!-- Tab Assignment -->
-                        <div class="tab-pane fade" id="assignment" role="tabpanel">
-                            <form action="course-content" method="post">
-                                <input type="hidden" name="action" value="createEmptyAssignment">
-                                <input type="hidden" name="courseID" value="${param.courseID}">
-
-                                <div class="mb-3">
-                                    <label class="form-label">Tiêu đề assignment <span class="text-danger">*</span></label>
-                                    <input type="text" name="titleA" class="form-control" required maxlength="100">
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label">Mô tả assignment</label>
-                                    <textarea name="descriptionA" class="form-control" rows="3" maxlength="500"></textarea>
-                                </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mô tả assignment</label>
+                            <textarea name="descriptionA" class="form-control" rows="3" maxlength="500"></textarea>
+                        </div>
 
                                 <button type="submit" class="btn btn-primary w-100">
-                                    <i class="fas fa-save me-1"></i> Lưu Assignment
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+                            <i class="fas fa-save me-1"></i> Lưu Assignment
+                        </button>
+                    </form>
+                </div>
                 </div>
             </div>
         </div>
+    </div>
 
         <!-- Cột phải: Danh sách nội dung -->
         <div class="col-md-8">
-            <div class="card">
+    <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <div>
-                        <i class="fas fa-list me-2"></i>Nội dung hiện có
-                    </div>
-                    <span class="badge bg-light text-dark">
-                        Tổng: ${not empty contents ? contents.size() : 0}
-                    </span>
-                </div>
-                <div class="card-body">
-                    <c:choose>
-                        <c:when test="${empty contents}">
+            <div>
+                <i class="fas fa-list me-2"></i>Nội dung hiện có
+            </div>
+            <span class="badge bg-light text-dark">
+                Tổng: ${not empty contents ? contents.size() : 0}
+            </span>
+        </div>
+        <div class="card-body">
+            <c:choose>
+                <c:when test="${empty contents}">
                             <div class="text-center py-5">
-                                <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                        <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
                                 <p class="text-muted mb-0">Chưa có nội dung nào được thêm vào khóa học này</p>
                                 <p class="small text-muted">Hãy bắt đầu bằng cách thêm video hoặc assignment</p>
-                            </div>
-                        </c:when>
-                        <c:otherwise>
+                    </div>
+                </c:when>
+                <c:otherwise>
                             <div class="row">
-                                <c:forEach var="content" items="${contents}" varStatus="loop">
+                        <c:forEach var="content" items="${contents}" varStatus="loop">
                                     <div class="col-lg-4 col-md-6 mb-3">
                                         <div class="card h-100 content-card">
                                             <div class="card-header content-header">
                                                 <div class="d-flex justify-content-between align-items-center">
                                                     <span class="badge bg-secondary me-2">#ContentNo.${loop.index + 1}</span>
                                                     <div class="btn-group">
-                                                        <c:if test="${not empty content.media}">
-                                                            <a href="edit-video?contentID=${content.courseContentID}&courseID=${param.courseID}"
-                                                               class="btn btn-sm btn-outline-secondary" title="Chỉnh sửa">
-                                                                <i class="fas fa-edit"></i>
-                                                            </a>
-                                                        </c:if>
-                                                        <c:if test="${not empty content.assignment}">
-                                                            <a href="edit-assignment?action=getAssignment&assignmentID=${content.assignment.assignmentID}&courseID=${param.courseID}"
-                                                               class="btn btn-sm btn-outline-secondary" title="Chỉnh sửa">
-                                                                <i class="fas fa-edit"></i>
-                                                            </a>
-                                                        </c:if>
+                                                        <c:choose>
+                                                            <c:when test="${fn:contains(content.media, '.mp4') || fn:contains(content.media, '.mov') || fn:contains(content.media, '.avi')}">
+                                                                <a href="edit-video?contentID=${content.courseContentID}&courseID=${param.courseID}"
+                                                                   class="btn btn-sm btn-outline-secondary" title="Chỉnh sửa">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </a>
+                                                            </c:when>
+                                                            <c:when test="${fn:contains(content.media, '.jpg') || fn:contains(content.media, '.jpeg') || fn:contains(content.media, '.png') || fn:contains(content.media, '.gif')}">
+                                                                <a href="edit-image?contentID=${content.courseContentID}&courseID=${param.courseID}"
+                                                                   class="btn btn-sm btn-outline-secondary" title="Chỉnh sửa">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </a>
+                                                            </c:when>
+                                                        </c:choose>
                                                         <button class="btn btn-sm btn-outline-danger delete-content"
-                                                                content-id="${content.courseContentID}"
-                                                                content-type="${not empty content.media ? 'video' : not empty content.assignment ? 'assignment' : 'exam'}"
-                                                                assignment-id="${not empty content.assignment ? content.assignment.assignmentID : ''}"
+                                                                data-content-id="${content.courseContentID}"
+                                                                data-content-type="${not empty content.media ? 'video' : not empty content.assignment ? 'assignment' : 'exam'}"
+                                                                data-assignment-id="${not empty content.assignment ? content.assignment.assignmentID : ''}"
                                                                 title="Xóa">
                                                             <i class="fas fa-trash"></i>
                                                         </button>
@@ -184,50 +269,63 @@
                                                 </div>
                                             </div>
                                             <div class="card-body">
-                                                <c:choose>
-                                                    <c:when test="${not empty content.media}">
+                                            <c:choose>
+                                                <c:when test="${not empty content.media}">
                                                         <h5 class="video-card-title text-center mb-3">
-                                                            ${content.title}
+                                                    ${content.title}
                                                         </h5>
-                                                        <div class="video-container">
-                                                            <video preload="metadata" muted playsinline>
-                                                                <source src="${content.media}" type="video/mp4">
-                                                                Trình duyệt của bạn không hỗ trợ video.
-                                                            </video>
-                                                            <div class="video-play-button" data-bs-toggle="modal" data-bs-target="#videoModal${content.courseContentID}">
-                                                                <i class="fas fa-play"></i>
-                                                            </div>
-                                                        </div>
+                                                        <c:choose>
+                                                            <c:when test="${fn:contains(content.media, '.mp4') || fn:contains(content.media, '.mov') || fn:contains(content.media, '.avi')}">
+                                                                <!-- Video content -->
+                                                                <div class="video-container">
+                                                                    <video preload="metadata" muted playsinline>
+                                                                        <source src="${content.media}" type="video/mp4">
+                                                                        Trình duyệt của bạn không hỗ trợ video.
+                                                                    </video>
+                                                                    <div class="video-play-button" data-bs-toggle="modal" data-bs-target="#videoModal${content.courseContentID}">
+                                                                        <i class="fas fa-play"></i>
+                                                                    </div>
+                                                                </div>
+                                                </c:when>
+                                                            <c:when test="${fn:contains(content.media, '.jpg') || fn:contains(content.media, '.jpeg') || fn:contains(content.media, '.png') || fn:contains(content.media, '.gif')}">
+                                                                <!-- Image content -->
+                                                                <div class="image-container">
+                                                                    <div class="fixed-size-image">
+                                                                        <img src="${content.media}" alt="${content.title}" class="img-fluid">
+                                                                    </div>
+                                                                </div>
+                                                </c:when>
+                                            </c:choose>
                                                         <p class="card-text text-muted text-center">
-                                                            ${content.description}
+                                                    ${content.description}
                                                         </p>
-                                                    </c:when>
-                                                    <c:when test="${not empty content.assignment}">
+                                                </c:when>
+                                                <c:when test="${not empty content.assignment}">
                                                         <div class="assignment-content">
                                                             <h5 class="assignment-title">
                                                                 ${content.assignment.assignmentTitle}
                                                             </h5>
                                                             <p class="assignment-description">
-                                                                ${content.assignment.description}
+                                                    ${content.assignment.description}
                                                             </p>
                                                             <div class="assignment-meta">
                                                                 <i class="fas fa-clock me-1"></i> Cập nhật:
-                                                                <fmt:formatDate value="${content.assignment.lastUpdated}" pattern="dd/MM/yyyy"/>
+                                                        <fmt:formatDate value="${content.assignment.lastUpdated}" pattern="dd/MM/yyyy"/>
                                                             </div>
                                                         </div>
-                                                    </c:when>
-                                                </c:choose>
+                                                </c:when>
+                                            </c:choose>
 
                                                 <div class="text-center mt-3">
-                                                    <c:choose>
-                                                        <c:when test="${not empty content.media}">
-                                                            <span class="badge bg-info">
-                                                                <i class="fas fa-video me-1"></i> Video
-                                                            </span>
+                                            <c:choose>
+                                                        <c:when test="${fn:contains(content.media, '.mp4') || fn:contains(content.media, '.mov') || fn:contains(content.media, '.avi')}">
+                                                    <span class="badge bg-info">
+                                                        <i class="fas fa-video me-1"></i> Video
+                                                    </span>
                                                         </c:when>
-                                                        <c:when test="${not empty content.assignment}">
-                                                            <span class="badge bg-success">
-                                                                <i class="fas fa-tasks me-1"></i> Assignment
+                                                        <c:when test="${fn:contains(content.media, '.jpg') || fn:contains(content.media, '.jpeg') || fn:contains(content.media, '.png') || fn:contains(content.media, '.gif')}">
+                                                            <span class="badge bg-primary">
+                                                                <i class="fas fa-image me-1"></i> Hình ảnh
                                                             </span>
                                                         </c:when>
                                                     </c:choose>
@@ -235,38 +333,38 @@
                                             </div>
                                         </div>
                                     </div>
-
-                                    <!-- Modal xem video -->
+                                                    
+                                                    <!-- Modal xem video -->
                                     <c:if test="${not empty content.media}">
                                         <div class="modal fade" id="videoModal${content.courseContentID}" tabindex="-1">
-                                            <div class="modal-dialog modal-lg modal-dialog-centered">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
+                                                        <div class="modal-dialog modal-lg modal-dialog-centered">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
                                                         <h5 class="modal-title">${content.title}</h5>
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                    </div>
-                                                    <div class="modal-body p-0">
-                                                        <div class="ratio ratio-16x9">
+                                                                </div>
+                                                                <div class="modal-body p-0">
+                                                                    <div class="ratio ratio-16x9">
                                                             <video controls preload="metadata" playsinline>
-                                                                <source src="${content.media}" type="video/mp4">
-                                                                Trình duyệt của bạn không hỗ trợ video.
-                                                            </video>
+                                                                            <source src="${content.media}" type="video/mp4">
+                                                                            Trình duyệt của bạn không hỗ trợ video.
+                                                                        </video>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </c:if>
-                                </c:forEach>
-                            </div>
-                        </c:otherwise>
-                    </c:choose>
-                </div>
-            </div>
+                                        </c:if>
+                        </c:forEach>
+                    </div>
+                </c:otherwise>
+            </c:choose>
         </div>
+    </div>
+</div>
     </div>
 </div>
 <c:import url="footer.jsp"/>
@@ -369,61 +467,44 @@
     // Xử lý xóa nội dung
     document.querySelectorAll('.delete-content').forEach(button => {
         button.addEventListener('click', function() {
-            // Lấy giá trị từ thuộc tính HTML
-            const contentId = this.getAttribute('content-id');
-            const contentType = this.getAttribute('content-type');
-            const assignmentId = this.getAttribute('assignment-id');
-
+            // Lấy giá trị từ data attributes
+            const contentId = this.getAttribute('data-content-id');
+            const contentType = this.getAttribute('data-content-type');
+            const assignmentId = this.getAttribute('data-assignment-id');
+            const courseId = '${param.courseID}';
+            
             // Log chi tiết để debug
             console.log('Bắt đầu quá trình xóa nội dung:');
             console.log('- Loại nội dung:', contentType);
             console.log('- ID nội dung:', contentId);
             console.log('- ID bài tập:', assignmentId || 'Không có');
-
+            console.log('- ID khóa học:', courseId);
+            
             // Kiểm tra nếu contentId rỗng
             if (!contentId) {
                 console.error('Lỗi: contentId đang rỗng!');
-                Swal.fire({
-                    title: 'Lỗi',
-                    text: 'Không thể xác định ID nội dung cần xóa',
-                    icon: 'error'
-                });
+                alert('Không thể xác định ID nội dung cần xóa');
                 return;
             }
-
+            
             // Tạo URL xóa với các giá trị đã log
             let deleteUrl = 'course-content?action=deleteContent';
             deleteUrl += '&contentID=' + contentId;
-            deleteUrl += '&courseID=' + ${courseID};
-
+            deleteUrl += '&courseID=' + courseId;
+            
             if (contentType === 'assignment' && assignmentId && assignmentId.trim() !== '') {
                 deleteUrl += '&assignmentID=' + assignmentId;
             }
-
+            
             console.log('URL xóa:', deleteUrl);
 
-            Swal.fire({
-                title: 'Xác nhận xóa',
-                text: `Bạn có chắc chắn muốn xóa ${contentType} này?`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Xóa',
-                cancelButtonText: 'Hủy'
-            }).then((result) => {
-                if (result.isConfirmed) {
+            if (confirm('Bạn có chắc chắn muốn xóa nội dung này?')) {
                     console.log('Người dùng đã xác nhận xóa');
-
+                    
                     // Hiển thị loading
-                    Swal.fire({
-                        title: 'Đang xóa...',
-                        text: 'Vui lòng đợi trong giây lát',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
+                const submitBtn = this;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
                     // Gửi request xóa
                     console.log('Đang gửi request xóa đến server...');
@@ -442,31 +523,20 @@
                     })
                     .then(text => {
                         console.log('Xóa thành công, phản hồi:', text);
-                        Swal.fire({
-                            title: 'Thành công',
-                            text: 'Đã xóa nội dung thành công',
-                            icon: 'success',
-                            timer: 1500,
-                            showConfirmButton: false
-                        }).then(() => {
-                            console.log('Đang tải lại trang...');
+                    alert('Đã xóa nội dung thành công');
                             window.location.reload();
-                        });
                     })
                     .catch(error => {
                         console.error('Lỗi khi xóa:', error);
-                        Swal.fire({
-                            title: 'Lỗi',
-                            text: error.message,
-                            icon: 'error'
-                        });
+                    alert('Lỗi: ' + error.message);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-trash"></i>';
                     });
                 } else {
                     console.log('Người dùng đã hủy thao tác xóa');
                 }
             });
         });
-    });
 
     document.addEventListener('DOMContentLoaded', function() {
         const overlay = document.querySelector('.custom-overlay');
@@ -595,6 +665,118 @@
             }
         });
     });
+
+    // Xử lý file hình ảnh
+    document.getElementById('imageFile').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        const fileNameElement = document.getElementById('imageFileName');
+        const previewElement = document.getElementById('imagePreview');
+        const uploadSuccess = document.getElementById('imageUploadSuccess');
+
+        if (file) {
+            // Kiểm tra kích thước
+            if (file.size > maxSize) {
+                alert('File vượt quá giới hạn 10MB');
+                resetImageUpload();
+                return;
+            }
+
+            // Kiểm tra định dạng file
+            if (!file.type.startsWith('image/')) {
+                alert('Chỉ chấp nhận file hình ảnh (JPG, PNG, GIF)');
+                resetImageUpload();
+                return;
+            }
+
+            // Hiển thị tên file
+            fileNameElement.textContent = file.name;
+
+            // Hiển thị preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewElement.src = e.target.result;
+                previewElement.style.display = 'block';
+                
+                // Thêm hiệu ứng fade in
+                previewElement.style.opacity = '0';
+                setTimeout(() => {
+                    previewElement.style.transition = 'opacity 0.3s ease';
+                    previewElement.style.opacity = '1';
+                }, 10);
+            }
+            reader.readAsDataURL(file);
+
+            // Hiển thị thông báo thành công
+            uploadSuccess.style.display = 'block';
+        }
+    });
+
+    function resetImageUpload() {
+        document.getElementById('imageFile').value = '';
+        document.getElementById('imageFileName').textContent = '';
+        document.getElementById('imagePreview').style.display = 'none';
+        document.getElementById('imageUploadSuccess').style.display = 'none';
+    }
+
+    // Xử lý form submit cho Image
+    document.getElementById('imageForm').addEventListener('submit', function() {
+        const progressBar = document.getElementById('imageUploadProgress');
+        const submitBtn = document.getElementById('imageSubmitBtn');
+        const uploadSuccess = document.getElementById('imageUploadSuccess');
+
+        progressBar.style.display = 'block';
+        uploadSuccess.style.display = 'none';
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang tải lên...';
+
+        // Simulate progress
+        const progressBarInner = progressBar.querySelector('.progress-bar');
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += 5;
+            progressBarInner.style.width = `${progress}%`;
+            if (progress >= 100) clearInterval(interval);
+        }, 300);
+    });
+
+    // Thêm xử lý drag and drop cho Image
+    const imageUploadLabel = document.querySelector('label[for="imageFile"]');
+    
+    imageUploadLabel.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        imageUploadLabel.style.borderColor = '#0d6efd';
+        imageUploadLabel.style.backgroundColor = 'rgba(13, 110, 253, 0.1)';
+    });
+
+    imageUploadLabel.addEventListener('dragleave', () => {
+        imageUploadLabel.style.borderColor = '#ccc';
+        imageUploadLabel.style.backgroundColor = '';
+    });
+
+    imageUploadLabel.addEventListener('drop', (e) => {
+        e.preventDefault();
+        imageUploadLabel.style.borderColor = '#ccc';
+        imageUploadLabel.style.backgroundColor = '';
+
+        if (e.dataTransfer.files.length) {
+            const input = document.getElementById('imageFile');
+            input.files = e.dataTransfer.files;
+            input.dispatchEvent(new Event('change'));
+        }
+    });
+
+    // Thêm style cho image preview
+    const imagePreview = document.getElementById('imagePreview');
+    if (imagePreview) {
+        imagePreview.style.maxWidth = '100%';
+        imagePreview.style.maxHeight = '200px';
+        imagePreview.style.objectFit = 'contain';
+        imagePreview.style.margin = '10px auto';
+        imagePreview.style.display = 'none';
+        imagePreview.style.borderRadius = '8px';
+        imagePreview.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+    }
 </script>
 </body>
 </html>

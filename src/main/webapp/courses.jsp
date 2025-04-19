@@ -14,6 +14,91 @@ pageEncoding="UTF-8"%>
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
             rel="stylesheet">
         <link rel="stylesheet" href="asset/css/courseView.css">
+        <style>
+            .course-card {
+                height: 100%;
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+
+            .course-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+            }
+
+            .card-img-container {
+                position: relative;
+                padding-top: 56.25%; /* Tỷ lệ 16:9 */
+                overflow: hidden;
+                border-radius: 15px 15px 0 0;
+            }
+
+            .card-img-top {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                transition: transform 0.3s ease;
+            }
+
+            .course-card:hover .card-img-top {
+                transform: scale(1.05);
+            }
+
+            .status-badge {
+                padding: 5px 10px;
+                border-radius: 15px;
+                font-size: 0.85rem;
+            }
+
+            .status-active {
+                background-color: #28a745;
+                color: white;
+            }
+
+            .status-inactive {
+                background-color: #dc3545;
+                color: white;
+            }
+
+            .detail-btn {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border: none;
+                transition: all 0.3s ease;
+            }
+
+            .detail-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            }
+
+            .price-tag {
+                font-weight: bold;
+                color: #28a745;
+            }
+
+            .empty-state {
+                text-align: center;
+                padding: 40px 0;
+            }
+
+            .empty-state-icon {
+                color: #6c757d;
+                margin-bottom: 20px;
+            }
+
+            .course-stats {
+                margin: 15px 0;
+                color: #6c757d;
+            }
+
+            .original-price {
+                text-decoration: line-through;
+                color: #6c757d;
+                font-size: 0.9em;
+            }
+        </style>
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script
             src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -45,7 +130,7 @@ pageEncoding="UTF-8"%>
                 </div>
             </c:if>
             <!-- Search and Filter Section -->
-            <div class="filter-section">
+            <div class="filter-section mb-4">
                 <form action="courses" method="get" class="row g-3">
                     <div class="col-md-6">
                         <input type="text" class="form-control" name="search"
@@ -54,14 +139,15 @@ pageEncoding="UTF-8"%>
                     </div>
                     <div class="col-md-3">
                         <select class="form-select" name="priceRange">
-                            <option value>Khoảng giá</option>
+                            <option value="">Khoảng giá</option>
                             <option value="0-1000000">Dưới 1 triệu</option>
                             <option value="1000000-3000000">1-3 triệu</option>
                             <option value="3000000-5000000">3-5 triệu</option>
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <button type="submit" class="btn btn-primary w-100">Tìm
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-2"></i>Tìm
                             kiếm</button>
                     </div>
                 </form>
@@ -73,8 +159,10 @@ pageEncoding="UTF-8"%>
                     <div class="col">
                         <div class="card course-card"
                             data-id="${course.courseID}">
-                            <img src="${course.courseImg}" class="card-img-top"
-                                alt="${course.courseTitle}">
+                            <div class="card-img-container">
+                                <img src="${course.courseImg}" class="card-img-top"
+                                    alt="${course.courseTitle}">
+                            </div>
                             <div class="card-body d-flex flex-column">
                                 <h5
                                     class="card-title">${course.courseTitle}</h5>
@@ -82,30 +170,29 @@ pageEncoding="UTF-8"%>
                                     class="card-text">${course.courseDescription}</p>
                                 <p class="card-text">Được tạo bởi:
                                     ${course.expert.fullName}</p>
-                                <div class="mt-auto">
+                                <div class="course-stats">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-users me-2 text-primary"></i>
+                                        <span>${course.learnersCount} học viên</span>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-star me-2 text-warning"></i>
+                                        <span>
+                                            <fmt:formatNumber value="${course.rating}" type="number" maxFractionDigits="1" />
+                                            <small class="text-muted">(${course.ratingCount} đánh giá)</small>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="mt-auto">
                                     <div class="d-flex align-items-center mb-2">
                                         <span
                                             class="badge bg-secondary me-2">${course.category.categoryName}</span>
-                                        <span class="rating me-1">
-                                            <fmt:formatNumber
-                                                value="${course.rating}"
-                                                type="number"
-                                                maxFractionDigits="1" />
-                                        </span>
-
-                                        <div class="stars me-1">
-                                            <c:forEach begin="1" end="5"
-                                                var="i">
-                                                <i
-                                                    class="fas fa-star${i <= course.rating ? ' text-warning' : ' text-muted'}"></i>
-                                            </c:forEach>
-                                        </div>
                                         <span
-                                            class="rating-count">(${course.ratingCount})</span>
+                                            class="status-badge status-${course.status eq 'Active' ? 'active' : 'inactive'}">
+                                            ${course.status}
+                                        </span>
                                     </div>
-                                    <p
-                                        class="learners-count mb-2">${course.learnersCount}
-                                        học viên</p>
                                     <div
                                         class="d-flex justify-content-between align-items-center">
                                         <div>
@@ -143,6 +230,16 @@ pageEncoding="UTF-8"%>
                     </div>
                 </c:forEach>
             </div>
+
+            <!-- Empty State -->
+            <c:if test="${empty courses}">
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-book-open fa-3x"></i>
+                    </div>
+                    <h4 class="text-muted mb-3">Không tìm thấy khóa học nào</h4>
+                </div>
+            </c:if>
         </div>
         <c:import url="footer.jsp" />
 

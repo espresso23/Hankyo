@@ -6,7 +6,6 @@ public class Category {
     private int categoryID;
     private String categoryName;
     private String description;
-    private Integer parentID;
     private List<Category> subCategories;
     private int courseCount;
 
@@ -45,14 +44,6 @@ public class Category {
         this.description = description;
     }
 
-    public Integer getParentID() {
-        return parentID;
-    }
-
-    public void setParentID(Integer parentID) {
-        this.parentID = parentID;
-    }
-
     public List<Category> getSubCategories() {
         return subCategories;
     }
@@ -69,15 +60,6 @@ public class Category {
         this.courseCount = courseCount;
     }
 
-    // Phương thức kiểm tra xem có phải là danh mục cha không
-    public boolean isParentCategory() {
-        return parentID == null;
-    }
-
-    // Phương thức kiểm tra xem có phải là danh mục con không
-    public boolean isSubCategory() {
-        return parentID != null;
-    }
 
     @Override
     public String toString() {
@@ -85,7 +67,6 @@ public class Category {
                 "categoryID=" + categoryID +
                 ", categoryName='" + categoryName + '\'' +
                 ", description='" + description + '\'' +
-                ", parentID=" + parentID +
                 ", courseCount=" + courseCount +
                 '}';
     }

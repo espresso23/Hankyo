@@ -84,7 +84,21 @@ public class CourseContentController extends HttpServlet {
         switch (action) {
             case "addVideo":
                 try {
-                    handleAddVideo(request, response, courseID);
+                    handleAddMedia(request, response, courseID, "video");
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+                break;
+            case "addImage":
+                try {
+                    handleAddMedia(request, response, courseID, "image");
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+                break;
+            case "addPDF":
+                try {
+                    handleAddMedia(request, response, courseID, "pdf");
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
@@ -116,11 +130,11 @@ public class CourseContentController extends HttpServlet {
         }
     }
 
-    private void handleAddVideo(HttpServletRequest request, HttpServletResponse response, int courseID)
+    private void handleAddMedia(HttpServletRequest request, HttpServletResponse response, int courseID, String type)
             throws IOException, ServletException, SQLException {
         CourseContentDAO dao = null;
         try {
-            System.out.println("=== BẮT ĐẦU XỬ LÝ THÊM VIDEO ===");
+            System.out.println("=== BẮT ĐẦU XỬ LÝ THÊM " + type.toUpperCase() + " ===");
             System.out.println("CourseID: " + courseID);
             
             dao = new CourseContentDAO();
@@ -131,43 +145,64 @@ public class CourseContentController extends HttpServlet {
             System.out.println("Tiêu đề: " + title);
             System.out.println("Mô tả: " + description);
             
-            // Lấy file video
-            Part videoPart = request.getPart("video");
-            System.out.println("Tên file video: " + videoPart.getSubmittedFileName());
-            System.out.println("Kích thước file: " + videoPart.getSize() + " bytes");
-            System.out.println("Content Type: " + videoPart.getContentType());
+            // Lấy file media
+            String paramName = type.equals("video") ? "video" : 
+                              type.equals("image") ? "image" : "pdf";
+            Part mediaPart = request.getPart(paramName);
+            System.out.println("Tên file " + type + ": " + mediaPart.getSubmittedFileName());
+            System.out.println("Kích thước file: " + mediaPart.getSize() + " bytes");
+            System.out.println("Content Type: " + mediaPart.getContentType());
             
-            // Chuyển đổi video thành URL
-            System.out.println("Đang chuyển đổi video thành URL...");
-            String videoUrl = dao.convertMediaToUrl(videoPart);
-            System.out.println("URL video: " + videoUrl);
+            // Validate file type
+            String contentType = mediaPart.getContentType();
+            if (!isValidFileType(contentType, type)) {
+                throw new ServletException("Invalid file type for " + type);
+            }
+            
+            // Chuyển đổi media thành URL
+            System.out.println("Đang chuyển đổi " + type + " thành URL...");
+            String mediaUrl = dao.convertMediaToUrl(mediaPart);
+            System.out.println("URL " + type + ": " + mediaUrl);
             
             // Tạo đối tượng CourseContent
-            CourseContent videoContent = new CourseContent();
-            videoContent.setTitle(title);
-            videoContent.setMedia(videoUrl);
-            videoContent.setDescription(description);
-            videoContent.setCourseID(courseID);
+            CourseContent content = new CourseContent();
+            content.setTitle(title);
+            content.setMedia(mediaUrl);
+            content.setDescription(description);
+            content.setCourseID(courseID);
             
-            System.out.println("Đối tượng videoContent: " + videoContent.toString());
+            System.out.println("Đối tượng content: " + content.toString());
             
             // Thêm vào database
-            System.out.println("Đang thêm video vào database...");
-            dao.addCourseContent(videoContent);
-            System.out.println("Thêm video thành công!");
+            System.out.println("Đang thêm " + type + " vào database...");
+            dao.addCourseContent(content);
+            System.out.println("Thêm " + type + " thành công!");
             
             // Chuyển hướng
             System.out.println("Chuyển hướng về trang danh sách nội dung...");
             response.sendRedirect("course-content?action=addContentView&courseID=" + courseID);
-            System.out.println("=== KẾT THÚC XỬ LÝ THÊM VIDEO ===");
+            System.out.println("=== KẾT THÚC XỬ LÝ THÊM " + type.toUpperCase() + " ===");
         } catch (Exception e) {
-            System.err.println("LỖI KHI THÊM VIDEO: " + e.getMessage());
+            System.err.println("LỖI KHI THÊM " + type.toUpperCase() + ": " + e.getMessage());
             e.printStackTrace();
             throw e;
         } finally {
             if (dao != null) {
                 dao.closeConnection();
             }
+        }
+    }
+
+    private boolean isValidFileType(String contentType, String type) {
+        switch (type) {
+            case "video":
+                return contentType.startsWith("video/");
+            case "image":
+                return contentType.startsWith("image/");
+            case "pdf":
+                return contentType.equals("application/pdf");
+            default:
+                return false;
         }
     }
 

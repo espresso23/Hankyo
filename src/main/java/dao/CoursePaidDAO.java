@@ -4,6 +4,7 @@ import model.Course;
 import model.CoursePaid;
 import util.DBConnect;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -82,5 +83,43 @@ public class CoursePaidDAO {
         } catch (SQLException e) {
             throw new RuntimeException("Lỗi khi kiểm tra danh sách khóa học đã mua", e);
         }
+    }
+
+    public BigDecimal getTotalRevenue(int courseID) {
+        String sql = "SELECT SUM(c.price) as total_revenue " +
+                    "FROM Course_Paid cp " +
+                    "JOIN Course c ON cp.courseID = c.courseID " +
+                    "WHERE cp.courseID = ?";
+        
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, courseID);
+            ResultSet rs = pstmt.executeQuery();
+            
+            if (rs.next()) {
+                BigDecimal revenue = rs.getBigDecimal("total_revenue");
+                return revenue != null ? revenue : BigDecimal.ZERO;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi khi tính tổng doanh thu khóa học", e);
+        }
+        return BigDecimal.ZERO;
+    }
+
+    public int getPurchaseCount(int courseID) {
+        String sql = "SELECT COUNT(*) FROM Course_Paid WHERE courseID = ?";
+        
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, courseID);
+            ResultSet rs = pstmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi khi đếm số lượng khóa học đã bán", e);
+        }
+        return 0;
     }
 } 

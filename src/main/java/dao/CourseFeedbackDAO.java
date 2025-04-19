@@ -9,7 +9,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CourseFeedbackDAO {
     public List<CourseFeedback> getFeedbacksByCourseID(int courseID) {
@@ -102,5 +104,44 @@ public class CourseFeedbackDAO {
             e.printStackTrace();
         }
         return 0;
+    }
+
+    public Map<Integer, Double> getRatingPercentages(int courseID) {
+        Map<Integer, Double> percentages = new HashMap<>();
+        int totalCount = getRatingCount(courseID);
+        
+        if (totalCount == 0) {
+            for (int i = 1; i <= 5; i++) {
+                percentages.put(i, 0.0);
+            }
+            return percentages;
+        }
+
+        String sql = "SELECT rating, COUNT(*) as count " +
+                    "FROM CourseFeedback " +
+                    "WHERE courseID = ? " +
+                    "GROUP BY rating";
+
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, courseID);
+            ResultSet rs = pstmt.executeQuery();
+
+            // Khởi tạo tất cả các giá trị là 0
+            for (int i = 1; i <= 5; i++) {
+                percentages.put(i, 0.0);
+            }
+
+            // Cập nhật phần trăm cho các rating có dữ liệu
+            while (rs.next()) {
+                int rating = rs.getInt("rating");
+                int count = rs.getInt("count");
+                double percentage = (count * 100.0) / totalCount;
+                percentages.put(rating, Math.round(percentage * 10.0) / 10.0); // Làm tròn đến 1 chữ số thập phân
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return percentages;
     }
 }

@@ -17,7 +17,18 @@ public class CourseDAO {
 
     public List<Course> getCourseByExpert(int expertID) throws SQLException {
         List<Course> courses = new ArrayList<>();
-        String sql = "SELECT * FROM Course WHERE expertID = ?";
+        String sql = "SELECT c.*," +
+                    "(SELECT COUNT(*) FROM enrollments e WHERE e.courseID = c.courseID AND e.status = 'active') as student_count, " +
+                    "(SELECT AVG(CAST(f.rating AS FLOAT)) FROM CourseFeedback f WHERE f.courseID = c.courseID) as avg_rating, " +
+                    "(SELECT COUNT(*) FROM CourseFeedback f WHERE f.courseID = c.courseID) as rating_count, " +
+                    "ct.categoryID, ct.categoryName, ct.description as category_description, " +
+                    "u.fullName as expert_name, u.avatar as expert_avatar, e.certificate as expert_certificate " +
+                    "FROM Course c " +
+                    "LEFT JOIN Category ct ON c.categoryID = ct.categoryID " +
+                    "LEFT JOIN Expert e ON c.expertID = e.expertID " +
+                    "LEFT JOIN [User] u ON e.userID = u.userID " +
+                    "WHERE c.expertID = ? " +
+                    "ORDER BY c.createdAt DESC";
 
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -26,16 +37,40 @@ public class CourseDAO {
             ResultSet rs = pstmt.executeQuery();
 
             while (rs.next()) {
-                // Tạo đối tượng Course mới cho mỗi bản ghi
                 Course course = new Course();
+                
+                // Thông tin cơ bản của khóa học
                 course.setCourseID(rs.getInt("courseID"));
                 course.setCourseTitle(rs.getString("title"));
                 course.setCourseDescription(rs.getString("course_description"));
                 course.setCourseImg(rs.getString("course_img"));
                 course.setStatus(rs.getString("status"));
                 course.setPrice(BigDecimal.valueOf(rs.getDouble("price")));
+                course.setOriginalPrice(rs.getBigDecimal("original_price"));
                 course.setDateCreated(rs.getDate("createdAt"));
                 course.setLastUpdated(rs.getDate("updateAt"));
+                course.setExpertID(expertID);
+
+                // Thông tin danh mục
+                Category category = new Category();
+                category.setCategoryID(rs.getInt("categoryID"));
+                category.setCategoryName(rs.getString("categoryName"));
+                category.setDescription(rs.getString("category_description"));
+                course.setCategory(category);
+
+                // Thông tin chuyên gia
+                Expert expert = new Expert();
+                expert.setExpertID(expertID);
+                expert.setFullName(rs.getString("expert_name"));
+                expert.setAvatar(rs.getString("expert_avatar"));
+                expert.setCertificate(rs.getString("expert_certificate"));
+                course.setExpert(expert);
+
+                // Thông tin thống kê
+                course.setLearnersCount(rs.getInt("student_count"));
+                Double rating = rs.getObject("avg_rating") != null ? rs.getDouble("avg_rating") : 0.0;
+                course.setRating(rating);
+                course.setRatingCount(rs.getInt("rating_count"));
 
                 courses.add(course);
             }
@@ -43,8 +78,8 @@ public class CourseDAO {
         return courses;
     }
 
-    public void addCourse(Course course) throws SQLException {
-        String sql = "INSERT INTO Course (title, course_description, course_img, status, price, createdAt, updateAt, expertID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    public void addCourse(Course course) {
+        String sql = "INSERT INTO Course (title, course_description, course_img, status, price, original_price, createdAt, updateAt, expertID, categoryID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
@@ -53,11 +88,16 @@ public class CourseDAO {
             pstmt.setString(3, course.getCourseImg());
             pstmt.setString(4, course.getStatus());
             pstmt.setBigDecimal(5, course.getPrice());
-            pstmt.setDate(6, new java.sql.Date(course.getDateCreated().getTime()));
-            pstmt.setDate(7, new java.sql.Date(course.getLastUpdated().getTime()));
-            pstmt.setInt(8, course.getExpertID());
+            pstmt.setBigDecimal(6, course.getOriginalPrice());
+            pstmt.setDate(7, new java.sql.Date(course.getDateCreated().getTime()));
+            pstmt.setDate(8, new java.sql.Date(course.getLastUpdated().getTime()));
+            pstmt.setInt(9, course.getExpertID());
+            pstmt.setInt(10, course.getCategory().getCategoryID());
 
             pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Không thể thêm khóa học vào cơ sở dữ liệu", e);
         }
     }
 
@@ -510,7 +550,7 @@ public class CourseDAO {
     // Lấy danh sách category
     public List<Category> getAllCategories() throws SQLException {
         List<Category> categories = new ArrayList<>();
-        String sql = "SELECT * FROM Category ORDER BY parentID NULLS FIRST, categoryName";
+        String sql = "SELECT * FROM Category ORDER BY categoryName";
         
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -521,7 +561,6 @@ public class CourseDAO {
                 category.setCategoryID(rs.getInt("categoryID"));
                 category.setCategoryName(rs.getString("categoryName"));
                 category.setDescription(rs.getString("description"));
-                category.setParentID(rs.getObject("parentID", Integer.class));
                 categories.add(category);
             }
         }
@@ -681,5 +720,41 @@ public class CourseDAO {
             e.printStackTrace();
             return -1;
         }
+    }
+
+    public Course getCourseByID(int courseID) throws SQLException {
+        String sql = "SELECT c.*, cat.categoryID, cat.categoryName " +
+                    "FROM Course c " +
+                    "JOIN Category cat ON c.categoryID = cat.categoryID " +
+                    "WHERE c.courseID = ?";
+        
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, courseID);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                Course course = new Course();
+                course.setCourseID(rs.getInt("courseID"));
+                course.setCourseTitle(rs.getString("title"));
+                course.setCourseDescription(rs.getString("course_description"));
+                course.setCourseImg(rs.getString("course_img"));
+                course.setPrice(rs.getBigDecimal("price"));
+                course.setOriginalPrice(rs.getBigDecimal("original_price"));
+                course.setStatus(rs.getString("status"));
+                course.setDateCreated(rs.getTimestamp("dateCreated"));
+                course.setLastUpdated(rs.getTimestamp("lastUpdated"));
+                
+                // Set category information
+                Category category = new Category();
+                category.setCategoryID(rs.getInt("categoryID"));
+                category.setCategoryName(rs.getString("categoryName"));
+                course.setCategory(category);
+                
+                return course;
+            }
+        }
+        return null;
     }
 }

@@ -28,6 +28,7 @@ public class CategoryDAO {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new RuntimeException("Không thể tải danh sách danh mục", e);
         }
         return categories;
     }

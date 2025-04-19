@@ -26,7 +26,7 @@ public class Course {
     private Expert expert;
     private int progress;
     private int firstContentID;
-    // Số lượng học viên
+    private BigDecimal totalRevenue;
 
     public Course() {
     }
@@ -198,6 +198,15 @@ public class Course {
     public void setLearnersCount(int learnersCount) {
         this.learnersCount = learnersCount;
     }
+
+    public BigDecimal getTotalRevenue() {
+        return totalRevenue;
+    }
+
+    public void setTotalRevenue(BigDecimal totalRevenue) {
+        this.totalRevenue = totalRevenue;
+    }
+
 
     @Override
     public String toString() {

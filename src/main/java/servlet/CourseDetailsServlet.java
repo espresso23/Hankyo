@@ -121,7 +121,7 @@ public class CourseDetailsServlet extends HttpServlet {
             courseContents.forEach(System.out::println);
 
             // Forward sang JSP
-            request.getRequestDispatcher("/course-details.jsp").forward(request, response);
+            request.getRequestDispatcher("/course-details-learner.jsp").forward(request, response);
         } catch (NumberFormatException e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "courseID không hợp lệ");
         } catch (SQLException e) {

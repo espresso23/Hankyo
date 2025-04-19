@@ -75,18 +75,18 @@
                                                     data-assignment-id="${assignment.assignmentID}">
                                                 <i class="fas fa-edit"></i>
                                             </button>
-                                            <button class="btn btn-danger btn-sm delete-question"
-                                                    data-question-id="${question.questionID}"
-                                                    data-assignment-id="${assignment.assignmentID}">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
+                                        <button class="btn btn-danger btn-sm delete-question"
+                                                data-question-id="${question.questionID}"
+                                                data-assignment-id="${assignment.assignmentID}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                         </div>
                                     </div>
                                     <div class="card-body p-2">
                                         <div class="mb-1">
-                                            <span class="badge bg-primary">
-                                                ${question.questionType == 'multiple_choice' ? 'Trắc nghiệm' : 'Câu trả lời ngắn'}
-                                            </span>
+                                                <span class="badge bg-primary">
+                                                        ${question.questionType == 'multiple_choice' ? 'Trắc nghiệm' : 'Câu trả lời ngắn'}
+                                                </span>
                                             <span class="badge bg-secondary ms-1">${question.questionMark} điểm</span>
                                         </div>
                                         <p class="mb-1 small">${question.questionText}</p>
@@ -527,13 +527,13 @@
                         if (typeof response === 'string') {
                             response = JSON.parse(response);
                         }
-                        if (response.success) {
-                            // Đóng modal
-                            hideModal();
-                            // Reload trang
-                            location.reload();
-                        } else {
-                            alert(response.message || 'Có lỗi xảy ra khi thêm câu hỏi');
+                    if (response.success) {
+                        // Đóng modal
+                        hideModal();
+                        // Reload trang
+                        location.reload();
+                    } else {
+                        alert(response.message || 'Có lỗi xảy ra khi thêm câu hỏi');
                         }
                     } catch (e) {
                         console.error('Error parsing response:', e);
@@ -590,12 +590,12 @@
                                 response = JSON.parse(response);
                             }
                             
-                            if (response.success) {
-                                console.log('Xóa câu hỏi thành công');
-                                location.reload();
-                            } else {
-                                console.error('Lỗi khi xóa câu hỏi:', response.message);
-                                alert('Có lỗi xảy ra khi xóa câu hỏi: ' + response.message);
+                        if (response.success) {
+                            console.log('Xóa câu hỏi thành công');
+                            location.reload();
+                        } else {
+                            console.error('Lỗi khi xóa câu hỏi:', response.message);
+                            alert('Có lỗi xảy ra khi xóa câu hỏi: ' + response.message);
                             }
                         } catch (e) {
                             console.error('Lỗi khi xử lý phản hồi:', e);
@@ -612,9 +612,9 @@
                         
                         let errorMessage = 'Có lỗi xảy ra khi xóa câu hỏi';
                         try {
-                            const response = JSON.parse(xhr.responseText);
-                            if (response.message) {
-                                errorMessage = response.message;
+                                const response = JSON.parse(xhr.responseText);
+                                if (response.message) {
+                                    errorMessage = response.message;
                             }
                         } catch (e) {
                             console.error('Lỗi khi parse JSON response:', e);
