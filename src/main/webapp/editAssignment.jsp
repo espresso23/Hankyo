@@ -1,651 +1,592 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Chỉnh sửa bài tập">
-    <meta name="author" content="Hankyo">
-    <title>Chỉnh sửa Assignment</title>
-
-    <!-- CSS -->
+    <title>Chỉnh sửa bài tập</title>
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #0d6efd;
-            --secondary-color: #6c757d;
-            --success-color: #198754;
-            --danger-color: #dc3545;
-            --warning-color: #ffc107;
-            --info-color: #0dcaf0;
-            --light-color: #f8f9fa;
-            --dark-color: #212529;
-            --border-radius: 8px;
-            --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            --transition: all 0.3s ease;
-        }
-
         body {
-            background-color: var(--light-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-        }
-
-        .main-container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
+            background-color: #f8f9fa;
         }
 
         .card {
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
             border: none;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            margin-bottom: 1.5rem;
-            transition: var(--transition);
-            background: #fff;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
         }
 
         .card-header {
-            background-color: #fff;
-            border-bottom: 1px solid #eee;
-            padding: 1.25rem 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .question-card {
-            background-color: #fff;
-            border-radius: var(--border-radius);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: var(--box-shadow);
-            position: relative;
-            border: 1px solid #eee;
-        }
-
-        .question-card:hover {
-            border-color: var(--primary-color);
-        }
-
-        .question-number {
-            position: absolute;
-            top: -10px;
-            left: -10px;
-            background: var(--primary-color);
-            color: white;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            box-shadow: var(--box-shadow);
-        }
-
-        .media-preview {
-            max-width: 200px;
-            max-height: 200px;
-            border-radius: var(--border-radius);
-            object-fit: cover;
-            margin-top: 0.5rem;
-            border: 1px solid #ddd;
-        }
-
-        .answer-option {
-            margin-bottom: 0.75rem;
-            padding: 0.75rem;
-            background-color: var(--light-color);
-            border-radius: var(--border-radius);
-            transition: var(--transition);
-        }
-
-        .answer-option:hover {
-            background-color: #e9ecef;
-        }
-
-        .btn {
-            border-radius: var(--border-radius);
-            padding: 0.5rem 1rem;
+            border-radius: 8px 8px 0 0 !important;
+            padding: 10px 15px;
             font-weight: 500;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
         }
 
-        .btn i {
-            font-size: 1rem;
-        }
-
-        .btn-primary {
-            background-color: var(--primary-color);
-            border: none;
-        }
-
-        .btn-danger {
-            background-color: var(--danger-color);
-            border: none;
-        }
-
-        .btn-success {
-            background-color: var(--success-color);
-            border: none;
-        }
-
-        .form-control, .form-select {
-            border-radius: var(--border-radius);
-            padding: 0.75rem;
-            border: 1px solid #ced4da;
-            transition: var(--transition);
-        }
-
-        .form-control:focus, .form-select:focus {
-            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, .25);
-            border-color: var(--primary-color);
-        }
-
-        .file-input-container {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-            width: 100%;
-        }
-
-        .file-input-label {
-            display: inline-block;
-            padding: 0.75rem 1rem;
-            background-color: var(--light-color);
-            border: 1px solid #ced4da;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            transition: var(--transition);
-            width: 100%;
-            text-align: center;
-        }
-
-        .file-input-label:hover {
-            background-color: #e9ecef;
-        }
-
-        .file-input-label i {
-            margin-right: 0.5rem;
+        .card-body {
+            padding: 15px;
         }
 
         .preview-container {
-            margin-top: 0.75rem;
-            text-align: center;
+            margin-top: 10px;
+            max-width: 100%;
         }
 
-        .loading-overlay {
+        .preview-container img {
+            max-height: 150px;
+            width: auto;
+            border-radius: 4px;
+        }
+
+        .answer-option {
+            margin-bottom: 10px;
+        }
+
+        .loading {
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background: rgba(255, 255, 255, 0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
+            z-index: 1000;
         }
 
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .form-floating {
-            position: relative;
-            margin-bottom: 1rem;
-        }
-
-        .form-floating > .form-control,
-        .form-floating > .form-select {
-            height: calc(3.5rem + 2px);
-            padding: 1rem 0.75rem;
-        }
-
-        .form-floating > label {
+        .loading-content {
             position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .question-card {
+            transition: all 0.3s ease;
+        }
+
+        .question-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .form-control, .form-select {
+            border-radius: 6px;
+        }
+
+        .btn {
+            border-radius: 6px;
+            padding: 6px 12px;
+        }
+
+        .badge {
+            border-radius: 4px;
+            padding: 5px 8px;
+        }
+
+        .list-group-item {
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .add-question-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #28a745;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .add-question-btn:hover {
+            transform: scale(1.1);
+            background-color: #218838;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
             top: 0;
             left: 0;
+            width: 100%;
             height: 100%;
-            padding: 1rem 0.75rem;
-            pointer-events: none;
-            border: 1px solid transparent;
-            transform-origin: 0 0;
-            transition: opacity .1s ease-in-out,transform .1s ease-in-out;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1050;
+        }
+
+        .modal.show {
+            display: block;
+        }
+
+        .modal-dialog {
+            position: relative;
+            width: auto;
+            margin: 1.75rem auto;
+            max-width: 800px;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            border-bottom: 1px solid #dee2e6;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .modal-body {
+            position: relative;
+            padding: 1rem;
+        }
+
+        .btn-close {
+            background: transparent;
+            border: 0;
+            padding: 0.5rem;
+            cursor: pointer;
+            color: #fff;
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+
+        .option-label {
+            min-width: 40px;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 4px 0 0 4px;
+            padding: 6px 12px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .correct-label {
+            margin-left: 5px;
+            margin-bottom: 0;
+        }
+
+        #answerOptions {
+            border: 1px dashed red !important; /* Kiểm tra khung */
+            min-height: 50px !important; /* Đảm bảo có không gian hiển thị */
         }
     </style>
 </head>
 <body>
-<div class="loading-overlay">
-    <div class="spinner"></div>
+<c:import url="header.jsp"/>
+<!-- Loading Overlay -->
+<div class="loading">
+    <div class="loading-content">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Đang xử lý...</p>
+    </div>
 </div>
 
-<div class="main-container">
+<div class="container-fluid py-3">
+    <h4 class="mb-3">
+        <i class="fas fa-edit me-2"></i>Chỉnh sửa bài tập
+    </h4>
+
     <div class="row">
-        <div class="col-12">
+        <!-- Cột trái: Thông tin bài tập -->
+        <div class="col-md-4">
             <div class="card">
-                <div class="card-header">
-                    <h2 class="mb-0">
-                        <i class="fas fa-edit me-2"></i>Chỉnh sửa Assignment
-                    </h2>
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb mb-0">
-                            <li class="breadcrumb-item"><a href="#" onclick="history.back()">Quay lại</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Chỉnh sửa Assignment</li>
-                        </ol>
-                    </nav>
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-info-circle me-2"></i>Thông tin bài tập
                 </div>
                 <div class="card-body">
-                    <c:if test="${not empty errorMessage}">
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="fas fa-exclamation-circle me-2"></i>${errorMessage}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    </c:if>
-
-                    <form id="assignmentForm" action="edit-assignment" method="post" enctype="multipart/form-data">
-                        <input type="hidden" name="action" value="update">
+                    <form id="assignmentForm" action="edit-assignment" method="post">
+                        <input type="hidden" name="action" value="updateAssignment">
                         <input type="hidden" name="assignmentID" value="${assignment.assignmentID}">
                         <input type="hidden" name="courseID" value="${courseID}">
-                        <input type="hidden" name="questionCount" value="${fn:length(questions)}">
 
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <h5 class="mb-0">
-                                    <i class="fas fa-info-circle me-2"></i>Thông tin Assignment
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="form-floating mb-3">
-                                    <input type="text" class="form-control" id="title" name="title"
-                                           value="${assignment.assignmentTitle}" required>
-                                    <label for="title">Tiêu đề</label>
-                                </div>
-                                <div class="form-floating">
-                                    <textarea class="form-control" id="description" name="description"
-                                              style="height: 100px">${assignment.description}</textarea>
-                                    <label for="description">Mô tả</label>
-                                </div>
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tiêu đề bài tập</label>
+                            <input type="text" name="title" class="form-control" value="${assignment.assignmentTitle}"
+                                   required>
                         </div>
 
-                        <div class="card mb-4">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0">
-                                    <i class="fas fa-list me-2"></i>Danh sách câu hỏi
-                                </h5>
-                                <button type="button" class="btn btn-primary" id="addQuestionBtn">
-                                    <i class="fas fa-plus"></i>Thêm câu hỏi
-                                </button>
-                            </div>
-                            <div class="card-body">
-                                <div id="questionsContainer">
-                                    <c:forEach items="${questions}" var="question" varStatus="loop">
-                                        <div class="question-container mb-4" data-question-id="${question.questionID}">
-                                            <input type="hidden" name="questionID_${loop.index}" value="${question.questionID}">
-                                            
-                                            <div class="form-floating mb-3">
-                                                <input type="text" class="form-control" name="questionText_${loop.index}" 
-                                                       value="${question.questionText}" required>
-                                                <label>Nội dung câu hỏi</label>
-                                            </div>
-                                            
-                                            <div class="row mb-3">
-                                                <div class="col-md-6">
-                                                    <div class="form-floating">
-                                                        <select class="form-select" name="questionType_${loop.index}" required>
-                                                            <option value="MULTIPLE_CHOICE" ${question.questionType == 'MULTIPLE_CHOICE' ? 'selected' : ''}>Trắc nghiệm</option>
-                                                            <option value="TRUE_FALSE" ${question.questionType == 'TRUE_FALSE' ? 'selected' : ''}>Đúng/Sai</option>
-                                                            <option value="SHORT_ANSWER" ${question.questionType == 'SHORT_ANSWER' ? 'selected' : ''}>Tự luận ngắn</option>
-                                                            <option value="ESSAY" ${question.questionType == 'ESSAY' ? 'selected' : ''}>Tự luận dài</option>
-                                                        </select>
-                                                        <label>Loại câu hỏi</label>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-floating">
-                                                        <input type="number" class="form-control" name="questionMark_${loop.index}" 
-                                                               value="${question.questionMark}" required min="0" step="0.5">
-                                                        <label>Điểm</label>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="row mb-3">
-                                                <div class="col-md-6">
-                                                    <div class="file-input-container">
-                                                        <label class="file-input-label">
-                                                            <i class="fas fa-image"></i> Chọn ảnh
-                                                        </label>
-                                                        <input type="file" class="form-control" name="questionImage_${loop.index}" 
-                                                               accept="image/*" style="display: none;">
-                                                        <div class="preview-container">
-                                                            <c:if test="${not empty question.questionImage}">
-                                                                <img src="${question.questionImage}" class="media-preview">
-                                                            </c:if>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="file-input-container">
-                                                        <label class="file-input-label">
-                                                            <i class="fas fa-music"></i> Chọn file audio
-                                                        </label>
-                                                        <input type="file" class="form-control" name="audioFile_${loop.index}" 
-                                                               accept="audio/*" style="display: none;">
-                                                        <div class="preview-container">
-                                                            <c:if test="${not empty question.audioFile}">
-                                                                <audio controls class="mt-2 w-100">
-                                                                    <source src="${question.audioFile}" type="audio/mpeg">
-                                                                </audio>
-                                                            </c:if>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="answers-container mb-3">
-                                                <c:choose>
-                                                    <c:when test="${question.questionType == 'MULTIPLE_CHOICE'}">
-                                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                                            <h6 class="mb-0">Các lựa chọn</h6>
-                                                            <div class="btn-group">
-                                                                <button type="button" class="btn btn-sm btn-outline-primary add-option">
-                                                                    <i class="fas fa-plus"></i> Thêm lựa chọn
-                                                                </button>
-                                                                <button type="button" class="btn btn-sm btn-outline-danger remove-option">
-                                                                    <i class="fas fa-minus"></i> Xóa lựa chọn
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                        <div class="answer-options">
-                                                            <c:forEach items="${question.answers}" var="answer" varStatus="ansLoop">
-                                                                <div class="answer-option">
-                                                                    <div class="input-group">
-                                                                        <div class="input-group-text">
-                                                                            <input class="form-check-input mt-0" type="radio"
-                                                                                   name="correctAnswer_${loop.index}" 
-                                                                                   value="${ansLoop.index + 1}"
-                                                                                   ${answer.correct ? 'checked' : ''}>
-                                                                            <span class="ms-2">${answer.optionLabel}</span>
-                                                                        </div>
-                                                                        <input type="text" class="form-control"
-                                                                               name="answerText_${loop.index}_${ansLoop.index + 1}" 
-                                                                               value="${answer.answerText}" required>
-                                                                    </div>
-                                                                </div>
-                                                            </c:forEach>
-                                                        </div>
-                                                    </c:when>
-                                                    <c:when test="${question.questionType == 'TRUE_FALSE'}">
-                                                        <div class="answer-option">
-                                                            <div class="form-check">
-                                                                <input class="form-check-input" type="radio"
-                                                                       name="correctAnswer_${loop.index}" value="1"
-                                                                       ${question.correctAnswer == '1' ? 'checked' : ''}>
-                                                                <label class="form-check-label">Đúng</label>
-                                                            </div>
-                                                            <div class="form-check">
-                                                                <input class="form-check-input" type="radio"
-                                                                       name="correctAnswer_${loop.index}" value="2"
-                                                                       ${question.correctAnswer == '2' ? 'checked' : ''}>
-                                                                <label class="form-check-label">Sai</label>
-                                                            </div>
-                                                        </div>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <div class="form-floating">
-                                                            <textarea class="form-control" name="correctAnswer_${loop.index}"
-                                                                      style="height: 100px" required>${question.correctAnswer}</textarea>
-                                                            <label>Đáp án</label>
-                                                        </div>
-                                                    </c:otherwise>
-                                                </c:choose>
-                                            </div>
-
-                                            <div class="d-flex justify-content-end">
-                                                <button type="button" class="btn btn-danger delete-question">
-                                                    <i class="fas fa-trash"></i>Xóa câu hỏi
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </c:forEach>
-                                </div>
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mô tả</label>
+                            <textarea name="description" class="form-control" rows="4"
+                                      required>${assignment.description}</textarea>
                         </div>
 
-                        <div class="d-flex justify-content-between mt-4">
-                            <button type="button" class="btn btn-secondary" onclick="history.back()">
-                                <i class="fas fa-arrow-left"></i>Quay lại
-                            </button>
-                            <button type="submit" class="btn btn-success">
-                                <i class="fas fa-save"></i>Lưu thay đổi
-                            </button>
-                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-save me-1"></i> Lưu thay đổi
+                        </button>
                     </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột phải: Danh sách câu hỏi -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-list me-2"></i>Danh sách câu hỏi</span>
+                    <span class="badge bg-light text-dark">${questions.size()} câu hỏi</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <c:forEach items="${questions}" var="question" varStatus="status">
+                            <div class="col-md-6 mb-3 question-item" style="display: ${status.index < 12 ? 'block' : 'none'}">
+                                <div class="card question-card h-100">
+                                    <div class="card-header d-flex justify-content-between align-items-center py-2">
+                                        <span class="fw-bold">Câu ${status.index + 1}</span>
+                                        <div>
+                                            <button class="btn btn-primary btn-sm edit-question me-1"
+                                                    data-question-id="${question.questionID}"
+                                                    data-question-text="${question.questionText}"
+                                                    data-question-type="${question.questionType}"
+                                                    data-question-mark="${question.questionMark}"
+                                                    data-assignment-id="${assignment.assignmentID}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-danger btn-sm delete-question"
+                                                    data-question-id="${question.questionID}"
+                                                    data-assignment-id="${assignment.assignmentID}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="card-body p-2">
+                                        <div class="mb-1">
+                                            <span class="badge bg-primary">
+                                                ${question.questionType == 'multiple_choice' ? 'Trắc nghiệm' : 'Câu trả lời ngắn'}
+                                            </span>
+                                            <span class="badge bg-secondary ms-1">${question.questionMark} điểm</span>
+                                        </div>
+                                        <p class="mb-1 small">${question.questionText}</p>
+
+                                        <c:if test="${not empty question.questionImage}">
+                                            <div class="mb-1">
+                                                <img src="${question.questionImage}" class="img-fluid rounded"
+                                                     style="max-height: 100px">
+                                            </div>
+                                        </c:if>
+
+                                        <c:if test="${not empty question.audioFile}">
+                                            <div class="mb-1">
+                                                <audio controls class="w-100" style="height: 30px">
+                                                    <source src="${question.audioFile}" type="audio/mpeg">
+                                                </audio>
+                                            </div>
+                                        </c:if>
+
+                                        <c:if test="${question.questionType == 'multiple_choice'}">
+                                            <div class="mt-1">
+                                                <c:forEach items="${question.answers}" var="answer"
+                                                           varStatus="ansStatus">
+                                                    <div class="d-flex align-items-center mb-1">
+                                                        <span class="me-2 small">${answer.optionLabel}.</span>
+                                                        <span class="small flex-grow-1">${answer.answerText}</span>
+                                                        <c:if test="${answer.correct}">
+                                                            <span class="badge bg-success">Đúng</span>
+                                                        </c:if>
+                                                    </div>
+                                                </c:forEach>
+                                            </div>
+                                        </c:if>
+                                    </div>
+                                </div>
+                            </div>
+                        </c:forEach>
+                    </div>
+
+                    <!-- Phân trang -->
+                    <div class="d-flex justify-content-center mt-4">
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination">
+                                <li class="page-item">
+                                    <a class="page-link" href="#" id="prevPage" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <span class="page-link" id="currentPage">1</span>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#" id="nextPage" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="toast-container"></div>
+<!-- Nút thêm câu hỏi -->
+<button type="button" class="add-question-btn" id="addQuestionBtn">
+    <i class="fas fa-plus"></i>
+</button>
 
-<!-- JavaScript -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
-<script>
-    $(document).ready(function () {
-        let questionCount = parseInt('${questions.size()}');
-        const loadingOverlay = $('.loading-overlay');
-        const toastContainer = $('.toast-container');
+<!-- Modal thêm câu hỏi -->
+<div id="addQuestionModal" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle me-2"></i>Thêm câu hỏi mới
+                </h5>
+                <button type="button" class="btn-close" id="closeModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Debug info -->
+                <div class="alert alert-info">
+                    Assignment ID: ${assignment.assignmentID}<br>
+                    Course ID: ${courseID}
+                </div>
+                
+                <form id="questionForm" method="post" action="edit-assignment" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="addQuestion">
+                    <input type="hidden" name="courseID" value="${courseID}">
+                    <input type="hidden" name="assignmentID" value="${assignment.assignmentID}">
 
-        // Thêm template cho câu hỏi mới
-        function getNewQuestionTemplate(index) {
-            return `
-                <div class="question-container mb-4" data-question-id="new">
-                    <input type="hidden" name="questionID_${index}" value="new">
-                    
-                    <div class="form-floating mb-3">
-                        <input type="text" class="form-control" name="questionText_${index}" required>
-                        <label>Nội dung câu hỏi</label>
+                    <div class="mb-3">
+                        <label class="form-label">Loại câu hỏi</label>
+                        <select name="questionType" class="form-select" id="questionType" required>
+                            <option value="multiple_choice">Trắc nghiệm</option>
+                            <option value="short_answer">Câu trả lời ngắn</option>
+                        </select>
                     </div>
-                    
+
+                    <div class="mb-3">
+                        <label class="form-label">Nội dung câu hỏi</label>
+                        <textarea name="questionText" class="form-control" rows="3" required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Điểm</label>
+                        <input type="number" name="questionMark" class="form-control" min="0" step="0.01" required>
+                        <small class="text-muted">Nhập số điểm (ví dụ: 0.25, 0.5, 1.0)</small>
+                    </div>
+
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <div class="form-floating">
-                                <select class="form-select" name="questionType_${index}" required>
-                                    <option value="MULTIPLE_CHOICE">Trắc nghiệm</option>
-                                    <option value="TRUE_FALSE">Đúng/Sai</option>
-                                    <option value="SHORT_ANSWER">Tự luận ngắn</option>
-                                    <option value="ESSAY">Tự luận dài</option>
-                                </select>
-                                <label>Loại câu hỏi</label>
-                            </div>
+                            <label class="form-label">Hình ảnh</label>
+                            <input type="file" name="questionImage" class="form-control" accept="image/*">
+                            <div class="preview-container mt-2" id="imagePreview"></div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-floating">
-                                <input type="number" class="form-control" name="questionMark_${index}" 
-                                       value="1" required min="0" step="0.5">
-                                <label>Điểm</label>
-                            </div>
+                            <label class="form-label">Âm thanh</label>
+                            <input type="file" name="audioFile" class="form-control" accept="audio/*">
+                            <div class="preview-container mt-2" id="audioPreview"></div>
                         </div>
                     </div>
 
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <div class="file-input-container">
-                                <label class="file-input-label">
-                                    <i class="fas fa-image"></i> Chọn ảnh
-                                </label>
-                                <input type="file" class="form-control" name="questionImage_${index}" 
-                                       accept="image/*" style="display: none;">
-                                <div class="preview-container"></div>
-                            </div>
+                    <div id="multipleChoiceAnswers" class="mb-3">
+                        <label class="form-label">Các lựa chọn</label>
+                        <div id="answerOptions">
                         </div>
-                        <div class="col-md-6">
-                            <div class="file-input-container">
-                                <label class="file-input-label">
-                                    <i class="fas fa-music"></i> Chọn file audio
-                                </label>
-                                <input type="file" class="form-control" name="audioFile_${index}" 
-                                       accept="audio/*" style="display: none;">
-                                <div class="preview-container"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="answers-container mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0">Các lựa chọn</h6>
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-sm btn-outline-primary add-option">
-                                    <i class="fas fa-plus"></i> Thêm lựa chọn
-                                </button>
-                                <button type="button" class="btn btn-sm btn-outline-danger remove-option">
-                                    <i class="fas fa-minus"></i> Xóa lựa chọn
-                                </button>
-                            </div>
-                        </div>
-                        <div class="answer-options">
-                            <div class="answer-option">
-                                <div class="input-group">
-                                    <div class="input-group-text">
-                                        <input class="form-check-input mt-0" type="radio"
-                                               name="correctAnswer_${index}" value="1" checked>
-                                        <span class="ms-2">A</span>
-                                    </div>
-                                    <input type="text" class="form-control"
-                                           name="answerText_${index}_1" required>
-                                </div>
-                            </div>
-                            <div class="answer-option">
-                                <div class="input-group">
-                                    <div class="input-group-text">
-                                        <input class="form-check-input mt-0" type="radio"
-                                               name="correctAnswer_${index}" value="2">
-                                        <span class="ms-2">B</span>
-                                    </div>
-                                    <input type="text" class="form-control"
-                                           name="answerText_${index}_2" required>
-                                </div>
-                            </div>
-                            <div class="answer-option">
-                                <div class="input-group">
-                                    <div class="input-group-text">
-                                        <input class="form-check-input mt-0" type="radio"
-                                               name="correctAnswer_${index}" value="3">
-                                        <span class="ms-2">C</span>
-                                    </div>
-                                    <input type="text" class="form-control"
-                                           name="answerText_${index}_3" required>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-end">
-                        <button type="button" class="btn btn-danger delete-question">
-                            <i class="fas fa-trash"></i>Xóa câu hỏi
+                        <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="addAnswerOption">
+                            <i class="fas fa-plus me-1"></i> Thêm lựa chọn
                         </button>
                     </div>
-                </div>
-            `;
+
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" id="cancelBtn">Hủy</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save me-1"></i> Lưu câu hỏi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal chỉnh sửa câu hỏi -->
+<div id="editQuestionModal" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>Chỉnh sửa câu hỏi
+                </h5>
+                <button type="button" class="btn-close" id="closeEditModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editQuestionForm" method="post" action="edit-assignment" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="updateQuestion">
+                    <input type="hidden" name="questionID" id="editQuestionID">
+                    <input type="hidden" name="assignmentID" id="editAssignmentID">
+
+                    <div class="mb-3">
+                        <label class="form-label">Loại câu hỏi</label>
+                        <select name="questionType" class="form-select" id="editQuestionType" required>
+                            <option value="multiple_choice">Trắc nghiệm</option>
+                            <option value="short_answer">Câu trả lời ngắn</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Nội dung câu hỏi</label>
+                        <textarea name="questionText" class="form-control" rows="3" id="editQuestionText" required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Điểm</label>
+                        <input type="number" name="questionMark" class="form-control" min="0" step="0.01" id="editQuestionMark" required>
+                        <small class="text-muted">Nhập số điểm (ví dụ: 0.25, 0.5, 1.0)</small>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Hình ảnh</label>
+                            <input type="file" name="questionImage" class="form-control" accept="image/*">
+                            <div class="preview-container mt-2" id="editImagePreview"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Âm thanh</label>
+                            <input type="file" name="audioFile" class="form-control" accept="audio/*">
+                            <div class="preview-container mt-2" id="editAudioPreview"></div>
+                        </div>
+                    </div>
+
+                    <div id="editMultipleChoiceAnswers" class="mb-3">
+                        <label class="form-label">Các lựa chọn</label>
+                        <div id="editAnswerOptions">
+                        </div>
+                    </div>
+
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" id="editCancelBtn">Hủy</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> Lưu thay đổi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<c:import url="footer.jsp"/>
+<!-- Bootstrap Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    // Hàm hiển thị modal
+    function showModal() {
+        document.getElementById('addQuestionModal').classList.add('show');
+        document.body.style.overflow = 'hidden';
+
+        // Tự động thêm lựa chọn đầu tiên
+        if ($('.answer-option').length === 0) {
+            $('#addAnswerOption').click();
         }
+    }
 
-        // Xử lý sự kiện click nút thêm câu hỏi
-        $('#addQuestionBtn').on('click', function() {
-            const newQuestionHtml = getNewQuestionTemplate(questionCount);
-            $('#questionsContainer').append(newQuestionHtml);
-            
-            // Cập nhật số lượng câu hỏi
-            questionCount++;
-            $('input[name="questionCount"]').val(questionCount);
-            
-            // Log hành động
-            logAction('add_new_question', {
-                questionIndex: questionCount - 1
-            });
+    // Hàm ẩn modal
+    function hideModal() {
+        document.getElementById('addQuestionModal').classList.remove('show');
+        document.body.style.overflow = '';
+        // Reset form
+        document.getElementById('questionForm').reset();
+        $('#imagePreview, #audioPreview').empty();
+        $('#multipleChoiceAnswers').hide();
+    }
 
-            // Scroll đến câu hỏi mới
-            $('html, body').animate({
-                scrollTop: $(`[name="questionText_${questionCount - 1}"]`).offset().top - 100
-            }, 500);
+    $(document).ready(function () {
+        // Xử lý sự kiện click cho nút thêm câu hỏi
+        $('#addQuestionBtn').click(function () {
+            showModal();
         });
 
-        // Cập nhật số thứ tự câu hỏi
-        function updateQuestionNumbers() {
-            questionCount = $('.question-container').length;
-            $('input[name="questionCount"]').val(questionCount);
+        // Xử lý sự kiện click cho nút đóng modal
+        $('#closeModalBtn, #cancelBtn').click(function () {
+            hideModal();
+        });
+
+        // Đóng modal khi click bên ngoài
+        window.onclick = function (event) {
+            var modal = document.getElementById('addQuestionModal');
+            if (event.target == modal) {
+                hideModal();
+            }
         }
 
-        // Hiển thị loading overlay
-        function showLoading() {
-            loadingOverlay.css('display', 'flex');
-        }
+        // Xử lý hiển thị/ẩn form câu trả lời trắc nghiệm
+        $('#questionType').change(function () {
+            if ($(this).val() === 'multiple_choice') {
+                $('#multipleChoiceAnswers').show();
+            } else {
+                $('#multipleChoiceAnswers').hide();
+            }
+        });
 
-        // Ẩn loading overlay
-        function hideLoading() {
-            loadingOverlay.css('display', 'none');
-        }
+        // Thêm lựa chọn mới
+        $('#addAnswerOption').click(function (e) {
+            e.preventDefault();
+            const optionLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+            const answerCount = $('.answer-option').length;
+            
+            if (answerCount >= optionLabels.length) {
+                alert('Không thể thêm quá ' + optionLabels.length + ' lựa chọn');
+                return;
+            }
 
-        // Hiển thị toast thông báo
-        function showToast(message, type = 'success') {
-            const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
-            const toast = $(`
-                <div class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                    <div class="d-flex">
-                        <div class="toast-body">
-                            <i class="fas ${iconClass} me-2"></i>
-                            ${message}
-                        </div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                    </div>
-                </div>
-            `);
-            toastContainer.append(toast);
-            const bsToast = new bootstrap.Toast(toast);
-            bsToast.show();
-            setTimeout(() => toast.remove(), 5000);
-        }
+            const currentLabel = optionLabels[answerCount];
+            console.log("Thêm lựa chọn mới:");
+            console.log("- Số thứ tự:", answerCount);
+            console.log("- Option label:", currentLabel);
 
-        // Log hành động
-        function logAction(action, details) {
-            const timestamp = new Date().toISOString();
-            console.log(`[${timestamp}] ${action}:`, details);
-            // Có thể gửi log lên server nếu cần
-            $.post('log-action', {
-                action: action,
-                timestamp: timestamp,
-                details: JSON.stringify(details)
+            const newOptionHtml = 
+                '<div class="answer-option">' +
+                    '<div class="input-group">' +
+                        '<div class="option-label">' + currentLabel + '</div>' +
+                        '<input type="text" name="answers" class="form-control" placeholder="Nhập lựa chọn" required>' +
+                        '<div class="input-group-text">' +
+                            '<input type="checkbox" name="isCorrect" class="answer-checkbox" data-option="' + currentLabel + '">' +
+                            '<label class="correct-label">Đúng</label>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+
+            $('#answerOptions').append(newOptionHtml);
+
+            // Thêm event listener cho checkbox mới
+            $('.answer-checkbox').off('change').on('change', function() {
+                const optionLabel = $(this).data('option');
+                const isChecked = $(this).prop('checked');
+                console.log(`Câu trả lời ${optionLabel} đã được ${isChecked ? 'chọn' : 'bỏ chọn'} là đúng`);
+                
+                // Log tất cả các câu trả lời đúng hiện tại
+                const correctAnswers = [];
+                $('.answer-checkbox:checked').each(function() {
+                    correctAnswers.push($(this).data('option'));
+                });
+                console.log('Các câu trả lời đúng hiện tại:', correctAnswers);
             });
-        }
+        });
 
         // Xử lý preview file
         function handleFilePreview(input, previewContainer) {
@@ -654,313 +595,556 @@
 
             if (file.type.startsWith('image/')) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewContainer.html(`<img src="${e.target.result}" class="media-preview">`);
-                    logAction('preview_image', { fileName: file.name, size: file.size });
+                reader.onload = function (e) {
+                    previewContainer.html(`<img src="${e.target.result}" class="img-thumbnail">`);
                 };
                 reader.readAsDataURL(file);
             } else if (file.type.startsWith('audio/')) {
                 const url = URL.createObjectURL(file);
                 previewContainer.html(`
-                    <audio controls class="mt-2 w-100">
-                        <source src="${url}" type="${file.type}">
-                    </audio>
-                `);
-                logAction('preview_audio', { fileName: file.name, size: file.size });
+                        <audio controls class="w-100" style="height: 30px">
+                            <source src="${url}" type="${file.type}">
+                        </audio>
+                    `);
             }
         }
-
-        // Xử lý thêm/xóa lựa chọn trắc nghiệm
-        $(document).on('click', '.add-option', function() {
-            const questionContainer = $(this).closest('.question-container');
-            const answersContainer = questionContainer.find('.answer-options');
-            const questionIdInput = questionContainer.find('input[name^="questionID_"]');
-            const questionIndex = questionIdInput.attr('name').replace('questionID_', '');
-            const currentOptions = answersContainer.find('.answer-option').length;
-            
-            if (currentOptions < 5) {
-                const labels = ['A', 'B', 'C', 'D', 'E'];
-                const newOption = `
-                    <div class="answer-option">
-                        <div class="input-group">
-                            <div class="input-group-text">
-                                <input class="form-check-input mt-0" type="radio"
-                                       name="correctAnswer_${questionIndex}" value="${currentOptions + 1}">
-                                <span class="ms-2">${labels[currentOptions]}</span>
-                            </div>
-                            <input type="text" class="form-control"
-                                   name="answerText_${questionIndex}_${currentOptions + 1}" required>
-                        </div>
-                    </div>
-                `;
-                answersContainer.append(newOption);
-                logAction('add_option', {
-                    questionIndex: questionIndex,
-                    optionCount: currentOptions + 1,
-                    optionLabel: labels[currentOptions]
-                });
-            } else {
-                showToast('Số lượng lựa chọn tối đa là 5', 'warning');
-            }
-        });
-
-        $(document).on('click', '.remove-option', function() {
-            const questionContainer = $(this).closest('.question-container');
-            const answersContainer = questionContainer.find('.answer-options');
-            const currentOptions = answersContainer.find('.answer-option').length;
-            
-            if (currentOptions > 3) {
-                answersContainer.find('.answer-option').last().remove();
-                logAction('remove_option', {
-                    questionIndex: questionContainer.find('input[name^="questionID"]').attr('name').split('_')[1],
-                    optionCount: currentOptions - 1
-                });
-            } else {
-                showToast('Số lượng lựa chọn tối thiểu là 3', 'warning');
-            }
-        });
-
-        // Cập nhật template cho câu hỏi trắc nghiệm
-        function getMultipleChoiceTemplate(questionIndex, options = 3) {
-            const labels = ['A', 'B', 'C', 'D', 'E'];
-            let optionsHtml = '';
-            
-            for (let i = 0; i < options; i++) {
-                const isFirst = i === 0;
-                optionsHtml += `
-                    <div class="answer-option">
-                        <div class="input-group">
-                            <div class="input-group-text">
-                                <input class="form-check-input mt-0" type="radio"
-                                       name="correctAnswer_${questionIndex}" value="${i + 1}" ${isFirst ? 'checked' : ''}>
-                                <span class="ms-2">${labels[i]}</span>
-                            </div>
-                            <input type="text" class="form-control"
-                                   name="answerText_${questionIndex}_${i + 1}" required>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            return `
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h6 class="mb-0">Các lựa chọn</h6>
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-sm btn-outline-primary add-option">
-                            <i class="fas fa-plus"></i> Thêm lựa chọn
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-danger remove-option">
-                            <i class="fas fa-minus"></i> Xóa lựa chọn
-                        </button>
-                    </div>
-                </div>
-                <div class="answer-options">
-                    ${optionsHtml}
-                </div>
-            `;
-        }
-
-        // Cập nhật xử lý thay đổi loại câu hỏi
-        $(document).on('change', 'select[name^="questionType"]', function() {
-            const questionContainer = $(this).closest('.question-container');
-            const answersContainer = questionContainer.find('.answers-container');
-            const questionType = $(this).val();
-            const questionIndex = questionContainer.find('input[name^="questionID"]').attr('name').split('_')[1];
-            const oldAnswers = [];
-            
-            // Lưu lại các đáp án hiện tại
-            answersContainer.find('input[type="text"], textarea').each(function() {
-                oldAnswers.push($(this).val());
-            });
-            
-            let answersHtml = '';
-            switch(questionType) {
-                case 'MULTIPLE_CHOICE':
-                    answersHtml = getMultipleChoiceTemplate(questionIndex, Math.max(3, oldAnswers.length));
-                    break;
-                case 'TRUE_FALSE':
-                    answersHtml = `
-                        <div class="answer-option">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio"
-                                       name="correctAnswer_${questionIndex}" value="1" checked>
-                                <label class="form-check-label">Đúng</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio"
-                                       name="correctAnswer_${questionIndex}" value="2">
-                                <label class="form-check-label">Sai</label>
-                            </div>
-                        </div>
-                    `;
-                    break;
-                default:
-                    answersHtml = `
-                        <div class="form-floating">
-                            <textarea class="form-control" name="correctAnswer_${questionIndex}"
-                                      style="height: 100px" required>${oldAnswers[0] || ''}</textarea>
-                            <label>Đáp án</label>
-                        </div>
-                    `;
-            }
-            answersContainer.html(answersHtml);
-            
-            // Khôi phục lại các đáp án nếu chuyển sang dạng trắc nghiệm
-            if (questionType === 'MULTIPLE_CHOICE') {
-                answersContainer.find('input[type="text"]').each(function(index) {
-                    if (oldAnswers[index]) {
-                        $(this).val(oldAnswers[index]);
-                    }
-                });
-            }
-            
-            logAction('change_question_type', { 
-                questionIndex: questionIndex,
-                questionType: questionType,
-                answersCount: oldAnswers.length
-            });
-        });
 
         // Xử lý upload file
-        $(document).on('change', 'input[type="file"]', function() {
-            const previewContainer = $(this).closest('.file-input-container').find('.preview-container');
+        $('input[type="file"]').on('change', function () {
+            const previewContainer = $(this).closest('.col-md-6').find('.preview-container');
             handleFilePreview(this, previewContainer);
         });
 
-        // Xử lý xóa câu hỏi
-        $(document).on('click', '.delete-question', function() {
-            const questionContainer = $(this).closest('.question-container');
-            const questionId = questionContainer.data('question-id');
-
-            Swal.fire({
-                title: 'Xác nhận xóa',
-                text: 'Bạn có chắc chắn muốn xóa câu hỏi này?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Xóa',
-                cancelButtonText: 'Hủy'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    if (questionId !== 'new') {
-                        showLoading();
-                        $.post('edit-assignment', {
-                            action: 'delete',
-                            questionID: questionId,
-                            assignmentID: parseInt('${assignment.assignmentID}')
-                        }, function(response) {
-                            hideLoading();
-                            if (response.success) {
-                                questionContainer.remove();
-                                updateQuestionNumbers();
-                                showToast('Đã xóa câu hỏi thành công');
-                                logAction('delete_question', { 
-                                    questionId: questionId,
-                                    assignmentId: '${assignment.assignmentID}'
-                                });
-                            } else {
-                                showToast(response.message, 'danger');
-                            }
-                        });
-                    } else {
-                        questionContainer.remove();
-                        updateQuestionNumbers();
-                        showToast('Đã xóa câu hỏi thành công');
-                        logAction('delete_new_question', { 
-                            questionIndex: questionContainer.index()
-                        });
-                    }
-                }
-            });
-        });
-
-        // Xử lý submit form
-        $('#assignmentForm').on('submit', function(e) {
+        // Xử lý form submit
+        $('#questionForm').on('submit', function (e) {
             e.preventDefault();
-            showLoading();
-
-            const formData = new FormData(this);
             
-            // Thêm optionLabel cho các câu hỏi trắc nghiệm
-            $('.question-container').each(function(index) {
-                const questionType = $(this).find(`select[name="questionType_${index}"]`).val();
-                if (questionType === 'MULTIPLE_CHOICE') {
-                    const labels = ['A', 'B', 'C', 'D', 'E'];
-                    const options = $(this).find('.answer-option').length;
-                    for (let i = 0; i < options; i++) {
-                        formData.append(`optionLabel_${index}_${i + 1}`, labels[i]);
-                    }
-                }
-            });
+            // Kiểm tra các trường bắt buộc
+            const questionText = $('textarea[name="questionText"]').val().trim();
+            const questionType = $('#questionType').val();
+            const questionMark = $('input[name="questionMark"]').val();
 
-            // Validate dữ liệu trước khi submit
-            let isValid = true;
-            let errorMessage = '';
-
-            $('.question-container').each(function(index) {
-                const questionText = $(this).find(`input[name="questionText_${index}"]`).val();
-                const questionType = $(this).find(`select[name="questionType_${index}"]`).val();
-                const questionMark = $(this).find(`input[name="questionMark_${index}"]`).val();
-
-                if (!questionText) {
-                    isValid = false;
-                    errorMessage = 'Vui lòng nhập nội dung cho tất cả các câu hỏi';
-                    return false;
-                }
-
-                if (questionType === 'MULTIPLE_CHOICE') {
-                    const hasAnswer = $(this).find(`input[name="correctAnswer_${index}"]:checked`).length > 0;
-                    const emptyOptions = $(this).find(`input[name^="answerText_${index}_"]`).filter(function() {
-                        return !this.value;
-                    }).length > 0;
-
-                    if (!hasAnswer || emptyOptions) {
-                        isValid = false;
-                        errorMessage = 'Vui lòng điền đầy đủ các lựa chọn và chọn đáp án đúng cho câu hỏi trắc nghiệm';
-                        return false;
-                    }
-                }
-
-                if (!questionMark || questionMark <= 0) {
-                    isValid = false;
-                    errorMessage = 'Điểm số phải lớn hơn 0';
-                    return false;
-                }
-            });
-
-            if (!isValid) {
-                hideLoading();
-                showToast(errorMessage, 'danger');
-                return;
+            if (!questionText) {
+                alert('Vui lòng nhập nội dung câu hỏi');
+                return false;
             }
 
-            logAction('submit_form', {
-                assignmentId: '${assignment.assignmentID}',
-                questionCount: questionCount
+            if (!questionType) {
+                alert('Vui lòng chọn loại câu hỏi');
+                return false;
+            }
+
+            if (!questionMark) {
+                alert('Vui lòng nhập điểm cho câu hỏi');
+                return false;
+            }
+
+            // Nếu là câu hỏi trắc nghiệm
+            if (questionType === 'multiple_choice') {
+                // Kiểm tra số lượng câu trả lời
+                if ($('.answer-option').length === 0) {
+                    alert('Vui lòng thêm ít nhất một câu trả lời');
+                    return false;
+                }
+
+                // Kiểm tra đáp án đúng
+                if ($('.answer-checkbox:checked').length === 0) {
+                    alert('Vui lòng chọn ít nhất một đáp án đúng');
+                    return false;
+                }
+
+                // Kiểm tra nội dung câu trả lời
+                let hasEmptyAnswer = false;
+                $('.answer-option input[type="text"]').each(function () {
+                    if (!$(this).val().trim()) {
+                        hasEmptyAnswer = true;
+                        return false;
+                    }
+                });
+
+                if (hasEmptyAnswer) {
+                    alert('Vui lòng nhập đầy đủ nội dung cho tất cả các câu trả lời');
+                    return false;
+                }
+            }
+
+            // Tạo FormData object
+            const formData = new FormData(this);
+
+            // Xóa tất cả input hidden isCorrect và option_labels cũ
+            formData.delete('isCorrect');
+            formData.delete('option_labels');
+            formData.delete('answers');
+
+            // Thêm lại các giá trị mới cho câu hỏi trắc nghiệm
+            if (questionType === 'multiple_choice') {
+                $('.answer-option').each(function(index) {
+                    const answerText = $(this).find('input[type="text"]').val().trim();
+                    const optionLabel = $(this).find('.option-label').text();
+                    const isChecked = $(this).find('.answer-checkbox').prop('checked');
+                    
+                    formData.append('answers', answerText);
+                    formData.append('option_labels', optionLabel);
+                    formData.append('isCorrect', isChecked ? "1" : "0");
+                });
+            }
+
+            // Log form data trước khi gửi
+            console.log('Form data:', {
+                action: formData.get('action'),
+                assignmentID: formData.get('assignmentID'),
+                courseID: formData.get('courseID'),
+                questionType: formData.get('questionType'),
+                questionText: formData.get('questionText'),
+                questionMark: formData.get('questionMark'),
+                answers: formData.getAll('answers'),
+                option_labels: formData.getAll('option_labels'),
+                isCorrect: formData.getAll('isCorrect')
             });
 
+            // Hiển thị loading
+            $('.loading').show();
+
+            // Gửi request bằng AJAX
             $.ajax({
-                url: $(this).attr('action'),
+                url: 'edit-assignment',
                 type: 'POST',
                 data: formData,
                 processData: false,
                 contentType: false,
                 success: function(response) {
-                    hideLoading();
-                    if (response.success) {
-                        showToast('Cập nhật assignment thành công');
-                        setTimeout(() => window.location.reload(), 1500);
-                    } else {
-                        showToast(response.message, 'danger');
+                    $('.loading').hide();
+                    try {
+                        if (typeof response === 'string') {
+                            response = JSON.parse(response);
+                        }
+                        if (response.success) {
+                            // Đóng modal
+                            hideModal();
+                            // Reload trang
+                            location.reload();
+                        } else {
+                            alert(response.message || 'Có lỗi xảy ra khi thêm câu hỏi');
+                        }
+                    } catch (e) {
+                        console.error('Error parsing response:', e);
+                        alert('Có lỗi xảy ra khi xử lý phản hồi từ server');
                     }
                 },
                 error: function(xhr, status, error) {
-                    hideLoading();
-                    showToast('Có lỗi xảy ra, vui lòng thử lại', 'danger');
+                    $('.loading').hide();
+                    console.error('Error:', error);
+                    console.error('Response:', xhr.responseText);
+                    
+                    let errorMessage = 'Có lỗi xảy ra khi thêm câu hỏi';
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.message) {
+                            errorMessage = response.message;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing error response:', e);
+                    }
+                    
+                    alert(errorMessage);
                 }
             });
         });
+
+        // Xử lý xóa câu hỏi
+        $('.delete-question').click(function () {
+            if (confirm('Bạn có chắc chắn muốn xóa câu hỏi này?')) {
+                const questionId = $(this).data('question-id');
+                const assignmentId = $(this).data('assignment-id');
+
+                console.log('Bắt đầu xóa câu hỏi:', {
+                    questionId: questionId,
+                    assignmentId: assignmentId
+                });
+
+                $('.loading').show();
+
+                $.ajax({
+                    url: 'edit-assignment',
+                    method: 'POST',
+                    data: {
+                        action: 'deleteQuestion',
+                        questionID: questionId,
+                        assignmentID: assignmentId
+                    },
+                    success: function (response) {
+                        $('.loading').hide();
+                        console.log('Phản hồi từ server:', response);
+                        
+                        try {
+                            if (typeof response === 'string') {
+                                response = JSON.parse(response);
+                            }
+                            
+                            if (response.success) {
+                                console.log('Xóa câu hỏi thành công');
+                                location.reload();
+                            } else {
+                                console.error('Lỗi khi xóa câu hỏi:', response.message);
+                                alert('Có lỗi xảy ra khi xóa câu hỏi: ' + response.message);
+                            }
+                        } catch (e) {
+                            console.error('Lỗi khi xử lý phản hồi:', e);
+                            alert('Có lỗi xảy ra khi xử lý phản hồi từ server');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        $('.loading').hide();
+                        console.error('Lỗi AJAX:', {
+                            status: status,
+                            error: error,
+                            response: xhr.responseText
+                        });
+                        
+                        let errorMessage = 'Có lỗi xảy ra khi xóa câu hỏi';
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.message) {
+                                errorMessage = response.message;
+                            }
+                        } catch (e) {
+                            console.error('Lỗi khi parse JSON response:', e);
+                        }
+                        
+                        alert(errorMessage);
+                    }
+                });
+            }
+        });
+
+        // Hàm hiển thị modal chỉnh sửa
+        function showEditModal() {
+            document.getElementById('editQuestionModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Hàm ẩn modal chỉnh sửa
+        function hideEditModal() {
+            document.getElementById('editQuestionModal').classList.remove('show');
+            document.body.style.overflow = '';
+            // Reset form
+            document.getElementById('editQuestionForm').reset();
+            $('#editImagePreview, #editAudioPreview').empty();
+            $('#editAnswerOptions').empty();
+            $('#editMultipleChoiceAnswers').hide();
+        }
+
+        // Xử lý sự kiện click cho nút chỉnh sửa câu hỏi
+        $('.edit-question').click(function() {
+            const questionId = $(this).data('question-id');
+            const assignmentId = $(this).data('assignment-id');
+            
+            // Hiển thị loading
+            $('.loading').show();
+            
+            // Lấy thông tin câu hỏi từ server
+            $.ajax({
+                url: 'edit-assignment',
+                method: 'POST',
+                data: {
+                    action: 'getQuestionDetails',
+                    questionID: questionId,
+                    assignmentID: assignmentId
+                },
+                success: function(response) {
+                    $('.loading').hide();
+                    try {
+                        if (typeof response === 'string') {
+                            response = JSON.parse(response);
+                        }
+                        
+                        if (response.success) {
+                            // Điền thông tin vào form
+                            $('#editQuestionID').val(response.question.questionID);
+                            $('#editAssignmentID').val(response.question.assignmentID);
+                            $('#editQuestionText').val(response.question.questionText);
+                            $('#editQuestionType').val(response.question.questionType);
+                            $('#editQuestionMark').val(response.question.questionMark);
+                            
+                            // Hiển thị hình ảnh hiện tại nếu có
+                            if (response.question.questionImage) {
+                                $('#editImagePreview').html(`
+                                    <div class="mb-2">
+                                        <label class="form-label">Hình ảnh hiện tại:</label>
+                                        <img src="${response.question.questionImage}" class="img-thumbnail" style="max-height: 150px">
+                                        <input type="hidden" name="currentQuestionImage" value="${response.question.questionImage}">
+                                    </div>
+                                `);
+                            }
+
+                            // Hiển thị audio hiện tại nếu có
+                            if (response.question.audioFile) {
+                                $('#editAudioPreview').html(`
+                                    <div class="mb-2">
+                                        <label class="form-label">Audio hiện tại:</label>
+                                        <audio controls class="w-100" style="height: 30px">
+                                            <source src="${response.question.audioFile}" type="audio/mpeg">
+                                        </audio>
+                                        <input type="hidden" name="currentAudioFile" value="${response.question.audioFile}">
+                                    </div>
+                                `);
+                            }
+                            
+                            // Xử lý hiển thị câu trả lời nếu là câu hỏi trắc nghiệm
+                            if (response.question.questionType === 'multiple_choice') {
+                                $('#editMultipleChoiceAnswers').show();
+                                $('#editAnswerOptions').empty();
+                                
+                                response.question.answers.forEach(function(answer) {
+                                    const optionHtml = 
+                                        '<div class="answer-option">' +
+                                            '<div class="input-group">' +
+                                                '<div class="option-label">' + answer.optionLabel + '</div>' +
+                                                '<input type="text" name="answers" class="form-control" value="' + answer.answerText + '" required>' +
+                                                '<div class="input-group-text">' +
+                                                    '<input type="checkbox" name="isCorrect" class="answer-checkbox" ' + (answer.correct ? 'checked' : '') + '>' +
+                                                    '<label class="correct-label">Đúng</label>' +
+                                                '</div>' +
+                                            '</div>' +
+                                        '</div>';
+                                    $('#editAnswerOptions').append(optionHtml);
+                                });
+                            } else {
+                                $('#editMultipleChoiceAnswers').hide();
+                            }
+                            
+                            // Hiển thị modal
+                            showEditModal();
+                        } else {
+                            alert('Có lỗi khi lấy thông tin câu hỏi: ' + response.message);
+                        }
+                    } catch (e) {
+                        console.error('Lỗi khi xử lý phản hồi:', e);
+                        alert('Có lỗi xảy ra khi xử lý phản hồi từ server');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('.loading').hide();
+                    console.error('Lỗi AJAX:', {
+                        status: status,
+                        error: error,
+                        response: xhr.responseText
+                    });
+                    alert('Có lỗi xảy ra khi lấy thông tin câu hỏi');
+                }
+            });
+        });
+
+        // Xử lý sự kiện click cho nút đóng modal chỉnh sửa
+        $('#closeEditModalBtn, #editCancelBtn').click(function() {
+            hideEditModal();
+        });
+
+        // Xử lý hiển thị/ẩn form câu trả lời trắc nghiệm trong modal chỉnh sửa
+        $('#editQuestionType').change(function() {
+            if ($(this).val() === 'multiple_choice') {
+                $('#editMultipleChoiceAnswers').show();
+                if ($('#editAnswerOptions .answer-option').length === 0) {
+                    $('#editAddAnswerOption').click();
+                }
+            } else {
+                $('#editMultipleChoiceAnswers').hide();
+            }
+        });
+
+        // Xử lý thêm lựa chọn mới trong modal chỉnh sửa
+        $('#editAddAnswerOption').click(function(e) {
+            e.preventDefault();
+            const optionLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+            const answerCount = $('#editAnswerOptions .answer-option').length;
+            
+            if (answerCount >= optionLabels.length) {
+                alert('Không thể thêm quá ' + optionLabels.length + ' lựa chọn');
+                return;
+            }
+
+            const currentLabel = optionLabels[answerCount];
+            const newOptionHtml = 
+                '<div class="answer-option">' +
+                    '<div class="input-group">' +
+                        '<div class="option-label">' + currentLabel + '</div>' +
+                        '<input type="text" name="answers" class="form-control" placeholder="Nhập lựa chọn" required>' +
+                        '<div class="input-group-text">' +
+                            '<input type="checkbox" name="isCorrect" class="answer-checkbox">' +
+                            '<label class="correct-label">Đúng</label>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+
+            $('#editAnswerOptions').append(newOptionHtml);
+        });
+
+        // Xử lý submit form chỉnh sửa
+        $('#editQuestionForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            // Kiểm tra các trường bắt buộc
+            const questionText = $('#editQuestionText').val().trim();
+            const questionType = $('#editQuestionType').val();
+            const questionMark = $('#editQuestionMark').val();
+
+            if (!questionText || !questionType || !questionMark) {
+                alert('Vui lòng điền đầy đủ thông tin bắt buộc');
+                return false;
+            }
+
+            // Kiểm tra câu trả lời nếu là câu hỏi trắc nghiệm
+            if (questionType === 'multiple_choice') {
+                if ($('#editAnswerOptions .answer-option').length === 0) {
+                    alert('Vui lòng thêm ít nhất một câu trả lời');
+                    return false;
+                }
+
+                if ($('#editAnswerOptions .answer-checkbox:checked').length === 0) {
+                    alert('Vui lòng chọn ít nhất một đáp án đúng');
+                    return false;
+                }
+
+                let hasEmptyAnswer = false;
+                $('#editAnswerOptions input[type="text"]').each(function() {
+                    if (!$(this).val().trim()) {
+                        hasEmptyAnswer = true;
+                        return false;
+                    }
+                });
+
+                if (hasEmptyAnswer) {
+                    alert('Vui lòng nhập đầy đủ nội dung cho tất cả các câu trả lời');
+                    return false;
+                }
+            }
+
+            // Tạo FormData object
+            const formData = new FormData(this);
+
+            // Thêm hình ảnh và audio hiện tại vào formData nếu không có file mới
+            const imageFile = formData.get('questionImage');
+            const audioFile = formData.get('audioFile');
+            const currentImage = $('input[name="currentQuestionImage"]').val();
+            const currentAudio = $('input[name="currentAudioFile"]').val();
+
+            if (!imageFile || imageFile.size === 0) {
+                formData.set('questionImage', currentImage || '');
+            }
+            if (!audioFile || audioFile.size === 0) {
+                formData.set('audioFile', currentAudio || '');
+            }
+
+            // Xóa và thêm lại các giá trị cho câu trả lời trắc nghiệm
+            if (questionType === 'multiple_choice') {
+                formData.delete('isCorrect');
+                formData.delete('option_labels');
+                formData.delete('answers');
+
+                $('#editAnswerOptions .answer-option').each(function() {
+                    const answerText = $(this).find('input[type="text"]').val().trim();
+                    const optionLabel = $(this).find('.option-label').text();
+                    const isChecked = $(this).find('.answer-checkbox').prop('checked');
+                    
+                    formData.append('answers', answerText);
+                    formData.append('option_labels', optionLabel);
+                    formData.append('isCorrect', isChecked ? "1" : "0");
+                });
+            }
+
+            // Hiển thị loading
+            $('.loading').show();
+
+            // Gửi request chỉnh sửa
+            $.ajax({
+                url: 'edit-assignment',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $('.loading').hide();
+                    try {
+                        if (typeof response === 'string') {
+                            response = JSON.parse(response);
+                        }
+                        
+                        if (response.success) {
+                            hideEditModal();
+                            location.reload();
+                        } else {
+                            alert('Có lỗi xảy ra khi cập nhật câu hỏi: ' + response.message);
+                        }
+                    } catch (e) {
+                        console.error('Lỗi khi xử lý phản hồi:', e);
+                        alert('Có lỗi xảy ra khi xử lý phản hồi từ server');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('.loading').hide();
+                    console.error('Lỗi AJAX:', {
+                        status: status,
+                        error: error,
+                        response: xhr.responseText
+                    });
+                    
+                    let errorMessage = 'Có lỗi xảy ra khi cập nhật câu hỏi';
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.message) {
+                            errorMessage = response.message;
+                        }
+                    } catch (e) {
+                        console.error('Lỗi khi parse JSON response:', e);
+                    }
+                    
+                    alert(errorMessage);
+                }
+            });
+        });
+
+        // Phân trang
+        const itemsPerPage = 12;
+        let currentPage = 1;
+        const totalItems = $('.question-item').length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+        function updatePagination() {
+            // Cập nhật trạng thái nút Previous/Next
+            $('#prevPage').parent().toggleClass('disabled', currentPage === 1);
+            $('#nextPage').parent().toggleClass('disabled', currentPage === totalPages);
+            
+            // Cập nhật số trang hiện tại
+            $('#currentPage').text(currentPage);
+
+            // Hiển thị/ẩn các câu hỏi theo trang
+            $('.question-item').each(function(index) {
+                const start = (currentPage - 1) * itemsPerPage;
+                const end = start + itemsPerPage;
+                $(this).toggle(index >= start && index < end);
+            });
+        }
+
+        // Xử lý sự kiện click nút Previous
+        $('#prevPage').click(function(e) {
+            e.preventDefault();
+            if (currentPage > 1) {
+                currentPage--;
+                updatePagination();
+            }
+        });
+
+        // Xử lý sự kiện click nút Next
+        $('#nextPage').click(function(e) {
+            e.preventDefault();
+            if (currentPage < totalPages) {
+                currentPage++;
+                updatePagination();
+            }
+        });
+
+        // Khởi tạo phân trang
+        updatePagination();
     });
 </script>
 </body>

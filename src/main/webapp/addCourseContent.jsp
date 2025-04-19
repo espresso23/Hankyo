@@ -102,17 +102,12 @@
                         <i class="fas fa-tasks me-1"></i> Assignment
                     </button>
                 </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="exam-tab" data-bs-toggle="tab" data-bs-target="#exam" type="button">
-                        <i class="fas fa-edit me-1"></i> Exam
-                    </button>
-                </li>
             </ul>
 
             <div class="tab-content p-3 border border-top-0 rounded-bottom">
                 <!-- Tab Video -->
                 <div class="tab-pane fade show active" id="video" role="tabpanel">
-                    <form id="videoForm" action="course-content?action=addVideo" method="post"
+                    <form id="videoForm" action="course-content" method="post"
                           enctype="multipart/form-data">
                         <input type="hidden" name="action" value="addVideo">
                         <input type="hidden" name="courseID" value="${param.courseID}">
@@ -181,54 +176,11 @@
                             <textarea name="descriptionA" class="form-control" rows="3" maxlength="500"></textarea>
                         </div>
 
-<%--                        <div class="mb-3">--%>
-<%--                            <label class="form-label">Hạn nộp <span class="text-danger">*</span></label>--%>
-<%--                            <input type="datetime-local" name="deadline" class="form-control" required>--%>
-<%--                        </div>--%>
-
                         <button type="submit" class="btn btn-success">
                             <i class="fas fa-save me-1"></i> Lưu Assignment
                         </button>
                     </form>
                 </div>
-
-                <!-- Tab Exam -->
-                <div class="tab-pane fade" id="exam" role="tabpanel">
-                    <form action="course-content" method="post">
-                        <input type="hidden" name="action" value="addExam">
-                        <input type="hidden" name="courseID" value="${param.courseID}">
-
-                        <div class="mb-3">
-                            <label class="form-label">Tiêu đề exam <span class="text-danger">*</span></label>
-                            <input type="text" name="title" class="form-control" required maxlength="100">
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Mô tả exam</label>
-                            <textarea name="description" class="form-control" rows="3" maxlength="500"></textarea>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Thời gian làm bài (phút) <span
-                                        class="text-danger">*</span></label>
-                                <input type="number" name="duration" class="form-control" min="1" max="300" required>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Số lượng câu hỏi <span class="text-danger">*</span></label>
-                                <input type="number" name="questionCount" class="form-control" min="1" max="100"
-                                       required>
-                            </div>
-                        </div>
-
-                        <div class="alert alert-info small">
-                            <i class="fas fa-info-circle me-1"></i> Bạn sẽ thêm chi tiết các câu hỏi sau khi tạo exam.
-                        </div>
-
-                        <button type="submit" class="btn btn-warning">
-                            <i class="fas fa-plus-circle me-1"></i> Tạo Exam
-                        </button>
                     </form>
                 </div>
             </div>
@@ -262,9 +214,51 @@
                                     <div class="flex-grow-1">
                                         <h5 class="mb-1">
                                             <span class="badge bg-secondary me-2">${loop.index + 1}</span>
-                                                ${content.title}
+                                            <script>
+                                                console.log('Content item ${loop.index + 1}:', {
+                                                    contentId: '${content.courseContentID}',
+                                                    title: '${content.title}',
+                                                    description: '${content.description}',
+                                                    hasMedia: ${not empty content.media},
+                                                    mediaUrl: '${content.media}',
+                                                    hasAssignment: ${not empty content.assignment},
+                                                    assignmentTitle: '${content.assignment.assignmentTitle}'
+                                                });
+                                            </script>
+                                            <c:choose>
+                                                <c:when test="${not empty content.media}">
+                                                    ${content.title}
+                                                </c:when>
+                                                <c:when test="${not empty content.assignment}">
+                                                    ${content.assignment.assignmentTitle}
+                                                </c:when>
+                                                <c:otherwise>
+                                                    ${content.title}
+                                                </c:otherwise>
+                                            </c:choose>
                                         </h5>
-                                        <p class="mb-2 text-muted">${content.description}</p>
+                                        <p class="mb-2 text-muted">
+                                            <c:choose>
+                                                <c:when test="${not empty content.media}">
+                                                    ${content.description}
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-video me-1"></i> Video
+                                                    </small>
+                                                </c:when>
+                                                <c:when test="${not empty content.assignment}">
+                                                    ${content.assignment.description}
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-clock me-1"></i> Cập nhật lần cuối: 
+                                                        <fmt:formatDate value="${content.assignment.lastUpdated}" pattern="dd/MM/yyyy"/>
+                                                    </small>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    ${content.description}
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </p>
 
                                         <div class="d-flex flex-wrap gap-2 small">
                                             <c:choose>
@@ -272,54 +266,61 @@
                                                     <span class="badge bg-info">
                                                         <i class="fas fa-video me-1"></i> Video
                                                     </span>
-                                                    <a href="${content.media}" target="_blank"
-                                                       class="text-decoration-none">
-                                                        <i class="fas fa-external-link-alt me-1"></i>Xem video
-                                                    </a>
+                                                    <!-- Thay thế link tải xuống bằng modal xem video -->
+                                                    <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#videoModal${content.courseContentID}">
+                                                        <i class="fas fa-play-circle me-1"></i> Xem video
+                                                    </button>
+                                                    
+                                                    <!-- Modal xem video -->
+                                                    <div class="modal fade" id="videoModal${content.courseContentID}" tabindex="-1" aria-labelledby="videoModalLabel${content.courseContentID}" aria-hidden="true">
+                                                        <div class="modal-dialog modal-lg modal-dialog-centered">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="videoModalLabel${content.courseContentID}">${content.title}</h5>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                </div>
+                                                                <div class="modal-body p-0">
+                                                                    <div class="ratio ratio-16x9">
+                                                                        <video controls class="w-100">
+                                                                            <source src="${content.media}" type="video/mp4">
+                                                                            Trình duyệt của bạn không hỗ trợ video.
+                                                                        </video>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </c:when>
                                                 <c:when test="${not empty content.assignment}">
                                                     <span class="badge bg-success">
                                                         <i class="fas fa-tasks me-1"></i> Assignment
-                                                    </span>
-<%--                                                    <span>--%>
-<%--                                                        <i class="far fa-clock me-1"></i>--%>
-<%--                                                        <fmt:formatDate value="${content.assignment.deadline}"--%>
-<%--                                                                        pattern="dd/MM/yyyy HH:mm"/>--%>
-<%--                                                    </span>--%>
-                                                </c:when>
-                                                <c:when test="${not empty content.exam}">
-                                                    <span class="badge bg-warning text-dark">
-                                                        <i class="fas fa-edit me-1"></i> Exam
-                                                    </span>
-                                                    <span>
-                                                        <i class="fas fa-stopwatch me-1"></i>
-                                                        ${content.exam.duration} phút
                                                     </span>
                                                 </c:when>
                                             </c:choose>
                                         </div>
                                     </div>
                                     <div class="btn-group">
-                                        <c:choose>
-                                            <c:when test="${not empty content.media}">
-                                                <a href="edit-video?contentID=${content.courseContentID}&courseID=${param.courseID}" class="btn btn-sm btn-outline-secondary" title="Chỉnh sửa">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                            </c:when>
-                                            <c:when test="${not empty content.assignment}">
-                                                <a href="edit-assignment?action=getAssignment&assignmentID=${content.assignment.assignmentID}&courseID=${param.courseID}" class="btn btn-sm btn-outline-secondary" title="Chỉnh sửa">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                            </c:when>
-                                            <c:when test="${not empty content.exam}">
-                                                <a href="edit-exam?examID=${content.exam.examID}&courseID=${param.courseID}" class="btn btn-sm btn-outline-secondary" title="Chỉnh sửa">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                            </c:when>
-                                        </c:choose>
+                                        <c:if test="${not empty content.media}">
+                                            <a href="edit-video?contentID=${content.courseContentID}&courseID=${param.courseID}"
+                                               class="btn btn-sm btn-outline-secondary" title="Chỉnh sửa">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </c:if>
+                                        <c:if test="${not empty content.assignment}">
+                                            <a href="edit-assignment?action=getAssignment&assignmentID=${content.assignment.assignmentID}&courseID=${param.courseID}"
+                                               class="btn btn-sm btn-outline-secondary" title="Chỉnh sửa">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </c:if>
                                         <button class="btn btn-sm btn-outline-danger delete-content" 
-                                                data-content-id="${content.courseContentID}"
-                                                data-content-type="${not empty content.media ? 'video' : not empty content.assignment ? 'assignment' : 'exam'}"
+                                                content-id="${content.courseContentID}"
+                                                content-type="${not empty content.media ? 'video' : not empty content.assignment ? 'assignment' : 'exam'}"
+                                                assignment-id="${not empty content.assignment ? content.assignment.assignmentID : ''}"
                                                 title="Xóa">
                                             <i class="fas fa-trash"></i>
                                         </button>
@@ -434,8 +435,38 @@
     // Xử lý xóa nội dung
     document.querySelectorAll('.delete-content').forEach(button => {
         button.addEventListener('click', function() {
-            const contentId = this.dataset.contentId;
-            const contentType = this.dataset.contentType;
+            // Lấy giá trị từ thuộc tính HTML
+            const contentId = this.getAttribute('content-id');
+            const contentType = this.getAttribute('content-type');
+            const assignmentId = this.getAttribute('assignment-id');
+            
+            // Log chi tiết để debug
+            console.log('Bắt đầu quá trình xóa nội dung:');
+            console.log('- Loại nội dung:', contentType);
+            console.log('- ID nội dung:', contentId);
+            console.log('- ID bài tập:', assignmentId || 'Không có');
+            
+            // Kiểm tra nếu contentId rỗng
+            if (!contentId) {
+                console.error('Lỗi: contentId đang rỗng!');
+                Swal.fire({
+                    title: 'Lỗi',
+                    text: 'Không thể xác định ID nội dung cần xóa',
+                    icon: 'error'
+                });
+                return;
+            }
+            
+            // Tạo URL xóa với các giá trị đã log
+            let deleteUrl = 'course-content?action=deleteContent';
+            deleteUrl += '&contentID=' + contentId;
+            deleteUrl += '&courseID=' + ${courseID};
+            
+            if (contentType === 'assignment' && assignmentId && assignmentId.trim() !== '') {
+                deleteUrl += '&assignmentID=' + assignmentId;
+            }
+            
+            console.log('URL xóa:', deleteUrl);
 
             Swal.fire({
                 title: 'Xác nhận xóa',
@@ -448,6 +479,8 @@
                 cancelButtonText: 'Hủy'
             }).then((result) => {
                 if (result.isConfirmed) {
+                    console.log('Người dùng đã xác nhận xóa');
+                    
                     // Hiển thị loading
                     Swal.fire({
                         title: 'Đang xóa...',
@@ -459,25 +492,22 @@
                     });
 
                     // Gửi request xóa
-                    console.log('Bắt đầu xóa nội dung:', {
-                        contentId: contentId,
-                        contentType: contentType,
-                        courseID: ${param.courseID}
-                    });
-
-                    fetch(`course-content?action=deleteContent&contentID=${contentId}&courseID=${param.courseID}`, {
+                    console.log('Đang gửi request xóa đến server...');
+                    fetch(deleteUrl, {
                         method: 'GET'
                     })
                     .then(response => {
-                        console.log('Response status:', response.status);
+                        console.log('Phản hồi từ server:', response.status, response.statusText);
                         if (!response.ok) {
-                            throw new Error('Lỗi khi xóa nội dung');
+                            return response.text().then(text => {
+                                console.error('Lỗi từ server:', text);
+                                throw new Error(text || 'Lỗi khi xóa nội dung');
+                            });
                         }
                         return response.text();
                     })
                     .then(text => {
-                        console.log('Response text:', text);
-                        // Xóa thành công, hiển thị thông báo và reload trang
+                        console.log('Xóa thành công, phản hồi:', text);
                         Swal.fire({
                             title: 'Thành công',
                             text: 'Đã xóa nội dung thành công',
@@ -485,6 +515,7 @@
                             timer: 1500,
                             showConfirmButton: false
                         }).then(() => {
+                            console.log('Đang tải lại trang...');
                             window.location.reload();
                         });
                     })
@@ -496,6 +527,8 @@
                             icon: 'error'
                         });
                     });
+                } else {
+                    console.log('Người dùng đã hủy thao tác xóa');
                 }
             });
         });

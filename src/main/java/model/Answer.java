@@ -4,11 +4,11 @@ public class Answer {
     private int answerID;
     private String answerText;
     private boolean isCorrect;
-    private char optionLabel;
+    private String optionLabel;
     private int questionID;
 
 
-    public Answer(int answerID, String answerText, boolean isCorrect, char optionLabel) {
+    public Answer(int answerID, String answerText, boolean isCorrect, String optionLabel) {
         this.answerID = answerID;
         this.answerText = answerText;
         this.isCorrect = isCorrect;
@@ -18,7 +18,7 @@ public class Answer {
     public Answer() {
     }
 
-    public Answer(String answerText, boolean isCorrect, char optionLabel) {
+    public Answer(String answerText, boolean isCorrect, String optionLabel) {
         this.answerText = answerText;
         this.isCorrect = isCorrect;
         this.optionLabel = optionLabel;
@@ -48,11 +48,11 @@ public class Answer {
         isCorrect = correct;
     }
 
-    public char getOptionLabel() {
+    public String getOptionLabel() {
         return optionLabel;
     }
 
-    public void setOptionLabel(char optionLabel) {
+    public void setOptionLabel(String optionLabel) {
         this.optionLabel = optionLabel;
     }
 

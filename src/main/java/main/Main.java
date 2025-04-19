@@ -38,17 +38,17 @@ public class Main {
         
         // Answers for question 1
         List<Answer> answers1 = new ArrayList<>();
-        answers1.add(new Answer("Paris", true, 'A'));
-        answers1.add(new Answer("London", false, 'B'));
-        answers1.add(new Answer("Rome", false, 'C'));
-        answers1.add(new Answer("Berlin", false, 'D'));
+        answers1.add(new Answer("Paris", true, "A"));
+        answers1.add(new Answer("London", false, "B"));
+        answers1.add(new Answer("Rome", false, "C"));
+        answers1.add(new Answer("Berlin", false, "D"));
         
         // Answers for question 2
         List<Answer> answers2 = new ArrayList<>();
-        answers2.add(new Answer("Mars", true, 'A'));
-        answers2.add(new Answer("Venus", false, 'B'));
-        answers2.add(new Answer("Jupiter", false, 'C'));
-        answers2.add(new Answer("Saturn", false, 'D'));
+        answers2.add(new Answer("Mars", true, "A"));
+        answers2.add(new Answer("Venus", false, "B"));
+        answers2.add(new Answer("Jupiter", false, "C"));
+        answers2.add(new Answer("Saturn", false, "D"));
         
         answersForQuestions.add(answers1);
         answersForQuestions.add(answers2);

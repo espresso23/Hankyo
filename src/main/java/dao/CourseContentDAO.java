@@ -98,31 +98,24 @@ public class CourseContentDAO {
     }
 
     public boolean addCourseContentAssignment(CourseContent courseContent) throws SQLException {
-        String query = "Insert into Course_Content(courseID,title,description,assignmentID) values(?,?,?,?)";
+        String query = "Insert into Course_Content(courseID,assignmentID) values(?,?)";
         try (PreparedStatement preparedStatement = conn.prepareStatement(query)) {
             preparedStatement.setInt(1, courseContent.getCourseID());
-            preparedStatement.setString(2, courseContent.getTitle());
-            preparedStatement.setString(3, courseContent.getDescription());
-            preparedStatement.setInt(4, courseContent.getAssignment().getAssignmentID());
+            preparedStatement.setInt(2, courseContent.getAssignment().getAssignmentID());
             return preparedStatement.executeUpdate() > 0;
         }
     }
 
-    public boolean addCourseContentExam(CourseContent courseContent) throws SQLException {
-        String query = "Insert into Course_Content(courseID,title,description,examID) values(?,?,?,?)";
-        try (PreparedStatement preparedStatement = conn.prepareStatement(query)) {
-            preparedStatement.setInt(1, courseContent.getCourseID());
-            preparedStatement.setString(2, courseContent.getTitle());
-            preparedStatement.setString(3, courseContent.getDescription());
-            preparedStatement.setInt(4, courseContent.getExam().getExamID());
-            return preparedStatement.executeUpdate() > 0;
-        }
-    }
 
     // Thêm phương thức lấy danh sách nội dung khóa học theo courseID
     public List<CourseContent> listCourseContentsByCourseID(int courseID) throws SQLException {
         List<CourseContent> contents = new ArrayList<>();
-        String sql = "SELECT * FROM Course_Content WHERE courseID = ? ORDER BY course_contentID";
+        String sql = "SELECT cc.*, a.title as assignmentTitle, a.description as assignmentDes, " +
+                    "a.assignmentID, a.lastUpdated " +
+                    "FROM Course_Content cc " +
+                    "LEFT JOIN Assignment a on cc.assignmentID = a.assignmentID " +
+                    "WHERE cc.courseID = ? " +
+                    "ORDER BY cc.course_contentID";
 
         try (Connection connection = DBConnect.getInstance().getConnection();
              PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -136,6 +129,18 @@ public class CourseContentDAO {
                 content.setTitle(rs.getString("title"));
                 content.setDescription(rs.getString("description"));
                 content.setMedia(rs.getString("media"));
+                
+                // Chỉ set assignment nếu có assignmentID
+                int assignmentId = rs.getInt("assignmentID");
+                if (!rs.wasNull()) {
+                    Assignment assignment = new Assignment();
+                    assignment.setAssignmentTitle(rs.getString("assignmentTitle"));
+                    assignment.setDescription(rs.getString("assignmentDes"));
+                    assignment.setLastUpdated(rs.getDate("lastUpdated"));
+                    assignment.setAssignmentID(assignmentId);
+                    content.setAssignment(assignment);
+                }
+                
                 contents.add(content);
             }
         }
@@ -236,7 +241,7 @@ public class CourseContentDAO {
                     answer.setAnswerID(rs.getInt("answerID"));
                     answer.setAnswerText(rs.getString("answerText"));
                     answer.setCorrect(rs.getBoolean("isCorrect"));
-                    answer.setOptionLabel(rs.getString("option_label").charAt(0));
+                    answer.setOptionLabel(rs.getString("option_label"));
                     currentQuestion.getAnswers().add(answer);
                 }
             }

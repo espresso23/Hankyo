@@ -1,5 +1,6 @@
 package model;
 
+import java.util.Date;
 import java.util.List;
 
 public class Assignment {
@@ -9,6 +10,7 @@ public class Assignment {
     private List<Answer> answer;
     private String media;
     private String description;
+    private Date lastUpdated;
 
     //constructor
 
@@ -72,5 +74,13 @@ public class Assignment {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Date getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated(Date lastUpdated) {
+        this.lastUpdated = lastUpdated;
     }
 }

@@ -11,7 +11,6 @@ public class Question {
     private String questionType;
     private double questionMark;
     private int assignmentID;
-    private String correctAnswer;
     private List<Answer> answers = new ArrayList<>();//luu bo cau hoi cho 1 question
 
     public Question(int questionID, String questionText, String questionImage, String questionType, String audioFile) {
@@ -89,13 +88,6 @@ public class Question {
         this.assignmentID = assignmentID;
     }
 
-    public String getCorrectAnswer() {
-        return correctAnswer;
-    }
-
-    public void setCorrectAnswer(String correctAnswer) {
-        this.correctAnswer = correctAnswer;
-    }
 
     @Override
     public String toString() {
