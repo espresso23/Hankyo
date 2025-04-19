@@ -99,7 +99,7 @@ public class AssignmentDAO {
 
     // Trong AssignmentDAO.java
     public void updateAssignment(Assignment assignment) throws SQLException {
-        String sql = "UPDATE Assignment SET title = ?, description = ? WHERE assignmentID = ?";
+        String sql = "UPDATE Assignment SET title = ?, description = ?, lastUpdated = GETDATE() WHERE assignmentID = ?";
         try (Connection connection1 = DBConnect.getInstance().getConnection();
              PreparedStatement stmt = connection1.prepareStatement(sql)) {
             stmt.setString(1, assignment.getAssignmentTitle());
