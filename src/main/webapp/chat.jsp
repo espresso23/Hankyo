@@ -34,6 +34,11 @@
                     <div class="message-content">
                         <div class="message">
                             ${message.message}
+                            <c:if test="${not empty message.pictureSend}">
+                                <div class="message-image">
+                                    <img src="${message.pictureSend}" alt="Sent image" style="max-width: 200px; max-height: 200px;">
+                                </div>
+                            </c:if>
                             <span class="timestamp-tooltip">${message.sendAt}</span>
                         </div>
                         <c:if test="${message.userID != sessionScope.user.userID}">
@@ -49,6 +54,10 @@
         <div class="input-container">
             <input type="text" id="message-input" placeholder="Type your message...">
             <button type="button" id="emoji-button">😊</button>
+            <label for="image-upload" class="image-upload-button">
+                <img src="${pageContext.request.contextPath}/asset/images/image-icon.png" alt="Upload Image" style="width: 20px; height: 20px;">
+            </label>
+            <input type="file" id="image-upload" accept="image/*" style="display: none;">
             <button type="submit">Send</button>
         </div>
         <div id="emoji-container" style="display: none;">
@@ -84,6 +93,6 @@
 <input type="hidden" id="fullName" value="${fullName}">
 
 <!-- Chat JavaScript -->
-<script src="${pageContext.request.contextPath}/asset/js/chat.js"></script>
+<script src="${pageContext.request.contextPath}/js/chat.js"></script>
 </body>
 </html>

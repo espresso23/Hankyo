@@ -8,25 +8,28 @@ public class Chat {
     private String message;   // Nội dung tin nhắn
     private Timestamp sendAt; // Thời gian gửi
     private String fullName; // Tên nhân vật gửi tin nhắn
+    private String pictureSend; // URL or Base64 of the sent picture
 
     // Constructor mặc định
     public Chat() {
     }
 
     // Constructor cho tin nhắn công khai
-    public Chat(int chatID, int userID, String message, Timestamp sendAt, String fullName) {
+    public Chat(int chatID, int userID, String message, Timestamp sendAt, String fullName, String pictureSend) {
         this.chatID = chatID;
         this.userID = userID;
         this.message = message;
         this.sendAt = sendAt;
         this.fullName = fullName;
+        this.pictureSend = pictureSend;
     }
 
     // Constructor cho tin nhắn mới
-    public Chat(int userID, String message, String fullName) {
+    public Chat(int userID, String message, String fullName, String pictureSend) {
         this.userID = userID;
         this.message = message;
         this.fullName = fullName;
+        this.pictureSend = pictureSend;
     }
 
     // Getter và Setter
@@ -68,5 +71,13 @@ public class Chat {
 
     public void setSendAt(Timestamp sendAt) {
         this.sendAt = sendAt;
+    }
+
+    public String getPictureSend() {
+        return pictureSend;
+    }
+
+    public void setPictureSend(String pictureSend) {
+        this.pictureSend = pictureSend;
     }
 }

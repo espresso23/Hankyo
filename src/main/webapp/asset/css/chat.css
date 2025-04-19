@@ -425,4 +425,60 @@ body {
 
 .form-actions button:hover {
     opacity: 0.9;
+}
+
+.image-upload-button {
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    background: #f0f0f0;
+    margin: 0 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-upload-button:hover {
+    background: #e0e0e0;
+}
+
+.image-preview {
+    position: relative;
+    margin: 10px 0;
+    max-width: 200px;
+}
+
+.image-preview img {
+    max-width: 100%;
+    border-radius: 4px;
+}
+
+.image-preview button {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-preview button:hover {
+    background: #cc0000;
+}
+
+.message-image {
+    margin-top: 5px;
+}
+
+.message-image img {
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 } 
