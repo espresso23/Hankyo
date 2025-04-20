@@ -5,23 +5,9 @@ public class Answer {
     private int questionID;
     private String answerText;
     private boolean isCorrect;
-    private char optionLabel;
+    private String optionLabel;
 
     public Answer() {
-    }
-
-    public Answer(int answerID, int questionID, String answerText, boolean isCorrect, char optionLabel) {
-        this.answerID = answerID;
-        this.questionID = questionID;
-        this.answerText = answerText;
-        this.isCorrect = isCorrect;
-        this.optionLabel = optionLabel;
-    }
-
-    public Answer(String answerText, boolean isCorrect, char optionLabel) {
-        this.answerText = answerText;
-        this.isCorrect = isCorrect;
-        this.optionLabel = optionLabel;
     }
 
     public int getAnswerID() {
@@ -40,7 +26,6 @@ public class Answer {
         this.questionID = questionID;
     }
 
-
     public String getAnswerText() {
         return answerText;
     }
@@ -57,11 +42,11 @@ public class Answer {
         isCorrect = correct;
     }
 
-    public char getOptionLabel() {
+    public String getOptionLabel() {
         return optionLabel;
     }
 
-    public void setOptionLabel(char optionLabel) {
+    public void setOptionLabel(String optionLabel) {
         this.optionLabel = optionLabel;
     }
 
@@ -72,7 +57,7 @@ public class Answer {
                 ", questionID=" + questionID +
                 ", answerText='" + answerText + '\'' +
                 ", isCorrect=" + isCorrect +
-                ", optionLabel=" + optionLabel +
+                ", optionLabel='" + optionLabel + '\'' +
                 '}';
     }
 }

@@ -1,6 +1,8 @@
 package model;
 
 
+import java.util.List;
+
 public class Question {
     private int questionID;
     private String questionText;
@@ -8,6 +10,7 @@ public class Question {
     private String audioFile;
     private String questionType;
     private double questionMark;
+    private List<Answer> answers;
 
     public Question(int questionID, String questionText, String questionImage, String questionType, String audioFile) {
         this.questionID = questionID;
@@ -66,6 +69,14 @@ public class Question {
 
     public void setQuestionType(String questionType) {
         this.questionType = questionType;
+    }
+
+    public List<Answer> getAnswers() {
+        return answers;
+    }
+
+    public void setAnswers(List<Answer> answers) {
+        this.answers = answers;
     }
 
     @Override

@@ -1,7 +1,9 @@
 package controller;
 
+import dao.LearnerDAO;
 import dao.UserDAO;
 import model.GoogleLogin;
+import model.Learner;
 import model.User;
 
 import javax.servlet.ServletException;
@@ -13,10 +15,12 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 @WebServlet("/google")
 public class GoogleLoginServlet extends HttpServlet {
+    LearnerDAO learnerDAO = new LearnerDAO();
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String code = request.getParameter("code");
+        HttpSession session = request.getSession();
 
         if (code == null || code.isEmpty()) {
             forwardWithMessage(request, response, "Login failed. Invalid authorization code.");
@@ -26,6 +30,7 @@ public class GoogleLoginServlet extends HttpServlet {
         try {
             String accessToken = GoogleLogin.getToken(code);
             User user = GoogleLogin.getUserInfo(accessToken);
+
 
             if (user == null) {
                 forwardWithMessage(request, response, "Login failed. User not found.");
@@ -58,6 +63,8 @@ public class GoogleLoginServlet extends HttpServlet {
         session.setAttribute("email", user.getGmail());
         session.setAttribute("phone", user.getPhone());
         session.setAttribute("avatar", user.getAvatar());
+        Learner learner = learnerDAO.getLearnerById(user.getUserID());
+        session.setAttribute("learner", learner);
 
         System.out.println("Session Created: " + user.getFullName() + " (ID: " + user.getUserID() + ")"); // Log session
     }

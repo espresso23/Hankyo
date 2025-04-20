@@ -18,8 +18,9 @@ public class LearnerDAO {
     }
 
     public Learner getLearnerById(int learnerId) {
-        String query = "SELECT l.*, u.* FROM Learner l JOIN [User] u ON l.userID = u.userID WHERE l.learnerID = ? AND u.status = 'active'";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        String query = "SELECT l.*, u.* FROM Learner l JOIN [User] u ON l.userID = u.userID WHERE l.userID = ? AND u.status = 'active'";
+        try (Connection connection1 = DBConnect.getInstance().getConnection();
+                PreparedStatement stmt = connection1.prepareStatement(query)) {
             stmt.setInt(1, learnerId);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {

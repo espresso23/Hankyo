@@ -11,43 +11,21 @@ public class Exam {
     private String examType;
     private int numCompleted;
 
-    public Exam(String examName, String examDescription, int expertID) {
-        this.examName = examName;
-        this.examDescription = examDescription;
-        this.expertID = expertID;
-    }
-
-    public Exam(String examName, String examDescription, int expertID, String examType) {
-        this.examName = examName;
-        this.examDescription = examDescription;
-        this.expertID = expertID;
-        this.examType = examType;
-    }
-
-    public Exam(int examID, String examName, String examDescription, String examType) {
-        this.examID = examID;
-        this.examName = examName;
-        this.examDescription = examDescription;
-        this.examType = examType;
-    }
-
     public Exam() {
     }
 
-    public String getExamDescription() {
-        return examDescription;
+    public Exam(int examID) {
+        this.examID = examID;
     }
 
-    public Date getDateCreated() {
-        return dateCreated;
-    }
-
-    public void setDateCreated(Date dateCreated) {
-        this.dateCreated = dateCreated;
-    }
-
-    public void setExamDescription(String examDescription) {
+    public Exam(int examID, int expertID, String examName, String examDescription, Date dateCreated, String examType, int numCompleted) {
+        this.examID = examID;
+        this.expertID = expertID;
+        this.examName = examName;
         this.examDescription = examDescription;
+        this.dateCreated = dateCreated;
+        this.examType = examType;
+        this.numCompleted = numCompleted;
     }
 
     public int getExamID() {
@@ -58,6 +36,14 @@ public class Exam {
         this.examID = examID;
     }
 
+    public int getExpertID() {
+        return expertID;
+    }
+
+    public void setExpertID(int expertID) {
+        this.expertID = expertID;
+    }
+
     public String getExamName() {
         return examName;
     }
@@ -66,12 +52,20 @@ public class Exam {
         this.examName = examName;
     }
 
-    public int getExpertID() {
-        return expertID;
+    public String getExamDescription() {
+        return examDescription;
     }
 
-    public void setExpertID(int expertID) {
-        this.expertID = expertID;
+    public void setExamDescription(String examDescription) {
+        this.examDescription = examDescription;
+    }
+
+    public Date getDateCreated() {
+        return dateCreated;
+    }
+
+    public void setDateCreated(Date dateCreated) {
+        this.dateCreated = dateCreated;
     }
 
     public String getExamType() {
@@ -101,11 +95,5 @@ public class Exam {
                 ", examType='" + examType + '\'' +
                 ", numCompleted=" + numCompleted +
                 '}';
-    }
-
-    public Exam(int examID, String examName, String examDescription) {
-        this.examID = examID;
-        this.examName = examName;
-        this.examDescription = examDescription;
     }
 }

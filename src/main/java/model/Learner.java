@@ -12,7 +12,9 @@ public class Learner extends User {
     public Learner() {
 
     }
-
+    public Learner(int learnerID){
+        this.learnerID = learnerID;
+    }
     public Learner(double hankyoPoint, Honour honour, int learnerID, Reward reward, Vip vip) {
         this.hankyoPoint = hankyoPoint;
         this.honour = honour;

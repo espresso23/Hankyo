@@ -5,12 +5,12 @@
     <title>Thư viện đề thi</title>
     <style>
         :root {
-            --primary-pink: #ff7eb9;
-            --light-pink: #ffd6e7;
-            --soft-pink: #fff0f6;
-            --primary-blue: #6bb9f0;
-            --light-blue: #e1f0fa;
-            --dark-blue: #3a7bd5;
+            --primary-pink: #ff9bb3; /* Soft pastel pink */
+            --light-pink: #ffd6e7; /* Very light pink */
+            --soft-pink: #fff0f6; /* Almost white pink */
+            --primary-blue: #89c4f4; /* Soft pastel blue */
+            --light-blue: #e1f5fe; /* Very light blue */
+            --dark-blue: #4b97e8; /* Slightly darker blue */
             --text-dark: #333;
             --text-medium: #555;
             --text-light: #777;
@@ -20,7 +20,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            background-image: url("asset/png/background/background.png");
+            background-color: #fff9fb; /* Very light pastel pink background */
             min-height: 100vh;
         }
 
@@ -58,11 +58,10 @@
         .filter-container {
             margin-bottom: 30px;
             padding: 25px;
-            background: rgba(255, 255, 255, 0.9);
+            background: white;
             border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 5px 15px rgba(248, 187, 208, 0.2);
+            border: 1px solid #fce4ec;
         }
 
         .filter-tabs {
@@ -81,59 +80,46 @@
             color: var(--text-medium);
             transition: all 0.3s ease;
             font-weight: 500;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 8px rgba(137, 196, 244, 0.1);
+            border: 1px solid #e1f5fe;
         }
 
         .filter-tab:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 5px 15px rgba(137, 196, 244, 0.2);
             color: var(--primary-blue);
+            border-color: var(--primary-blue);
         }
 
         .filter-tab.active {
             background: linear-gradient(45deg, var(--primary-pink), var(--primary-blue));
             color: white;
-            box-shadow: 0 4px 15px rgba(106, 185, 240, 0.4);
+            box-shadow: 0 4px 15px rgba(255, 155, 179, 0.3);
             border: none;
         }
 
         .search-form {
             display: flex;
             gap: 10px;
+            width: 100%;
         }
 
         .search-box {
             flex: 1;
             padding: 12px 20px;
-            border: 1px solid rgba(0, 0, 0, 0.1);
+            border: 2px solid #e1f5fe;
             border-radius: 30px;
             font-size: 16px;
             transition: all 0.3s;
-            background: rgba(255, 255, 255, 0.8);
+            background: white;
+            color: var(--text-dark);
+            width: 100%;
         }
 
         .search-box:focus {
             outline: none;
             border-color: var(--primary-blue);
-            box-shadow: 0 0 0 3px rgba(107, 185, 240, 0.2);
-        }
-
-        .search-btn {
-            padding: 12px 24px;
-            border-radius: 30px;
-            border: none;
-            background: linear-gradient(45deg, var(--primary-pink), var(--primary-blue));
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(106, 185, 240, 0.3);
-        }
-
-        .search-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(106, 185, 240, 0.4);
+            box-shadow: 0 0 0 3px rgba(137, 196, 244, 0.3);
         }
 
         .exam-grid {
@@ -143,19 +129,19 @@
         }
 
         .exam-card {
-            background: rgba(255, 255, 255, 0.95);
+            background: white;
             padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 8px 20px rgba(248, 187, 208, 0.15);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid #fce4ec;
         }
 
         .exam-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(248, 187, 208, 0.25);
         }
 
         .exam-card::before {
@@ -235,7 +221,6 @@
             justify-content: center;
             text-align: center;
             flex: 1;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
         .btn i {
@@ -244,28 +229,29 @@
 
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
         .btn-details {
             background: var(--light-blue);
             color: var(--dark-blue);
-            border: 1px solid rgba(58, 123, 213, 0.2);
+            border: 1px solid rgba(75, 151, 232, 0.2);
         }
 
         .btn-details:hover {
-            background: rgba(58, 123, 213, 0.1);
-            color: var(--dark-blue);
+            background: rgba(137, 196, 244, 0.2);
         }
 
         .btn-start {
             background: linear-gradient(45deg, var(--primary-pink), var(--primary-blue));
             color: white;
             border: none;
+            box-shadow: 0 4px 10px rgba(255, 155, 179, 0.3);
         }
 
         .btn-start:hover {
-            background: linear-gradient(45deg, #ff6ba7, #5aa8e6);
+            background: linear-gradient(45deg, #ff8aa3, #7ab6f2);
+            box-shadow: 0 6px 15px rgba(255, 155, 179, 0.4);
         }
 
         .no-exams {
@@ -274,9 +260,10 @@
             color: var(--text-medium);
             font-size: 18px;
             grid-column: 1 / -1;
-            background: rgba(255, 255, 255, 0.8);
+            background: white;
             border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 5px 15px rgba(248, 187, 208, 0.1);
+            border: 1px dashed #f8bbd0;
         }
 
         @media (max-width: 768px) {
@@ -315,7 +302,6 @@
         <form class="search-form" action="exam" method="get">
             <input type="hidden" name="action" value="list" />
             <input type="text" name="searchName" class="search-box" placeholder="🔍 Tìm kiếm theo tên đề thi..." />
-            <button type="submit" class="search-btn">Tìm kiếm</button>
         </form>
     </div>
 
@@ -335,9 +321,6 @@
             <div class="btn-container">
                 <a href="exam?action=details&examID=<%= exam.getExamID() %>" class="btn btn-details">
                     <i class="fas fa-info-circle"></i> Chi tiết
-                </a>
-                <a href="exam?action=start&examID=<%= exam.getExamID() %>" class="btn btn-start">
-                    <i class="fas fa-play"></i> Làm bài
                 </a>
             </div>
         </div>
