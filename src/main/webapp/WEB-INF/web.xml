@@ -38,5 +38,17 @@
         <error-code>404</error-code>
         <location>/404-page.html</location>
     </error-page>
+    <servlet-mapping>
+        <servlet-name>default</servlet-name>
+        <url-pattern>/docs/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>default</servlet-name>
+        <url-pattern>/audio/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>default</servlet-name>
+        <url-pattern>/imgdoc/*</url-pattern>
+    </servlet-mapping>
 
 </web-app>

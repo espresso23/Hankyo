@@ -1,0 +1,244 @@
+*,p,a,h1,h2,h3,h4,h5,h6,ul,li {
+    margin: 0;
+    padding: 0;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Roboto", sans-serif;
+}
+
+.section-pricing {
+    padding-top: 100px;
+    padding-bottom: 100px;
+}
+
+.section-pricing .header-section {
+    margin-bottom: 63px;
+}
+
+.section-pricing .header-section .logo-header {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.section-pricing .header-section .logo-header:before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 110%;
+    width: 40px;
+    height: 1px;
+    background-color: #fc0053;
+}
+
+.section-pricing .header-section .logo-header:after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 110%;
+    width: 40px;
+    height: 1px;
+    background-color: #fc0053;
+}
+
+.section-pricing .header-section .logo-header img {
+    width: 40px;
+}
+
+.section-pricing .header-section .title {
+    margin-bottom: 20px;
+    font-family: "Ubuntu", sans-serif;
+    color: #61648f;
+    font-size: 30px;
+}
+
+.section-pricing .header-section .description {
+    color: #61648f;
+    opacity: 0.7;
+}
+
+.section-pricing .plans {
+    position: relative;
+    margin-bottom: 50px;
+    background-color: #f0eff4;
+    border-radius: 30px;
+    overflow: hidden;
+}
+
+.section-pricing .plans .plan {
+    display: inline-block;
+    position: inherit;
+    width: 120px;
+    height: 45px;
+    line-height: 45px;
+    text-align: center;
+    color: #61648f;
+    font-size: 15px;
+    cursor: pointer;
+    z-index: 30;
+    transition: color .3s;
+}
+
+.section-pricing .plans .active {
+    color: #fff;
+}
+
+.section-pricing .plans .bg-active {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: inline-block;
+    width: 120px;
+    height: 45px;
+    background: linear-gradient(to right, #fc0053, #f65a29);
+    border-radius: 30px;
+    transition: all .3s;
+    z-index: 20;
+}
+
+.section-pricing .single-pricing {
+    margin-top: 30px;
+    box-shadow: 0 10px 20px 0px rgba(97, 100, 143, .15);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.section-pricing .single-pricing .header {
+    padding: 25px 30px;
+    color: #61648f;
+    background-color: #fff;
+}
+
+.section-pricing .popular .header {
+    background: linear-gradient(to right bottom, #f55a2a, #fc0053);
+    color: #fff;
+}
+
+.section-pricing .single-pricing .header .title {
+    margin-bottom: 3px;
+    font-family: "Ubuntu", sans-serif;
+    font-size: 30px;
+}
+
+.section-pricing .single-pricing .header p {
+
+}
+
+.section-pricing .single-pricing .header p {
+    font-size: 15px;
+}
+
+.section-pricing .single-pricing .content {
+    position: relative;
+    padding: 30px 30px 40px;
+    color: #fff;
+}
+
+.section-pricing .free .content {
+    background: linear-gradient(to right bottom, #20de72, #26b98d);
+}
+
+.section-pricing .startup .content {
+    background: linear-gradient(to right bottom, #a02baf, #451686);
+}
+
+.section-pricing .popular .content {
+    color: #61648f;
+}
+
+.section-pricing .premium .content {
+    background: linear-gradient(to right bottom, #e8466d, #9c1c95);
+}
+
+.section-pricing .single-pricing .content .price {
+    font-family: "Ubuntu", sans-serif;
+    font-size: 27px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    transition: all .3s;
+}
+
+.section-pricing .single-pricing .content .monthly-price {
+    display: block;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.section-pricing .single-pricing .content .yearly-price {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+}
+
+.section-pricing .popular .content .price,
+.section-pricing .popular .content ul li i {
+    color: #fc0053;
+}
+
+.section-pricing .single-pricing .content ul {
+
+}
+
+.section-pricing .single-pricing .content ul li {
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+
+.section-pricing .single-pricing .content ul li.no {
+    opacity: 0.6;
+}
+
+.section-pricing .single-pricing .content ul li i {
+    margin-right: 8px;
+}
+
+.section-pricing .single-pricing .try-button {
+    text-align: center;
+}
+.section-pricing .popular .try-button {
+    background: linear-gradient(to right bottom, #f55a2a, #fc0053);
+}
+
+.section-pricing .single-pricing .try-button a {
+    display: inline-block;
+    color: #fff;
+    text-transform: uppercase;
+    background-size: 200%;
+    font-family: "Ubuntu", sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    border-radius: 30px;
+    padding: 12px 40px;
+    text-decoration: none;
+    transform: translateY(-50%);
+    transition: box-shadow .3s;
+}
+
+.section-pricing .free .try-button a {
+    background: linear-gradient(to bottom, #20de72, #26b98d);
+}
+
+.section-pricing .startup .try-button a {
+    background: linear-gradient(to bottom, #a02baf, #451686);
+}
+
+.section-pricing .popular .try-button a {
+    background: linear-gradient(to bottom, #f55a2a, #fc0053);
+}
+
+.section-pricing .premium .try-button a {
+    background: linear-gradient(to bottom, #e8466d, #9c1c95);
+}
+
+.section-pricing .single-pricing .try-button a:hover,
+.section-pricing .popular .try-button a {
+    box-shadow: 0 5px 5px 0 rgba(0,0,0,.15);
+}
