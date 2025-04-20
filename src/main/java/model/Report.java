@@ -1,4 +1,5 @@
 package model;
+import java.sql.Timestamp;
 
 public class Report {
     private int reportID;
@@ -6,24 +7,26 @@ public class Report {
     private int reportedUserID;
     private int reportTypeID;
     private String reason;
-    private int chatID;
+    private int messageID;
     private int postID;
-    private String reportDate;
+    private Timestamp reportDate;
     private String status;
+    private int commentID;
 
     // Default constructor
     public Report() {
-        this.status = "Pending"; // Default status
     }
 
-    // Constructor for chat report
-    public Report(int reporterID, int reportedUserID, int reportTypeID, String reason, int chatID) {
+    // Constructor with essential fields for post reporting
+    public Report(int reporterID, int reportedUserID, int reportTypeID, String reason,
+                  int postID, Timestamp reportDate) {
         this.reporterID = reporterID;
         this.reportedUserID = reportedUserID;
         this.reportTypeID = reportTypeID;
         this.reason = reason;
-        this.chatID = chatID;
-        this.status = "Pending";
+        this.postID = postID;
+        this.reportDate = reportDate;
+        this.status = "pending"; // Default status
     }
 
     // Getters and setters
@@ -67,12 +70,12 @@ public class Report {
         this.reason = reason;
     }
 
-    public int getChatID() {
-        return chatID;
+    public int getMessageID() {
+        return messageID;
     }
 
-    public void setChatID(int chatID) {
-        this.chatID = chatID;
+    public void setMessageID(int messageID) {
+        this.messageID = messageID;
     }
 
     public int getPostID() {
@@ -83,11 +86,11 @@ public class Report {
         this.postID = postID;
     }
 
-    public String getReportDate() {
+    public Timestamp getReportDate() {
         return reportDate;
     }
 
-    public void setReportDate(String reportDate) {
+    public void setReportDate(Timestamp reportDate) {
         this.reportDate = reportDate;
     }
 
@@ -97,5 +100,13 @@ public class Report {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public int getCommentID() {
+        return commentID;
+    }
+
+    public void setCommentID(int commentID) {
+        this.commentID = commentID;
     }
 }

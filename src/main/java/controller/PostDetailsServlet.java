@@ -2,23 +2,27 @@ package controller;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.google.gson.Gson;
+import dao.UserDAO;
 import dao.CommentDAO;
 import dao.PostDAO;
-import dao.UserDAO;
-import model.Comment;
-import model.Post;
-import model.User;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.*;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import model.Comment;
+import model.Post;
+import model.User;
 
 
 @WebServlet(name = "PostDetailsServlet", urlPatterns = {"/postDetails"})
@@ -55,12 +59,31 @@ public class PostDetailsServlet extends HttpServlet {
                     String fullName = postDAO.getFullNameByPostId(postId);
                     String avtURL = postDAO.getAvatarByPostId(postId);
 
+                    int commentID = 0;
+//                    try{
+//                        commentID = Integer.parseInt(request.getParameter("commentID"));
+//                    }catch(NumberFormatException e){
+//                        System.out.println("Invalid comment ID");
+//                    }
+                    List<Comment> comments = commentDAO.getCommentsByPostID(postId);
+                    Map<Integer, List<Comment>> replyMap = new HashMap<>();
+                    for (Comment comment: comments ) {
+                        commentID = comment.getCommentID();
+                        if(commentID != 0){
+                            List<Comment> replyList = commentDAO.getRepliesByCommentID(commentID);
+
+                            replyMap.put(commentID, replyList);
+
+                        }
+
+                    }
+                    request.setAttribute("replyMap", replyMap);
                     request.setAttribute("postID", postIdParam);
                     request.setAttribute("post", post);
                     request.setAttribute("fullName", fullName);
                     request.setAttribute("avatar", avtURL);
 
-                    List<Comment> comments = commentDAO.getCommentsByPostID(postId);
+
                     request.setAttribute("comments", comments);
 
                     request.getRequestDispatcher("blogDetails.jsp").forward(request, response);
@@ -107,17 +130,138 @@ public class PostDetailsServlet extends HttpServlet {
             case "deletePost":
                 handleDeletePost(request, response);
                 break;
+            case "updateScore":
+                // Đổi thành handleVote
+                handleVote(request, response);
+                break;
+            case "getCommentScore":
+                getCommentScore(request, response);
+                break;
+            case "loadUserVotes":
+                loadUserVotes(request, response);
+                break;
             default:
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid action");
         }
     }
+    private void handleVote(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        try {
+            // Xác thực người dùng
+            HttpSession session = request.getSession();
+            User user = (User) session.getAttribute("user");
+
+            if (user == null) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("{\"error\": \"User not logged in\"}");
+                return;
+            }
+
+            // Lấy tham số
+            int commentId = Integer.parseInt(request.getParameter("commentID"));
+            int voteType = Integer.parseInt(request.getParameter("voteType")); // 1 cho upvote, -1 cho downvote
+
+            // Kiểm tra voteType
+            if (voteType != 1 && voteType != -1) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"error\": \"Invalid vote type\"}");
+                return;
+            }
+
+            // Cập nhật vote
+            CommentDAO commentDAO = new CommentDAO();
+            boolean success = commentDAO.updateUserVote(user.getUserID(), commentId, voteType);
+
+            // Lấy score mới
+            int newScore = commentDAO.getCommentScore(commentId);
+
+            // Trả về JSON response
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write(
+                    "{\"success\": " + success +
+                            ", \"score\": " + newScore +
+                            ", \"voteType\": " + (success ? voteType : 0) + "}"
+            );
+        } catch (NumberFormatException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\": \"Invalid parameters\"}");
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"error\": \"Server error: " + e.getMessage() + "\"}");
+        }
+    }
+
+    // Thêm phương thức để lấy điểm comment
+    private void getCommentScore(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        try {
+            int commentId = Integer.parseInt(request.getParameter("commentID"));
+
+            CommentDAO commentDAO = new CommentDAO();
+            int score = commentDAO.getCommentScore(commentId);
+
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write("{\"score\": " + score + "}");
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"error\": \"Server error\"}");
+        }
+    }
+
+    // Thêm phương thức để lấy trạng thái vote của người dùng khi tải trang
+    private void loadUserVotes(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        try {
+            // Xác thực người dùng
+            HttpSession session = request.getSession();
+            User user = (User) session.getAttribute("user");
+
+            if (user == null) {
+                response.setContentType("application/json");
+                response.getWriter().write("{}");
+                return;
+            }
+
+            // Lấy danh sách commentID
+            String[] commentIdStrings = request.getParameterValues("commentIDs[]");
+            if (commentIdStrings == null || commentIdStrings.length == 0) {
+                response.setContentType("application/json");
+                response.getWriter().write("{}");
+                return;
+            }
+
+            List<Integer> commentIDs = new ArrayList<>();
+            for (String idStr : commentIdStrings) {
+                commentIDs.add(Integer.parseInt(idStr));
+            }
+
+            // Lấy trạng thái vote của người dùng
+            CommentDAO commentDAO = new CommentDAO();
+            Map<Integer, Integer> userVotes = commentDAO.getUserVotes(user.getUserID(), commentIDs);
+
+            // Chuyển Map thành JSON
+            Gson gson = new Gson();
+            String userVotesJSON = gson.toJson(userVotes);
+
+            // Trả về JSON response
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write(userVotesJSON);
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"error\": \"Server error\"}");
+        }
+    }
+
 
     private void handleAddComment(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
             // Check if user is logged in
             HttpSession session = request.getSession();
-            User loggedUser = (User) session.getAttribute("loggedUser");
+            User loggedUser = (User) session.getAttribute("user");
             if (loggedUser == null) {
                 response.sendRedirect("login.jsp");
                 return;
@@ -135,10 +279,25 @@ public class PostDetailsServlet extends HttpServlet {
             int userID = loggedUser.getUserID();
             String userFullName = userDAO.getFullNameByUserId(userID);
             String userAvtURL = userDAO.getAvatarByUserId(userID);
-
             Comment comment = new Comment(userID, userFullName, userAvtURL, postId, commentText);
+
             comment.setCreatedDate(new Date());
-            boolean isAdded = commentDAO.addComment(comment);
+            int parentID = 0;
+            try{
+                parentID = Integer.parseInt(request.getParameter("parentID"));
+                comment.setParentCommentID(parentID);
+
+            }catch(NumberFormatException e){
+                System.out.println("root comment");
+            }
+            boolean isAdded;
+            if(parentID != 0){
+
+                isAdded = commentDAO.addReplyComment(comment);
+            }else{
+                isAdded = commentDAO.addComment(comment);
+            }
+
 
             if (isAdded) {
                 response.sendRedirect("postDetails?postID=" + postId);
@@ -157,7 +316,7 @@ public class PostDetailsServlet extends HttpServlet {
         try {
             // Check if user is logged in
             HttpSession session = request.getSession();
-            User loggedUser = (User) session.getAttribute("loggedUser");
+            User loggedUser = (User) session.getAttribute("user");
             if (loggedUser == null) {
                 response.sendRedirect("login.jsp");
                 return;
@@ -193,7 +352,7 @@ public class PostDetailsServlet extends HttpServlet {
         try {
             // Check if user is logged in
             HttpSession session = request.getSession();
-            User loggedUser = (User) session.getAttribute("loggedUser");
+            User loggedUser = (User) session.getAttribute("user");
             if (loggedUser == null) {
                 response.sendRedirect("login.jsp");
                 return;
@@ -231,7 +390,7 @@ public class PostDetailsServlet extends HttpServlet {
         try {
             // Check if user is logged in
             HttpSession session = request.getSession();
-            User loggedUser = (User) session.getAttribute("loggedUser");
+            User loggedUser = (User) session.getAttribute("user");
             if (loggedUser == null) {
                 response.sendRedirect("login.jsp");
                 return;
@@ -286,7 +445,7 @@ public class PostDetailsServlet extends HttpServlet {
         try {
             // Check if user is logged in
             HttpSession session = request.getSession();
-            User loggedUser = (User) session.getAttribute("loggedUser");
+            User loggedUser = (User) session.getAttribute("user");
             if (loggedUser == null) {
                 response.sendRedirect("login.jsp");
                 return;
@@ -328,7 +487,7 @@ public class PostDetailsServlet extends HttpServlet {
         try {
             // Check if user is logged in
             HttpSession session = request.getSession();
-            User loggedUser = (User) session.getAttribute("loggedUser");
+            User loggedUser = (User) session.getAttribute("user");
             if (loggedUser == null) {
                 response.sendRedirect("login.jsp");
                 return;

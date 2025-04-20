@@ -5,23 +5,25 @@ package dao;
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 
-import model.Post;
-import util.DBConnect;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import model.Post;
+import util.DBConnect;
 
 public class PostDAO {
 
-    UserDAO userDAO = new UserDAO ();
+    UserDAO userDAO = new UserDAO();
     private DBConnect dbContext;
 
     public PostDAO() {
-        dbContext = DBConnect.getInstance();
+        dbContext = new DBConnect();
     }
 
     public boolean checkConnection() throws Exception {
@@ -90,7 +92,7 @@ public class PostDAO {
                         rs.getTimestamp("CreatedDate"),
                         rs.getBoolean("status")
                 );
-
+                post.setScore(rs.getInt("ScorePost"));
                 String fullName = userDAO.getFullNameByUserId(post.getUserID());
                 if (fullName != null) {
                     post.setUserFullName(fullName);
@@ -190,7 +192,8 @@ public class PostDAO {
                             rs.getString("Heading"),
                             rs.getString("Content"),
                             rs.getTimestamp("CreatedDate"),
-                            rs.getBoolean("status")
+                            rs.getBoolean("status"),
+                            rs.getInt("ScorePost")
                     );
                 }
             }
@@ -262,6 +265,14 @@ public class PostDAO {
                         rs.getTimestamp("CreatedDate"),
                         rs.getBoolean("status")
                 );
+                post.setScore(rs.getInt("ScorePost"));
+
+                String fullName = userDAO.getFullNameByUserId(post.getUserID());
+                post.setUserFullName(fullName != null ? fullName : "Unknown");
+
+                String avatarURL = userDAO.getAvatarByUserId(post.getUserID());
+                post.setAvtUserImg(avatarURL != null ? avatarURL : "default-avatar.png");
+
                 posts.add(post);
             }
         } catch (SQLException e) {
@@ -379,73 +390,6 @@ public class PostDAO {
         return posts;
     }
 
-    // Qhuy lock illegal post
-    public boolean lockIllegalPost(int postID) {
-        boolean flag = false;
-        String sql = " UPDATE Post\n"
-                + "  SET status = 0\n"
-                + "  WHERE PostID = ?";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, postID);
-            int rowsAffected = ps.executeUpdate();
-            if (rowsAffected > 0) {
-                flag = true;
-            }
-            ps.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return flag;
-    }
-
-    // Admin - unlockPost
-    public boolean unlockPost(int postID) {
-        boolean flag = false;
-        String sql = " UPDATE Post\n"
-                + "  SET status = 1\n"
-                + "  WHERE PostID = ?";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, postID);
-            int rowsAffected = ps.executeUpdate();
-            if (rowsAffected > 0) {
-                flag = true;
-            }
-            ps.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return flag;
-    }
-
-    // Admin function - getNumberOfProduct
-    public int getNumberOfPosts() {
-        int postCount = 0;
-        String sql = "SELECT COUNT(*) FROM Post";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                postCount = rs.getInt(1);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return postCount;
-    }
-
-    // Admin function - getNumberOfProduct
-    public int getNumberOfLockedPosts() {
-        int postCount = 0;
-        String sql = "SELECT COUNT(*) AS LockedCount FROM Post WHERE Status = 0";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                postCount = rs.getInt(1);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return postCount;
-    }
 
     public String formatContent(String content) {
         String[] words = content.split(" ");
@@ -465,32 +409,388 @@ public class PostDAO {
         return formattedContent.toString().trim();
     }
 
-    // Admin get all post kể cả inactive
-    public List<Post> getAllPostsData() throws Exception {
-        List<Post> posts = new ArrayList<>();
-        String query = "SELECT * FROM Post ORDER BY CreatedDate DESC";
-        System.out.println("Executing query: " + query);
+    public boolean updateScore(int postID, int score) {
+        boolean flag = false;
+        String sql = "UPDATE Post SET ScorePost = ?  WHERE PostID = ?";
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(2, postID);
+            ps.setInt(1, score);
+            int rowsAffected = ps.executeUpdate();
+            if (rowsAffected > 0) {
+                flag = true;
+            }
+            ps.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return flag;
+    }
 
+    public List<Post> getPostsOrderedFilterByScore() throws Exception {
+        List<Post> posts = new ArrayList<>();
+        String query = "SELECT * FROM Post ORDER BY ScorePost DESC";
         try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
+
             while (rs.next()) {
                 Post post = new Post(
                         rs.getInt("PostID"),
                         rs.getInt("UserID"),
                         rs.getString("ImgURL"),
                         rs.getString("Heading"),
-                        formatContent(rs.getString("Content")), // Gọi hàm formatContent để định dạng nội dung
+                        rs.getString("Content"),
                         rs.getTimestamp("CreatedDate"),
                         rs.getBoolean("status")
                 );
+                post.setScore(rs.getInt("ScorePost"));
+                String fullName = userDAO.getFullNameByUserId(post.getUserID());
+                post.setUserFullName(fullName != null ? fullName : "Unknown");
                 posts.add(post);
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new Exception("Error retrieving posts: " + e.getMessage());
         }
-        System.out.println("Number of posts retrieved: " + posts.size());
+        return posts;
+    }
+    public List<Post> getPostsOrderedByScore() throws Exception {
+        List<Post> posts = new ArrayList<>();
+        String query = "SELECT TOP 3 * FROM Post ORDER BY ScorePost DESC";
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Post post = new Post(
+                        rs.getInt("PostID"),
+                        rs.getInt("UserID"),
+                        rs.getString("ImgURL"),
+                        rs.getString("Heading"),
+                        rs.getString("Content"),
+                        rs.getTimestamp("CreatedDate"),
+                        rs.getBoolean("status")
+                );
+                post.setScore(rs.getInt("ScorePost"));
+                posts.add(post);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return posts;
     }
 
+    public int getCommentCount(int postID) {
+        int count = 0;
+        String query = "SELECT COUNT(c.commentID) FROM Comment c INNER JOIN Post p ON c.postID = p.postID WHERE c.postID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, postID);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    count = rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+    public boolean updateUserVote(int userID, int postID, int voteType) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        boolean success = false;
+
+        try {
+            conn = dbContext.getConnection();
+            conn.setAutoCommit(false);
+
+            // 1. Check if user already voted
+            String checkSql = "SELECT VoteType FROM PostVotes WHERE UserID = ? AND PostID = ?";
+            ps = conn.prepareStatement(checkSql);
+            ps.setInt(1, userID);
+            ps.setInt(2, postID);
+            ResultSet rs = ps.executeQuery();
+
+            int oldVoteType = 0;
+            boolean existingVote = false;
+
+            if (rs.next()) {
+                existingVote = true;
+                oldVoteType = rs.getInt("VoteType");
+            }
+
+            // 2. If new vote is same as old vote, remove vote
+            if (existingVote && oldVoteType == voteType) {
+                // Delete vote
+                String deleteSql = "DELETE FROM PostVotes WHERE UserID = ? AND PostID = ?";
+                ps = conn.prepareStatement(deleteSql);
+                ps.setInt(1, userID);
+                ps.setInt(2, postID);
+                ps.executeUpdate();
+
+                // Update post score (remove old vote)
+                updatePostScore(conn, postID, -oldVoteType);
+            }
+            // 3. If changing vote or new vote
+            else {
+                if (existingVote) {
+                    // Update existing vote
+                    String updateSql = "UPDATE PostVotes SET VoteType = ?, VoteDate = CURRENT_TIMESTAMP WHERE UserID = ? AND PostID = ?";
+                    ps = conn.prepareStatement(updateSql);
+                    ps.setInt(1, voteType);
+                    ps.setInt(2, userID);
+                    ps.setInt(3, postID);
+                    ps.executeUpdate();
+
+                    // Update score (remove old vote, add new vote)
+                    updatePostScore(conn, postID, -oldVoteType);
+                    updatePostScore(conn, postID, voteType);
+                } else {
+                    // Insert new vote
+                    String insertSql = "INSERT INTO PostVotes (UserID, PostID, VoteType) VALUES (?, ?, ?)";
+                    ps = conn.prepareStatement(insertSql);
+                    ps.setInt(1, userID);
+                    ps.setInt(2, postID);
+                    ps.setInt(3, voteType);
+                    ps.executeUpdate();
+
+                    // Update score (add new vote)
+                    updatePostScore(conn, postID, voteType);
+                }
+            }
+
+            conn.commit();
+            success = true;
+        } catch (Exception e) {
+            try {
+                if (conn != null) conn.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            e.printStackTrace();
+        } finally {
+            try {
+                if (ps != null) ps.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return success;
+    }
+
+    private void updatePostScore(Connection conn, int postID, int scoreChange) throws SQLException {
+        String sql = "UPDATE Post SET ScorePost = ScorePost + ? WHERE PostID = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, scoreChange);
+            ps.setInt(2, postID);
+            ps.executeUpdate();
+        }
+    }
+
+    public Map<Integer, Integer> getUserVotes(int userId, List<Integer> postIds) {
+        Map<Integer, Integer> votes = new HashMap<>();
+
+        if (postIds == null || postIds.isEmpty()) return votes;
+
+        StringBuilder sb = new StringBuilder("SELECT PostID, VoteType FROM PostVotes WHERE UserID = ? AND PostID IN (");
+        for (int i = 0; i < postIds.size(); i++) {
+            sb.append("?");
+            if (i < postIds.size() - 1) sb.append(",");
+        }
+        sb.append(")");
+
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sb.toString())) {
+            stmt.setInt(1, userId);
+            for (int i = 0; i < postIds.size(); i++) {
+                stmt.setInt(i + 2, postIds.get(i)); // offset 2 because userID is the 1st
+            }
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                votes.put(rs.getInt("PostID"), rs.getInt("VoteType"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return votes;
+    }
+
+    public int getPostScore(int postId) {
+        String sql = "SELECT SUM(VoteType) AS Score FROM PostVotes WHERE PostID = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, postId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("Score");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+    public boolean addOrUpdateVote(int userID, int postID, int voteType) {
+        String checkSql = "SELECT VoteType FROM PostVotes WHERE UserID = ? AND PostID = ?";
+        String updateSql = "UPDATE PostVotes SET VoteType = ? WHERE UserID = ? AND PostID = ?";
+        String insertSql = "INSERT INTO PostVotes (UserID, PostID, VoteType) VALUES (?, ?, ?)";
+
+        try (Connection conn = dbContext.getConnection()) {
+            // Check existing vote
+            int existingVote = 0;
+            try (PreparedStatement ps = conn.prepareStatement(checkSql)) {
+                ps.setInt(1, userID);
+                ps.setInt(2, postID);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    existingVote = rs.getInt("VoteType");
+                }
+            }
+
+            // Calculate score change
+            int scoreChange = voteType;
+            if (existingVote != 0) {
+                if (existingVote == voteType) {
+                    // Clicking same vote again removes it
+                    scoreChange = -voteType;
+                    voteType = 0;
+                } else {
+                    // Changing vote (e.g., from up to down)
+                    scoreChange = voteType - existingVote;
+                }
+            }
+
+            // Update or insert vote
+            if (voteType == 0) {
+                // Remove vote
+                try (PreparedStatement ps = conn.prepareStatement("DELETE FROM PostVotes WHERE UserID = ? AND PostID = ?")) {
+                    ps.setInt(1, userID);
+                    ps.setInt(2, postID);
+                    ps.executeUpdate();
+                }
+            } else if (existingVote != 0) {
+                // Update existing vote
+                try (PreparedStatement ps = conn.prepareStatement(updateSql)) {
+                    ps.setInt(1, voteType);
+                    ps.setInt(2, userID);
+                    ps.setInt(3, postID);
+                    ps.executeUpdate();
+                }
+            } else {
+                // Insert new vote
+                try (PreparedStatement ps = conn.prepareStatement(insertSql)) {
+                    ps.setInt(1, userID);
+                    ps.setInt(2, postID);
+                    ps.setInt(3, voteType);
+                    ps.executeUpdate();
+                }
+            }
+
+            // Update post score
+            return updatePostScore(postID, scoreChange);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public boolean updatePostScore(int postID, int scoreChange) {
+        String sql = "UPDATE Post SET ScorePost = ScorePost + ? WHERE PostID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, scoreChange);
+            ps.setInt(2, postID);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public int getUserVote(int userID, int postID) {
+        String sql = "SELECT VoteType FROM PostVotes WHERE UserID = ? AND PostID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userID);
+            ps.setInt(2, postID);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("VoteType");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0; // 0 means no vote
+    }
+    public List<Post> searchPosts(String query) {
+        List<Post> posts = new ArrayList<>();
+        String sql = "SELECT p.*, u.fullName, u.avatar, (SELECT COUNT(*) FROM Comment c WHERE c.postID = p.postID) AS commentCount FROM Post p JOIN dbo.[User] u ON p.userID = u.userID WHERE p.heading LIKE ? OR p.content LIKE ? ORDER BY p.CreatedDate DESC";
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            String searchPattern = "%" + query + "%";
+            stmt.setString(1, searchPattern);
+            stmt.setString(2, searchPattern);
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Post post = new Post();
+                post.setPostID(rs.getInt("PostID"));
+                post.setHeading(rs.getString("Heading"));
+                post.setContent(rs.getString("Content"));
+                post.setUserID(rs.getInt("UserID"));
+                post.setCreatedDate(rs.getTimestamp("CreatedDate"));
+                post.setUserFullName(rs.getString("fullName"));
+                post.setAvtUserImg(rs.getString("avatar"));
+                post.setCommentCount(rs.getInt("commentCount"));
+                post.setScore(rs.getInt("ScorePost"));
+                posts.add(post);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return posts;
+    }
+    public List<Post> getPostsOrderedByOldest() throws Exception {
+        List<Post> posts = new ArrayList<>();
+        String query = "SELECT * FROM Post WHERE status = 1 ORDER BY CreatedDate ASC";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Post post = new Post(
+                        rs.getInt("PostID"),
+                        rs.getInt("UserID"),
+                        rs.getString("ImgURL"),
+                        rs.getString("Heading"),
+                        rs.getString("Content"),
+                        rs.getTimestamp("CreatedDate"),
+                        rs.getBoolean("status")
+                );
+                post.setScore(rs.getInt("ScorePost"));
+
+                String fullName = userDAO.getFullNameByUserId(post.getUserID());
+                post.setUserFullName(fullName != null ? fullName : "Unknown");
+
+                String avatarURL = userDAO.getAvatarByUserId(post.getUserID());
+                post.setAvtUserImg(avatarURL != null ? avatarURL : "default-avatar.png");
+
+                posts.add(post);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new Exception("Error retrieving oldest posts: " + e.getMessage());
+        }
+        return posts;
+    }
+
+
 }
+
 
