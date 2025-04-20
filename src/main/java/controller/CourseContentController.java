@@ -2,8 +2,9 @@ package controller;
 
 import dao.AssignmentDAO;
 import dao.CourseContentDAO;
-import dao.ExamDAO;
-import model.*;
+import model.Assignment;
+import model.CourseContent;
+import model.Expert;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -11,8 +12,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 
 @WebServlet("/course-content")
@@ -72,11 +71,7 @@ public class CourseContentController extends HttpServlet {
             request.getRequestDispatcher("addCourseContent.jsp").forward(request, response);
         } finally {
             if (dao != null) {
-                try {
-                    dao.closeConnection();
-                } catch (SQLException e) {
-                    System.out.println("Lỗi khi đóng kết nối: " + e.getMessage());
-                }
+                dao.closeConnection();
             }
         }
     }
@@ -125,24 +120,53 @@ public class CourseContentController extends HttpServlet {
             throws IOException, ServletException, SQLException {
         CourseContentDAO dao = null;
         try {
+            System.out.println("=== BẮT ĐẦU XỬ LÝ THÊM VIDEO ===");
+            System.out.println("CourseID: " + courseID);
+            
             dao = new CourseContentDAO();
+            
+            // Lấy thông tin từ request
+            String title = request.getParameter("title");
+            String description = request.getParameter("description");
+            System.out.println("Tiêu đề: " + title);
+            System.out.println("Mô tả: " + description);
+            
+            // Lấy file video
             Part videoPart = request.getPart("video");
+            System.out.println("Tên file video: " + videoPart.getSubmittedFileName());
+            System.out.println("Kích thước file: " + videoPart.getSize() + " bytes");
+            System.out.println("Content Type: " + videoPart.getContentType());
+            
+            // Chuyển đổi video thành URL
+            System.out.println("Đang chuyển đổi video thành URL...");
             String videoUrl = dao.convertMediaToUrl(videoPart);
+            System.out.println("URL video: " + videoUrl);
+            
+            // Tạo đối tượng CourseContent
             CourseContent videoContent = new CourseContent();
-            videoContent.setTitle(request.getParameter("title"));
+            videoContent.setTitle(title);
             videoContent.setMedia(videoUrl);
-            videoContent.setDescription(request.getParameter("description"));
-            videoContent.setCourseID(Integer.parseInt(request.getParameter("courseID")));
-            System.out.println(videoContent.toString());
+            videoContent.setDescription(description);
+            videoContent.setCourseID(courseID);
+            
+            System.out.println("Đối tượng videoContent: " + videoContent.toString());
+            
+            // Thêm vào database
+            System.out.println("Đang thêm video vào database...");
             dao.addCourseContent(videoContent);
+            System.out.println("Thêm video thành công!");
+            
+            // Chuyển hướng
+            System.out.println("Chuyển hướng về trang danh sách nội dung...");
             response.sendRedirect("course-content?action=addContentView&courseID=" + courseID);
+            System.out.println("=== KẾT THÚC XỬ LÝ THÊM VIDEO ===");
+        } catch (Exception e) {
+            System.err.println("LỖI KHI THÊM VIDEO: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         } finally {
             if (dao != null) {
-                try {
-                    dao.closeConnection();
-                } catch (SQLException e) {
-                    System.out.println("Lỗi khi đóng kết nối: " + e.getMessage());
-                }
+                dao.closeConnection();
             }
         }
     }
@@ -167,21 +191,19 @@ public class CourseContentController extends HttpServlet {
 
             // 4. Tạo và liên kết course content
             CourseContent assignmentContent = new CourseContent();
-            assignmentContent.setCourseID(courseID);
-            assignmentContent.setTitle(title);
-            assignmentContent.setDescription(description != null ? description : "");
 
             Assignment assignment = new Assignment();
             assignment.setAssignmentID(assignmentID);
             assignment.setAssignmentTitle(title);
             assignmentContent.setAssignment(assignment);
+            assignmentContent.setCourseID(courseID);
 
             // 5. Lưu vào database
             courseContentDAO = new CourseContentDAO();
             courseContentDAO.addCourseContentAssignment(assignmentContent);
 
             // 6. Chuyển hướng với thông báo thành công
-            request.getSession().setAttribute("successMessage", "Tạo assignment thành công!");
+            request.setAttribute("successMessage", "Tạo assignment thành công!");
             response.sendRedirect("edit-assignment?assignmentID=" + assignmentID + "&courseID=" + courseID);
 
         } catch (NumberFormatException e) {
@@ -201,69 +223,10 @@ public class CourseContentController extends HttpServlet {
                 }
             }
             if (courseContentDAO != null) {
-                try {
-                    courseContentDAO.closeConnection();
-                } catch (SQLException e) {
-                    System.out.println("Lỗi khi đóng kết nối: " + e.getMessage());
-                }
+                courseContentDAO.closeConnection();
             }
         }
     }
-
-//    private void handleAddExam(HttpServletRequest request, HttpServletResponse response, int courseID)
-//            throws IOException, SQLException {
-//        try {
-//            // 1. Validate và lấy thông tin từ form
-//            String title = request.getParameter("title");
-//            String description = request.getParameter("description");
-//            int duration = Integer.parseInt(request.getParameter("duration"));
-//            int questionCount = Integer.parseInt(request.getParameter("questionCount"));
-//
-//            // 2. Kiểm tra dữ liệu đầu vào
-//            if (title == null || title.trim().isEmpty()) {
-//                throw new IllegalArgumentException("Tiêu đề exam không được để trống");
-//            }
-//            if (duration <= 0 || duration > 300) {
-//                throw new IllegalArgumentException("Thời gian làm bài phải từ 1-300 phút");
-//            }
-//            if (questionCount <= 0 || questionCount > 100) {
-//                throw new IllegalArgumentException("Số lượng câu hỏi phải từ 1-100");
-//            }
-//
-//            // 3. Tạo exam với thông tin từ form
-//            ExamDAO examDAO = new ExamDAO();
-//            int examID = examDAO.createEmptyExam(title, description, duration, questionCount);
-//
-//            // 4. Tạo và liên kết course content
-//            CourseContent examContent = new CourseContent();
-//            examContent.setCourseID(courseID);
-//            examContent.setTitle(title);
-//            examContent.setDescription(description != null ? description : "");
-//
-//            Exam exam = new Exam();
-//            exam.setExamID(examID);
-//            exam.setExamTitle(title);
-//            exam.setDuration(duration);
-//            exam.setQuestionCount(questionCount);
-//            examContent.setExam(exam);
-//
-//            // 5. Lưu vào database
-//            courseContentDAO.addCourseContentExam(examContent);
-//
-//            // 6. Chuyển hướng với thông báo thành công
-//            request.getSession().setAttribute("successMessage", "Tạo exam thành công!");
-//            response.sendRedirect("edit-exam?examID=" + examID + "&courseID=" + courseID);
-//
-//        } catch (NumberFormatException e) {
-//            handleError(request, response, "Dữ liệu không hợp lệ", courseID);
-//        } catch (IllegalArgumentException e) {
-//            handleError(request, response, e.getMessage(), courseID);
-//        } catch (SQLException e) {
-//            handleError(request, response, "Lỗi database: " + e.getMessage(), courseID);
-//        } catch (Exception e) {
-//            handleError(request, response, "Lỗi hệ thống: " + e.getMessage(), courseID);
-//        }
-//    }
 
     private void handleUpdateVideo(HttpServletRequest request, HttpServletResponse response, int courseID)
             throws IOException, ServletException, SQLException {
@@ -293,7 +256,7 @@ public class CourseContentController extends HttpServlet {
             dao.updateCourseContent(currentContent);
 
             // Thêm thông báo thành công và chuyển hướng
-            request.getSession().setAttribute("successMessage", "Cập nhật video thành công!");
+            request.setAttribute("successMessage", "Cập nhật video thành công!");
             response.sendRedirect("course-content?action=addContentView&courseID=" + courseID);
 
         } catch (SQLException e) {
@@ -304,11 +267,7 @@ public class CourseContentController extends HttpServlet {
                     "course-content?action=addContentView&courseID=" + courseID);
         } finally {
             if (dao != null) {
-                try {
-                    dao.closeConnection();
-                } catch (SQLException e) {
-                    System.out.println("Lỗi khi đóng kết nối: " + e.getMessage());
-                }
+                dao.closeConnection();
             }
         }
     }
@@ -326,61 +285,8 @@ public class CourseContentController extends HttpServlet {
             assignmentDAO = new AssignmentDAO();
             assignmentDAO.updateAssignment(assignment);
 
-            // 2. Xóa toàn bộ câu hỏi cũ của Assignment
-            assignmentDAO.deleteAllQuestions(assignment.getAssignmentID());
-
-            // 3. Thu thập câu hỏi và đáp án từ form
-            List<Question> questions = new ArrayList<>();
-            List<List<Answer>> answersList = new ArrayList<>();
-
-            // Lấy số lượng câu hỏi từ form
-            int questionCount = Integer.parseInt(request.getParameter("questionCount"));
-            System.out.println("Số lượng câu hỏi: " + questionCount);
-
-            // Duyệt qua từng câu hỏi
-            for (int i = 1; i <= questionCount; i++) {
-                String questionText = request.getParameter("questionText_" + i);
-                String questionType = request.getParameter("questionType_" + i);
-                String questionMarkStr = request.getParameter("questionMark_" + i);
-
-                System.out.println("Đang xử lý câu hỏi " + i);
-                System.out.println("Question Text: " + questionText);
-                System.out.println("Question Type: " + questionType);
-                System.out.println("Question Mark: " + questionMarkStr);
-
-                if (questionText != null && !questionText.trim().isEmpty()) {
-                    double questionMark = Double.parseDouble(questionMarkStr);
-
-                    // Tạo đối tượng Question
-                    Question question = new Question();
-                    question.setQuestionText(questionText);
-                    question.setQuestionType(questionType);
-                    question.setQuestionMark(questionMark);
-                    questions.add(question);
-
-                    // Xử lý đáp án tùy theo loại câu hỏi
-                    List<Answer> answers = new ArrayList<>();
-                    if (questionType.equals("MULTIPLE_CHOICE")) {
-                        processMultipleChoiceAnswers(request, i, answers);
-                    } else if (questionType.equals("TRUE_FALSE")) {
-                        processTrueFalseAnswers(request, i, answers);
-                    } else {
-                        processShortAnswer(request, i, answers);
-                    }
-                    answersList.add(answers);
-                }
-            }
-
-            // 4. Lưu tất cả câu hỏi và đáp án vào database
-            assignmentDAO.addQuestionsToAssignment(
-                    assignment.getAssignmentID(),
-                    assignment,
-                    questions,
-                    answersList
-            );
-
             // 5. Thêm thông báo thành công và chuyển hướng
-            request.getSession().setAttribute("successMessage", "Cập nhật Assignment thành công!");
+            request.setAttribute("successMessage", "Cập nhật Assignment thành công!");
             response.sendRedirect("course-content?action=addContentView&courseID=" + request.getParameter("courseID"));
 
         } catch (SQLException e) {
@@ -400,63 +306,16 @@ public class CourseContentController extends HttpServlet {
         }
     }
 
-    private void processMultipleChoiceAnswers(HttpServletRequest request, int questionNum, List<Answer> answers) {
-        // Xử lý 4 đáp án trắc nghiệm
-        for (int i = 1; i <= 4; i++) {
-            String answerText = request.getParameter("answerText_" + questionNum + "_" + i);
-            String correctAnswer = request.getParameter("correctAnswer_" + questionNum);
-
-            System.out.println("Đáp án " + i + ": " + answerText);
-            System.out.println("Đáp án đúng: " + correctAnswer);
-
-            if (answerText != null && !answerText.trim().isEmpty()) {
-                Answer answer = new Answer();
-                answer.setAnswerText(answerText);
-                answer.setCorrect(correctAnswer != null && correctAnswer.equals(String.valueOf(i)));
-                answer.setOptionLabel((char) ('A' + i - 1)); // Gán nhãn A, B, C, D
-                answers.add(answer);
-            }
-        }
-    }
-
-    private void processTrueFalseAnswers(HttpServletRequest request, int questionNum, List<Answer> answers) {
-        // Xử lý True/False
-        String correctAnswer = request.getParameter("correctAnswer_" + questionNum);
-        System.out.println("Đáp án True/False: " + correctAnswer);
-
-        Answer trueAnswer = new Answer();
-        trueAnswer.setAnswerText("True");
-        trueAnswer.setCorrect(correctAnswer != null && correctAnswer.equals("1"));
-        answers.add(trueAnswer);
-
-        Answer falseAnswer = new Answer();
-        falseAnswer.setAnswerText("False");
-        falseAnswer.setCorrect(correctAnswer != null && correctAnswer.equals("2"));
-        answers.add(falseAnswer);
-    }
-
-    private void processShortAnswer(HttpServletRequest request, int questionNum, List<Answer> answers) {
-        // Xử lý câu hỏi tự luận ngắn
-        String answerText = request.getParameter("correctAnswer_" + questionNum);
-        System.out.println("Đáp án tự luận: " + answerText);
-
-        if (answerText != null && !answerText.trim().isEmpty()) {
-            Answer answer = new Answer();
-            answer.setAnswerText(answerText);
-            answer.setCorrect(true);
-            answers.add(answer);
-        }
-    }
 
     private void handleError(HttpServletRequest request, HttpServletResponse response, String errorMessage, int courseID)
             throws IOException {
-        request.getSession().setAttribute("errorMessage", errorMessage);
+        request.setAttribute("errorMessage", errorMessage);
         response.sendRedirect("course-content?action=addContentView&courseID=" + courseID);
     }
 
     private void handleError(HttpServletRequest request, HttpServletResponse response, String errorMessage, String redirectUrl)
             throws IOException {
-        request.getSession().setAttribute("errorMessage", errorMessage);
+        request.setAttribute("errorMessage", errorMessage);
         response.sendRedirect(redirectUrl);
     }
 
@@ -464,9 +323,9 @@ public class CourseContentController extends HttpServlet {
             throws IOException, SQLException {
         CourseContentDAO courseContentDAO = null;
         AssignmentDAO assignmentDAO = null;
-        ExamDAO examDAO = null;
         try {
             int contentID = Integer.parseInt(request.getParameter("contentID"));
+            String assignmentIDStr = request.getParameter("assignmentID");
             System.out.println("Bắt đầu xóa nội dung với ID: " + contentID);
 
             courseContentDAO = new CourseContentDAO();
@@ -489,12 +348,6 @@ public class CourseContentController extends HttpServlet {
                 assignmentDAO.deleteAllQuestions(content.getAssignment().getAssignmentID());
                 assignmentDAO.deleteAssignment(content.getAssignment().getAssignmentID());
             }
-
-//            if (content.getExam() != null) {
-//                System.out.println("Xóa exam liên quan: " + content.getExam().getExamID());
-//                examDAO = new ExamDAO();
-//                examDAO.deleteExam(content.getExam().getExamID());
-//            }
 
             // Xóa content
             System.out.println("Xóa nội dung chính");
@@ -526,11 +379,7 @@ public class CourseContentController extends HttpServlet {
             response.getWriter().write("Lỗi database: " + e.getMessage());
         } finally {
             if (courseContentDAO != null) {
-                try {
-                    courseContentDAO.closeConnection();
-                } catch (SQLException e) {
-                    System.out.println("Lỗi khi đóng kết nối CourseContentDAO: " + e.getMessage());
-                }
+                courseContentDAO.closeConnection();
             }
             if (assignmentDAO != null) {
                 try {
@@ -539,13 +388,6 @@ public class CourseContentController extends HttpServlet {
                     System.out.println("Lỗi khi đóng kết nối AssignmentDAO: " + e.getMessage());
                 }
             }
-//            if (examDAO != null) {
-//                try {
-//                    examDAO.closeConnection();
-//                } catch (SQLException e) {
-//                    System.out.println("Lỗi khi đóng kết nối ExamDAO: " + e.getMessage());
-//                }
-//            }
         }
     }
 }

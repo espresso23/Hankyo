@@ -2,7 +2,10 @@ package dao;
 
 import cloud.CloudinaryConfig;
 import com.cloudinary.utils.ObjectUtils;
-import model.*;
+import model.Answer;
+import model.Assignment;
+import model.CourseContent;
+import model.Question;
 import util.DBConnect;
 
 import javax.servlet.http.Part;
@@ -16,10 +19,10 @@ import java.util.List;
 import java.util.Map;
 
 public class CourseContentDAO {
-    private Connection connection;
+    private Connection conn;
 
     public CourseContentDAO() {
-        this.connection = DBConnect.getInstance().getConnection();
+        this.conn = DBConnect.getInstance().getConnection();
     }
 
     //function dùng để lấy url của media từ cloud và lưu vào database
@@ -84,7 +87,7 @@ public class CourseContentDAO {
 
     public boolean addCourseContent(CourseContent courseContent) throws SQLException {
         String query = "Insert into Course_Content (title, media, description, image, courseID) values (?,?,?,?,?)";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try (PreparedStatement preparedStatement = conn.prepareStatement(query)) {
             preparedStatement.setString(1, courseContent.getTitle());
             preparedStatement.setString(2, courseContent.getMedia());
             preparedStatement.setString(3, courseContent.getDescription());
@@ -95,101 +98,71 @@ public class CourseContentDAO {
     }
 
     public boolean addCourseContentAssignment(CourseContent courseContent) throws SQLException {
-        String query = "Insert into Course_Content(courseID,title,description,assignmentID) values(?,?,?,?)";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        String query = "Insert into Course_Content(courseID,assignmentID) values(?,?)";
+        try (PreparedStatement preparedStatement = conn.prepareStatement(query)) {
             preparedStatement.setInt(1, courseContent.getCourseID());
-            preparedStatement.setString(2, courseContent.getTitle());
-            preparedStatement.setString(3, courseContent.getDescription());
-            preparedStatement.setInt(4, courseContent.getAssignment().getAssignmentID());
+            preparedStatement.setInt(2, courseContent.getAssignment().getAssignmentID());
             return preparedStatement.executeUpdate() > 0;
         }
     }
 
-    public boolean addCourseContentExam(CourseContent courseContent) throws SQLException {
-        String query = "Insert into Course_Content(courseID,title,description,examID) values(?,?,?,?)";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setInt(1, courseContent.getCourseID());
-            preparedStatement.setString(2, courseContent.getTitle());
-            preparedStatement.setString(3, courseContent.getDescription());
-            preparedStatement.setInt(4, courseContent.getExam().getExamID());
-            return preparedStatement.executeUpdate() > 0;
-        }
-    }
 
     // Thêm phương thức lấy danh sách nội dung khóa học theo courseID
     public List<CourseContent> listCourseContentsByCourseID(int courseID) throws SQLException {
         List<CourseContent> contents = new ArrayList<>();
-        String query = "SELECT * FROM Course_Content WHERE courseID = ? ORDER BY course_contentID";
+        String sql = "SELECT cc.*, a.title as assignmentTitle, a.description as assignmentDes, " +
+                    "a.assignmentID, a.lastUpdated " +
+                    "FROM Course_Content cc " +
+                    "LEFT JOIN Assignment a on cc.assignmentID = a.assignmentID " +
+                    "WHERE cc.courseID = ? " +
+                    "ORDER BY cc.course_contentID";
 
-        try (Connection conn = DBConnect.getInstance().getConnection();
-             PreparedStatement preparedStatement = conn.prepareStatement(query)) {
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, courseID);
+            ResultSet rs = stmt.executeQuery();
 
-            preparedStatement.setInt(1, courseID);
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    CourseContent content = new CourseContent();
-                    content.setCourseContentID(resultSet.getInt("course_contentID"));
-                    content.setCourseID(resultSet.getInt("courseID"));
-                    content.setTitle(resultSet.getString("title"));
-                    content.setDescription(resultSet.getString("description"));
-                    content.setImage(resultSet.getString("image"));
-                    content.setMedia(resultSet.getString("media"));
-
-                    int assignmentID = resultSet.getInt("assignmentID");
-                    if (!resultSet.wasNull()) {
-                        Assignment a = new Assignment();
-                        a.setAssignmentID(assignmentID);
-                        content.setAssignment(a);
-                    }
-
-                    int examID = resultSet.getInt("examID");
-                    if (!resultSet.wasNull()) {
-                        Exam e = new Exam();
-                        e.setExamID(examID);
-                        content.setExam(e);
-                    }
-
-                    contents.add(content);
+            while (rs.next()) {
+                CourseContent content = new CourseContent();
+                content.setCourseContentID(rs.getInt("course_contentID"));
+                content.setCourseID(rs.getInt("courseID"));
+                content.setTitle(rs.getString("title"));
+                content.setDescription(rs.getString("description"));
+                content.setMedia(rs.getString("media"));
+                
+                // Chỉ set assignment nếu có assignmentID
+                int assignmentId = rs.getInt("assignmentID");
+                if (!rs.wasNull()) {
+                    Assignment assignment = new Assignment();
+                    assignment.setAssignmentTitle(rs.getString("assignmentTitle"));
+                    assignment.setDescription(rs.getString("assignmentDes"));
+                    assignment.setLastUpdated(rs.getDate("lastUpdated"));
+                    assignment.setAssignmentID(assignmentId);
+                    content.setAssignment(assignment);
                 }
+                
+                contents.add(content);
             }
         }
-
         return contents;
     }
 
-
     public CourseContent getCourseContentById(int contentID) throws SQLException {
-        String query = "SELECT * FROM Course_Content WHERE course_contentID = ?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setInt(1, contentID);
+        String sql = "SELECT * FROM Course_Content WHERE course_contentID = ?";
 
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    CourseContent content = new CourseContent();
-                    content.setCourseContentID(resultSet.getInt("course_contentID"));
-                    content.setCourseID(resultSet.getInt("courseID"));
-                    content.setTitle(resultSet.getString("title"));
-                    content.setDescription(resultSet.getString("description"));
-                    content.setImage(resultSet.getString("image"));
-                    content.setMedia(resultSet.getString("media"));
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, contentID);
+            ResultSet rs = stmt.executeQuery();
 
-                    // Lấy assignmentID nếu có
-                    int assignmentID = resultSet.getInt("assignmentID");
-                    if (!resultSet.wasNull()) {
-                        content.setAssignment(new Assignment());
-                        content.getAssignment().setAssignmentID(assignmentID);
-                    }
-
-                    // Lấy examID nếu có
-                    int examID = resultSet.getInt("examID");
-                    if (!resultSet.wasNull()) {
-                        content.setExam(new Exam());
-                        content.getExam().setExamID(examID);
-                    }
-
-                    return content;
-                }
+            if (rs.next()) {
+                CourseContent content = new CourseContent();
+                content.setCourseContentID(rs.getInt("course_contentID"));
+                content.setCourseID(rs.getInt("courseID"));
+                content.setTitle(rs.getString("title"));
+                content.setDescription(rs.getString("description"));
+                content.setMedia(rs.getString("media"));
+                return content;
             }
         }
         return null;
@@ -197,7 +170,8 @@ public class CourseContentDAO {
 
     public boolean updateCourseContent(CourseContent content) throws SQLException {
         String query = "UPDATE Course_Content SET title = ?, description = ?, media = ?, image = ? WHERE course_contentID = ?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setString(1, content.getTitle());
             preparedStatement.setString(2, content.getDescription());
             preparedStatement.setString(3, content.getMedia());
@@ -209,7 +183,8 @@ public class CourseContentDAO {
 
     public boolean deleteCourseContent(int contentID) throws SQLException {
         String query = "DELETE FROM Course_Content WHERE course_contentID = ?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setInt(1, contentID);
             return preparedStatement.executeUpdate() > 0;
         }
@@ -217,7 +192,7 @@ public class CourseContentDAO {
 
     public Assignment getAssignmentById(int assignmentID) throws SQLException {
         String query = "SELECT * FROM Assignment WHERE assignmentID = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, assignmentID);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -241,7 +216,7 @@ public class CourseContentDAO {
                 "WHERE aq.assignmentID = ? " +
                 "ORDER BY q.questionID, a.answerID";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, assignmentID);
             try (ResultSet rs = stmt.executeQuery()) {
                 Question currentQuestion = null;
@@ -266,7 +241,7 @@ public class CourseContentDAO {
                     answer.setAnswerID(rs.getInt("answerID"));
                     answer.setAnswerText(rs.getString("answerText"));
                     answer.setCorrect(rs.getBoolean("isCorrect"));
-                    answer.setOptionLabel(rs.getString("option_label").charAt(0));
+                    answer.setOptionLabel(rs.getString("option_label"));
                     currentQuestion.getAnswers().add(answer);
                 }
             }
@@ -287,10 +262,10 @@ public class CourseContentDAO {
 
         try {
             // Bắt đầu transaction
-            connection.setAutoCommit(false);
+            conn.setAutoCommit(false);
 
             // Lưu Question
-            pstmtQuestion = connection.prepareStatement(sqlQuestion, PreparedStatement.RETURN_GENERATED_KEYS);
+            pstmtQuestion = conn.prepareStatement(sqlQuestion, PreparedStatement.RETURN_GENERATED_KEYS);
             pstmtQuestion.setString(1, question.getQuestionText());
             pstmtQuestion.setString(2, question.getQuestionImage() != null ? question.getQuestionImage() : null);
             pstmtQuestion.setString(3, question.getAudioFile() != null ? question.getAudioFile() : null);
@@ -308,8 +283,8 @@ public class CourseContentDAO {
             }
 
             // Lưu Answers
-            pstmtAnswer = connection.prepareStatement(sqlAnswer, PreparedStatement.RETURN_GENERATED_KEYS);
-            pstmtAssignmentQuestion = connection.prepareStatement(sqlAssignmentQuestion);
+            pstmtAnswer = conn.prepareStatement(sqlAnswer, PreparedStatement.RETURN_GENERATED_KEYS);
+            pstmtAssignmentQuestion = conn.prepareStatement(sqlAssignmentQuestion);
 
             for (Answer answer : question.getAnswers()) {
                 pstmtAnswer.setString(1, answer.getAnswerText());
@@ -335,14 +310,14 @@ public class CourseContentDAO {
             }
 
             // Commit transaction
-            connection.commit();
+            conn.commit();
             return questionID;
 
         } catch (SQLException e) {
             // Rollback nếu có lỗi
-            if (connection != null) {
+            if (conn != null) {
                 try {
-                    connection.rollback();
+                    conn.rollback();
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
@@ -356,15 +331,19 @@ public class CourseContentDAO {
             if (generatedKeys != null) generatedKeys.close();
 
             // Reset auto-commit
-            if (connection != null) {
-                connection.setAutoCommit(true);
+            if (conn != null) {
+                conn.setAutoCommit(true);
             }
         }
     }
 
-    public void closeConnection() throws SQLException {
-        if (connection != null && !connection.isClosed()) {
-            connection.close();
+    public void closeConnection() {
+        try {
+            if (conn != null && !conn.isClosed()) {
+                conn.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }

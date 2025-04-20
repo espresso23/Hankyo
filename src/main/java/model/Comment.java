@@ -9,31 +9,13 @@ import java.util.Date;
 
 public class Comment {
 
-    public int commentID;
-    public int userID;
-    public String userFullName;
-    public String userAvtURL;
-    public int postID;
-    public String content;
-    public Date createdDate;
-    public int ParentCommentID;
-    public int score;
-
-    public int getScore() {
-        return score;
-    }
-
-    public void setScore(int score) {
-        this.score = score;
-    }
-
-    public int getParentCommentID() {
-        return ParentCommentID;
-    }
-
-    public void setParentCommentID(int parentCommentID) {
-        ParentCommentID = parentCommentID;
-    }
+    private int commentID;
+    private int userID;
+    private String userFullName;
+    private String userAvtURL;
+    private int postID;
+    private String content;
+    private Date createdDate;
 
     public Comment() {
     }
@@ -79,6 +61,7 @@ public class Comment {
     public void setUserAvtURL(String userAvtURL) {
         this.userAvtURL = userAvtURL;
     }
+
 
 
     public int getCommentID() {

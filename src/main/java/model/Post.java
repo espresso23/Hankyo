@@ -16,16 +16,6 @@ public class Post {
     private String userFullName;
     private String avtUserImg;
     private boolean status;
-    private int score;
-    private int commentCount;
-
-    public int getCommentCount() {
-        return commentCount;
-    }
-
-    public void setCommentCount(int commentCount) {
-        this.commentCount = commentCount;
-    }
 
     public Post() {
     }
@@ -61,17 +51,6 @@ public class Post {
         this.status = status;
     }
 
-    public Post(int postID, int userID, String imgURL, String heading, String content, Date createdDate, boolean status, int score) {
-        this.postID = postID;
-        this.userID = userID;
-        this.imgURL = imgURL;
-        this.heading = heading;
-        this.content = content;
-        this.createdDate = createdDate;
-        this.status = status;
-        this.score = score;
-    }
-
     // Getters and Setters
     public int getPostID() {
         return postID;
@@ -83,14 +62,6 @@ public class Post {
 
     public int getUserID() {
         return userID;
-    }
-
-    public int getScore() {
-        return score;
-    }
-
-    public void setScore(int score) {
-        this.score = score;
     }
 
     public void setUserID(int userID) {

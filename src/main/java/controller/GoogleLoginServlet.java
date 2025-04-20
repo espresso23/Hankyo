@@ -41,7 +41,7 @@ public class GoogleLoginServlet extends HttpServlet {
             }
 
             createUserSession(request, user);
-            response.sendRedirect("home.jsp");
+            response.sendRedirect("courseHeader.jsp");
 
         } catch (Exception e) {
             e.printStackTrace(); // Log lỗi đầy đủ trong console

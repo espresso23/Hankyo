@@ -1,0 +1,637 @@
+/*Reset CSS */
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  line-height: 1.8;
+}
+a{
+    text-decoration: none;
+}
+
+a {
+    text-decoration: none;
+}
+
+
+
+/* 
+ 1.Vị trí
+ 2. Kích thước
+ 3. Màu sắc
+ 4. Kiểu dáng (kiểu chữ, hình tròn, vuông,....)
+ */
+.clear {
+  clear: both;
+}
+
+#header {
+}
+nav.navbar.navbar-expand-lg.bg-body-tertiary {
+  background-color:#A5C5CF!important;
+  z-index: 10;
+}
+div#navbarNavAltMarkup {
+  justify-content: space-between;
+}
+
+.navbar__item {
+  width: 10%;
+}
+
+.navbar-nav {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+a.navbar-brand {
+  font-weight: 700;
+  font-size: 40px;
+  margin-left: 50px;
+  color: white;
+}
+
+a.nav-link {
+  margin: 0px 18px;
+  color: white;
+  font-size: 18px;
+}
+.navbar__item {
+  width: 25%;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-brand:focus,
+.navbar-brand:hover {
+  color: #CCB2B0 ;
+}
+a.navbar__item--login {
+  text-decoration: none;
+  color: white;
+  border: 1px solid;
+  padding: 10px 30px;
+  border-radius: 10px;
+  background-color: #CCB2B0 ;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+a.navbar__item--login:hover {
+  background-color: #CCB2B0 ;
+  transform: scale(1.05);
+}
+
+i.ti-shopping-cart {
+  padding: 10px;
+  font-size: 30px;
+  border-radius: 25px;
+  color: white;
+  background-color: #ff6b6b;
+  margin-left: 17px;
+}
+
+.ti-shopping-cart:before {
+  content: "\e60d";
+  line-height: 36px;
+}
+
+
+#slider .sliderback {
+  width: 100%;
+}
+.slider-info {
+  display: block;
+  position: absolute;
+  bottom: 10%;
+  margin: 0px 0px 0px 100px;
+}
+h3.slider-des {
+  font-family: cursive;
+  color: #f6b76c;
+}
+h1.title {
+  font-size: 80px;
+  width: 40%;
+  line-height: 1.3;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 48px;
+}
+
+.default-input {
+  border: none;
+  padding: 6px;
+  border-radius: 12px;
+  width: 20%;
+  color: #ccc;
+  padding-left: 18px;
+}
+
+button.default-btnsearch {
+  border: none;
+  padding: 6px;
+  border-radius: 12px;
+  color: white;
+  background-color: #ff6b6b;
+  width: 6%;
+  font-weight: 600;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+button.default-btnsearch:hover {
+  background-color: #ff4c4c;
+  transform: scale(1.05);
+}
+
+i.slider-icon {
+  color: white;
+  background-color: #ff6b6b;
+  padding: 10px;
+  border-radius: 25px;
+  margin-right: 8px;
+}
+.icon-group {
+  position: relative;
+  top: 70px;
+}
+
+#category {
+  margin-top: 60px;
+}
+
+.category-list {
+  display: flex;
+  justify-content: space-evenly;
+  margin: 0px 100px;
+}
+/* Card container styling */
+.card.col-md-2 {
+  background: #f3f3f3cc;
+  border: none;
+  border-radius: 18px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  cursor: pointer;
+    height: 17rem;
+}
+
+.card.col-md-2:hover {
+  background-color: #f6b76c;
+  color: white;
+  transform: scale(1.05);
+}
+
+h5.card-title-category {
+  display: flex;
+  justify-content: center;
+  font-weight: 400;
+  transition: color 0.3s ease;
+}
+
+.card.col-md-2:hover h5.card-title-category {
+  color: white;
+}
+
+img.card-img-top-category {
+  margin: 20px 40px 10px 40px;
+  width: 60%;
+  border-radius: 100px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.category-list img{
+    width: 100px; /* Tùy chỉnh kích thước theo ý muốn */
+    height: 100px;
+    object-fit: cover;
+}
+
+.card.col-md-2:hover img.card-img-top-category {
+  transform: scale(1.1);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+p.card-text {
+  justify-content: center;
+  display: flex;
+  color: #8b8b8b;
+}
+.default-tag {
+  display: flex;
+  justify-content: center;
+  background-color: #CCB2B0 ;
+  border-radius: 10px;
+  color: white;
+  width: 130px;
+}
+.map-tag {
+  display: flex;
+  justify-content: center;
+  background-color: #CCB2B0 ;
+  border-radius: 10px;
+  color: white;
+  width: 70px;
+}
+
+.default-title {
+  font-size: 55px;
+  font-weight: 700;
+}
+
+.default-text-category {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+.default-title-category {
+  display: flex;
+  justify-content: center;
+  font-size: 55px;
+  font-weight: 700;
+  margin-bottom: 28px;
+}
+
+#restaurant {
+  margin-top: 100px;
+}
+
+.default-text-restaurant {
+  margin: 0 80px;
+}
+.default-des {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 40px;
+}
+
+.default-slogan {
+  font-style: italic;
+  color: #b4b4b4;
+}
+
+a.restaurant-viewall {
+  text-decoration: none;
+  color: white;
+  background-color: #ff6b6b;
+  padding: 10px 15px 8px 15px;
+  border-radius: 11px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+a.restaurant-viewall:hover {
+  background-color: #ff4c4c;
+  transform: scale(1.05);
+}
+
+.restaurant-list {
+  display: flex;
+  justify-content: space-around;
+}
+
+.card.card-restaurant {
+  background: #f3f3f3cc;
+  border: none;
+  border-radius: 10px;
+  transition: box-shadow 0.3s ease-in-out;
+  position: relative;
+}
+
+.card.card-restaurant:hover {
+  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.rating-box {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: #f76363;
+  color: white;
+  padding: 5px 10px;
+  font-weight: bold;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.restaurant-info {
+  display: flex;
+  justify-content: space-between;
+  margin: 25px 0px 0px 0px;
+}
+
+.card-title-res {
+  font-weight: 700;
+}
+
+.res-category {
+  color: #9d9d9d;
+}
+
+div#map {
+  height: 90vh;
+}
+.map-img {
+  width: 100%;
+}
+.map-input {
+  border: 1px solid #ccc;
+  width: 50%;
+}
+button.map-btnsearch {
+  width: 14%;
+}
+.map-info.col-md-5 {
+  position: relative;
+  bottom: 600px;
+  left: 52%;
+}
+
+.map-des {
+  margin-top: 15px;
+}
+
+.map-search {
+  margin-top: 30px;
+}
+
+.map-title {
+  width: 80%;
+  line-height: 1.3;
+  font-size: 64px;
+}
+.default-tag-bestseller {
+  margin-top: 170px;
+}
+
+div#bestseller {
+  margin: 0 80px;
+}
+
+.restaurant-grid {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: space-around;
+}
+
+.card-horizontal {
+  display: flex;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  align-items: center;
+  transition: transform 0.2s;
+  height: 100%;
+}
+
+.card-horizontal:hover {
+  transform: translateY(-5px);
+}
+
+.card-img {
+  width: 35%;
+  height: auto;
+  border-radius: 10px;
+  margin-right: 20px;
+}
+
+.card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.rating {
+  background-color: #f76363;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-weight: bold;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.card-text {
+  font-size: 14px;
+  color: gray;
+  margin: 5px 0;
+}
+
+.card-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.price {
+  font-size: 14px;
+  color: gray;
+}
+
+.time {
+  font-size: 14px;
+  color: black;
+  font-weight: 500;
+}
+
+#footer {
+  margin-top: 30px;
+  background-color: #333;
+  color: #fff;
+  padding: 40px 40px 20px 40px;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.footer-logo h2 {
+  font-size: 50px;
+  font-weight: bold;
+}
+
+.footer-social a {
+  color: #fff;
+  margin: 0 10px;
+  font-size: 20px;
+}
+
+.footer-social a:hover {
+  color: #e98e78;
+}
+
+.footer-menu h4,
+.footer-subscribe h4 {
+  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.footer-menu ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.footer-menu ul li {
+  margin-bottom: 10px;
+}
+
+.footer-menu ul li a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.footer-menu ul li a:hover {
+  color: #e98e78;
+}
+
+.footer-subscribe form {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 5px;
+}
+
+.footer-subscribe input {
+  border: none;
+  padding: 10px;
+  border-radius: 20px;
+  outline: none;
+  width: 250px;
+}
+
+.footer-subscribe button {
+  border: none;
+  background-color: transparent;
+  color: #333;
+  font-size: 18px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.footer-subscribe button:hover {
+  color: #e98e78;
+}
+.footer-menu {
+  width: 20%;
+}
+.menu-item {
+  display: flex;
+  justify-content: space-between;
+}
+.icon-footer {
+  text-decoration: none;
+}
+
+
+#nav-bar {
+    background-color: #F6B76C;
+    padding: 7px 0px 0px 0px;
+    display: flex;
+    justify-content: center;
+    border: 1px solid white;
+    border-radius: 24px;
+}
+.nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0 10px 0px 8px;
+}
+
+.nav-item {
+    display: inline-block;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: #333;
+    display: flex;
+    align-items: center;
+}
+
+#user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    margin-bottom: 8px;
+}
+
+#user-name {
+    font-size: 16px;
+    color: #555;
+}
+
+#login-text {
+    font-size: 16px;
+    color: white;
+    justify-content: center;
+    display: flex;
+    padding-bottom: 7px;
+}
+
+#register-text {
+    font-size: 30px;
+    color: white;
+    justify-content: center;
+    display: flex;
+    padding-bottom: 7px;
+}
+
+#nav-bar .nav-link:hover #user-name,
+#nav-bar .nav-link:hover #login-text,register-text {
+    color: black; /* Màu xanh khi hover */
+}
+.user-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #F6B76C;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    border-radius: 18px;
+    color: white;
+    border: 1px solid;
+}
+
+.user-dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    border-radius: 15px;
+}
+
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+.top-food p, h5 {
+  color: #414141 !important;
+}
+    
+.navbar__item {
+    width: 40%;
+    display: flex;
+    align-items: center;
+}

@@ -5,7 +5,7 @@ import java.util.Date;
 public class CourseFeedback {
     private int feedbackID;
     private Course course;
-    private User user;
+    private Learner learner;
     private float rating;
     private String comment;
     private Date createdAt;
@@ -53,11 +53,11 @@ public class CourseFeedback {
         this.rating = rating;
     }
 
-    public User getUser() {
-        return user;
+    public Learner getLearner() {
+        return learner;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setLearner(Learner learner) {
+        this.learner = learner;
     }
 }

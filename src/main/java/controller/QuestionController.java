@@ -50,7 +50,7 @@ public class QuestionController extends HttpServlet {
 
             switch (action) {
                 case "getQuestions":
-                    List<Question> questions = assignmentDAO.getQuestionsByAssignmentId(assignmentID);
+                    List<Question> questions = assignmentDAO.getAllQuestionOfAssignment(assignmentID);
                     sendJsonResponse(response, true, "Lấy danh sách câu hỏi thành công", questions);
                     break;
                 case "getQuestion":
@@ -138,12 +138,6 @@ public class QuestionController extends HttpServlet {
         // Xử lý file media
         handleMediaFiles(request, question);
 
-        // Xử lý đáp án
-        List<Answer> answers = processAnswers(request, question);
-        question.setAnswers(answers);
-
-        // Thêm câu hỏi vào database
-        assignmentDAO.addQuestionToAssignment(assignmentID, question, answers);
         sendJsonResponse(response, true, "Thêm câu hỏi thành công");
     }
 
@@ -158,12 +152,6 @@ public class QuestionController extends HttpServlet {
         // Xử lý file media
         handleMediaFiles(request, question);
 
-        // Xử lý đáp án
-        List<Answer> answers = processAnswers(request, question);
-        question.setAnswers(answers);
-
-        // Cập nhật câu hỏi trong database
-        assignmentDAO.updateQuestion(question, answers);
         sendJsonResponse(response, true, "Cập nhật câu hỏi thành công");
     }
 
@@ -189,55 +177,10 @@ public class QuestionController extends HttpServlet {
         }
     }
 
-    private List<Answer> processAnswers(HttpServletRequest request, Question question) {
-        List<Answer> answers = new ArrayList<>();
-        String questionType = question.getQuestionType();
 
-        switch (questionType) {
-            case "MULTIPLE_CHOICE":
-                String correctAnswer = request.getParameter("correctAnswer");
-                for (int i = 1; i <= 5; i++) { // A, B, C, D, E
-                    String answerText = request.getParameter("answerText_" + i);
-                    if (answerText != null && !answerText.trim().isEmpty()) {
-                        Answer answer = new Answer();
-                        answer.setAnswerText(answerText);
-                        answer.setCorrect(correctAnswer.equals(String.valueOf(i)));
-                        answer.setOptionLabel((char)('A' + i - 1));
-                        answers.add(answer);
-                    }
-                }
-                break;
-
-            case "TRUE_FALSE":
-                String tfAnswer = request.getParameter("correctAnswer");
-                Answer trueAnswer = new Answer();
-                trueAnswer.setAnswerText("True");
-                trueAnswer.setCorrect("1".equals(tfAnswer));
-                trueAnswer.setOptionLabel('A');
-                answers.add(trueAnswer);
-
-                Answer falseAnswer = new Answer();
-                falseAnswer.setAnswerText("False");
-                falseAnswer.setCorrect("2".equals(tfAnswer));
-                falseAnswer.setOptionLabel('B');
-                answers.add(falseAnswer);
-                break;
-
-            case "SHORT_ANSWER":
-                String answerText = request.getParameter("correctAnswer");
-                Answer answer = new Answer();
-                answer.setAnswerText(answerText);
-                answer.setCorrect(true);
-                answer.setOptionLabel('A');
-                answers.add(answer);
-                break;
-        }
-
-        return answers;
-    }
 
     private Question getQuestionById(int questionID) throws SQLException {
-        List<Question> questions = assignmentDAO.getQuestionsByAssignmentId(0); // Lấy tất cả câu hỏi
+        List<Question> questions = assignmentDAO.getAllQuestionOfAssignment(0); // Lấy tất cả câu hỏi
         for (Question question : questions) {
             if (question.getQuestionID() == questionID) {
                 return question;

@@ -7,10 +7,10 @@ public class Honour {
     private String honourType;
     private int honour_ownedID;
 
-    public Honour(int honourID, String honourImg, String honourName, String honourType) {
+    public Honour(int honourID, String honourName, String honourImg, String honourType) {
         this.honourID = honourID;
-        this.honourImg = honourImg;
         this.honourName = honourName;
+        this.honourImg = honourImg;
         this.honourType = honourType;
     }
 
