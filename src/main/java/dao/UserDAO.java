@@ -420,41 +420,6 @@ public class UserDAO {
 
     }
     // Lấy tên đầy đủ của người dùng theo UserID
-    public String getFullNameByUserId(int userId) {
-        String fullName = null;
-        String sql = "SELECT fullName FROM [User] WHERE UserID = ?";
-
-        try (Connection con = DBConnect.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql.toString())) {
-            ps.setInt(1, userId);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                fullName = rs.getString("fullName");
-            }
-        } catch (Exception e) {
-            System.out.println("Error while retrieving full name: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return fullName;
-    }
-    public String getAvatarByUserId(int userID) throws Exception {
-        String avatarImg = null;
-        String sql = "SELECT avatar FROM [User] WHERE UserID = ?";
-
-        try (Connection con = DBConnect.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql.toString())) {
-            ps.setInt(1, userID);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    avatarImg = rs.getString("avatar");
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return avatarImg;
-    }
     public boolean isVipUser(int learnerId) throws Exception {
         String sql = "SELECT 1 FROM Vip_User vu JOIN VipDetails vd ON vu.vipID = vd.vipID WHERE vu.learnerID = ? AND vu.vipStatus = 'active' AND vu.endDate >= GETDATE()";
 

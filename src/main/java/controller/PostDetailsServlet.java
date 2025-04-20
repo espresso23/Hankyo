@@ -422,6 +422,7 @@ public class PostDetailsServlet extends HttpServlet {
                 newPost.setContent(description);
                 newPost.setCreatedDate(new Date());
 
+
                 boolean isAdded = postDAO.createPost(newPost);
 
                 if (isAdded) {
