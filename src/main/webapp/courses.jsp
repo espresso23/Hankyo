@@ -14,91 +14,6 @@ pageEncoding="UTF-8"%>
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
             rel="stylesheet">
         <link rel="stylesheet" href="asset/css/courseView.css">
-        <style>
-            .course-card {
-                height: 100%;
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
-            }
-
-            .course-card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-            }
-
-            .card-img-container {
-                position: relative;
-                padding-top: 56.25%; /* Tỷ lệ 16:9 */
-                overflow: hidden;
-                border-radius: 15px 15px 0 0;
-            }
-
-            .card-img-top {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                transition: transform 0.3s ease;
-            }
-
-            .course-card:hover .card-img-top {
-                transform: scale(1.05);
-            }
-
-            .status-badge {
-                padding: 5px 10px;
-                border-radius: 15px;
-                font-size: 0.85rem;
-            }
-
-            .status-active {
-                background-color: #28a745;
-                color: white;
-            }
-
-            .status-inactive {
-                background-color: #dc3545;
-                color: white;
-            }
-
-            .detail-btn {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                border: none;
-                transition: all 0.3s ease;
-            }
-
-            .detail-btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-            }
-
-            .price-tag {
-                font-weight: bold;
-                color: #28a745;
-            }
-
-            .empty-state {
-                text-align: center;
-                padding: 40px 0;
-            }
-
-            .empty-state-icon {
-                color: #6c757d;
-                margin-bottom: 20px;
-            }
-
-            .course-stats {
-                margin: 15px 0;
-                color: #6c757d;
-            }
-
-            .original-price {
-                text-decoration: line-through;
-                color: #6c757d;
-                font-size: 0.9em;
-            }
-        </style>
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script
             src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -154,77 +69,132 @@ pageEncoding="UTF-8"%>
             </div>
 
             <!-- Course List -->
-            <div class="row row-cols-1 row-cols-md-3 g-4">
+            <div class="row row-cols-1 row-cols-md-4 g-4">
                 <c:forEach items="${courses}" var="course">
                     <div class="col">
-                        <div class="card course-card"
-                            data-id="${course.courseID}">
+                        <div class="card course-card h-100" data-id="${course.courseID}" onclick="window.location.href='course-details?courseID=${course.courseID}'">
                             <div class="card-img-container">
                                 <img src="${course.courseImg}" class="card-img-top"
                                     alt="${course.courseTitle}">
                             </div>
                             <div class="card-body d-flex flex-column">
-                                <h5
-                                    class="card-title">${course.courseTitle}</h5>
-                                <p
-                                    class="card-text">${course.courseDescription}</p>
-                                <p class="card-text">Được tạo bởi:
-                                    ${course.expert.fullName}</p>
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title text-truncate mb-0">${course.courseTitle}</h5>
+                                </div>
+                                <p class="card-text text-truncate">Được tạo bởi: ${course.expert.fullName}</p>
                                 <div class="course-stats">
-                                    <div class="d-flex align-items-center mb-2">
+                                    <div class="d-flex align-items-center mb-1">
                                         <i class="fas fa-users me-2 text-primary"></i>
                                         <span>${course.learnersCount} học viên</span>
                                     </div>
-                                    <div class="d-flex align-items-center mb-2">
-                                        <i class="fas fa-star me-2 text-warning"></i>
+                                    <div class="d-flex align-items-center">
+                                        <div class="star-rating me-2">
+                                            <c:forEach begin="1" end="5" var="i">
+                                                <i class="fas fa-star ${i <= course.rating ? 'text-warning' : 'text-muted'}"></i>
+                                            </c:forEach>
+                                        </div>
                                         <span>
                                             <fmt:formatNumber value="${course.rating}" type="number" maxFractionDigits="1" />
-                                            <small class="text-muted">(${course.ratingCount} đánh giá)</small>
+                                            <small class="text-muted">(${course.ratingCount})</small>
                                         </span>
                                     </div>
                                 </div>
-                                <div
-                                    class="mt-auto">
+                                <div class="mt-auto">
                                     <div class="d-flex align-items-center mb-2">
-                                        <span
-                                            class="badge bg-secondary me-2">${course.category.categoryName}</span>
-                                        <span
-                                            class="status-badge status-${course.status eq 'Active' ? 'active' : 'inactive'}">
+                                        <span class="badge bg-secondary me-2">${course.category.categoryName}</span>
+                                        <span class="status-badge status-${course.status eq 'Active' ? 'active' : 'inactive'}">
                                             ${course.status}
                                         </span>
                                     </div>
-                                    <div
-                                        class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <span
-                                                class="price-tag"><fmt:formatNumber
-                                                    value="${course.price}"
-                                                    type="number"
-                                                    groupingUsed="true" />
-                                                VNĐ</span>
-                                            <c:if
-                                                test="${course.originalPrice > course.price}">
-                                                <span
-                                                    class="original-price ms-2">${course.originalPrice}
-                                                    VNĐ</span>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="price-container">
+                                            <span class="price-tag">
+                                                <fmt:formatNumber value="${course.price}" type="number"
+                                                                  groupingUsed="true"/> VNĐ
+                                            </span>
+                                            <c:if test="${course.originalPrice > course.price}">
+                                                <span class="original-price">
+                                                    <fmt:formatNumber value="${course.originalPrice}" type="number"
+                                                                      groupingUsed="true"/> VNĐ
+                                                </span>
                                             </c:if>
                                         </div>
                                         <c:choose>
                                             <c:when test="${not empty sessionScope.learner && course.purchased}">
-                                                <a
-                                                    href="course-details?courseID=${course.courseID}"
-                                                    class="btn btn-success">Tham
-                                                    gia học</a>
+                                                <a href="course-details?courseID=${course.courseID}"
+                                                   class="btn btn-success btn-sm">Học ngay</a>
                                             </c:when>
                                             <c:otherwise>
                                                 <button type="button"
-                                                    class="btn btn-primary add-to-cart"
-                                                    data-course-id="${course.courseID}">Thêm
-                                                    vào giỏ hàng</button>
+                                                        class="btn btn-primary btn-sm add-to-cart"
+                                                        data-course-id="${course.courseID}">
+                                                    <i class="fas fa-cart-plus"></i>
+                                                </button>
                                             </c:otherwise>
                                         </c:choose>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="tooltip-content" data-course-id="${course.courseID}">
+                            <div class="tooltip-header">
+                                <h3>${course.courseTitle}</h3>
+                                <div class="course-meta">
+                                    <span><i
+                                            class="far fa-calendar-alt"></i> Cập nhật tháng ${course.lastUpdated}</span>
+                                </div>
+                                <p class="course-description-text">${course.courseDescription}</p>
+                            </div>
+                            <div class="tooltip-body">
+                                <ul>
+                                    <li>
+                                        <i class="fas fa-user-tie"></i>
+                                        <span>Được tạo bởi <strong>${course.expert.fullName}</strong></span>
+                                    </li>
+                                    <li>
+                                        <i class="fas fa-sync-alt"></i>
+                                        <span>Nội dung cập nhật thường xuyên</span>
+                                    </li>
+                                    <li>
+                                        <i class="fas fa-mobile-alt"></i>
+                                        <span>Học mọi lúc, mọi nơi trên mọi thiết bị</span>
+                                    </li>
+                                    <li>
+                                        <i class="fas fa-certificate"></i>
+                                        <span>Cấp chứng chỉ sau khi hoàn thành</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="tooltip-footer">
+                                <div class="tooltip-price-container">
+                                    <div class="tooltip-price">
+                                        <fmt:formatNumber value="${course.price}" type="number"
+                                                          groupingUsed="true"/> VNĐ
+                                        <c:if test="${course.originalPrice > course.price}">
+                                            <span class="tooltip-original-price">
+                                                <fmt:formatNumber value="${course.originalPrice}" type="number"
+                                                                  groupingUsed="true"/> VNĐ
+                                            </span>
+                                        </c:if>
+                                    </div>
+                                </div>
+                                <c:choose>
+                                    <c:when test="${not empty sessionScope.learner && course.purchased}">
+                                        <a href="course-details?courseID=${course.courseID}"
+                                           class="tooltip-button start-learning">
+                                            <i class="fas fa-play-circle"></i>
+                                            Học ngay
+                                        </a>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <button type="button"
+                                                class="tooltip-button add-to-cart"
+                                                data-course-id="${course.courseID}">
+                                            <i class="fas fa-cart-plus"></i>
+                                            Thêm vào giỏ
+                                        </button>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
                         </div>
                     </div>
@@ -247,39 +217,79 @@ pageEncoding="UTF-8"%>
             src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     </body>
     <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const LONG_PRESS_THRESHOLD = 500;
+        document.addEventListener('DOMContentLoaded', function () {
+            const cards = document.querySelectorAll('.course-card');
+            let currentTooltip = null;
 
-        document.querySelectorAll('.course-card').forEach(card => {
-            let timer;
+            cards.forEach(card => {
+                const courseId = card.getAttribute('data-id');
+                const tooltip = document.querySelector(`.tooltip-content[data-course-id="${courseId}"]`);
 
-            card.addEventListener('mousedown', (e) => {
-                // Bỏ qua nếu click vào nút thêm vào giỏ hàng
-                if (e.target.closest('.add-to-cart')) {
-                    return;
+                if (!tooltip) return;
+
+                function updateTooltipPosition() {
+                    const cardRect = card.getBoundingClientRect();
+                    const tooltipRect = tooltip.getBoundingClientRect();
+                    const viewportWidth = window.innerWidth;
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+                    // Luôn hiển thị tooltip bên phải
+                    let tooltipLeft = cardRect.right + 20;
+                    let tooltipTop = cardRect.top;
+
+                    // Nếu tooltip sẽ bị tràn ra khỏi viewport bên phải
+                    if (tooltipLeft + tooltipRect.width > viewportWidth) {
+                        tooltipLeft = cardRect.left - tooltipRect.width - 20; // Hiển thị bên trái card
+                    }
+
+                    // Đảm bảo tooltip không bị tràn ra khỏi viewport phía trên và dưới
+                    const maxTop = window.innerHeight - tooltipRect.height;
+                    tooltipTop = Math.min(Math.max(0, tooltipTop), maxTop);
+
+                    tooltip.style.left = `${tooltipLeft}px`;
+                    tooltip.style.top = `${tooltipTop}px`;
                 }
-                timer = setTimeout(() => {
-                    timer = null;
-                }, LONG_PRESS_THRESHOLD);
+
+                function showTooltip() {
+                    // Ẩn tooltip hiện tại nếu có
+                    if (currentTooltip && currentTooltip !== tooltip) {
+                        currentTooltip.classList.remove('show');
+                    }
+
+                    tooltip.style.display = 'block';
+                    requestAnimationFrame(() => {
+                        updateTooltipPosition();
+                        tooltip.classList.add('show');
+                    });
+
+                    currentTooltip = tooltip;
+                }
+
+                function hideTooltip() {
+                    if (currentTooltip) {
+                        currentTooltip.classList.remove('show');
+                        setTimeout(() => {
+                            currentTooltip.style.display = 'none';
+                        }, 300);
+                    }
+                }
+
+                card.addEventListener('mouseenter', showTooltip);
+                card.addEventListener('mouseleave', hideTooltip);
+                tooltip.addEventListener('mouseenter', showTooltip);
+                tooltip.addEventListener('mouseleave', hideTooltip);
+
+                // Cập nhật vị trí tooltip khi scroll và resize
+                ['scroll', 'resize'].forEach(event => {
+                    window.addEventListener(event, () => {
+                        if (tooltip.classList.contains('show')) {
+                            updateTooltipPosition();
+                        }
+                    });
+                });
             });
-
-            card.addEventListener('mouseup', (e) => {
-                // Bỏ qua nếu click vào nút thêm vào giỏ hàng
-                if (e.target.closest('.add-to-cart')) {
-                    return;
-                }
-                if (timer) {
-                    clearTimeout(timer);
-                    const id = card.getAttribute('data-id');
-                    window.location.href = 'course-details?courseID=' + id;
-                }
-            });
-
-            card.addEventListener('mouseleave', () => clearTimeout(timer));
         });
-    });
-</script>
-    // Thêm vào cuối trang courses.jsp
+    </script>
     <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Tự động đóng thông báo sau 5 giây
@@ -333,7 +343,7 @@ pageEncoding="UTF-8"%>
                     showMessage('Lỗi kết nối', 'error');
                 },
                 complete: function () {
-                    button.html('Thêm vào giỏ hàng').prop('disabled', false);
+                    button.html('<i class="fas fa-cart-plus"></i>').prop('disabled', false);
                 }
             });
         });

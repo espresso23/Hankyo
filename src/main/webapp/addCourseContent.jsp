@@ -257,6 +257,12 @@
                                                                     <i class="fas fa-edit"></i>
                                                                 </a>
                                                             </c:when>
+                                                            <c:when test="${not empty content.assignment}">
+                                                                <a href="edit-assignment?assignmentID=${content.assignment.assignmentID}&courseID=${param.courseID}"
+                                                                   class="btn btn-sm btn-outline-secondary" title="Chỉnh sửa">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </a>
+                                                            </c:when>
                                                         </c:choose>
                                                         <button class="btn btn-sm btn-outline-danger delete-content"
                                                                 data-content-id="${content.courseContentID}"

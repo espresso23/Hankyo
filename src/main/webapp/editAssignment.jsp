@@ -11,9 +11,196 @@
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="asset/css/editAssignment.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .card {
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            border: none;
+        }
+
+        .card-header {
+            border-radius: 8px 8px 0 0 !important;
+            padding: 10px 15px;
+            font-weight: 500;
+        }
+
+        .card-body {
+            padding: 15px;
+        }
+
+        .preview-container {
+            margin-top: 10px;
+            max-width: 100%;
+        }
+
+        .preview-container img {
+            max-height: 150px;
+            width: auto;
+            border-radius: 4px;
+        }
+
+        .answer-option {
+            margin-bottom: 10px;
+        }
+
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 1000;
+        }
+
+        .loading-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .question-card {
+            transition: all 0.3s ease;
+        }
+
+        .question-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .form-control, .form-select {
+            border-radius: 6px;
+        }
+
+        .btn {
+            border-radius: 6px;
+            padding: 6px 12px;
+        }
+
+        .badge {
+            border-radius: 4px;
+            padding: 5px 8px;
+        }
+
+        .list-group-item {
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .add-question-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #28a745;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .add-question-btn:hover {
+            transform: scale(1.1);
+            background-color: #218838;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1050;
+        }
+
+        .modal.show {
+            display: block;
+        }
+
+        .modal-dialog {
+            position: relative;
+            width: auto;
+            margin: 1.75rem auto;
+            max-width: 800px;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            border-bottom: 1px solid #dee2e6;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .modal-body {
+            position: relative;
+            padding: 1rem;
+        }
+
+        .btn-close {
+            background: transparent;
+            border: 0;
+            padding: 0.5rem;
+            cursor: pointer;
+            color: #fff;
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+
+        .option-label {
+            min-width: 40px;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 4px 0 0 4px;
+            padding: 6px 12px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .correct-label {
+            margin-left: 5px;
+            margin-bottom: 0;
+        }
+    </style>
 </head>
 <body>
 <c:import url="header.jsp"/>
+<!-- Loading Overlay -->
+<div class="loading">
+    <div class="loading-content">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Đang xử lý...</p>
+    </div>
+</div>
+
 <div class="container-fluid py-3">
     <h4 class="mb-3">
         <i class="fas fa-edit me-2"></i>Chỉnh sửa bài tập
@@ -75,18 +262,18 @@
                                                     data-assignment-id="${assignment.assignmentID}">
                                                 <i class="fas fa-edit"></i>
                                             </button>
-                                        <button class="btn btn-danger btn-sm delete-question"
-                                                data-question-id="${question.questionID}"
-                                                data-assignment-id="${assignment.assignmentID}">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                            <button class="btn btn-danger btn-sm delete-question"
+                                                    data-question-id="${question.questionID}"
+                                                    data-assignment-id="${assignment.assignmentID}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
                                         </div>
                                     </div>
                                     <div class="card-body p-2">
                                         <div class="mb-1">
-                                                <span class="badge bg-primary">
-                                                        ${question.questionType == 'multiple_choice' ? 'Trắc nghiệm' : 'Câu trả lời ngắn'}
-                                                </span>
+                                            <span class="badge bg-primary">
+                                                ${question.questionType == 'multiple_choice' ? 'Trắc nghiệm' : 'Câu trả lời ngắn'}
+                                            </span>
                                             <span class="badge bg-secondary ms-1">${question.questionMark} điểm</span>
                                         </div>
                                         <p class="mb-1 small">${question.questionText}</p>
@@ -173,7 +360,7 @@
                     Assignment ID: ${assignment.assignmentID}<br>
                     Course ID: ${courseID}
                 </div>
-                
+
                 <form id="questionForm" method="post" action="edit-assignment" enctype="multipart/form-data">
                     <input type="hidden" name="action" value="addQuestion">
                     <input type="hidden" name="courseID" value="${courseID}">
@@ -284,6 +471,9 @@
                         <label class="form-label">Các lựa chọn</label>
                         <div id="editAnswerOptions">
                         </div>
+                        <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="editAddAnswerOption">
+                            <i class="fas fa-plus me-1"></i> Thêm lựa chọn
+                        </button>
                     </div>
 
                     <div class="text-end">
@@ -303,48 +493,33 @@
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    // Hàm hiển thị modal
-    function showModal() {
-        document.getElementById('addQuestionModal').classList.add('show');
-        document.body.style.overflow = 'hidden';
-
-        // Tự động thêm lựa chọn đầu tiên
-        if ($('.answer-option').length === 0) {
-            $('#addAnswerOption').click();
-        }
-    }
-
-    // Hàm ẩn modal
-    function hideModal() {
-        document.getElementById('addQuestionModal').classList.remove('show');
-        document.body.style.overflow = '';
-        // Reset form
-        document.getElementById('questionForm').reset();
-        $('#imagePreview, #audioPreview').empty();
-        $('#multipleChoiceAnswers').hide();
-    }
-
     $(document).ready(function () {
         // Xử lý sự kiện click cho nút thêm câu hỏi
-        $('#addQuestionBtn').click(function () {
-            showModal();
+        $('#addQuestionBtn').on('click', function () {
+            $('#addQuestionModal').css('display', 'block');
+            document.body.style.overflow = 'hidden';
         });
 
         // Xử lý sự kiện click cho nút đóng modal
-        $('#closeModalBtn, #cancelBtn').click(function () {
-            hideModal();
+        $('#closeModalBtn, #cancelBtn').on('click', function () {
+            $('#addQuestionModal').css('display', 'none');
+            document.body.style.overflow = '';
+            // Reset form
+            $('#questionForm')[0].reset();
+            $('#imagePreview, #audioPreview').empty();
+            $('#multipleChoiceAnswers').hide();
         });
 
         // Đóng modal khi click bên ngoài
-        window.onclick = function (event) {
-            var modal = document.getElementById('addQuestionModal');
-            if (event.target == modal) {
-                hideModal();
+        $(window).on('click', function (event) {
+            if ($(event.target).is('#addQuestionModal')) {
+                $('#addQuestionModal').css('display', 'none');
+                document.body.style.overflow = '';
             }
-        }
+        });
 
         // Xử lý hiển thị/ẩn form câu trả lời trắc nghiệm
-        $('#questionType').change(function () {
+        $('#questionType').on('change', function () {
             if ($(this).val() === 'multiple_choice') {
                 $('#multipleChoiceAnswers').show();
             } else {
@@ -353,277 +528,30 @@
         });
 
         // Thêm lựa chọn mới
-        $('#addAnswerOption').click(function (e) {
+        $('#addAnswerOption').on('click', function (e) {
             e.preventDefault();
             const optionLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
             const answerCount = $('.answer-option').length;
-            
+
             if (answerCount >= optionLabels.length) {
                 alert('Không thể thêm quá ' + optionLabels.length + ' lựa chọn');
                 return;
             }
 
             const currentLabel = optionLabels[answerCount];
-            console.log("Thêm lựa chọn mới:");
-            console.log("- Số thứ tự:", answerCount);
-            console.log("- Option label:", currentLabel);
-
-            const newOptionHtml = 
+            const newOptionHtml =
                 '<div class="answer-option">' +
-                    '<div class="input-group">' +
-                        '<div class="option-label">' + currentLabel + '</div>' +
-                        '<input type="text" name="answers" class="form-control" placeholder="Nhập lựa chọn" required>' +
-                        '<div class="input-group-text">' +
-                            '<input type="checkbox" name="isCorrect" class="answer-checkbox" data-option="' + currentLabel + '">' +
-                            '<label class="correct-label">Đúng</label>' +
-                        '</div>' +
-                    '</div>' +
+                '<div class="input-group">' +
+                '<div class="option-label">' + currentLabel + '</div>' +
+                '<input type="text" name="answers" class="form-control" placeholder="Nhập lựa chọn" required>' +
+                '<div class="input-group-text">' +
+                '<input type="checkbox" name="isCorrect" class="answer-checkbox" data-option="' + currentLabel + '">' +
+                '<label class="correct-label">Đúng</label>' +
+                '</div>' +
+                '</div>' +
                 '</div>';
 
             $('#answerOptions').append(newOptionHtml);
-
-            // Thêm event listener cho checkbox mới
-            $('.answer-checkbox').off('change').on('change', function() {
-                const optionLabel = $(this).data('option');
-                const isChecked = $(this).prop('checked');
-                console.log(`Câu trả lời ${optionLabel} đã được ${isChecked ? 'chọn' : 'bỏ chọn'} là đúng`);
-                
-                // Log tất cả các câu trả lời đúng hiện tại
-                const correctAnswers = [];
-                $('.answer-checkbox:checked').each(function() {
-                    correctAnswers.push($(this).data('option'));
-                });
-                console.log('Các câu trả lời đúng hiện tại:', correctAnswers);
-            });
-        });
-
-        // Xử lý preview file
-        function handleFilePreview(input, previewContainer) {
-            const file = input.files[0];
-            if (!file) return;
-
-            if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    previewContainer.html(`<img src="${e.target.result}" class="img-thumbnail">`);
-                };
-                reader.readAsDataURL(file);
-            } else if (file.type.startsWith('audio/')) {
-                const url = URL.createObjectURL(file);
-                previewContainer.html(`
-                        <audio controls class="w-100" style="height: 30px">
-                            <source src="${url}" type="${file.type}">
-                        </audio>
-                    `);
-            }
-        }
-
-        // Xử lý upload file
-        $('input[type="file"]').on('change', function () {
-            const previewContainer = $(this).closest('.col-md-6').find('.preview-container');
-            handleFilePreview(this, previewContainer);
-        });
-
-        // Xử lý form submit
-        $('#questionForm').on('submit', function (e) {
-            e.preventDefault();
-            
-            // Kiểm tra các trường bắt buộc
-            const questionText = $('textarea[name="questionText"]').val().trim();
-            const questionType = $('#questionType').val();
-            const questionMark = $('input[name="questionMark"]').val();
-
-            if (!questionText) {
-                alert('Vui lòng nhập nội dung câu hỏi');
-                return false;
-            }
-
-            if (!questionType) {
-                alert('Vui lòng chọn loại câu hỏi');
-                return false;
-            }
-
-            if (!questionMark) {
-                alert('Vui lòng nhập điểm cho câu hỏi');
-                return false;
-            }
-
-            // Nếu là câu hỏi trắc nghiệm
-            if (questionType === 'multiple_choice') {
-                // Kiểm tra số lượng câu trả lời
-                if ($('.answer-option').length === 0) {
-                    alert('Vui lòng thêm ít nhất một câu trả lời');
-                    return false;
-                }
-
-                // Kiểm tra đáp án đúng
-                if ($('.answer-checkbox:checked').length === 0) {
-                    alert('Vui lòng chọn ít nhất một đáp án đúng');
-                    return false;
-                }
-
-                // Kiểm tra nội dung câu trả lời
-                let hasEmptyAnswer = false;
-                $('.answer-option input[type="text"]').each(function () {
-                    if (!$(this).val().trim()) {
-                        hasEmptyAnswer = true;
-                        return false;
-                    }
-                });
-
-                if (hasEmptyAnswer) {
-                    alert('Vui lòng nhập đầy đủ nội dung cho tất cả các câu trả lời');
-                    return false;
-                }
-            }
-
-            // Tạo FormData object
-            const formData = new FormData(this);
-
-            // Xóa tất cả input hidden isCorrect và option_labels cũ
-            formData.delete('isCorrect');
-            formData.delete('option_labels');
-            formData.delete('answers');
-
-            // Thêm lại các giá trị mới cho câu hỏi trắc nghiệm
-            if (questionType === 'multiple_choice') {
-                $('.answer-option').each(function(index) {
-                    const answerText = $(this).find('input[type="text"]').val().trim();
-                    const optionLabel = $(this).find('.option-label').text();
-                    const isChecked = $(this).find('.answer-checkbox').prop('checked');
-                    
-                    formData.append('answers', answerText);
-                    formData.append('option_labels', optionLabel);
-                    formData.append('isCorrect', isChecked ? "1" : "0");
-                });
-            }
-
-            // Log form data trước khi gửi
-            console.log('Form data:', {
-                action: formData.get('action'),
-                assignmentID: formData.get('assignmentID'),
-                courseID: formData.get('courseID'),
-                questionType: formData.get('questionType'),
-                questionText: formData.get('questionText'),
-                questionMark: formData.get('questionMark'),
-                answers: formData.getAll('answers'),
-                option_labels: formData.getAll('option_labels'),
-                isCorrect: formData.getAll('isCorrect')
-            });
-
-            // Hiển thị loading
-            $('.loading').show();
-
-            // Gửi request bằng AJAX
-            $.ajax({
-                url: 'edit-assignment',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    $('.loading').hide();
-                    try {
-                        if (typeof response === 'string') {
-                            response = JSON.parse(response);
-                        }
-                    if (response.success) {
-                        // Đóng modal
-                        hideModal();
-                        // Reload trang
-                        location.reload();
-                    } else {
-                        alert(response.message || 'Có lỗi xảy ra khi thêm câu hỏi');
-                        }
-                    } catch (e) {
-                        console.error('Error parsing response:', e);
-                        alert('Có lỗi xảy ra khi xử lý phản hồi từ server');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    $('.loading').hide();
-                    console.error('Error:', error);
-                    console.error('Response:', xhr.responseText);
-                    
-                    let errorMessage = 'Có lỗi xảy ra khi thêm câu hỏi';
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        if (response.message) {
-                            errorMessage = response.message;
-                        }
-                    } catch (e) {
-                        console.error('Error parsing error response:', e);
-                    }
-                    
-                    alert(errorMessage);
-                }
-            });
-        });
-
-        // Xử lý xóa câu hỏi
-        $('.delete-question').click(function () {
-            if (confirm('Bạn có chắc chắn muốn xóa câu hỏi này?')) {
-                const questionId = $(this).data('question-id');
-                const assignmentId = $(this).data('assignment-id');
-
-                console.log('Bắt đầu xóa câu hỏi:', {
-                    questionId: questionId,
-                    assignmentId: assignmentId
-                });
-
-                $('.loading').show();
-
-                $.ajax({
-                    url: 'edit-assignment',
-                    method: 'POST',
-                    data: {
-                        action: 'deleteQuestion',
-                        questionID: questionId,
-                        assignmentID: assignmentId
-                    },
-                    success: function (response) {
-                        $('.loading').hide();
-                        console.log('Phản hồi từ server:', response);
-                        
-                        try {
-                            if (typeof response === 'string') {
-                                response = JSON.parse(response);
-                            }
-                            
-                        if (response.success) {
-                            console.log('Xóa câu hỏi thành công');
-                            location.reload();
-                        } else {
-                            console.error('Lỗi khi xóa câu hỏi:', response.message);
-                            alert('Có lỗi xảy ra khi xóa câu hỏi: ' + response.message);
-                            }
-                        } catch (e) {
-                            console.error('Lỗi khi xử lý phản hồi:', e);
-                            alert('Có lỗi xảy ra khi xử lý phản hồi từ server');
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        $('.loading').hide();
-                        console.error('Lỗi AJAX:', {
-                            status: status,
-                            error: error,
-                            response: xhr.responseText
-                        });
-                        
-                        let errorMessage = 'Có lỗi xảy ra khi xóa câu hỏi';
-                        try {
-                                const response = JSON.parse(xhr.responseText);
-                                if (response.message) {
-                                    errorMessage = response.message;
-                            }
-                        } catch (e) {
-                            console.error('Lỗi khi parse JSON response:', e);
-                        }
-                        
-                        alert(errorMessage);
-                    }
-                });
-            }
         });
 
         // Hàm hiển thị modal chỉnh sửa
@@ -705,18 +633,37 @@
                                 $('#editAnswerOptions').empty();
                                 
                                 response.question.answers.forEach(function(answer) {
+                                    console.log('Đang xử lý câu trả lời:', answer); // Log để debug
+                                    
                                     const optionHtml = 
                                         '<div class="answer-option">' +
                                             '<div class="input-group">' +
                                                 '<div class="option-label">' + answer.optionLabel + '</div>' +
                                                 '<input type="text" name="answers" class="form-control" value="' + answer.answerText + '" required>' +
                                                 '<div class="input-group-text">' +
-                                                    '<input type="checkbox" name="isCorrect" class="answer-checkbox" ' + (answer.correct ? 'checked' : '') + '>' +
+                                                    '<input type="checkbox" name="isCorrect" class="answer-checkbox"' + 
+                                                    (answer.isCorrect === true ? ' checked="checked"' : '') +
+                                                    ' data-option="' + answer.optionLabel + '">' +
                                                     '<label class="correct-label">Đúng</label>' +
                                                 '</div>' +
                                             '</div>' +
                                         '</div>';
                                     $('#editAnswerOptions').append(optionHtml);
+
+                                    // Log trạng thái của câu trả lời sau khi thêm
+                                    console.log('Câu trả lời ' + answer.optionLabel + ':', {
+                                        text: answer.answerText,
+                                        isCorrect: answer.correct,
+                                        checked: answer.correct === true
+                                    });
+                                });
+
+                                // Kiểm tra lại các checkbox sau khi thêm
+                                $('#editAnswerOptions .answer-checkbox').each(function() {
+                                    console.log('Checkbox ' + $(this).data('option') + ':', {
+                                        checked: $(this).prop('checked'),
+                                        hasCheckedAttr: $(this).attr('checked') !== undefined
+                                    });
                                 });
                             } else {
                                 $('#editMultipleChoiceAnswers').hide();
@@ -749,16 +696,250 @@
             hideEditModal();
         });
 
-        // Xử lý hiển thị/ẩn form câu trả lời trắc nghiệm trong modal chỉnh sửa
-        $('#editQuestionType').change(function() {
-            if ($(this).val() === 'multiple_choice') {
-                $('#editMultipleChoiceAnswers').show();
-                if ($('#editAnswerOptions .answer-option').length === 0) {
-                    $('#editAddAnswerOption').click();
-                }
-            } else {
-                $('#editMultipleChoiceAnswers').hide();
+        // Xử lý xóa câu hỏi
+        $('.delete-question').click(function () {
+            if (confirm('Bạn có chắc chắn muốn xóa câu hỏi này?')) {
+                const questionId = $(this).data('question-id');
+                const assignmentId = $(this).data('assignment-id');
+
+                console.log('Bắt đầu xóa câu hỏi:', {
+                    questionId: questionId,
+                    assignmentId: assignmentId
+                });
+
+                $('.loading').show();
+
+                $.ajax({
+                    url: 'edit-assignment',
+                    method: 'POST',
+                    data: {
+                        action: 'deleteQuestion',
+                        questionID: questionId,
+                        assignmentID: assignmentId
+                    },
+                    success: function (response) {
+                        $('.loading').hide();
+                        console.log('Phản hồi từ server:', response);
+
+                        try {
+                            if (typeof response === 'string') {
+                                response = JSON.parse(response);
+                            }
+
+                            if (response.success) {
+                                console.log('Xóa câu hỏi thành công');
+                                location.reload();
+                            } else {
+                                console.error('Lỗi khi xóa câu hỏi:', response.message);
+                                alert('Có lỗi xảy ra khi xóa câu hỏi: ' + response.message);
+                            }
+                        } catch (e) {
+                            console.error('Lỗi khi xử lý phản hồi:', e);
+                            alert('Có lỗi xảy ra khi xử lý phản hồi từ server');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        $('.loading').hide();
+                        console.error('Lỗi AJAX:', {
+                            status: status,
+                            error: error,
+                            response: xhr.responseText
+                        });
+
+                        let errorMessage = 'Có lỗi xảy ra khi xóa câu hỏi';
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.message) {
+                                errorMessage = response.message;
+                            }
+                        } catch (e) {
+                            console.error('Lỗi khi parse JSON response:', e);
+                        }
+
+                        alert(errorMessage);
+                    }
+                });
             }
+        });
+
+        // Phân trang
+        const itemsPerPage = 12;
+        let currentPage = 1;
+        const totalItems = $('.question-item').length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+        function updatePagination() {
+            // Cập nhật trạng thái nút Previous/Next
+            $('#prevPage').parent().toggleClass('disabled', currentPage === 1);
+            $('#nextPage').parent().toggleClass('disabled', currentPage === totalPages);
+
+            // Cập nhật số trang hiện tại
+            $('#currentPage').text(currentPage);
+
+            // Hiển thị/ẩn các câu hỏi theo trang
+            $('.question-item').each(function(index) {
+                const start = (currentPage - 1) * itemsPerPage;
+                const end = start + itemsPerPage;
+                $(this).toggle(index >= start && index < end);
+            });
+        }
+
+        // Xử lý sự kiện click nút Previous
+        $('#prevPage').click(function(e) {
+            e.preventDefault();
+            if (currentPage > 1) {
+                currentPage--;
+                updatePagination();
+            }
+        });
+
+        // Xử lý sự kiện click nút Next
+        $('#nextPage').click(function(e) {
+            e.preventDefault();
+            if (currentPage < totalPages) {
+                currentPage++;
+                updatePagination();
+            }
+        });
+
+        // Khởi tạo phân trang
+        updatePagination();
+
+        // Xử lý form submit
+        $('#questionForm').on('submit', function (e) {
+            e.preventDefault();
+
+            // Kiểm tra các trường bắt buộc
+            const questionText = $('textarea[name="questionText"]').val().trim();
+            const questionType = $('#questionType').val();
+            const questionMark = $('input[name="questionMark"]').val();
+
+            if (!questionText) {
+                alert('Vui lòng nhập nội dung câu hỏi');
+                return false;
+            }
+
+            if (!questionType) {
+                alert('Vui lòng chọn loại câu hỏi');
+                return false;
+            }
+
+            if (!questionMark) {
+                alert('Vui lòng nhập điểm cho câu hỏi');
+                return false;
+            }
+
+            // Nếu là câu hỏi trắc nghiệm
+            if (questionType === 'multiple_choice') {
+                // Kiểm tra số lượng câu trả lời
+                if ($('.answer-option').length === 0) {
+                    alert('Vui lòng thêm ít nhất một câu trả lời');
+                    return false;
+                }
+
+                // Kiểm tra đáp án đúng
+                if ($('.answer-checkbox:checked').length === 0) {
+                    alert('Vui lòng chọn ít nhất một đáp án đúng');
+                    return false;
+                }
+
+                // Kiểm tra nội dung câu trả lời
+                let hasEmptyAnswer = false;
+                $('.answer-option input[type="text"]').each(function () {
+                    if (!$(this).val().trim()) {
+                        hasEmptyAnswer = true;
+                        return false;
+                    }
+                });
+
+                if (hasEmptyAnswer) {
+                    alert('Vui lòng nhập đầy đủ nội dung cho tất cả các câu trả lời');
+                    return false;
+                }
+            }
+
+            // Tạo FormData object
+            const formData = new FormData(this);
+
+            // Xóa tất cả input hidden isCorrect và option_labels cũ
+            formData.delete('isCorrect');
+            formData.delete('option_labels');
+            formData.delete('answers');
+
+            // Thêm lại các giá trị mới cho câu hỏi trắc nghiệm
+            if (questionType === 'multiple_choice') {
+                $('.answer-option').each(function(index) {
+                    const answerText = $(this).find('input[type="text"]').val().trim();
+                    const optionLabel = $(this).find('.option-label').text();
+                    const isChecked = $(this).find('.answer-checkbox').prop('checked');
+
+                    formData.append('answers', answerText);
+                    formData.append('option_labels', optionLabel);
+                    formData.append('isCorrect', isChecked ? "1" : "0");
+                });
+            }
+
+            // Log form data trước khi gửi
+            console.log('Form data:', {
+                action: formData.get('action'),
+                assignmentID: formData.get('assignmentID'),
+                courseID: formData.get('courseID'),
+                questionType: formData.get('questionType'),
+                questionText: formData.get('questionText'),
+                questionMark: formData.get('questionMark'),
+                answers: formData.getAll('answers'),
+                option_labels: formData.getAll('option_labels'),
+                isCorrect: formData.getAll('isCorrect')
+            });
+
+            // Hiển thị loading
+            $('.loading').show();
+
+            // Gửi request bằng AJAX
+            $.ajax({
+                url: 'edit-assignment',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $('.loading').hide();
+                    try {
+                        if (typeof response === 'string') {
+                            response = JSON.parse(response);
+                        }
+                        if (response.success) {
+                            // Đóng modal
+                            $('#addQuestionModal').css('display', 'none');
+                            document.body.style.overflow = '';
+                            // Reload trang
+                            location.reload();
+                        } else {
+                            alert(response.message || 'Có lỗi xảy ra khi thêm câu hỏi');
+                        }
+                    } catch (e) {
+                        console.error('Error parsing response:', e);
+                        alert('Có lỗi xảy ra khi xử lý phản hồi từ server');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('.loading').hide();
+                    console.error('Error:', error);
+                    console.error('Response:', xhr.responseText);
+
+                    let errorMessage = 'Có lỗi xảy ra khi thêm câu hỏi';
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.message) {
+                            errorMessage = response.message;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing error response:', e);
+                    }
+
+                    alert(errorMessage);
+                }
+            });
         });
 
         // Xử lý thêm lựa chọn mới trong modal chỉnh sửa
@@ -911,49 +1092,6 @@
                 }
             });
         });
-
-        // Phân trang
-        const itemsPerPage = 12;
-        let currentPage = 1;
-        const totalItems = $('.question-item').length;
-        const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-        function updatePagination() {
-            // Cập nhật trạng thái nút Previous/Next
-            $('#prevPage').parent().toggleClass('disabled', currentPage === 1);
-            $('#nextPage').parent().toggleClass('disabled', currentPage === totalPages);
-            
-            // Cập nhật số trang hiện tại
-            $('#currentPage').text(currentPage);
-
-            // Hiển thị/ẩn các câu hỏi theo trang
-            $('.question-item').each(function(index) {
-                const start = (currentPage - 1) * itemsPerPage;
-                const end = start + itemsPerPage;
-                $(this).toggle(index >= start && index < end);
-            });
-        }
-
-        // Xử lý sự kiện click nút Previous
-        $('#prevPage').click(function(e) {
-            e.preventDefault();
-            if (currentPage > 1) {
-                currentPage--;
-                updatePagination();
-            }
-        });
-
-        // Xử lý sự kiện click nút Next
-        $('#nextPage').click(function(e) {
-            e.preventDefault();
-            if (currentPage < totalPages) {
-                currentPage++;
-                updatePagination();
-            }
-        });
-
-        // Khởi tạo phân trang
-        updatePagination();
     });
 </script>
 </body>
