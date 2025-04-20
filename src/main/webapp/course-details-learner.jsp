@@ -593,13 +593,13 @@
                                     <span class="btn btn-secondary w-50 disabled">
                                         <i class="bi bi-check-circle me-2"></i>Đã tham gia
                                     </span>
-                                    <a href="course-content?courseID=${course.courseID}" class="btn btn-success w-50">
+                                    <a href="learn-course?courseID=${course.courseID}" class="btn btn-success w-50">
                                         <i class="bi bi-play-fill me-2"></i>Vào học
                                     </a>
                                 </div>
                             </c:when>
                             <c:when test="${not empty sessionScope.learner && course.purchased}">
-                                <a href="course-content?courseID=${course.courseID}" class="btn btn-success w-100 mb-3">
+                                <a href="learn-course?courseID=${course.courseID}" class="btn btn-success w-100 mb-3">
                                     <i class="bi bi-play-fill me-2"></i>Tham gia học
                                 </a>
                             </c:when>
@@ -629,7 +629,7 @@
         <div class="row">
             <div class="col-lg-8">
                 <h4 class="mb-4">Đánh giá và bình luận</h4>
-                
+
                 <!-- Rating Summary -->
                 <div class="card mb-4">
                     <div class="card-body">
@@ -654,7 +654,7 @@
                                             </div>
                                             <div class="progress flex-grow-1" style="height: 6px;">
                                                 <c:set var="ratingPercentage" value="${course.ratingCount > 0 ? (course.ratingCount * (6-star) / course.ratingCount) : 0}" />
-                                                <div class="progress-bar bg-warning" role="progressbar" 
+                                                <div class="progress-bar bg-warning" role="progressbar"
                                                      style="width: ${ratingPercentage * 100}%">
                                                 </div>
                                             </div>
@@ -913,7 +913,7 @@
             // Xử lý gửi đánh giá
             $('#reviewForm').submit(function(e) {
                 e.preventDefault();
-                
+
                 const rating = $('#ratingValue').val();
                 const comment = $('#comment').val();
                 const courseID = ${course.courseID};
@@ -954,7 +954,7 @@
             const $reviewCards = $('.review-card');
             const $loadMoreBtn = $('#load-more-reviews');
             const $showLessBtn = $('#show-less-reviews');
-            
+
             if ($reviewCards.length > reviewsPerPage) {
                 $reviewCards.slice(reviewsPerPage).addClass('review-hidden');
             }
@@ -969,7 +969,7 @@
                 $reviewCards.slice(reviewsPerPage).slideUp(300);
                 $(this).addClass('d-none');
                 $loadMoreBtn.removeClass('d-none');
-                
+
                 // Scroll back to reviews section
                 $('html, body').animate({
                     scrollTop: $('.reviews-list').offset().top - 100
@@ -996,7 +996,7 @@
                                 button.addClass('enrolled');
                                 // Chuyển hướng đến trang nội dung khóa học sau 1 giây
                                 setTimeout(function() {
-                                    window.location.href = 'course-content?courseID=' + courseID;
+                                    window.location.href = 'learn-course?courseID=' + courseID;
                                 }, 1000);
                             } else {
                                 showMessage(response.message, 'error');

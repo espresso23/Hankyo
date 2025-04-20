@@ -1,0 +1,201 @@
+:root {
+    --primary-color: #ff8fa3;  /* Hồng nhạt */
+    --primary-light: #6cb4ff;  /* Xanh dương nhạt */
+    --secondary-color: #ffd93d; /* Vàng nhạt */
+    --secondary-light: #ff9b44; /* Cam nhạt */
+    --success-color: #20bf6b;  /* Xanh lá */
+    --success-light: #26de81;  /* Xanh lá nhạt */
+    --danger-color: #ff6b6b;   /* Đỏ */
+    --danger-light: #ff4757;   /* Đỏ đậm */
+}
+
+body {
+    background: linear-gradient(135deg, #ffd1d1 0%, #ffd1d1 25%, #fff5f5 50%, #e8f0ff 75%, #d4e4ff 100%);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+}
+
+.course-card {
+    height: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.card-img-container {
+    position: relative;
+    padding-top: 56.25%; /* 16:9 Aspect Ratio */
+    overflow: hidden;
+}
+
+.card-img-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.course-card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+.card-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.card-text {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.course-stats {
+    margin-top: auto;
+}
+
+.progress {
+    height: 6px;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+    margin: 0.5rem 0;
+}
+
+.progress-bar {
+    background: linear-gradient(45deg, #ff8fa3, #6cb4ff);
+    border-radius: 3px;
+}
+
+.badge {
+    padding: 0.5em 0.8em;
+    font-weight: 500;
+    border-radius: 20px;
+}
+
+.bg-secondary {
+    background: linear-gradient(45deg, #ffd93d, #ff9b44) !important;
+}
+
+.btn-success {
+    background: linear-gradient(45deg, #20bf6b, #26de81);
+    border: none;
+    padding: 0.5rem 1.5rem;
+    border-radius: 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(32, 191, 107, 0.3);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+.empty-state h3 {
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.empty-state .btn-primary {
+    background: linear-gradient(45deg, #ff8fa3, #6cb4ff);
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.empty-state .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 143, 163, 0.3);
+}
+
+.rating {
+    color: #ff8fa3;
+    font-weight: 600;
+}
+
+.stars {
+    color: #ffd700;
+    margin: 0 0.25rem;
+}
+
+.rating-count {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.progress-info {
+    margin: 1rem 0;
+}
+
+.progress-info small {
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.progress-info .progress {
+    margin-top: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .card-title {
+        font-size: 1rem;
+    }
+    
+    .card-text {
+        font-size: 0.85rem;
+    }
+    
+    .btn-success {
+        padding: 0.4rem 1.2rem;
+        font-size: 0.9rem;
+    }
+} 

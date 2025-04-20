@@ -8,50 +8,15 @@
     <title>Khóa học của tôi</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="asset/css/courseView.css">
-    <style>
-        .course-card {
-            transition: transform 0.3s;
-            margin-bottom: 20px;
-        }
-        .course-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        .progress {
-            height: 10px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 50px 20px;
-        }
-
-        .empty-state i {
-            font-size: 48px;
-            color: #6c757d;
-            margin-bottom: 20px;
-        }
-
-        .progress-bar {
-            height: 5px;
-            background-color: #e9ecef;
-            border-radius: 3px;
-            margin-top: 10px;
-        }
-
-        .progress-value {
-            height: 100%;
-            background-color: #28a745;
-            border-radius: 3px;
-        }
-    </style>
+    <link rel="stylesheet" href="asset/css/myCourses.css">
 </head>
 <body>
 <c:import url="header.jsp"/>
 
 <div class="container my-4">
-    <h2 class="mb-4">Khóa học của tôi</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Khóa học của tôi</h2>
+    </div>
 
     <c:choose>
         <c:when test="${empty courses}">
@@ -69,18 +34,20 @@
                 <c:forEach items="${courses}" var="course">
                     <div class="col">
                         <div class="card course-card h-100">
-                            <img src="${course.courseImg}" class="card-img-top" alt="${course.courseTitle}" onclick="window.location.href = '${pageContext.request.contextPath}/learn-course?courseID=${course.courseID}&contentID=${course.firstContentID}'">
+                            <div class="card-img-container">
+                                <img src="${course.courseImg}" class="card-img-top" alt="${course.courseTitle}">
+                            </div>
                             <div class="card-body d-flex flex-column">
                                 <h5 class="card-title">${course.courseTitle}</h5>
-                                <p class="card-text">${course.courseDescription}</p>
-                                <div class="mt-auto">
+                                <p class="card-text text-truncate">${course.courseDescription}</p>
+                                
+                                <div class="course-stats">
                                     <div class="d-flex align-items-center mb-2">
                                         <span class="badge bg-secondary me-2">${course.category.categoryName}</span>
-                                        <span class="rating me-1">
-                                                <fmt:formatNumber value="${course.rating}" type="number"
-                                                                  maxFractionDigits="1"/>
-                                            </span>
-                                        <div class="stars me-1">
+                                        <div class="rating me-2">
+                                            <fmt:formatNumber value="${course.rating}" type="number" maxFractionDigits="1"/>
+                                        </div>
+                                        <div class="stars me-2">
                                             <c:forEach begin="1" end="5" var="i">
                                                 <i class="fas fa-star${i <= course.rating ? ' text-warning' : ' text-muted'}"></i>
                                             </c:forEach>
@@ -88,27 +55,24 @@
                                         <span class="rating-count">(${course.ratingCount})</span>
                                     </div>
 
-                                    <!-- Progress Bar -->
-                                    <div class="progress-info mb-2">
+                                    <div class="progress-info">
                                         <div class="d-flex justify-content-between">
                                             <small>Tiến độ học tập</small>
                                             <small>${course.progress}%</small>
                                         </div>
-                                        <div class="progress-bar">
-                                            <div class="progress-value" style="width: ${course.progress}%"></div>
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" style="width: ${course.progress}%"></div>
                                         </div>
                                     </div>
 
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                                <span class="text-muted">
-                                                    <i class="fas fa-users me-1"></i>${course.learnersCount} học viên
-                                                </span>
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <div class="text-muted">
+                                            <i class="fas fa-users me-1"></i>${course.learnersCount} học viên
                                         </div>
-                                        <button class="btn btn-success" onclick="window.location.href = '${pageContext.request.contextPath}/learn-course?courseID=${course.courseID}&contentID=${course.firstContentID}'">
+                                        <a href="learn-course?courseID=${course.courseID}&contentID=${course.firstContentID}" 
+                                           class="btn btn-success">
                                             <i class="fas fa-play me-2"></i>Tiếp tục học
-                                        </button>
-
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -118,11 +82,11 @@
             </div>
         </c:otherwise>
     </c:choose>
-    </div>
+</div>
 
 <c:import url="footer.jsp"/>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html> 

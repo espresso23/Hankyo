@@ -1,6 +1,56 @@
+:root {
+    --primary-color: #ff8fa3;  /* Hồng nhạt */
+    --primary-light: #6cb4ff;  /* Xanh dương nhạt */
+    --secondary-color: #ffd93d; /* Vàng nhạt */
+    --secondary-light: #ff9b44; /* Cam nhạt */
+    --success-color: #20bf6b;  /* Xanh lá */
+    --success-light: #26de81;  /* Xanh lá nhạt */
+    --danger-color: #ff6b6b;   /* Đỏ */
+    --danger-light: #ff4757;   /* Đỏ đậm */
+}
+
 body {
+    background: linear-gradient(135deg, #ffd1d1 0%, #ffd1d1 25%, #fff5f5 50%, #e8f0ff 75%, #d4e4ff 100%);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
     font-family: 'Helvetica Neue', sans-serif;
-    background-color: #f9f9f9;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #ff8fa3, #6cb4ff);
+    border: none;
+}
+
+.btn-success {
+    background: linear-gradient(45deg, #20bf6b, #26de81);
+    border: none;
+}
+
+.btn-danger {
+    background: linear-gradient(45deg, #ff6b6b, #ff4757);
+    border: none;
+}
+
+.bg-primary {
+    background: linear-gradient(45deg, #ff8fa3, #6cb4ff) !important;
+}
+
+.bg-success {
+    background: linear-gradient(45deg, #20bf6b, #26de81) !important;
+}
+
+.bg-secondary {
+    background: linear-gradient(45deg, #ffd93d, #ff9b44) !important;
 }
 
 /* Course Image */
@@ -25,31 +75,54 @@ body {
 
 /* Accordion improvements */
 .accordion-item {
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    margin-bottom: 0.5rem;
-    border-radius: 6px !important;
+    border: none;
+    background: transparent;
+}
+
+.accordion-item:not(:last-child) {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .accordion-button {
+    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.9);
+    font-size: 0.95rem;
+    color: #333;
     font-weight: 500;
-    padding: 1rem 1.25rem;
 }
 
 .accordion-button:not(.collapsed) {
-    background-color: rgba(0, 123, 255, 0.05);
-    color: #0d6efd;
+    background: rgba(255, 143, 163, 0.1);
+    color: #ff8fa3;
+}
+
+.accordion-button::after {
+    background-size: 16px;
+    width: 16px;
+    height: 16px;
+    margin-left: 10px;
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border-color: rgba(0, 0, 0, 0.05);
 }
 
 /* Content type icons */
 .content-icon {
+    font-size: 1.1rem;
     width: 24px;
     height: 24px;
-    margin-right: 10px;
-    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 143, 163, 0.1);
+    color: #ff8fa3;
 }
 
 .accordion-button:not(.collapsed) .content-icon {
-    color: #0d6efd;
+    color: #ff8fa3;
 }
 
 /* Instructor card */
@@ -68,19 +141,23 @@ body {
 }
 
 .message {
-    padding: 10px 20px;
-    margin: 5px 0;
-    border-radius: 4px;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    border-radius: 10px;
     color: white;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    animation: slideIn 0.5s ease;
+    backdrop-filter: blur(10px);
 }
 
 .message.success {
-    background-color: #28a745;
+    background: linear-gradient(45deg, #20bf6b, #26de81);
 }
 
 .message.error {
-    background-color: #dc3545;
+    background: linear-gradient(45deg, #ff6b6b, #ff4757);
 }
 
 /* Loading spinner */
@@ -107,16 +184,26 @@ body {
 
 /* Nút hiển thị thêm */
 #show-more-content, #show-less-content {
-    padding: 8px 16px;
-    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    padding: 8px 20px;
+    border-radius: 20px;
+    background: rgba(255, 143, 163, 0.1);
+    color: #ff8fa3;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+#show-more-content:hover, #show-less-content:hover {
+    background: rgba(255, 143, 163, 0.2);
+    transform: translateY(-1px);
 }
 
 /* Style mỗi phần content để thêm thời lượng */
 .content-duration {
     font-size: 0.85rem;
-    color: #6c757d;
-    margin-left: auto;
-    padding-left: 10px;
+    color: #666;
+    white-space: nowrap;
+    margin-left: 15px;
 }
 
 /* Improved accordion appearance */
@@ -133,14 +220,6 @@ body {
 
 .accordion-button:hover {
     background-color: rgba(0, 123, 255, 0.03);
-}
-
-.content-duration {
-    font-size: 0.85rem;
-    color: #6c757d;
-    margin-left: auto;
-    padding-left: 15px;
-    white-space: nowrap;
 }
 
 .content-info {
@@ -207,11 +286,17 @@ body {
 
 .rating-star:hover,
 .rating-star.text-warning {
-    color: #ffc107;
+    color: #ff8fa3;
 }
 
 .rating-bars .progress {
-    background-color: #e9ecef;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+}
+
+.rating-bars .progress-bar {
+    background: linear-gradient(45deg, #ff8fa3, #6cb4ff);
+    border-radius: 8px;
 }
 
 .review-form textarea {
@@ -241,7 +326,7 @@ body {
     .rating-bars {
         margin-top: 1rem;
     }
-    
+
     .reviews-list .card {
         margin-bottom: 1rem;
     }
@@ -274,3 +359,191 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
+
+/* Instructor section styling */
+.instructor-section {
+    margin: 2rem 0;
+}
+
+.instructor-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem 0;
+}
+
+.instructor-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(255, 143, 163, 0.2);
+}
+
+.instructor-details h5 {
+    color: #333;
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+}
+
+.instructor-details .certificate {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* Price section styling */
+.price-section {
+    margin-bottom: 1.5rem;
+}
+
+.current-price {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #ff8fa3;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.current-price .currency {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #666;
+}
+
+.original-price {
+    font-size: 1rem;
+    color: #999;
+    text-decoration: line-through;
+    margin-right: 0.5rem;
+}
+
+.discount-badge {
+    background: linear-gradient(45deg, #ff6b6b, #ff4757);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Course features list */
+.course-features {
+    margin: 1.5rem 0;
+    padding: 0;
+    list-style: none;
+}
+
+.course-features li {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 0.8rem;
+    color: #555;
+    font-size: 0.95rem;
+}
+
+.course-features i {
+    color: #20bf6b;
+    font-size: 1.1rem;
+}
+
+.last-updated {
+    font-size: 0.85rem;
+    color: #777;
+    margin-top: 1rem;
+}
+
+/* Video container styling */
+.video-container {
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 15px;
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.course-video {
+    width: 100%;
+    max-height: 200px;
+    object-fit: cover;
+}
+
+/* Image Preview Styling */
+.image-preview-container {
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 15px;
+    background: rgba(0, 0, 0, 0.03);
+    text-align: center;
+}
+
+.content-image {
+    max-width: 100%;
+    height: auto;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Hide duration for images */
+[data-content-type="image"] .content-duration {
+    display: none;
+}
+
+/* Content meta styling */
+.content-meta {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.content-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.content-meta-item i {
+    color: #ff8fa3;
+    font-size: 0.9rem;
+}
+
+/* Text warning styling */
+.text-warning {
+    color: #ff8fa3 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .video-container,
+    .image-preview-container {
+        width: 50%;
+    }
+    .video-container {
+        padding-top: 28.125%; /* 50% * (9/16) */
+    }
+}
+
+@media (max-width: 768px) {
+    .video-container,
+    .image-preview-container {
+        width: 80%;
+    }
+    .video-container {
+        padding-top: 45%; /* 80% * (9/16) */
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
