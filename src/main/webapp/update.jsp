@@ -10,6 +10,7 @@
     <script src="${pageContext.request.contextPath}/asset/update.js" defer></script>
 </head>
 <body>
+<jsp:include page="header.jsp"></jsp:include>
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
 
@@ -18,10 +19,7 @@
         background-image: url("asset/png/background/background.png");
         margin: 0;
         padding: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
+        min-height: 100vh;
         background-attachment: fixed;
     }
 
@@ -36,6 +34,7 @@
         transition: transform 0.3s, box-shadow 0.3s ease-in-out;
         border: 2px solid #8EC5FC;
         animation: fadeIn 0.5s ease-in-out;
+        margin: 100px auto 50px auto;
     }
 
     .section {
@@ -83,27 +82,43 @@
     .profile-picture {
         margin-bottom: 20px;
         text-align: center;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
     }
 
     .profile-picture img {
         border-radius: 50%;
-        width: 130px;
-        height: 130px;
+        width: 150px;
+        height: 150px;
         object-fit: cover;
         border: 4px solid #FFAFBD;
         cursor: pointer;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: block;
+        margin: 0 auto;
+        background-color: #f0f0f0;
     }
 
     .profile-picture img:hover {
         transform: scale(1.05);
-        box-shadow: 0 0 10px rgba(255, 175, 189, 0.7);
+        box-shadow: 0 0 15px rgba(255, 175, 189, 0.7);
+    }
+
+    .profile-picture img[src=""] {
+        background-image: url('${pageContext.request.contextPath}/asset/png/avatar/default-avatar.png');
+        background-size: cover;
+        background-position: center;
     }
 </style>
 
 <div class="profile-container">
     <div class="profile-picture" onclick="openOverlay('avatar')">
-        <img src="${pageContext.request.contextPath}/${user.avatar}?rand=${System.currentTimeMillis()}" alt="Avatar">
+        <img src="${pageContext.request.contextPath}/${user.avatar != null ? user.avatar : 'asset/png/avatar/monkey.jpg'}?t=${System.currentTimeMillis()}" 
+             alt="Avatar" 
+             onerror="this.src='${pageContext.request.contextPath}/asset/png/avatar/monkey.jpg'">
     </div>
     <div class="section">
         <div class="section-content">
@@ -214,6 +229,35 @@
 
     .overlay-buttons button:hover {
         background-color: #FFAFBD;
+    }
+
+    .loading-indicator {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(255, 255, 255, 0.9);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        z-index: 10000;
+    }
+
+    .loading-indicator::after {
+        content: "";
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        margin-left: 10px;
+        border: 3px solid #8EC5FC;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
     }
 
     @keyframes slideIn {

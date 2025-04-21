@@ -316,13 +316,14 @@ public class UserDAO {
         return user;
     }
 
-    public void updatePassword(User user, String newPassword) throws SQLException {
+    public boolean updatePassword(User user, String newPassword) throws SQLException {
         String hashPass = Encrypt.hashPassword(newPassword);
         String sql = "UPDATE [User] SET password = ? WHERE userID = ?";
         try (Connection con = DBConnect.getInstance().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, hashPass);
             ps.setInt(2, user.getUserID());
-            ps.executeUpdate();
+            int rowsUpdated = ps.executeUpdate();
+            return rowsUpdated > 0;
         }
     }
 

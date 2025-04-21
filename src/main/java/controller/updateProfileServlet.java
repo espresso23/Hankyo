@@ -13,7 +13,7 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.util.logging.Logger;
 
-@WebServlet("/update")
+@WebServlet("/update-profile")
 @MultipartConfig(
         fileSizeThreshold = 1024 * 1024 * 2, // 2MB
         maxFileSize = 1024 * 1024 * 10,      // 10MB
@@ -39,7 +39,7 @@ public class updateProfileServlet extends HttpServlet {
                 }
             } catch (NumberFormatException e) {
                 request.setAttribute("errorMsg", "User ID không hợp lệ.");
-                request.getRequestDispatcher("courseHeader.jsp").forward(request, response);
+                request.getRequestDispatcher("update.jsp").forward(request, response);
                 return;
             }
         }
@@ -48,13 +48,13 @@ public class updateProfileServlet extends HttpServlet {
             try {
                 user = userDAO.getUserByID(userID);
                 request.setAttribute("user", user);
-                request.getRequestDispatcher("updateprofile.jsp").forward(request, response);
+                request.getRequestDispatcher("update.jsp").forward(request, response);
             } catch (SQLException e) {
                 throw new ServletException("Lỗi truy vấn dữ liệu người dùng", e);
             }
         } else {
             request.setAttribute("errorMsg", "User ID bị thiếu.");
-            request.getRequestDispatcher("courseHeader.jsp").forward(request, response);
+            request.getRequestDispatcher("update.jsp").forward(request, response);
         }
     }
 
@@ -91,7 +91,7 @@ public class updateProfileServlet extends HttpServlet {
                 user = userDAO.getUserByID(userID);
             } catch (SQLException e) {
                 session.setAttribute("errorMsg", "Error fetching user data: " + e.getMessage());
-                response.sendRedirect("updateprofile.jsp");
+                response.sendRedirect("update.jsp");
                 return;
             }
 
@@ -116,39 +116,101 @@ public class updateProfileServlet extends HttpServlet {
 
             // Handle file upload
             if (filePart != null && filePart.getSize() > 0) {
-                String fileName = System.currentTimeMillis() + "_" + extractFileName(filePart);
-                String appPath = getServletContext().getRealPath("");
-                String savePath = appPath + File.separator + SAVE_DIR;
+                String avatarPath = null;
+                try {
+                    // Validate file type
+                    String fileName = filePart.getSubmittedFileName();
+                    if (fileName == null || !fileName.matches(".*\\.(png|jpg|jpeg|gif|webp)$")) {
+                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        response.getWriter().write("Invalid file type. Only images (png, jpg, jpeg, gif, webp) are allowed.");
+                        return;
+                    }
 
-                File fileSaveDir = new File(savePath);
-                if (!fileSaveDir.exists()) {
-                    fileSaveDir.mkdir();
+                    // Generate unique filename
+                    String uniqueFileName = System.currentTimeMillis() + "_" + fileName.replaceAll("[^\\w.-]", "_");
+                    
+                    // Get the webapp root directory
+                    String appPath = getServletContext().getRealPath("/");
+                    String savePath = appPath + SAVE_DIR;
+                    
+                    // Create upload directory if it doesn't exist
+                    File fileSaveDir = new File(savePath);
+                    if (!fileSaveDir.exists()) {
+                        boolean created = fileSaveDir.mkdirs();
+                        if (!created) {
+                            throw new IOException("Failed to create upload directory");
+                        }
+                    }
+
+                    // Save the file
+                    String filePath = savePath + File.separator + uniqueFileName;
+                    filePart.write(filePath);
+                    
+                    // Use relative path for web access
+                    avatarPath = SAVE_DIR + "/" + uniqueFileName;
+                    user.setAvatar(avatarPath);
+                    isUpdated = true;
+                    
+                    // Update database
+                    if (isUpdated) {
+                        try {
+                            userDAO.updateUserProfile(user);
+                            // Update session with new avatar
+                            session.setAttribute("user", user);
+                            session.setAttribute("avatar", avatarPath);
+                            // Send back the avatar path for immediate update
+                            response.setContentType("text/plain");
+                            // Return the full context path for the image
+                            String contextPath = request.getContextPath();
+                            // Ensure the path uses forward slashes
+                            String webPath = contextPath + "/" + avatarPath.replace("\\", "/");
+                            response.getWriter().write(webPath);
+                            return;
+                        } catch (SQLException e) {
+                            throw new SQLException("Failed to update user profile in database: " + e.getMessage());
+                        }
+                    }
+                    
+                } catch (Exception e) {
+                    logger.severe("Error processing avatar upload: " + e.getMessage());
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    response.getWriter().write("Error processing avatar upload: " + e.getMessage());
+                    return;
                 }
-
-                String filePath = savePath + File.separator + fileName;
-                filePart.write(filePath);
-                user.setAvatar(SAVE_DIR + File.separator + fileName);
-                isUpdated = true;
             }
 
             // Handle password update
             if (newPassword != null && !newPassword.isEmpty()) {
-                if (!userDAO.verifyPassword(user, oldPassword)) {
-                    session.setAttribute("errorMsg", "Mật khẩu cũ không đúng.");
-                    response.sendRedirect("updateprofile.jsp");
-                    return;
-                }
-                if (!newPassword.equals(reNewPassword)) {
-                    session.setAttribute("errorMsg", "Mật khẩu mới và nhập lại mật khẩu không khớp.");
-                    response.sendRedirect("updateprofile.jsp");
-                    return;
-                }
                 try {
-                    userDAO.updatePassword(user, newPassword);
-                    isUpdated = true;
+                    // Verify old password
+                    if (!userDAO.verifyPassword(user, oldPassword)) {
+                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        response.getWriter().write("Mật khẩu cũ không đúng");
+                        return;
+                    }
+
+                    // Verify new password match
+                    if (!newPassword.equals(reNewPassword)) {
+                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        response.getWriter().write("Mật khẩu mới không khớp");
+                        return;
+                    }
+
+                    // Update password
+                    boolean success = userDAO.updatePassword(user, newPassword);
+                    if (!success) {
+                        throw new SQLException("Failed to update password");
+                    }
+
+                    // Send success response
+                    response.setContentType("text/plain");
+                    response.getWriter().write("success");
+                    return;
+
                 } catch (SQLException e) {
-                    session.setAttribute("errorMsg", "Lỗi cập nhật mật khẩu: " + e.getMessage());
-                    response.sendRedirect("updateprofile.jsp");
+                    logger.severe("Error updating password: " + e.getMessage());
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    response.getWriter().write("Lỗi cập nhật mật khẩu: " + e.getMessage());
                     return;
                 }
             }
@@ -161,10 +223,10 @@ public class updateProfileServlet extends HttpServlet {
                 } else {
                     session.setAttribute("msg", "Không có thay đổi nào được lưu.");
                 }
-                response.sendRedirect("courseHeader.jsp");
+                response.sendRedirect("update.jsp");
             } catch (Exception e) {
                 session.setAttribute("errorMsg", "Lỗi cập nhật hồ sơ: " + e.getMessage());
-                response.sendRedirect("updateprofile.jsp");
+                response.sendRedirect("update.jsp");
             }
         }
 
