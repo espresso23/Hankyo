@@ -104,6 +104,120 @@
       width: 50px;
     }
   </style>
+  <style>
+    /* Mobile Menu Button Styles - New Class Name */
+    .mobile-menu-btn {
+      position: fixed;
+      top: 15%;
+      right: 96%;
+      z-index: 1000;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(317deg, #ffc676, #eb8be6);
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    .mobile-menu-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .mobile-menu-btn:active {
+      transform: translateY(1px);
+    }
+
+    .mobile-menu-line {
+      width: 24px;
+      height: 2px;
+      background-color: white;
+      margin: 3px 0;
+      transition: all 0.3s ease;
+      transform-origin: center;
+    }
+
+    .mobile-menu-btn.active .mobile-menu-line:nth-child(1) {
+      transform: translateY(8px) rotate(45deg);
+    }
+
+    .mobile-menu-btn.active .mobile-menu-line:nth-child(2) {
+      opacity: 0;
+    }
+
+    .mobile-menu-btn.active .mobile-menu-line:nth-child(3) {
+      transform: translateY(-8px) rotate(-45deg);
+    }
+
+    /* Vertical Menu Styles - Also renamed to avoid conflict */
+    .mobile-vertical-menu {
+      position: fixed;
+      top: 15%;
+      right: 80%;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      padding: 15px 0;
+      z-index: 999;
+      display: none;
+      width: 220px;
+      overflow: hidden;
+      transform-origin: top right;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .mobile-menu-item {
+      padding: 12px 20px;
+      transition: all 0.2s ease;
+    }
+
+    .mobile-menu-item:hover {
+      background-color: #f8f9fa;
+    }
+
+    .mobile-menu-item a {
+      color: #333;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+    }
+
+    .mobile-menu-item a:before {
+      content: "";
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: linear-gradient(135deg, #6e8efb, #a777e3);
+      border-radius: 50%;
+      margin-right: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .mobile-menu-item:hover a:before {
+      transform: scale(1.5);
+    }
+  </style>
+
 </head>
 <body>
 <header>
@@ -128,7 +242,7 @@
   </button>
   <img class="logo" src="${pageContext.request.contextPath}/asset/png/loginPage/logo.png" alt="Logo" onclick="window.location.href='courseHeader.jsp'">
   <div class="navbarContainer">
-    <div class="navbarContent"><a href="course">Khóa Học</a></div>
+    <div class="navbarContent"><a href="courses">Khóa Học</a></div>
     <div class="navbarContent"><a href="/about.html">Giảng Viên</a></div>
     <div class="navbarContent"><a href="quizlet">Cộng Đồng</a></div>
     <div class="navbarContent"><a href="addFlashCard">Tài Liệu</a></div>
@@ -173,14 +287,18 @@
 
 
 <!-- Menu Button and Vertical Menu -->
-<button class="menu-btn" onclick="toggleMenu()">Menu</button>
-<div class="vertical-menu" id="verticalMenu">
-  <div class="menu-item"><a href="quizlet">Flashcard</a></div>
-  <div class="menu-item"><a href="my-courses">Khóa Học Của Tôi</a></div>
-  <div class="menu-item"><a href="dictionary">Từ điển</a></div>
-  <div class="menu-item"><a href="chat">Chat</a></div>
+<!-- Menu Button and Vertical Menu -->
+<button class="mobile-menu-btn" id="mobileMenuButton" onclick="toggleMobileMenu()">
+  <span class="mobile-menu-line"></span>
+  <span class="mobile-menu-line"></span>
+  <span class="mobile-menu-line"></span>
+</button>
+<div class="mobile-vertical-menu" id="mobileVerticalMenu">
+  <div class="mobile-menu-item"><a href="quizlet">Flashcard</a></div>
+  <div class="mobile-menu-item"><a href="my-courses">Khóa Học Của Tôi</a></div>
+  <div class="mobile-menu-item"><a href="dictionary">Từ điển</a></div>
+  <div class="mobile-menu-item"><a href="chat">Chat</a></div>
 </div>
-
 <script>
   // Toggle Popup Container
   function togglePopup() {
@@ -188,11 +306,11 @@
     popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
   }
 
-  // Toggle Vertical Menu
-  function toggleMenu() {
-    const menu = document.getElementById('verticalMenu');
-    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-  }
+  // // Toggle Vertical Menu
+  // function toggleMenu() {
+  //   const menu = document.getElementById('verticalMenu');
+  //   menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+  // }
 
   // Close popup and menu when clicking outside
   document.addEventListener('click', function(event) {
@@ -206,6 +324,39 @@
     }
     if (!menu.contains(event.target) && !menuBtn.contains(event.target)) {
       menu.style.display = 'none';
+    }
+  });
+</script>
+<script>
+  // Updated function name to match new class
+  function toggleMobileMenu() {
+    const menu = document.getElementById('mobileVerticalMenu');
+    const btn = document.getElementById('mobileMenuButton');
+
+    if (menu.style.display === 'block') {
+      menu.style.animation = 'fadeIn 0.3s ease-out reverse';
+      setTimeout(() => {
+        menu.style.display = 'none';
+      }, 250);
+      btn.classList.remove('active');
+    } else {
+      menu.style.display = 'block';
+      menu.style.animation = 'fadeIn 0.3s ease-out';
+      btn.classList.add('active');
+    }
+  }
+
+  // Updated click handler with new class names
+  document.addEventListener('click', function(event) {
+    const menu = document.getElementById('mobileVerticalMenu');
+    const menuBtn = document.getElementById('mobileMenuButton');
+
+    if (!menu.contains(event.target) && !menuBtn.contains(event.target)) {
+      menu.style.animation = 'fadeIn 0.3s ease-out reverse';
+      setTimeout(() => {
+        menu.style.display = 'none';
+      }, 250);
+      menuBtn.classList.remove('active');
     }
   });
 </script>
