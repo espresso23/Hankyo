@@ -129,4 +129,29 @@ public class AssignmentTakenDAO {
         taken.setDoneQues(rs.getInt("doneQues"));
         return taken;
     }
+
+    /**
+     * Lấy thông tin bài làm theo ID
+     * 
+     * @param takenID ID của bài làm
+     * @return Đối tượng AssignmentTaken hoặc null nếu không tìm thấy
+     */
+    public AssignmentTaken getAssignmentTakenByID(int takenID) {
+        String sql = "SELECT * FROM Assignment_Taken WHERE assignTakenID = ?";
+        
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, takenID);
+            ResultSet rs = pstmt.executeQuery();
+            
+            if (rs.next()) {
+                return mapResultSetToAssignmentTaken(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
 } 

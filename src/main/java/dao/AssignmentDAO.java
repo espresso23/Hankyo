@@ -423,4 +423,29 @@ public class AssignmentDAO {
         
         return -1; // Trả về -1 nếu thêm không thành công
     }
+
+    /**
+     * Lấy tổng số câu hỏi của một bài tập
+     * 
+     * @param assignmentID ID của bài tập
+     * @return Tổng số câu hỏi
+     */
+    public int getTotalQuestionsByAssignmentID(int assignmentID) {
+        String sql = "SELECT COUNT(*) as total FROM Assignment_Question WHERE assignmentID = ?";
+        
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, assignmentID);
+            ResultSet rs = pstmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return 0;
+    }
 }

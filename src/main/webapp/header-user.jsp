@@ -128,7 +128,7 @@
   </button>
   <img class="logo" src="asset/png/loginPage/logo.png" alt="Logo" onclick="window.location.href='courseHeader.jsp'">
   <div class="navbarContainer">
-    <div class="navbarContent"><a href="/index.html">Khóa Học</a></div>
+    <div class="navbarContent"><a href="course">Khóa Học</a></div>
     <div class="navbarContent"><a href="/about.html">Giảng Viên</a></div>
     <div class="navbarContent"><a href="quizlet">Cộng Đồng</a></div>
     <div class="navbarContent"><a href="addFlashCard">Tài Liệu</a></div>

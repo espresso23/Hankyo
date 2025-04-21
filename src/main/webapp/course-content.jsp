@@ -713,6 +713,9 @@
         const button = $('.start-assignment-btn');
         const originalText = button.html();
 
+        console.log('=== DEBUG START ASSIGNMENT ===');
+        console.log('assignmentID:', assignmentID);
+
         button.html('<i class="fas fa-spinner fa-spin me-2"></i>Đang tải...');
         button.prop('disabled', true);
 
@@ -724,6 +727,9 @@
                 assignmentID: assignmentID
             },
             success: function (response) {
+                console.log('=== DEBUG RESPONSE ===');
+                console.log('Response:', response);
+                
                 if (response.success) {
                     window.location.href = 'do-assignment?assignmentID=' + assignmentID + '&assignTakenID=' + response.assignTakenID;
                 } else {
@@ -732,7 +738,12 @@
                     alert(response.message || 'Có lỗi xảy ra khi bắt đầu làm bài. Vui lòng thử lại.');
                 }
             },
-            error: function () {
+            error: function (xhr, status, error) {
+                console.log('=== DEBUG ERROR ===');
+                console.log('Error:', error);
+                console.log('Status:', status);
+                console.log('Response:', xhr.responseText);
+                
                 button.html(originalText);
                 button.prop('disabled', false);
                 alert('Có lỗi xảy ra khi kết nối đến máy chủ. Vui lòng thử lại.');

@@ -60,7 +60,7 @@ public class ViewAssignmentResultServlet extends HttpServlet {
             System.out.println("Parsed assignTakenID: " + assignTakenID); // Log 5
 
             // Lấy thông tin bài làm
-            AssignmentTaken assignmentTaken = assignmentTakenDAO.getAssignmentTakenByID(assignTakenID);
+            AssignmentTaken assignmentTaken = assignmentTakenDAO.getAssignmentTakenById(assignTakenID);
             System.out.println("AssignmentTaken found: " + (assignmentTaken != null)); // Log 6
 
             if (assignmentTaken == null) {
@@ -71,7 +71,7 @@ public class ViewAssignmentResultServlet extends HttpServlet {
             }
 
             // Lấy danh sách câu hỏi
-            List<AssignmentQuestion> questions = assignmentQuestionDAO.getQuestionsByAssignmentID(assignmentTaken.getAssignmentID());
+            List<AssignmentQuestion> questions = assignmentQuestionDAO.getQuestionsByAssignmentId(assignmentTaken.getAssignmentID());
             System.out.println("Number of questions found: " + questions.size()); // Log 8
 
             // Lấy kết quả
@@ -86,7 +86,7 @@ public class ViewAssignmentResultServlet extends HttpServlet {
             for (AssignmentQuestion question : questions) {
                 maxMark += question.getQuestionMark();
                 for (AssignmentResult result : results) {
-                    if (result.getAssignmentQuesID() == question.getAssignmentQuesID()) {
+                    if (result.getAssignmentQuesID() == question.getAssignQuesID()) {
                         totalMark += result.getMark();
                         if (result.isAnswerIsCorrect()) {
                             correctCount++;
@@ -119,10 +119,6 @@ public class ViewAssignmentResultServlet extends HttpServlet {
         } catch (NumberFormatException e) {
             System.out.println("NumberFormatException: " + e.getMessage()); // Log 12
             request.setAttribute("error", "Dữ liệu không hợp lệ");
-            request.getRequestDispatcher("/error.jsp").forward(request, response);
-        } catch (SQLException e) {
-            System.out.println("SQLException: " + e.getMessage()); // Log 13
-            request.setAttribute("error", "Lỗi khi truy vấn dữ liệu");
             request.getRequestDispatcher("/error.jsp").forward(request, response);
         } catch (Exception e) {
             System.out.println("Unexpected error: " + e.getMessage()); // Log 14

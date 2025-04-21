@@ -38,11 +38,7 @@
                     onclick="window.location.href='${pageContext.request.contextPath}/my-courses'">
                 <i class="fas fa-book-reader"></i> Khóa học của tôi
             </button>
-            
-            <button type="button" class="btn btn-info btn-custom" 
-                    onclick="window.location.href='${pageContext.request.contextPath}/update'">
-                <i class="fas fa-user-edit"></i> Thay đổi thông tin
-            </button>
+
         </div>
     </div>
 

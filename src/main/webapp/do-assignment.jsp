@@ -4,7 +4,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Làm bài tập - ${assignment.assignmentTitle}</title>
+    <title>Làm bài tập - <c:out value="${assignment.assignmentTitle}"/></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -170,36 +170,47 @@
 <body>
     <div class="assignment-container">
         <div class="assignment-header">
-            <h1>${assignment.assignmentTitle}</h1>
-            <p class="assignment-description">${assignment.description}</p>
+            <h1><c:out value="${assignment.assignmentTitle}"/></h1>
+            <p class="assignment-description"><c:out value="${assignment.description}"/></p>
         </div>
 
         <form action="submit-assignment" method="post" id="assignmentForm">
-            <input type="hidden" name="assignmentID" value="${assignment.assignmentID}">
-            <input type="hidden" name="assignTakenID" value="${taken.assignTakenID}">
+            <input type="hidden" name="assignmentID" value="<c:out value="${assignment.assignmentID}"/>">
+            <input type="hidden" name="assignTakenID" value="<c:out value="${taken.assignTakenID}"/>">
             
             <c:forEach items="${assignment.assignmentQuestions}" var="question" varStatus="loop">
-                <input type="hidden" name="assignQuesID" value="${question.assignQuesID}">
-                <div class="question-container">
+                <c:set var="questionId" value="${question.assignQuesID}"/>
+                <c:set var="questionMark" value="${question.questionMark}"/>
+                
+                <div class="question-container" data-question-id="<c:out value="${questionId}"/>">
+                    <input type="hidden" name="assignQuesID" value="<c:out value="${questionId}"/>">
+                    <input type="hidden" name="answerLabel_<c:out value="${questionId}"/>" 
+                           id="answerLabel_<c:out value="${questionId}"/>">
+                    <input type="hidden" name="isCorrect_<c:out value="${questionId}"/>" 
+                           id="isCorrect_<c:out value="${questionId}"/>">
+                    <input type="hidden" name="mark_<c:out value="${questionId}"/>" 
+                           id="mark_<c:out value="${questionId}"/>" 
+                           value="<c:out value="${questionMark}"/>">
+
                     <div class="question-header">
-                        <span class="question-number">Câu ${loop.index + 1}</span>
-                        <span class="question-mark">${question.questionMark} điểm</span>
+                        <span class="question-number">Câu <c:out value="${loop.index + 1}"/></span>
+                        <span class="question-mark"><c:out value="${questionMark}"/> điểm</span>
                     </div>
 
                     <div class="question-text">
-                        ${question.questionText}
+                        <c:out value="${question.questionText}"/>
                     </div>
 
                     <c:if test="${not empty question.questionImg || not empty question.audioFile}">
                         <div class="question-media">
                             <c:if test="${not empty question.questionImg}">
-                                <img src="${question.questionImg}" alt="Question Image" class="question-image">
+                                <img src="<c:out value="${question.questionImg}"/>" alt="Question Image" class="question-image">
                             </c:if>
                             
                             <c:if test="${not empty question.audioFile}">
                                 <div class="audio-container">
                                     <audio controls class="audio-player">
-                                        <source src="${question.audioFile}" type="audio/mpeg">
+                                        <source src="<c:out value="${question.audioFile}"/>" type="audio/mpeg">
                                         Trình duyệt của bạn không hỗ trợ phát audio.
                                     </audio>
                                 </div>
@@ -211,15 +222,20 @@
                         <c:choose>
                             <c:when test="${question.questionType eq 'multiple_choice'}">
                                 <c:forEach items="${question.answers}" var="answer">
+                                    <c:set var="optionLabel" value="${answer.optionLabel}"/>
+                                    <c:set var="answerText" value="${answer.answerText}"/>
+                                    <c:set var="isCorrect" value="${answer.correct}"/>
+                                    
                                     <div class="option-item">
                                         <label class="option-label">
                                             <input type="radio" 
-                                                   name="answer_${question.questionID}" 
-                                                   value="${answer.optionLabel}"
-                                                   class="option-input" 
+                                                   name="answer_<c:out value="${question.questionID}"/>" 
+                                                   value="<c:out value="${optionLabel}"/>"
+                                                   class="option-input"
+                                                   data-is-correct="<c:out value="${isCorrect}"/>"
                                                    >
                                             <span class="option-text">
-                                                ${answer.optionLabel}. ${answer.answerText}
+                                                <c:out value="${optionLabel}"/>. <c:out value="${answerText}"/>
                                             </span>
                                         </label>
                                     </div>
@@ -227,7 +243,7 @@
                             </c:when>
                             <c:otherwise>
                                 <div class="form-group">
-                                    <textarea name="answer_${question.questionID}" 
+                                    <textarea name="answer_<c:out value="${question.questionID}"/>" 
                                               class="form-control" 
                                               rows="4" 
                                               placeholder="Nhập câu trả lời của bạn"
@@ -246,8 +262,8 @@
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div class="progress-info">
-                        <span class="me-3">Đã trả lời: <span id="answeredCount">0</span>/<span id="totalQuestions">${assignment.assignmentQuestions.size()}</span></span>
-                        <span>Chưa trả lời: <span id="unansweredCount">${assignment.assignmentQuestions.size()}</span></span>
+                        <span class="me-3">Đã trả lời: <span id="answeredCount">0</span>/<span id="totalQuestions"><c:out value="${assignment.assignmentQuestions.size()}"/></span></span>
+                        <span>Chưa trả lời: <span id="unansweredCount"><c:out value="${assignment.assignmentQuestions.size()}"/></span></span>
                     </div>
                     <button type="submit" class="submit-btn" id="submitBtn">
                         <i class="fas fa-paper-plane"></i>
@@ -263,7 +279,7 @@
     <script>
         $(document).ready(function() {
             let answeredQuestions = 0;
-            const totalQuestions = ${assignment.assignmentQuestions.size()};
+            const totalQuestions = <c:out value="${assignment.assignmentQuestions.size()}"/>;
             const unansweredQuestions = totalQuestions;
 
             // Cập nhật số câu đã trả lời và chưa trả lời
@@ -275,17 +291,25 @@
             // Kiểm tra khi người dùng thay đổi câu trả lời
             $('input[type="radio"], textarea').on('change', function() {
                 const questionContainer = $(this).closest('.question-container');
-                const questionId = questionContainer.find('.question-number').text();
-                const isAnswered = questionContainer.find('input[type="radio"]:checked, textarea').length > 0;
-                
-                if (isAnswered) {
-                    answeredQuestions++;
-                } else {
-                    answeredQuestions--;
-                }
+                const questionId = questionContainer.data('question-id');
+                const isAnswered = questionContainer.find('input[type="radio"]:checked, textarea').filter(function() {
+                    return $(this).val().trim() !== '';
+                }).length > 0;
+
+                // Đếm lại tất cả các câu đã trả lời
+                answeredQuestions = $('.question-container').filter(function() {
+                    return $(this).find('input[type="radio"]:checked, textarea').filter(function() {
+                        return $(this).val().trim() !== '';
+                    }).length > 0;
+                }).length;
 
                 updateQuestionCounts();
                 updateSubmitButton();
+
+                // Nếu là radio button, cập nhật các trường ẩn
+                if ($(this).is('input[type="radio"]')) {
+                    updateHiddenFields($(this));
+                }
             });
 
             function updateSubmitButton() {
@@ -300,9 +324,24 @@
                 }
             }
 
+            // Cập nhật các trường ẩn cho câu hỏi
+            function updateHiddenFields(radioElement) {
+                const questionContainer = radioElement.closest('.question-container');
+                const questionId = questionContainer.data('question-id');
+                const selectedAnswer = radioElement.val();
+                const isCorrect = radioElement.data('is-correct') === true;
+                const mark = isCorrect ? parseFloat($(`#mark_${questionId}`).val()) : 0.0;
+
+                $(`#answerLabel_${questionId}`).val(selectedAnswer);
+                $(`#isCorrect_${questionId}`).val(isCorrect.toString());
+                $(`#mark_${questionId}`).val(mark);
+            }
+
             // Kiểm tra ban đầu
             $('.question-container').each(function() {
-                if ($(this).find('input[type="radio"]:checked, textarea').length > 0) {
+                if ($(this).find('input[type="radio"]:checked, textarea').filter(function() {
+                    return $(this).val().trim() !== '';
+                }).length > 0) {
                     answeredQuestions++;
                 }
             });
@@ -311,15 +350,79 @@
 
             // Xử lý khi submit form
             $('#assignmentForm').on('submit', function(e) {
-                if (answeredQuestions === 0) {
-                    e.preventDefault();
-                    alert('Vui lòng trả lời ít nhất một câu hỏi trước khi nộp bài.');
+                e.preventDefault();
+
+                // Lấy giá trị của assignmentID và assignTakenID
+                const assignmentID = $('input[name="assignmentID"]').val();
+                const assignTakenID = $('input[name="assignTakenID"]').val();
+                
+                console.log('=== DEBUG FORM VALUES ===');
+                console.log('assignmentID:', assignmentID);
+                console.log('assignTakenID:', assignTakenID);
+
+                // Kiểm tra nếu các giá trị này là null hoặc rỗng
+                if (!assignmentID || !assignTakenID) {
+                    alert('Lỗi: Không tìm thấy thông tin bài tập. Vui lòng thử lại.');
                     return false;
                 }
-                
-                if (answeredQuestions < totalQuestions) {
-                    return confirm(`Bạn mới trả lời ${answeredQuestions}/${totalQuestions} câu hỏi. Bạn có chắc chắn muốn nộp bài không?`);
+
+                // Đảm bảo tất cả các trường ẩn được cập nhật trước khi submit
+                $('input[type="radio"]:checked').each(function() {
+                    updateHiddenFields($(this));
+                });
+
+                // Tạo object chứa dữ liệu form
+                const formData = new FormData();
+                formData.append('assignmentID', assignmentID);
+                formData.append('assignTakenID', assignTakenID);
+
+                // Thêm tất cả các câu trả lời vào formData
+                $('.question-container').each(function() {
+                    const questionId = $(this).data('question-id');
+                    formData.append('assignQuesID', questionId);
+                    
+                    const answerLabel = $(`#answerLabel_${questionId}`).val();
+                    const isCorrect = $(`#isCorrect_${questionId}`).val();
+                    const mark = $(`#mark_${questionId}`).val();
+                    
+                    formData.append(`answerLabel_${questionId}`, answerLabel || '');
+                    formData.append(`isCorrect_${questionId}`, isCorrect || 'false');
+                    formData.append(`mark_${questionId}`, mark || '0');
+                });
+
+                // Log dữ liệu để debug
+                console.log('=== Dữ liệu form trước khi gửi ===');
+                for (const pair of formData.entries()) {
+                    console.log(pair[0] + ': ' + pair[1]);
                 }
+
+                // Hiển thị cảnh báo nếu có câu chưa trả lời
+                if (answeredQuestions < totalQuestions) {
+                    if (!confirm(`Bạn chưa trả lời ${totalQuestions - answeredQuestions}/${totalQuestions} câu hỏi. Bạn có chắc chắn muốn nộp bài không?`)) {
+                        return false;
+                    }
+                }
+
+                // Gửi bằng AJAX
+                $.ajax({
+                    url: 'submit-assignment',
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            alert('Nộp bài thành công!');
+                            window.location.href = 'view-assignment-result?assignmentID=' + assignmentID;
+                        } else {
+                            alert(response.message || 'Có lỗi xảy ra khi nộp bài. Vui lòng thử lại.');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.log('Error response:', xhr.responseText);
+                        alert('Có lỗi xảy ra: ' + xhr.responseText);
+                    }
+                });
             });
 
             // Lưu trạng thái câu hỏi vào localStorage
@@ -337,6 +440,7 @@
                     if (state.answer) {
                         if (state.type === 'radio') {
                             questionContainer.find(`input[type="radio"][value="${state.answer}"]`).prop('checked', true);
+                            updateHiddenFields(questionContainer.find(`input[type="radio"][value="${state.answer}"]`));
                         } else {
                             questionContainer.find('textarea').val(state.answer);
                         }
@@ -352,7 +456,7 @@
                 const questionId = questionContainer.data('question-id');
                 const answer = $(this).val();
                 const type = $(this).attr('type') || 'textarea';
-                
+
                 saveQuestionState(questionId, {
                     answer: answer,
                     type: type
