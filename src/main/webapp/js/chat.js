@@ -12,16 +12,38 @@ $(document).ready(function() {
     userID = $("#userID").val();
     fullName = $("#fullName").val();
     
+    console.log('Initial userID:', userID);
+    console.log('Initial fullName:', fullName);
+    
+    // Kiểm tra và chuyển đổi userID thành số
+    if (userID) {
+        userID = parseInt(userID);
+        if (isNaN(userID)) {
+            console.error("Invalid userID format");
+            return;
+        }
+    }
+    
     if (!userID || !fullName) {
         console.error("Missing user information");
         return;
     }
+    
+    console.log('Validated userID:', userID);
     
     // Kết nối WebSocket
     connectToChat();
     
     // Khởi tạo emoji
     initEmoji();
+
+    // Xử lý Enter key
+    $('#message-input').on('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            $('#message-form').submit();
+        }
+    });
 
     // Xử lý upload ảnh
     $('#image-upload').on('change', function(e) {
@@ -40,9 +62,21 @@ $(document).ready(function() {
                     return;
                 }
                 selectedImage = base64Data;
-                // Hiển thị preview
-                const preview = $('<div class="image-preview"><img src="' + selectedImage + '" alt="Preview"><button onclick="removeImage()">×</button></div>');
-                $('#message-input').before(preview);
+                // Xóa preview cũ nếu có
+                $('.image-preview').remove();
+                
+                // Tạo preview phía trên thanh chat
+                const preview = $('<div class="image-preview" style="position: absolute; bottom: 100%; left: 50px; background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin: 0 auto 10px; min-height: 200px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1);"><div style="position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;"><img src="' + selectedImage + '" alt="Preview" style="max-width: 100%; max-height: 400px; object-fit: contain;"><button onclick="removeImage()" style="position: absolute; top: -20px; right: -20px; background: #ff4444; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; font-size: 18px;">×</button></div></div>');
+                
+                // Thêm preview vào form chat với position relative
+                const messageForm = $('#message-form');
+                messageForm.css('position', 'relative');
+                messageForm.prepend(preview);
+                
+                // Cuộn xuống để hiển thị ảnh
+                $('html, body').animate({
+                    scrollTop: preview.offset().top
+                }, 500);
             };
             reader.readAsDataURL(file);
         }
@@ -52,6 +86,7 @@ $(document).ready(function() {
 function removeImage() {
     selectedImage = null;
     $('.image-preview').remove();
+    $('#message-form').css('position', ''); // Reset position
     $('#image-upload').val('');
 }
 
@@ -66,6 +101,11 @@ function initEmoji() {
 
 function connectToChat() {
     try {
+        if (!userID || typeof userID !== 'number') {
+            console.error('Invalid userID for WebSocket connection:', userID);
+            return;
+        }
+        
         // Tạo URL WebSocket
         const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const wsUrl = `${wsProtocol}//${window.location.host}/Hankyo/chat/${userID}`;
@@ -74,7 +114,7 @@ function connectToChat() {
         socket = new WebSocket(wsUrl);
 
         socket.onopen = function() {
-            console.log('WebSocket connection opened for global chat.');
+            console.log('WebSocket connection opened for global chat. UserID:', userID);
             reconnectAttempts = 0;
         };
 
@@ -181,30 +221,24 @@ $('#message-form').on('submit', function(e) {
     
     // Create message object with proper image handling
     const message = {
-        userID: parseInt(userID), // Ensure userID is a number
+        userID: parseInt(userID),
         fullName: fullName,
         message: censoredMessage,
         sendAt: new Date().toLocaleTimeString(),
-        chatID: Date.now() // Add temporary chatID for client-side tracking
+        chatID: Date.now()
     };
 
-    // Only add pictureSend if there's an image
     if (selectedImage) {
-        // Check if the image is already a URL
         if (selectedImage.startsWith('http://') || selectedImage.startsWith('https://')) {
             message.pictureSend = selectedImage;
         } else if (selectedImage.startsWith('data:image')) {
             message.pictureSend = selectedImage;
-            console.log('Sending base64 image with length:', selectedImage.length);
         } else {
             console.error('Invalid image format');
             alert('Invalid image format');
             return;
         }
     }
-
-    // Log the message being sent
-    console.log('Sending message:', message);
 
     try {
         // Display the message immediately for the sender
@@ -213,9 +247,15 @@ $('#message-form').on('submit', function(e) {
         // Send message to server
         socket.send(JSON.stringify(message));
 
-        // Clear input and reset image
+        // Clear input, image preview and reset image
         $('#message-input').val('');
         removeImage();
+        
+        // Cuộn xuống tin nhắn mới nhất
+        const messageContainer = $('#message-container');
+        messageContainer.animate({
+            scrollTop: messageContainer[0].scrollHeight
+        }, 500);
     } catch (error) {
         console.error('Error sending message:', error);
         alert('Error sending message. Please try again.');
