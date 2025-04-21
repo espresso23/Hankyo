@@ -395,3 +395,135 @@ body {
         height: 250px;
     }
 }
+
+/* Assignment Container */
+.assignment-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    max-width: 854px;
+    margin: 0 auto;
+}
+
+.assignment-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.assignment-header h2 {
+    color: #2c3e50;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+}
+
+.assignment-description {
+    color: #666;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+/* Assignment Overview */
+.assignment-overview {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.overview-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.overview-card h3 {
+    color: #2c3e50;
+    font-size: 1.4rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e9ecef;
+    display: flex;
+    align-items: center;
+}
+
+.overview-content {
+    margin-bottom: 1.5rem;
+}
+
+.overview-content p {
+    color: #495057;
+    font-size: 1.1rem;
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+
+.overview-content p i {
+    color: #6c757d;
+    margin-right: 0.5rem;
+    width: 20px;
+    text-align: center;
+}
+
+.assignment-actions {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+    text-align: center;
+}
+
+.start-assignment-btn {
+    background: #4e73df;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    color: white;
+    display: inline-flex;
+    align-items: center;
+}
+
+.start-assignment-btn:hover {
+    background: #2e59d9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(78, 115, 223, 0.3);
+}
+
+.start-assignment-btn i {
+    margin-right: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .assignment-container {
+        padding: 1.5rem;
+    }
+
+    .assignment-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .assignment-description {
+        font-size: 1rem;
+    }
+
+    .overview-card h3 {
+        font-size: 1.2rem;
+    }
+
+    .overview-content p {
+        font-size: 1rem;
+    }
+
+    .start-assignment-btn {
+        padding: 0.7rem 1.2rem;
+        font-size: 1rem;
+    }
+}

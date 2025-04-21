@@ -2,6 +2,8 @@ package dao;
 
 import model.Answer;
 import model.Assignment;
+import model.AssignmentQuestion;
+import model.AssignmentTaken;
 import model.Question;
 import util.DBConnect;
 
@@ -13,7 +15,7 @@ public class AssignmentDAO {
     private Connection connection;
 
     public AssignmentDAO() {
-        this.connection = DBConnect.getInstance().getConnection();
+        connection = DBConnect.getInstance().getConnection();
     }
 
     public int createEmptyAssignment(String title, String description) throws SQLException {
@@ -262,9 +264,13 @@ public class AssignmentDAO {
         }
     }
 
-    public void closeConnection() throws SQLException {
-        if (connection != null && !connection.isClosed()) {
-            connection.close();
+    public void closeConnection() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -277,5 +283,144 @@ public class AssignmentDAO {
             List<Answer> answerList = questionAndAnswerDAO.getAllAnswerOfOneQuestion(question.getQuestionID());
             answerList.forEach(System.out::println);
         }
+    }
+
+    public Assignment getAssignmentByContentID(int contentID) throws SQLException {
+        String query = "SELECT * FROM Course_Content ct join Assignment a on ct.assignmentID = a.assignmentID WHERE course_contentID = ?";
+        try (Connection connection1 = DBConnect.getInstance().getConnection();
+                PreparedStatement stmt = connection1.prepareStatement(query)) {
+            stmt.setInt(1, contentID);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Assignment assignment = new Assignment();
+                    assignment.setAssignmentID(rs.getInt("assignmentID"));
+                    assignment.setAssignmentTitle(rs.getString("title"));
+                    assignment.setDescription(rs.getString("description"));
+                    assignment.setCourseContentID(rs.getInt("course_contentID"));
+                    return assignment;
+                }
+            }
+        }
+        return null;
+    }
+
+    public boolean submitAssignment(int learnerID, int assignmentID, List<String> answers) throws SQLException {
+        String query = "INSERT INTO AssignmentSubmission (learnerID, assignmentID, answers, submissionDate) VALUES (?, ?, ?, GETDATE())";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, learnerID);
+            stmt.setInt(2, assignmentID);
+            stmt.setString(3, String.join(",", answers));
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    public Assignment getAssignmentWithQuestions(int assignmentID) throws SQLException {
+        Assignment assignment = null;
+        Connection connection = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            connection = DBConnect.getInstance().getConnection();
+            
+            // Lấy thông tin assignment
+            String assignmentQuery = "SELECT * FROM Assignment WHERE assignmentID = ?";
+            stmt = connection.prepareStatement(assignmentQuery);
+            stmt.setInt(1, assignmentID);
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                assignment = new Assignment();
+                assignment.setAssignmentID(rs.getInt("assignmentID"));
+                assignment.setAssignmentTitle(rs.getString("title"));
+                assignment.setDescription(rs.getString("description"));
+                assignment.setAssignmentQuestions(new ArrayList<>());
+
+                // Đóng ResultSet và PreparedStatement cũ
+                rs.close();
+                stmt.close();
+
+                // Lấy danh sách câu hỏi
+                String questionsQuery = "SELECT aq.*, q.questionText, q.questionImg, q.audio_file, q.questionType, q.questionMark " +
+                        "FROM Assignment_Question aq " +
+                        "JOIN Question q ON aq.questionID = q.questionID " +
+                        "WHERE aq.assignmentID = ?";
+                
+                stmt = connection.prepareStatement(questionsQuery);
+                stmt.setInt(1, assignmentID);
+                rs = stmt.executeQuery();
+
+                while (rs.next()) {
+                    AssignmentQuestion question = new AssignmentQuestion();
+                    question.setAssignQuesID(rs.getInt("assignmentQuesID"));
+                    question.setQuestionID(rs.getInt("questionID"));
+                    question.setQuestionText(rs.getString("questionText"));
+                    question.setQuestionImg(rs.getString("questionImg"));
+                    question.setAudioFile(rs.getString("audio_file"));
+                    question.setQuestionType(rs.getString("questionType"));
+                    question.setQuestionMark(rs.getDouble("questionMark"));
+                    question.setAssignmentID(assignmentID);
+
+                    assignment.getAssignmentQuestions().add(question);
+                }
+            }
+        } finally {
+            // Đóng tất cả các resource theo thứ tự ngược lại
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return assignment;
+    }
+
+    public int addAssignmentTaken(AssignmentTaken taken) {
+        String sql = "INSERT INTO Assignment_Taken (assignmentID, learnerID, dateCreated, finalMark, skipQues, doneQues) " +
+                    "VALUES (?, ?, ?, ?, ?, ?)";
+        
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            
+            pstmt.setInt(1, taken.getAssignmentID());
+            pstmt.setInt(2, taken.getLearnerID());
+            pstmt.setDate(3, new java.sql.Date(taken.getDateCreated().getTime()));
+            pstmt.setFloat(4, taken.isFinalMark() ? 1.0f : 0.0f); // Convert boolean to float
+            pstmt.setInt(5, taken.getSkipQues());
+            pstmt.setInt(6, taken.getDoneQues());
+            
+            int affectedRows = pstmt.executeUpdate();
+            
+            if (affectedRows > 0) {
+                try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        int generatedId = rs.getInt(1);
+                        taken.setAssignTakenID(generatedId);
+                        return generatedId;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return -1; // Trả về -1 nếu thêm không thành công
     }
 }

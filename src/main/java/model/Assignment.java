@@ -11,7 +11,16 @@ public class Assignment {
     private String media;
     private String description;
     private Date lastUpdated;
+    private List<AssignmentQuestion> assignmentQuestions;
+    private int courseContentID;
 
+    public List<AssignmentQuestion> getAssignmentQuestions() {
+        return assignmentQuestions;
+    }
+
+    public void setAssignmentQuestions(List<AssignmentQuestion> assignmentQuestions) {
+        this.assignmentQuestions = assignmentQuestions;
+    }
     //constructor
 
     public Assignment(int assignmentID, String assignmentTitle, Question question, List<Answer> answer, String media) {
@@ -26,6 +35,14 @@ public class Assignment {
     }
 // Getters and setters
 
+
+    public int getCourseContentID() {
+        return courseContentID;
+    }
+
+    public void setCourseContentID(int courseContentID) {
+        this.courseContentID = courseContentID;
+    }
 
     public List<Answer> getAnswer() {
         return answer;
@@ -82,5 +99,20 @@ public class Assignment {
 
     public void setLastUpdated(Date lastUpdated) {
         this.lastUpdated = lastUpdated;
+    }
+
+    @Override
+    public String toString() {
+        return "Assignment{" +
+                "answer=" + answer +
+                ", assignmentID=" + assignmentID +
+                ", assignmentTitle='" + assignmentTitle + '\'' +
+                ", question=" + question +
+                ", media='" + media + '\'' +
+                ", description='" + description + '\'' +
+                ", lastUpdated=" + lastUpdated +
+                ", assignmentQuestions=" + assignmentQuestions +
+                ", courseContentID=" + courseContentID +
+                '}';
     }
 }
