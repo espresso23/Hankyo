@@ -25,7 +25,7 @@
 <div class="container-fluid">
     <div class="login-form">
         <h2>Đăng Nhập</h2>
-        <form method="post" action="${pageContext.request.contextPath}/login">
+        <form method="post" action="login">
             <div class="input">
                 <div class="nameInput">
                     <input type="text" id="userName" name="Username" placeholder="Enter Username" required>
