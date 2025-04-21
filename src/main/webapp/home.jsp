@@ -1,5 +1,5 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isELIgnored="false"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isELIgnored="false" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -14,12 +14,14 @@
         font-family: 'Poppins';
         src: url('${pageContext.request.contextPath}/assets/fonts/Poppins-Regular.ttf') format('ttf');
     }
-    body{
-        font-family: 'Poppins',sans-serif;
+
+    body {
+        font-family: 'Poppins', sans-serif;
     }
-    body{
-        background-image:url('asset/png/contentHomePage/background.png');
-        background-repeat:no-repeat;
+
+    body {
+        background-image: url('asset/png/contentHomePage/background.png');
+        background-repeat: no-repeat;
     }
 </style>
 <body>
@@ -33,7 +35,8 @@
     </div>
     <div class="sideContent">
         <div class="smallContent"><img src="asset/png/contentHomePage/TIENG-HAN-SO-CAP-CHO-NGUOI-MOI-BAT-DAU.jpg"></div>
-        <div class="smallContent"><img src="asset/png/contentHomePage/img.png" onclick="window.location.href='NewspaperServlet?id=1'" ></div>
+        <div class="smallContent"><img src="asset/png/contentHomePage/img.png"
+                                       onclick="window.location.href='NewspaperServlet?id=1'"></div>
         <div class="smallContent"><img src="asset/png/contentHomePage/img_1.png"></div>
         <div class="smallContent"><img src="asset/png/contentHomePage/img_2.png"></div>
         <div class="smallContent"><img src="asset/png/contentHomePage/img_3.png"></div>
@@ -44,7 +47,7 @@
         <div class="smallContent"><img src="asset/png/contentHomePage/img_8.png"></div>
     </div>
     <div class="mainContent">
-        <div class="bigContent" ><img src="asset/png/contentHomePage/banner-south-korea.jpg"></div>
+        <div class="bigContent"><img src="asset/png/contentHomePage/banner-south-korea.jpg"></div>
         <div class="smallContent"><img src="asset/png/contentHomePage/img_9.png"></div>
         <div class="smallContent"><img src="asset/png/contentHomePage/img_10.png"></div>
         <div class="smallContent"><img src="asset/png/contentHomePage/img_12.png"></div>

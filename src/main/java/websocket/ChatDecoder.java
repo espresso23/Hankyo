@@ -9,25 +9,41 @@ import org.json.JSONObject;
 import javax.websocket.DecodeException;
 import javax.websocket.Decoder;
 import javax.websocket.EndpointConfig;
+import java.sql.Timestamp;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ChatDecoder implements Decoder.Text<Chat> {
     private static final Gson gson = new Gson();
+    private static final Logger LOGGER = Logger.getLogger(ChatDecoder.class.getName());
 
     @Override
     public Chat decode(String s) throws DecodeException {
+        LOGGER.info("Starting to decode message: " + s);
         try {
-            JSONObject jsonObject = new JSONObject(s);
-            int userID = jsonObject.getInt("userID");
-            String message = jsonObject.getString("message");
-            String fullName = jsonObject.getString("fullName");
-
-            // Censor the message text before creating the Chat instance
-            String censoredMessage = BadwordsFilter.censorBadWords(message);
-
-            // Create and return a new Chat instance
-            return new Chat(userID, censoredMessage, fullName);
-        } catch (JSONException e) {
-            throw new DecodeException(s, "Failed to decode JSON object", e);
+            JSONObject json = new JSONObject(s);
+            LOGGER.info("JSON parsed successfully");
+            
+            int userID = json.getInt("userID");
+            String message = json.getString("message");
+            String fullName = json.getString("fullName");
+            String pictureSend = json.optString("pictureSend", null);
+            
+            LOGGER.info("Extracted values - userID: " + userID + 
+                       ", fullName: " + fullName + 
+                       ", message length: " + (message != null ? message.length() : 0) +
+                       ", pictureSend length: " + (pictureSend != null ? pictureSend.length() : 0));
+            
+            // Censor bad words in the message
+            message = BadwordsFilter.censorBadWords(message);
+            
+            // Use the correct constructor for new messages
+            Chat chat = new Chat(userID, message, fullName, pictureSend);
+            LOGGER.info("Chat object created successfully");
+            return chat;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error decoding message: " + e.getMessage(), e);
+            throw new DecodeException(s, "Error decoding message", e);
         }
     }
 

@@ -126,7 +126,7 @@
       </span>
     </div>
   </button>
-  <img class="logo" src="asset/png/loginPage/logo.png" alt="Logo" onclick="window.location.href='courseHeader.jsp'">
+  <img class="logo" src="${pageContext.request.contextPath}/asset/png/loginPage/logo.png" alt="Logo" onclick="window.location.href='courseHeader.jsp'">
   <div class="navbarContainer">
     <div class="navbarContent"><a href="/index.html">Khóa Học</a></div>
     <div class="navbarContent"><a href="/about.html">Giảng Viên</a></div>
@@ -148,14 +148,20 @@
 
 
     <span>Xin chào, <%= session.getAttribute("username") %>!</span>
-    <img src="asset/png/avatar/monkey.jpg" onclick="togglePopup()">
+    <% 
+    String avatar = (String) session.getAttribute("avatar");
+    System.out.println("Debug - Avatar from session: " + avatar);
+    %>
+    <img src="${pageContext.request.contextPath}/<%= avatar != null ? avatar : "asset/png/avatar/monkey.jpg" %>" 
+         onclick="togglePopup()"
+         onerror="this.src='${pageContext.request.contextPath}/asset/png/avatar/monkey.jpg'">
   </div>
 </header>
 
 <!-- Popup Container -->
 <div class="popupContainer" id="popupContainer">
   <div class="profile">
-    <div class="profileContent"><a href="/profile.html">Tài Khoản</a></div>
+    <div class="profileContent"><a href="${pageContext.request.contextPath}/update-profile">Tài Khoản</a></div>
 
     <div class="profileContent">
       <form action="${pageContext.request.contextPath}/logout" method="post">
@@ -191,7 +197,7 @@
   document.addEventListener('click', function(event) {
     const popup = document.getElementById('popupContainer');
     const menu = document.getElementById('verticalMenu');
-    const avatar = document.querySelector('header img[src="asset/png/avatar/monkey.jpg"]');
+    const avatar = document.querySelector('header img[onclick="togglePopup()"]');
     const menuBtn = document.querySelector('.menu-btn');
 
     if (!popup.contains(event.target) && !avatar.contains(event.target)) {
