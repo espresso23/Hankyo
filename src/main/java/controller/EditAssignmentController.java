@@ -476,11 +476,7 @@ public class EditAssignmentController extends HttpServlet {
     @Override
     public void destroy() {
         if (assignmentDAO != null) {
-            try {
-                assignmentDAO.closeConnection();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            assignmentDAO.closeConnection();
         }
         if (courseContentDAO != null) {
             courseContentDAO.closeConnection();

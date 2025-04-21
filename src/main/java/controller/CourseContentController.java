@@ -251,11 +251,7 @@ public class CourseContentController extends HttpServlet {
             handleError(request, response, "Lỗi hệ thống: " + e.getMessage(), courseID);
         } finally {
             if (assignmentDAO != null) {
-                try {
-                    assignmentDAO.closeConnection();
-                } catch (SQLException e) {
-                    System.out.println("Lỗi khi đóng kết nối: " + e.getMessage());
-                }
+                assignmentDAO.closeConnection();
             }
             if (courseContentDAO != null) {
                 courseContentDAO.closeConnection();
@@ -332,11 +328,7 @@ public class CourseContentController extends HttpServlet {
                     "course-content?action=addContentView&courseID=" + request.getParameter("courseID"));
         } finally {
             if (assignmentDAO != null) {
-                try {
-                    assignmentDAO.closeConnection();
-                } catch (SQLException e) {
-                    System.out.println("Lỗi khi đóng kết nối: " + e.getMessage());
-                }
+                assignmentDAO.closeConnection();
             }
         }
     }
@@ -417,11 +409,7 @@ public class CourseContentController extends HttpServlet {
                 courseContentDAO.closeConnection();
             }
             if (assignmentDAO != null) {
-                try {
-                    assignmentDAO.closeConnection();
-                } catch (SQLException e) {
-                    System.out.println("Lỗi khi đóng kết nối AssignmentDAO: " + e.getMessage());
-                }
+                assignmentDAO.closeConnection();
             }
         }
     }

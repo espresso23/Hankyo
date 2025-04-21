@@ -2,20 +2,35 @@ package service;
 
 import dao.AssignmentDAO;
 import dao.QuestionAndAnswerDAO;
+import dao.AssignmentQuestionDAO;
+import dao.AssignmentTakenDAO;
+import dao.AssignmentResultDAO;
 import model.Answer;
 import model.Assignment;
 import model.Question;
+import model.AssignmentQuestion;
+import model.AssignmentTaken;
+import model.AssignmentResult;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class AssignmentService {
     private final AssignmentDAO assignmentDAO;
     private final QuestionAndAnswerDAO questionAndAnswerDAO;
+    private final AssignmentQuestionDAO questionDAO;
+    private final AssignmentTakenDAO takenDAO;
+    private final AssignmentResultDAO resultDAO;
 
     public AssignmentService() {
         this.assignmentDAO = new AssignmentDAO();
         this.questionAndAnswerDAO = new QuestionAndAnswerDAO();
+        this.questionDAO = new AssignmentQuestionDAO();
+        this.takenDAO = new AssignmentTakenDAO();
+        this.resultDAO = new AssignmentResultDAO();
     }
 
     /**
@@ -273,5 +288,62 @@ public class AssignmentService {
      */
     public Question getQuestionById(int questionID) throws SQLException {
         return questionAndAnswerDAO.getQuestionById(questionID);
+    }
+
+    // Lấy thông tin bài tập và câu hỏi
+    public Assignment getAssignmentWithQuestions(int assignmentID) throws SQLException {
+        Assignment assignment = assignmentDAO.getAssignmentById(assignmentID);
+        if (assignment != null) {
+            List<AssignmentQuestion> questions = questionDAO.getQuestionsByAssignmentId(assignmentID);
+            assignment.setAssignmentQuestions(questions);
+        }
+        return assignment;
+    }
+
+    // Tạo một bài làm mới
+    public AssignmentTaken createAssignmentTaken(int assignmentID, int learnerID) {
+        AssignmentTaken taken = new AssignmentTaken();
+        taken.setAssignmentID(assignmentID);
+        taken.setLearnerID(learnerID);
+        taken.setDateCreated(new Date());
+        taken.setFinalMark(false);
+        taken.setSkipQues(0);
+        taken.setDoneQues(0);
+
+        if (takenDAO.addAssignmentTaken(taken)) {
+            return taken;
+        }
+        return null;
+    }
+
+    // Lấy bài làm theo ID
+    public AssignmentTaken getAssignmentTakenById(int takenID) {
+        return takenDAO.getAssignmentTakenById(takenID);
+    }
+
+    // Lấy danh sách câu hỏi của bài tập
+    public List<AssignmentQuestion> getQuestionsByAssignmentId(int assignmentID) {
+        return questionDAO.getQuestionsByAssignmentId(assignmentID);
+    }
+
+    // Lưu kết quả một câu trả lời
+    public boolean saveAssignmentResult(AssignmentResult result) {
+        return resultDAO.addAssignmentResult(result);
+    }
+
+    // Cập nhật thông tin bài làm
+    public boolean updateAssignmentTaken(AssignmentTaken taken) {
+        return takenDAO.updateAssignmentTaken(taken);
+    }
+
+    // Lấy kết quả của một bài làm
+    public List<AssignmentResult> getResultsByTakenID(int takenID) {
+        return resultDAO.getResultsByTakenID(takenID);
+    }
+
+    // Kiểm tra xem học viên đã làm bài này chưa
+    public boolean hasCompletedAssignment(int assignmentID, int learnerID) {
+        AssignmentTaken taken = takenDAO.getAssignmentTakenByLearnerAndAssignment(learnerID, assignmentID);
+        return taken != null && taken.isFinalMark();
     }
 } 
