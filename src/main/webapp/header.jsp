@@ -10,7 +10,7 @@
 <head>
     <title>Title</title>
 </head>
-<body>
+<body>  
 <%
   if (session.getAttribute("username") != null) {
     request.getRequestDispatcher("/header-user.jsp").include(request, response);

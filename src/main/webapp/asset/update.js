@@ -45,6 +45,8 @@ function saveChanges() {
     let field = document.getElementById("editInput").getAttribute("data-field");
     let formData = new FormData();
     formData.append("action", "save");
+    let newValue = null;
+    let dateValue = null;
 
     if (field === "password") {
         let oldPassword = document.getElementById("oldPassword").value;
@@ -72,7 +74,7 @@ function saveChanges() {
         formData.append("avatar", avatarFile);
     }
     else if (field === "dateOfBirth") {
-        let dateValue = document.getElementById("editDateInput").value;
+        dateValue = document.getElementById("editDateInput").value;
         if (!dateValue) {
             alert("Vui lòng chọn ngày sinh!");
             return;
@@ -80,7 +82,8 @@ function saveChanges() {
         formData.append("dateOfBirth", dateValue);
     }
     else {
-        let newValue = document.getElementById("editInput").value.trim();
+        let inputId = "edit" + field.charAt(0).toUpperCase() + field.slice(1) + "Input";
+        newValue = document.getElementById(inputId).value.trim();
         if (!newValue) {
             alert("Giá trị không được để trống!");
             return;
@@ -93,14 +96,40 @@ function saveChanges() {
         method: "POST",
         body: formData
     })
-        .then(response => response.text())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.text();
+        })
         .then(data => {
             console.log("Cập nhật thành công:", data);
 
-            if (field !== "password" && field !== "avatar") {
-                let element = document.getElementById(field);
-                if (element) {
-                    element.textContent = field + ": " + (field === "dateOfBirth" ? dateValue : newValue);
+            if (field === "avatar") {
+                // Update avatar image
+                let avatarImg = document.querySelector('.profile-picture img');
+                if (avatarImg) {
+                    // Use the complete path returned by the server
+                    avatarImg.src = data + "?rand=" + new Date().getTime();
+                }
+            } else if (field === "password") {
+                // Password is hidden, no need to update display
+            } else {
+                // Update the displayed value in the section
+                let section = document.querySelector(`.section-content:has(button[onclick*="${field}"])`);
+                if (section) {
+                    let valueDiv = section.querySelector('div');
+                    if (valueDiv) {
+                        if (field === "dateOfBirth") {
+                            valueDiv.textContent = dateValue;
+                        } else if (field === "gmail") {
+                            valueDiv.textContent = "Email: " + newValue;
+                        } else if (field === "phone") {
+                            valueDiv.textContent = newValue;
+                        } else if (field === "name") {
+                            valueDiv.textContent = newValue;
+                        }
+                    }
                 }
             }
 

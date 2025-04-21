@@ -13,7 +13,7 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.util.logging.Logger;
 
-@WebServlet("/updateprofile")
+@WebServlet("/update")
 @MultipartConfig(
         fileSizeThreshold = 1024 * 1024 * 2, // 2MB
         maxFileSize = 1024 * 1024 * 10,      // 10MB

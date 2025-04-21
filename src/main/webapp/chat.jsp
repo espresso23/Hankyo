@@ -21,7 +21,6 @@
 </head>
 <body>
 <jsp:include page="header.jsp"></jsp:include>
-
 <div class="chat-container">
     <div id="message-container">
         <ul>

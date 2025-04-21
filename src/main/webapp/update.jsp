@@ -232,6 +232,7 @@
 <div id="overlay" class="overlay">
     <div class="overlay-content">
         <h2 id="editTitle">Chỉnh sửa</h2>
+        <input type="hidden" id="editInput">
 
         <div id="avatar-tab" class="overlay-tab" style="display: none;">
             <label for="editAvatar">Chọn ảnh mới:</label>
