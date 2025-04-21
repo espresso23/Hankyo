@@ -16,7 +16,7 @@
 <header>
     <img class="logo" src="${pageContext.request.contextPath}/asset/png/loginPage/logo.png" alt="Logo">
     <div class="navbarContainer">
-        <div class="navbarContent"><a href="/index.html">Khóa Học</a></div>
+        <div class="navbarContent"><a href="courses">Khóa Học</a></div>
         <div class="navbarContent"><a href="/about.html">Giảng Viên</a></div>
         <div class="navbarContent"><a href="/community.html">Cộng Đồng</a></div>
         <div class="navbarContent"><a href="quizlet.jsp">Tài Liệu</a></div>

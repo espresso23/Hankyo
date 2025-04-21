@@ -80,7 +80,7 @@ public class LoginServlet extends HttpServlet {
                             request.getRequestDispatcher("expert.jsp").forward(request, response);
                         } else {
                             session.setAttribute("errorMsg", "Không tìm thấy hồ sơ chuyên gia.");
-                            response.sendRedirect("courseHeader.jsp");
+                            response.sendRedirect("home.jsp");
                         }
                     } else if ("admin".equalsIgnoreCase(user.getRole())) {
                         response.sendRedirect("admin.jsp");
@@ -95,7 +95,7 @@ public class LoginServlet extends HttpServlet {
                             session.setAttribute("errorMsg", "Không tìm thấy hồ sơ người học.");
                         }
 
-                        response.sendRedirect("courseHeader.jsp");
+                        response.sendRedirect("home.jsp");
                     }
                 } else {
                     request.setAttribute("errorMsg", "Đăng nhập thất bại. Không tìm thấy người dùng.");

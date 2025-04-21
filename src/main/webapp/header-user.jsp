@@ -128,7 +128,7 @@
   </button>
   <img class="logo" src="${pageContext.request.contextPath}/asset/png/loginPage/logo.png" alt="Logo" onclick="window.location.href='courseHeader.jsp'">
   <div class="navbarContainer">
-    <div class="navbarContent"><a href="/index.html">Khóa Học</a></div>
+    <div class="navbarContent"><a href="courses">Khóa Học</a></div>
     <div class="navbarContent"><a href="/about.html">Giảng Viên</a></div>
     <div class="navbarContent"><a href="quizlet">Cộng Đồng</a></div>
     <div class="navbarContent"><a href="addFlashCard">Tài Liệu</a></div>
@@ -176,6 +176,7 @@
 <button class="menu-btn" onclick="toggleMenu()">Menu</button>
 <div class="vertical-menu" id="verticalMenu">
   <div class="menu-item"><a href="quizlet">Flashcard</a></div>
+  <div class="menu-item"><a href="my-courses">Khóa Học Của Tôi</a></div>
   <div class="menu-item"><a href="dictionary">Từ điển</a></div>
   <div class="menu-item"><a href="chat">Chat</a></div>
 </div>
