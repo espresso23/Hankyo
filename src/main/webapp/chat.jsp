@@ -96,5 +96,6 @@
 
 <!-- Chat JavaScript -->
 <script src="${pageContext.request.contextPath}/js/chat.js"></script>
+<jsp:include page="/footer.jsp"></jsp:include>
 </body>
 </html>

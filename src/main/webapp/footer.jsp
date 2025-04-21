@@ -8,14 +8,14 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
-    <link rel="stylesheet" href="asset/css/footer.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/asset/css/footer.css">
     <title>Title</title>
 </head>
 <body>
 <footer class="footer">
     <!-- Logo -->
     <div class="footer-column">
-        <img src="asset/png/loginPage/logo.png" alt="Logo" class="footer-logo">
+        <img src="${pageContext.request.contextPath}/asset/png/loginPage/logo.png" alt="Logo" class="footer-logo">
     </div>
 
     <!-- Cột 1: Use Cases -->

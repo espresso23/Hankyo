@@ -15,38 +15,18 @@ import util.DBConnect;
 
 public class ReportDAO {
 
-    // Create a new report
-//    public int createReport(Report report) throws SQLException {
-//        String sql = "INSERT INTO Report (reporterID, reportedUserID, reportTypeID, reason, postID, reportDate, status) "
-//                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
-//
-//        try (Connection conn = DBConnect.getInstance().getConnection();
-//             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-//
-//            stmt.setInt(1, report.getReporterID());
-//            stmt.setInt(2, report.getReportedUserID());
-//            stmt.setInt(3, report.getReportTypeID());
-//            stmt.setString(4, report.getReason());
-//            stmt.setInt(5, report.getPostID());
-//            stmt.setTimestamp(6, report.getReportDate());
-//            stmt.setString(7, report.getStatus());
-//
-//            int affectedRows = stmt.executeUpdate();
-//
-//            if (affectedRows == 0) {
-//                throw new SQLException("Creating report failed, no rows affected.");
-//            }
-//
-//            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-//                if (generatedKeys.next()) {
-//                    return generatedKeys.getInt(1);
-//                } else {
-//                    throw new SQLException("Creating report failed, no ID obtained.");
-//                }
-//            }
-//        }
-//    }
-
+    public boolean createReport(Report report) throws SQLException {
+        String sql = "INSERT INTO Report (reporterID, reportedUserID, reportTypeID, reason, chatID, reportDate) VALUES (?, ?, ?, ?, ?, GETDATE())";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, report.getReporterID());
+            ps.setInt(2, report.getReportedUserID());
+            ps.setInt(3, report.getReportTypeID());
+            ps.setString(4, report.getReason());
+            ps.setInt(5, report.getChatID());
+            return ps.executeUpdate() > 0;
+        }
+    }
     // Create a new report
     public boolean createPostReport(Report report) {
         String sql = "INSERT INTO Report (PostID, ReporterID, ReportTypeID, Reason, ReportDate) " +
@@ -89,7 +69,29 @@ public class ReportDAO {
 
         return reportTypes;
     }
+    // Get chat report details
+    public Report getChatReport(int chatID) {
+        String sql = "SELECT c.chatID, c.userID " +
+                "FROM Chat c " +
+                "WHERE c.chatID = ?";
 
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, chatID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Report report = new Report();
+                    report.setChatID(chatID);
+                    report.setReportedUserID(rs.getInt("userID"));
+                    return report;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
     // Get user ID of post author
     public int getPostAuthorID(int postID) throws SQLException {
         String sql = "SELECT UserID FROM Post WHERE PostID = ?";
@@ -106,6 +108,45 @@ public class ReportDAO {
                     throw new SQLException("Post not found with ID: " + postID);
                 }
             }
+        }
+    }
+    // Create a new chat report
+    public boolean createChatReport(Report report) throws SQLException {
+        // Debug log
+        System.out.println("Creating chat report with values:");
+        System.out.println("reporterID: " + report.getReporterID());
+        System.out.println("reportedUserID: " + report.getReportedUserID());
+        System.out.println("reason: " + report.getReason());
+        System.out.println("chatID: " + report.getChatID());
+
+        // Set reportTypeID to 1 (Report Chat)
+        report.setReportTypeID(1);
+
+        // Kiểm tra xem reportTypeID có tồn tại trong bảng ReportType không
+        String checkTypeSQL = "SELECT COUNT(*) FROM ReportType WHERE reportTypeID = ? AND typeName = 'Report Chat'";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement checkStmt = conn.prepareStatement(checkTypeSQL)) {
+            checkStmt.setInt(1, report.getReportTypeID());
+            ResultSet rs = checkStmt.executeQuery();
+            if (rs.next() && rs.getInt(1) == 0) {
+                System.err.println("ReportTypeID " + report.getReportTypeID() + " with typeName 'Report Chat' does not exist in ReportType table");
+                return false;
+            }
+        }
+
+        // Nếu reportTypeID hợp lệ, thực hiện insert
+        String sql = "INSERT INTO Report (reporterID, reportedUserID, reportTypeID, reason, chatID, reportDate, status) VALUES (?, ?, ?, ?, ?, GETDATE(), 'Pending')";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, report.getReporterID());
+            ps.setInt(2, report.getReportedUserID());
+            ps.setInt(3, report.getReportTypeID());
+            ps.setString(4, report.getReason());
+            ps.setInt(5, report.getChatID());
+
+            int result = ps.executeUpdate();
+            System.out.println("ExecuteUpdate result: " + result);
+            return result > 0;
         }
     }
 }

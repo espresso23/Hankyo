@@ -12,6 +12,7 @@ public class Report {
     private Timestamp reportDate;
     private String status;
     private int commentID;
+    private int chatID;
 
     // Default constructor
     public Report() {
@@ -108,5 +109,13 @@ public class Report {
 
     public void setCommentID(int commentID) {
         this.commentID = commentID;
+    }
+
+    public int getChatID() {
+        return chatID;
+    }
+
+    public void setChatID(int chatID) {
+        this.chatID = chatID;
     }
 }

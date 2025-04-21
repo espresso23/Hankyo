@@ -27,7 +27,12 @@ public class ChatReportServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        List<ReportType> reportTypes = reportDAO.getAllReportTypes();
+        List<ReportType> reportTypes = null;
+        try {
+            reportTypes = reportDAO.getAllReportTypes();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         request.setAttribute("reportTypes", reportTypes);
         request.getRequestDispatcher("/chat.jsp").forward(request, response);
     }
