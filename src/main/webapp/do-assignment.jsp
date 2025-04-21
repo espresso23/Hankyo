@@ -179,6 +179,7 @@
             <input type="hidden" name="assignTakenID" value="${taken.assignTakenID}">
             
             <c:forEach items="${assignment.assignmentQuestions}" var="question" varStatus="loop">
+                <input type="hidden" name="assignQuesID" value="${question.assignQuesID}">
                 <div class="question-container">
                     <div class="question-header">
                         <span class="question-number">Câu ${loop.index + 1}</span>
@@ -216,7 +217,7 @@
                                                    name="answer_${question.questionID}" 
                                                    value="${answer.optionLabel}"
                                                    class="option-input" 
-                                                   required>
+                                                   >
                                             <span class="option-text">
                                                 ${answer.optionLabel}. ${answer.answerText}
                                             </span>
@@ -230,7 +231,7 @@
                                               class="form-control" 
                                               rows="4" 
                                               placeholder="Nhập câu trả lời của bạn"
-                                              required></textarea>
+                                              ></textarea>
                                 </div>
                             </c:otherwise>
                         </c:choose>
@@ -243,10 +244,16 @@
                     <i class="fas fa-exclamation-triangle me-2"></i>
                     <span id="warningMessage">Bạn chưa trả lời bất kỳ câu hỏi nào. Bạn có chắc chắn muốn nộp bài không?</span>
                 </div>
-                <button type="submit" class="submit-btn" id="submitBtn">
-                    <i class="fas fa-paper-plane"></i>
-                    Nộp bài
-                </button>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="progress-info">
+                        <span class="me-3">Đã trả lời: <span id="answeredCount">0</span>/<span id="totalQuestions">${assignment.assignmentQuestions.size()}</span></span>
+                        <span>Chưa trả lời: <span id="unansweredCount">${assignment.assignmentQuestions.size()}</span></span>
+                    </div>
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        <i class="fas fa-paper-plane"></i>
+                        Nộp bài
+                    </button>
+                </div>
             </div>
         </form>
     </div>
@@ -257,11 +264,19 @@
         $(document).ready(function() {
             let answeredQuestions = 0;
             const totalQuestions = ${assignment.assignmentQuestions.size()};
+            const unansweredQuestions = totalQuestions;
+
+            // Cập nhật số câu đã trả lời và chưa trả lời
+            function updateQuestionCounts() {
+                $('#answeredCount').text(answeredQuestions);
+                $('#unansweredCount').text(totalQuestions - answeredQuestions);
+            }
 
             // Kiểm tra khi người dùng thay đổi câu trả lời
             $('input[type="radio"], textarea').on('change', function() {
-                const questionId = $(this).closest('.question-container').find('.question-number').text();
-                const isAnswered = $(this).closest('.question-container').find('input[type="radio"]:checked, textarea').length > 0;
+                const questionContainer = $(this).closest('.question-container');
+                const questionId = questionContainer.find('.question-number').text();
+                const isAnswered = questionContainer.find('input[type="radio"]:checked, textarea').length > 0;
                 
                 if (isAnswered) {
                     answeredQuestions++;
@@ -269,6 +284,7 @@
                     answeredQuestions--;
                 }
 
+                updateQuestionCounts();
                 updateSubmitButton();
             });
 
@@ -290,6 +306,7 @@
                     answeredQuestions++;
                 }
             });
+            updateQuestionCounts();
             updateSubmitButton();
 
             // Xử lý khi submit form
@@ -305,95 +322,45 @@
                 }
             });
 
-            function submitAnswer(questionData) {
-                const button = $(questionData.button);
-                const originalText = button.html();
-                button.html('<i class="fas fa-spinner fa-spin me-2"></i>Đang lưu...');
-                button.prop('disabled', true);
+            // Lưu trạng thái câu hỏi vào localStorage
+            function saveQuestionState(questionId, state) {
+                const states = JSON.parse(localStorage.getItem('questionStates') || '{}');
+                states[questionId] = state;
+                localStorage.setItem('questionStates', JSON.stringify(states));
+            }
 
-                $.ajax({
-                    url: 'submit-assignment',
-                    method: 'POST',
-                    data: {
-                        assignTakenID: assignTakenID,
-                        assignmentQuesID: questionData.assignmentQuesID,
-                        answerLabel: questionData.answerLabel,
-                        isCorrect: questionData.isCorrect,
-                        mark: questionData.mark
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            showMessage('Đã lưu câu trả lời thành công', 'success');
-                            // Cập nhật UI để hiển thị kết quả
-                            updateQuestionUI(questionData);
+            // Khôi phục trạng thái câu hỏi từ localStorage
+            function restoreQuestionStates() {
+                const states = JSON.parse(localStorage.getItem('questionStates') || '{}');
+                Object.entries(states).forEach(([questionId, state]) => {
+                    const questionContainer = $(`.question-container[data-question-id="${questionId}"]`);
+                    if (state.answer) {
+                        if (state.type === 'radio') {
+                            questionContainer.find(`input[type="radio"][value="${state.answer}"]`).prop('checked', true);
                         } else {
-                            showMessage(response.message || 'Có lỗi xảy ra khi lưu câu trả lời', 'error');
+                            questionContainer.find('textarea').val(state.answer);
                         }
-                    },
-                    error: function() {
-                        showMessage('Có lỗi xảy ra khi kết nối đến máy chủ', 'error');
-                    },
-                    complete: function() {
-                        button.html(originalText);
-                        button.prop('disabled', false);
                     }
                 });
+                updateQuestionCounts();
+                updateSubmitButton();
             }
 
-            function updateQuestionUI(questionData) {
-                const questionElement = $(`#question-${questionData.assignmentQuesID}`);
+            // Lưu trạng thái khi người dùng thay đổi câu trả lời
+            $('input[type="radio"], textarea').on('change', function() {
+                const questionContainer = $(this).closest('.question-container');
+                const questionId = questionContainer.data('question-id');
+                const answer = $(this).val();
+                const type = $(this).attr('type') || 'textarea';
                 
-                // Cập nhật trạng thái câu trả lời
-                questionElement.find('.answer-options .option').removeClass('selected correct incorrect');
-                const selectedOption = questionElement.find(`.answer-options .option[data-label="${questionData.answerLabel}"]`);
-                selectedOption.addClass('selected ' + (questionData.isCorrect ? 'correct' : 'incorrect'));
-
-                // Hiển thị giải thích nếu có
-                if (questionData.explanation) {
-                    questionElement.find('.explanation').html(questionData.explanation).show();
-                }
-
-                // Cập nhật điểm số
-                questionElement.find('.question-mark').text(`${questionData.mark} điểm`);
-            }
-
-            function showMessage(message, type) {
-                const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
-                const messageDiv = $('<div>', {
-                    class: `alert ${alertClass} alert-dismissible fade show`,
-                    role: 'alert'
-                }).html(`
-                    ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                `);
-
-                $('#message-container').append(messageDiv);
-
-                setTimeout(() => {
-                    messageDiv.alert('close');
-                }, 3000);
-            }
-
-            // Xử lý khi người dùng chọn đáp án
-            $('.answer-options .option').click(function() {
-                if ($(this).hasClass('disabled')) return;
-
-                const questionElement = $(this).closest('.question-item');
-                const assignmentQuesID = questionElement.data('question-id');
-                const answerLabel = $(this).data('label');
-                const correctAnswer = questionElement.data('correct-answer');
-                const mark = questionElement.data('mark');
-                const isCorrect = answerLabel === correctAnswer;
-
-                // Gọi hàm submit câu trả lời
-                submitAnswer({
-                    assignmentQuesID: assignmentQuesID,
-                    answerLabel: answerLabel,
-                    isCorrect: isCorrect,
-                    mark: isCorrect ? mark : 0,
-                    button: $(this)
+                saveQuestionState(questionId, {
+                    answer: answer,
+                    type: type
                 });
             });
+
+            // Khôi phục trạng thái khi trang được tải
+            restoreQuestionStates();
         });
     </script>
 </body>
