@@ -8,6 +8,7 @@ public class ExamResult {
     private Question question;
     private int resultID;
     private ExamQuestion examQuestion;
+    private int eQuesID;
     private int examTakenID;
     private Learner learner;
     private LocalDateTime dateTaken;
@@ -96,6 +97,14 @@ public class ExamResult {
 
     public void setAnswerIsCorrect(boolean answerIsCorrect) {
         this.answerIsCorrect = answerIsCorrect;
+    }
+
+    public int geteQuesID() {
+        return eQuesID;
+    }
+
+    public void seteQuesID(int eQuesID) {
+        this.eQuesID = eQuesID;
     }
 
     @Override

@@ -1,4 +1,5 @@
-package dao;
+
+        package dao;
 
 import model.ExamQuestion;
 import model.ExamResult;
@@ -29,20 +30,17 @@ public class ExamResultDAO {
         try {
             connection.setAutoCommit(false);
 
-            // Lưu thông tin kết quả chung
             pstmtResult = connection.prepareStatement(sqlResult, Statement.RETURN_GENERATED_KEYS);
             pstmtResult.setInt(1, examTakenID);
             pstmtResult.setDouble(2, result.getMark());
             pstmtResult.setTimestamp(3, Timestamp.valueOf(result.getDateTaken()));
             pstmtResult.executeUpdate();
 
-            // Lấy resultID vừa được tạo
             generatedKeys = pstmtResult.getGeneratedKeys();
             if (generatedKeys.next()) {
                 result.setResultID(generatedKeys.getInt(1));
             }
 
-            // Lưu chi tiết từng câu trả lời
             pstmtDetail = connection.prepareStatement(sqlDetail);
             pstmtDetail.setInt(1, result.getResultID());
             pstmtDetail.setInt(2, result.getQuestion().getQuestionID());
@@ -76,6 +74,20 @@ public class ExamResultDAO {
         }
     }
 
+    public static int getEQuestID(int examID, int questionID) throws SQLException {
+        String query = "SELECT eQuestID FROM Exam_Question WHERE examID = ? AND questionID = ?";
+        try (Connection connection1 = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = connection1.prepareStatement(query)) {
+            stmt.setInt(1, examID);
+            stmt.setInt(2, questionID);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("eQuestID");
+            }
+            throw new SQLException("Không tìm thấy eQuestID cho examID=" + examID + ", questionID=" + questionID);
+        }
+    }
+
     public List<ExamResult> getExamResultsByLearner(int learnerID) {
         List<ExamResult> results = new ArrayList<>();
         String sql = "SELECT er.*, et.examID, et.timeTaken, et.timeInput, et.dateCreated, et.finalMark, et.skipQues, et.doneQues, " +
@@ -97,20 +109,61 @@ public class ExamResultDAO {
                 result.setMark(rs.getFloat("mark"));
                 result.setDateTaken(rs.getTimestamp("dateTaken").toLocalDateTime());
 
-                // Tạo đối tượng Exam
                 model.Exam exam = new model.Exam();
                 exam.setExamID(rs.getInt("examID"));
                 exam.setExamName(rs.getString("examName"));
                 exam.setExamDescription(rs.getString("description"));
                 result.setExam(exam);
 
-                // Tạo đối tượng Learner
                 model.Learner learner = new model.Learner();
                 learner.setLearnerID(learnerID);
                 result.setLearner(learner);
 
-                // Load chi tiết câu trả lời
                 loadResultDetails(result);
+                results.add(result);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+
+    // Lấy danh sách kết quả theo examTakenID
+    public List<ExamResult> getExamResultsByExamTakenId(int examTakenID) {
+        List<ExamResult> results = new ArrayList<>();
+        String sql = "SELECT er.*, et.examID, et.learnerID, q.questionText " +
+                "FROM Exam_Result er " +
+                "JOIN Exam_Taken et ON er.examTakenID = et.examTakenID " +
+                "JOIN Question q ON er.eQuestID = (SELECT eQuestID FROM Exam_Question WHERE questionID = q.questionID AND examID = et.examID) " +
+                "WHERE er.examTakenID = ?";
+
+        try (Connection connection1 = DBConnect.getInstance().getConnection();
+                PreparedStatement stmt = connection1.prepareStatement(sql)) {
+            stmt.setInt(1, examTakenID);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                ExamResult result = new ExamResult();
+                result.setResultID(rs.getInt("resultID"));
+                result.setExamTakenID(rs.getInt("examTakenID"));
+                result.seteQuesID(rs.getInt("eQuestID"));
+                result.setMark(rs.getFloat("mark"));
+                result.setDateTaken(rs.getTimestamp("dateTaken").toLocalDateTime());
+                result.setAnswerLabel(rs.getString("answerLabel"));
+                result.setAnswerIsCorrect(rs.getBoolean("answerIsCorrect"));
+
+                model.Exam exam = new model.Exam();
+                exam.setExamID(rs.getInt("examID"));
+                result.setExam(exam);
+
+                model.Learner learner = new model.Learner();
+                learner.setLearnerID(rs.getInt("learnerID"));
+                result.setLearner(learner);
+
+                model.Question question = new model.Question();
+                question.setQuestionText(rs.getString("questionText"));
+                result.setQuestion(question);
+
                 results.add(result);
             }
         } catch (SQLException e) {
@@ -154,22 +207,20 @@ public class ExamResultDAO {
                 ExamResult result = new ExamResult();
                 result.setResultID(rs.getInt("resultID"));
                 result.setExamTakenID(rs.getInt("examTakenID"));
+                result.seteQuesID(rs.getInt("eQuestID"));
                 result.setMark(rs.getFloat("mark"));
                 result.setDateTaken(rs.getTimestamp("dateTaken").toLocalDateTime());
 
-                // Tạo đối tượng Exam
                 model.Exam exam = new model.Exam();
                 exam.setExamID(rs.getInt("examID"));
                 exam.setExamName(rs.getString("examName"));
                 exam.setExamDescription(rs.getString("description"));
                 result.setExam(exam);
 
-                // Tạo đối tượng Learner
                 model.Learner learner = new model.Learner();
                 learner.setLearnerID(rs.getInt("learnerID"));
                 result.setLearner(learner);
 
-                // Load chi tiết câu trả lời
                 loadResultDetails(result);
                 return result;
             }
@@ -186,44 +237,42 @@ public class ExamResultDAO {
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            System.out.println("\n=== EXECUTING SQL ===");
+            System.out.println("\n=== ĐANG THỰC THI SQL ===");
             System.out.println("SQL: " + sql);
-            System.out.println("Parameters:");
+            System.out.println("Tham số:");
             System.out.println("1. eQuestID: " + questionID);
             System.out.println("2. learnerID: " + learnerID);
             System.out.println("3. answerLabel: " + answerLabel);
             System.out.println("4. answerIsCorrect: " + isCorrect);
             System.out.println("5. examTakenID: " + examTakenID);
 
-            stmt.setInt(1, questionID);      // eQuestID
-            stmt.setInt(2, learnerID);       // learnerID
-            stmt.setString(3, answerLabel);  // answerLabel
-            stmt.setBoolean(4, isCorrect);   // answerIsCorrect
-            stmt.setInt(5, examTakenID);     // examTakenID
+            stmt.setInt(1, questionID);
+            stmt.setInt(2, learnerID);
+            stmt.setString(3, answerLabel);
+            stmt.setBoolean(4, isCorrect);
+            stmt.setInt(5, examTakenID);
 
             int rowsAffected = stmt.executeUpdate();
-            System.out.println("SQL Execution result: " + (rowsAffected > 0 ? "SUCCESS" : "FAILED"));
-            System.out.println("Rows affected: " + rowsAffected);
+            System.out.println("Kết quả thực thi SQL: " + (rowsAffected > 0 ? "THÀNH CÔNG" : "THẤT BẠI"));
+            System.out.println("Số hàng bị ảnh hưởng: " + rowsAffected);
 
         } catch (SQLException e) {
-            System.out.println("\n=== SQL ERROR ===");
-            System.out.println("Error message: " + e.getMessage());
-            System.out.println("SQL State: " + e.getSQLState());
-            System.out.println("Error code: " + e.getErrorCode());
+            System.out.println("\n=== LỖI SQL ===");
+            System.out.println("Thông báo lỗi: " + e.getMessage());
+            System.out.println("Trạng thái SQL: " + e.getSQLState());
+            System.out.println("Mã lỗi: " + e.getErrorCode());
             e.printStackTrace();
         }
     }
 
-
     public void insertExamResult(ExamResult examResult) {
-        String sql = "INSERT INTO Exam_Result (eQuestID, learnerID,  dateTaken,  mark, answerLabel, answerIsCorrect,examTakenID) " +
-                "VALUES ( ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Exam_Result (eQuestID, learnerID, dateTaken, mark, answerLabel, answerIsCorrect, examTakenID) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-
-            stmt.setInt(1, examResult.getExamQuestion().geteQuestID());
+            stmt.setInt(1, examResult.geteQuesID());
             stmt.setInt(2, examResult.getLearner().getLearnerID());
             stmt.setTimestamp(3, java.sql.Timestamp.valueOf(examResult.getDateTaken()));
             stmt.setFloat(4, examResult.getMark());
@@ -233,38 +282,9 @@ public class ExamResultDAO {
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            System.out.println("Error inserting exam result: " + e.getMessage());
+            System.out.println("Lỗi khi chèn kết quả bài thi: " + e.getMessage());
             e.printStackTrace();
-            throw new RuntimeException("Failed to insert exam result", e);
+            throw new RuntimeException("Không thể chèn kết quả bài thi", e);
         }
     }
-
-
-        public static void main(String[] args) {
-            // Tạo đối tượng ExamQuestion
-            ExamQuestion examQuestion = new ExamQuestion();
-            examQuestion.seteQuestID(8); // eQuestID tồn tại trong DB
-
-            // Tạo đối tượng Learner
-            Learner learner = new Learner();
-            learner.setLearnerID(1); // learnerID tồn tại trong DB
-
-            // Tạo đối tượng ExamResult
-            ExamResult examResult = new ExamResult();
-            examResult.setExamQuestion(examQuestion);
-            examResult.setLearner(learner);
-            examResult.setDateTaken(LocalDateTime.now());
-            examResult.setMark(1.0f);
-            examResult.setAnswerLabel("A");
-            examResult.setAnswerIsCorrect(true);
-            examResult.setExamTakenID(10); // ID của lượt thi, phải tồn tại trong DB
-
-            // Gọi DAO để insert
-            ExamResultDAO dao = new ExamResultDAO();
-            dao.insertExamResult(examResult);
-
-            System.out.println("Insert exam result thành công!");
-        }
-    }
-
-
+}

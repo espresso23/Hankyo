@@ -1,9 +1,152 @@
+//package servlet;
+//
+//import dao.ExamResultDAO;
+//import dao.ExamTakenDAO;
+//import model.*;
+//
+//import javax.servlet.ServletException;
+//import javax.servlet.annotation.WebServlet;
+//import javax.servlet.http.HttpServlet;
+//import javax.servlet.http.HttpServletRequest;
+//import javax.servlet.http.HttpServletResponse;
+//import javax.servlet.http.HttpSession;
+//import java.io.IOException;
+//import java.sql.Time;
+//import java.util.List;
+//import java.util.logging.Logger;
+//import java.util.logging.Level;
+//import java.time.LocalDateTime;
+//import java.sql.SQLException;
+//
+//@WebServlet("/submitExam")
+//public class SubmitExamServlet extends HttpServlet {
+//    private static final Logger LOGGER = Logger.getLogger(SubmitExamServlet.class.getName());
+//
+//    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+//        HttpSession session = request.getSession(false);
+//        if (session == null || session.getAttribute("learnerID") == null) {
+//            LOGGER.warning("Invalid session or learnerID not found");
+//            response.sendRedirect("login.jsp");
+//            return;
+//        }
+//
+//        try {
+//            // Lấy thông tin từ session
+//            int learnerID = (int) session.getAttribute("learnerID");
+//            int examID = Integer.parseInt(String.valueOf(session.getAttribute("examID")));
+//            List<Question> questions = (List<Question>) session.getAttribute("questions");
+//
+//            LOGGER.info("Processing exam submission for learnerID: " + learnerID + ", examID: " + examID);
+//
+//            if (questions == null || questions.isEmpty()) {
+//                throw new ServletException("Không tìm thấy câu hỏi trong bài thi");
+//            }
+//
+//            // Khởi tạo ExamTaken
+//            ExamTakenDAO takenDAO = new ExamTakenDAO();
+//            int examTakenID = takenDAO.createExamTaken(learnerID,examID);
+//            LOGGER.info("Created new ExamTaken with ID: " + examTakenID);
+//
+//            // Khởi tạo các biến thống kê
+//            int skipQues = 0;
+//            int doneQues = 0;
+//            int correctAnswers = 0;
+//            float totalPossibleMark = 0;
+//            float earnedMark = 0;
+//
+//            // Xử lý thời gian làm bài
+//            int timeTakenSeconds;
+//            try {
+//                timeTakenSeconds = Integer.parseInt(request.getParameter("timeTaken"));
+//            } catch (NumberFormatException e) {
+//                LOGGER.warning("Invalid timeTaken parameter: " + request.getParameter("timeTaken"));
+//                timeTakenSeconds = 0;
+//            }
+//            Time timeTaken = new Time(timeTakenSeconds * 1000L);
+//
+//            ExamResultDAO resultDAO = new ExamResultDAO();
+//
+//            // Xử lý từng câu trả lời
+//            for (Question question : questions) {
+//                totalPossibleMark += question.getQuestionMark();
+//                String answerLabel = request.getParameter("question_" + question.getQuestionID());
+//                LOGGER.fine("Processing question " + question.getQuestionID() + " with answer: " + answerLabel);
+//
+//                boolean isCorrect = false;
+//
+//                if (answerLabel == null || answerLabel.trim().isEmpty()) {
+//                    skipQues++;
+//                    answerLabel = "";
+//                    LOGGER.fine("Question " + question.getQuestionID() + " was skipped");
+//                } else {
+//                    doneQues++;
+//                    for (Answer answer : question.getAnswers()) {
+//                        if (answer.getOptionLabel().equals(answerLabel) && answer.isCorrect()) {
+//                            isCorrect = true;
+//                            earnedMark += question.getQuestionMark();
+//                            correctAnswers++;
+//                            LOGGER.fine("Correct answer for question " + question.getQuestionID());
+//                            break;
+//                        }
+//                    }
+//                }
+//
+//                try {
+//                    int eQuestID = ExamResultDAO.getEQuestID(examID, question.getQuestionID());
+//                    // Lưu kết quả từng câu
+//                     ExamResult examResult = new ExamResult();
+//                    examResult.setExamTakenID(examTakenID);
+//                    examResult.setExam(new Exam(examID));
+//                    examResult.setAnswerLabel(answerLabel);
+//                    examResult.setAnswerIsCorrect(isCorrect);
+//                    examResult.setMark((float) (isCorrect ? question.getQuestionMark() : 0.0));
+//                    examResult.setDateTaken(LocalDateTime.now());
+//                    examResult.setLearner(new Learner(learnerID));
+//                    examResult.setQuestion(question);
+//                    examResult.seteQuesID(eQuestID);
+//
+//                    resultDAO.insertExamResult(examResult);
+//
+//                    LOGGER.fine("Saved result for question " + question.getQuestionID());
+//                } catch (Exception e) {
+//                    LOGGER.log(Level.SEVERE, "Error saving result for question " + question.getQuestionID(), e);
+//                    throw e;
+//                }
+//            }
+//
+//            // Tính điểm cuối cùng (thang điểm 10)
+//            float finalMark = (earnedMark / totalPossibleMark) * 10;
+//
+//            try {
+//                // Cập nhật ExamTaken
+//                ExamTakenDAO examTakenDAO = new ExamTakenDAO();
+//                examTakenDAO.updateExamTaken(examTakenID, finalMark, timeTaken, doneQues, skipQues);
+//
+//                // Log kết quả chi tiết
+//                LOGGER.info(String.format("Exam completed successfully - ID: %d, Score: %.2f/10, Correct: %d/%d, Done: %d, Skipped: %d, Time: %s",
+//                    examTakenID, finalMark, correctAnswers, questions.size(), doneQues, skipQues, timeTaken));
+//
+//                // Chuyển đến trang kết quả
+//                response.sendRedirect("exam?action=result&examTakenID=" + examTakenID);
+//
+//            } catch (SQLException e) {
+//                LOGGER.log(Level.SEVERE, "Error updating exam results for examTakenID: " + examTakenID, e);
+//                request.setAttribute("errorMessage", "Có lỗi xảy ra khi cập nhật kết quả bài thi: " + e.getMessage());
+//                request.getRequestDispatcher("error.jsp").forward(request, response);
+//            }
+//
+//        } catch (Exception e) {
+//            LOGGER.log(Level.SEVERE, "Error processing exam submission", e);
+//            request.setAttribute("errorMessage", "Có lỗi xảy ra khi nộp bài thi: " + e.getMessage());
+//            request.getRequestDispatcher("error.jsp").forward(request, response);
+//        }
+//    }
+//}
 package servlet;
 
 import dao.ExamResultDAO;
 import dao.ExamTakenDAO;
 import model.*;
-import util.DBConnect;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -12,34 +155,19 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Time;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.time.LocalDateTime;
+import java.sql.SQLException;
 
 @WebServlet("/submitExam")
 public class SubmitExamServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(SubmitExamServlet.class.getName());
-    private ExamTakenDAO examTakenDAO;
-    private ExamResultDAO examResultDAO;
 
-    @Override
-    public void init() throws ServletException {
-        examTakenDAO = new ExamTakenDAO();
-        examResultDAO = new ExamResultDAO();
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
-
-        // Validate session and learner
         if (session == null || session.getAttribute("learnerID") == null) {
             LOGGER.warning("Invalid session or learnerID not found");
             response.sendRedirect("login.jsp");
@@ -47,194 +175,144 @@ public class SubmitExamServlet extends HttpServlet {
         }
 
         try {
-            // Retrieve session data
-            int learnerID = (Integer) session.getAttribute("learnerID");
-            int examID = Integer.parseInt(String.valueOf(session.getAttribute("examID")));
-            List<Question> questions = (List<Question>) session.getAttribute("questions");
-
-            if (questions == null || questions.isEmpty()) {
-                throw new ServletException("No questions found for the exam");
+            int learnerID = (int) session.getAttribute("learnerID");
+            String examIDStr = String.valueOf(session.getAttribute("examID"));
+            if (examIDStr == null || examIDStr.isEmpty()) {
+                LOGGER.severe("examID not found in session for learnerID: " + learnerID);
+                throw new ServletException("Không tìm thấy examID trong session");
+            }
+            int examID;
+            try {
+                examID = Integer.parseInt(examIDStr);
+            } catch (NumberFormatException e) {
+                LOGGER.severe("Invalid examID format in session: " + examIDStr);
+                throw new ServletException("Định dạng examID không hợp lệ trong session");
             }
 
-            LOGGER.info(String.format("Processing exam submission - learnerID: %d, examID: %d", learnerID, examID));
+            // Lấy examTakenID từ session thay vì tạo mới
+            Integer examTakenIDObj = (Integer) session.getAttribute("examTakenID");
+            if (examTakenIDObj == null) {
+                LOGGER.severe("examTakenID not found in session for learnerID: " + learnerID);
+                throw new ServletException("Không tìm thấy examTakenID trong session");
+            }
+            int examTakenID = examTakenIDObj;
 
-            // Create ExamTaken record
-            int examTakenID = examTakenDAO.createExamTaken(learnerID, examID);
-            LOGGER.info("Created ExamTaken ID: " + examTakenID);
+            List<Question> questions = (List<Question>) session.getAttribute("questions");
+            LOGGER.info("Processing exam submission for learnerID: " + learnerID + ", examID: " + examID + ", examTakenID: " + examTakenID);
 
-            // Process time taken
-            int timeTakenSeconds = parseTimeTaken(request.getParameter("timeTaken"));
+            if (questions == null || questions.isEmpty()) {
+                throw new ServletException("Không tìm thấy câu hỏi trong bài thi");
+            }
+
+            int skipQues = 0;
+            int doneQues = 0;
+            int correctAnswers = 0;
+            float totalPossibleMark = 0;
+            float earnedMark = 0;
+
+            int timeTakenSeconds;
+            try {
+                timeTakenSeconds = Integer.parseInt(request.getParameter("timeTaken"));
+                if (timeTakenSeconds < 0) {
+                    LOGGER.warning("Negative timeTakenSeconds: " + timeTakenSeconds + ", setting to 0");
+                    timeTakenSeconds = 0;
+                }
+            } catch (NumberFormatException e) {
+                LOGGER.warning("Invalid timeTaken parameter: " + request.getParameter("timeTaken"));
+                timeTakenSeconds = 0;
+            }
             Time timeTaken = new Time(timeTakenSeconds * 1000L);
 
-            // Process answers
-            ExamResultSummary summary = processAnswers(
-                    questions,
-                    request,
-                    learnerID,
-                    examID,
-                    examTakenID
-            );
+            ExamResultDAO resultDAO = new ExamResultDAO();
 
-            // Update ExamTaken with final results
-            examTakenDAO.updateExamTaken(
-                    examTakenID,
-                    summary.finalMark,
-                    timeTaken,
-                    summary.doneQues,
-                    summary.skipQues
-            );
+            for (Question question : questions) {
+                if (question == null || question.getAnswers() == null || question.getAnswers().isEmpty()) {
+                    LOGGER.warning("Invalid question or answers for questionID: " + (question != null ? question.getQuestionID() : "null"));
+                    continue;
+                }
 
-            LOGGER.info(String.format(
-                    "Exam completed - ID: %d, Score: %.2f, Correct: %d, Done: %d, Skipped: %d",
-                    examTakenID, summary.finalMark, summary.correctAnswers, summary.doneQues, summary.skipQues
-            ));
+                totalPossibleMark += question.getQuestionMark();
+                String answerLabel = request.getParameter("question_" + question.getQuestionID());
+                LOGGER.info("Question ID: " + question.getQuestionID() + ", answerLabel: " + answerLabel);
 
-            // Redirect to results page
-            response.sendRedirect("exam?action=result&examTakenID=" + examTakenID);
+                boolean isCorrect = false;
 
-        } catch (NumberFormatException e) {
-            handleError(request, response, "Invalid input format: " + e.getMessage(), e);
-        } catch (ServletException e) {
-            handleError(request, response, "Exam processing error: " + e.getMessage(), e);
-        } catch (Exception e) {
-            handleError(request, response, "Unexpected error during exam submission: " + e.getMessage(), e);
-        }
-    }
+                if (answerLabel == null || answerLabel.trim().isEmpty()) {
+                    skipQues++;
+                    answerLabel = "";
+                    LOGGER.fine("Question " + question.getQuestionID() + " was skipped");
+                } else {
+                    doneQues++;
+                    for (Answer answer : question.getAnswers()) {
+                        if (answer.getOptionLabel().equals(answerLabel) && answer.isCorrect()) {
+                            isCorrect = true;
+                            earnedMark += question.getQuestionMark();
+                            correctAnswers++;
+                            LOGGER.fine("Correct answer for question " + question.getQuestionID());
+                            break;
+                        }
+                    }
+                }
 
-    private int parseTimeTaken(String timeTakenParam) {
-        try {
-            return Integer.parseInt(timeTakenParam);
-        } catch (NumberFormatException e) {
-            LOGGER.warning("Invalid timeTaken parameter: " + timeTakenParam);
-            return 0;
-        }
-    }
+                try {
+                    int eQuestID = ExamResultDAO.getEQuestID(examID, question.getQuestionID());
+                    ExamResult examResult = new ExamResult();
+                    examResult.setExamTakenID(examTakenID);
+                    examResult.setExam(new Exam(examID));
+                    examResult.setAnswerLabel(answerLabel);
+                    examResult.setAnswerIsCorrect(isCorrect);
+                    examResult.setMark((float) (isCorrect ? question.getQuestionMark() : 0.0));
+                    examResult.setDateTaken(LocalDateTime.now());
+                    examResult.setLearner(new Learner(learnerID));
+                    examResult.setQuestion(question);
+                    examResult.seteQuesID(eQuestID);
 
-    private ExamResultSummary processAnswers(
-            List<Question> questions,
-            HttpServletRequest request,
-            int learnerID,
-            int examID,
-            int examTakenID
-    ) {
-        int skipQues = 0;
-        int doneQues = 0;
-        int correctAnswers = 0;
-        float totalPossibleMark = 0;
-        float earnedMark = 0;
-
-        for (Question question : questions) {
-            totalPossibleMark += question.getQuestionMark();
-            String answerLabel = request.getParameter("question_" + question.getQuestionID());
-
-            boolean isCorrect = false;
-            if (answerLabel == null || answerLabel.trim().isEmpty()) {
-                skipQues++;
-                answerLabel = "";
-            } else {
-                doneQues++;
-                isCorrect = checkAnswerCorrectness(question, answerLabel);
-                if (isCorrect) {
-                    earnedMark += question.getQuestionMark();
-                    correctAnswers++;
+                    resultDAO.insertExamResult(examResult);
+                    LOGGER.fine("Saved result for question " + question.getQuestionID());
+                } catch (SQLException e) {
+                    LOGGER.log(Level.SEVERE, "Error saving result for question " + question.getQuestionID() + ": " + e.getMessage(), e);
+                    throw e;
                 }
             }
 
-            saveExamResult(
-                    question,
-                    learnerID,
-                    examID,
-                    examTakenID,
-                    answerLabel,
-                    isCorrect
-            );
-        }
-
-        float finalMark = totalPossibleMark > 0 ? (earnedMark / totalPossibleMark) * 10 : 0;
-        return new ExamResultSummary(finalMark, correctAnswers, doneQues, skipQues);
-    }
-
-    private boolean checkAnswerCorrectness(Question question, String answerLabel) {
-        for (Answer answer : question.getAnswers()) {
-            if (answer.getOptionLabel().equals(answerLabel) && answer.isCorrect()) {
-                LOGGER.fine("Correct answer for question " + question.getQuestionID());
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void saveExamResult(
-            Question question,
-            int learnerID,
-            int examID,
-            int examTakenID,
-            String answerLabel,
-            boolean isCorrect
-    ) {
-        try {
-            // Retrieve eQuestID from Exam_Question table
-            int eQuestID = getEQuestID(question.getQuestionID(), examID);
-            if (eQuestID == -1) {
-                throw new SQLException("No Exam_Question entry found for questionID: " + question.getQuestionID() + " and examID: " + examID);
+            if (doneQues == 0) {
+                LOGGER.warning("No questions answered by learnerID: " + learnerID);
+                request.setAttribute("errorMessage", "Bạn chưa trả lời câu hỏi nào. Vui lòng chọn ít nhất một đáp án.");
+                request.getRequestDispatcher("doExam.jsp").forward(request, response);
+                return;
             }
 
-            ExamResult examResult = new ExamResult();
-            ExamQuestion examQuestion = new ExamQuestion();
-            examQuestion.seteQuestID(eQuestID);
-            examResult.setExamQuestion(examQuestion);
-            examResult.setLearner(new Learner(learnerID));
-            examResult.setExamTakenID(examTakenID);
-            examResult.setQuestion(question);
-            examResult.setAnswerLabel(answerLabel);
-            examResult.setAnswerIsCorrect(isCorrect);
-            examResult.setMark(isCorrect ? (float) question.getQuestionMark() : 0.0f);
-            examResult.setDateTaken(LocalDateTime.now());
-
-            examResultDAO.insertExamResult(examResult);
-            LOGGER.fine("Saved result for question " + question.getQuestionID());
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error saving result for question " + question.getQuestionID(), e);
-            throw new RuntimeException("Failed to save exam result", e);
-        }
-    }
-
-    private int getEQuestID(int questionID, int examID) throws SQLException {
-        String sql = "SELECT eQuestID FROM Exam_Question WHERE questionID = ? AND examID = ?";
-        try (Connection conn = DBConnect.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, questionID);
-            stmt.setInt(2, examID);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("eQuestID");
+            if (doneQues + skipQues != questions.size()) {
+                LOGGER.warning("Invalid question counts: doneQues=" + doneQues + ", skipQues=" + skipQues + ", totalQuestions=" + questions.size());
             }
-        }
-        return -1; // Indicate no matching record found
-    }
 
-    private void handleError(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            String errorMessage,
-            Exception e
-    ) throws ServletException, IOException {
-        LOGGER.log(Level.SEVERE, errorMessage, e);
-        request.setAttribute("errorMessage", errorMessage);
-        request.getRequestDispatcher("error.jsp").forward(request, response);
-    }
+            float finalMark = totalPossibleMark > 0 ? (earnedMark / totalPossibleMark) * 10 : 0;
+            LOGGER.info("Before updating ExamTaken: finalMark=" + finalMark + ", timeTaken=" + timeTaken + ", doneQues=" + doneQues + ", skipQues=" + skipQues);
 
-    private static class ExamResultSummary {
-        final float finalMark;
-        final int correctAnswers;
-        final int doneQues;
-        final int skipQues;
+            try {
+                ExamTakenDAO examTakenDAO = new ExamTakenDAO();
+                examTakenDAO.updateExamTaken(examTakenID, finalMark, timeTaken, doneQues, skipQues);
 
-        ExamResultSummary(float finalMark, int correctAnswers, int doneQues, int skipQues) {
-            this.finalMark = finalMark;
-            this.correctAnswers = correctAnswers;
-            this.doneQues = doneQues;
-            this.skipQues = skipQues;
+                LOGGER.info(String.format("Exam completed successfully - ID: %d, Score: %.2f/10, Correct: %d/%d, Done: %d, Skipped: %d, Time: %s",
+                        examTakenID, finalMark, correctAnswers, questions.size(), doneQues, skipQues, timeTaken));
+
+                // Đảm bảo các giá trị session cần thiết được lưu lại
+                session.setAttribute("examID", String.valueOf(examID)); // Lưu lại examID dưới dạng String
+                session.setAttribute("skill", session.getAttribute("skill")); // Lưu lại skill
+                session.setAttribute("time", session.getAttribute("time")); // Lưu lại time
+                session.setAttribute("questions", questions); // Lưu lại questions
+
+                response.sendRedirect("exam?action=result&examTakenID=" + examTakenID);
+            } catch (SQLException e) {
+                LOGGER.log(Level.SEVERE, "Error updating exam results for examTakenID: " + examTakenID + ": " + e.getMessage(), e);
+                request.setAttribute("errorMessage", "Có lỗi xảy ra khi cập nhật kết quả bài thi: " + e.getMessage());
+                request.getRequestDispatcher("error.jsp").forward(request, response);
+            }
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error processing exam submission: " + e.getMessage(), e);
+            request.setAttribute("errorMessage", "Có lỗi xảy ra khi nộp bài thi: " + e.getMessage());
+            request.getRequestDispatcher("error.jsp").forward(request, response);
         }
     }
 }

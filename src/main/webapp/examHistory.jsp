@@ -7,18 +7,20 @@
 <head>
     <title>Lịch sử làm bài</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
     <style>
+        /* Keep the existing CSS styles as they are */
         :root {
-            --primary-pink: #ff9bb3; /* Soft petal pink */
-            --light-pink: #ffdfea; /* Whisper pink */
-            --soft-pink: #fff5f8; /* Blush background */
-            --primary-blue: #89c4f4; /* Sky blue */
-            --light-blue: #d6edff; /* Light sky */
-            --dark-blue: #4b97e8; /* Vibrant blue */
-            --accent-green: #77dd77; /* Mint green */
-            --text-dark: #2d3436; /* Dark gray */
-            --text-medium: #636e72; /* Medium gray */
-            --text-light: #b2bec3; /* Light gray */
+            --primary-pink: #ff9bb3;
+            --light-pink: #ffdfea;
+            --soft-pink: #fff5f8;
+            --primary-blue: #89c4f4;
+            --light-blue: #d6edff;
+            --dark-blue: #4b97e8;
+            --accent-green: #77dd77;
+            --text-dark: #2d3436;
+            --text-medium: #636e72;
+            --text-light: #b2bec3;
         }
 
         body {
@@ -135,7 +137,7 @@
             gap: 30px;
             margin-top: 20px;
             position: relative;
-            padding-right: 150px; /* Space for detail button */
+            padding-right: 150px;
         }
 
         .exam-info-item {
@@ -196,7 +198,6 @@
             border: 1px solid rgba(137, 196, 244, 0.2);
         }
 
-        /* Fix for overlapping elements */
         .time-info-container {
             display: flex;
             align-items: center;
@@ -249,7 +250,6 @@
             }
         }
 
-        /* Animation */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -274,138 +274,51 @@
     </header>
 
     <div class="exam-history">
-        <!-- Sample static content for testing -->
-        <div class="exam-item">
-            <div class="date-bubble">11/10/2024</div>
-            <div class="exam-title">
-                IELTS Simulation Listening test 1
-                <span class="exam-badge full">Full test</span>
+        <c:if test="${empty examTakens}">
+            <div class="exam-item">
+                <div class="exam-title">Chưa có lịch sử làm bài.</div>
             </div>
-            <div class="exam-info">
-                <div class="exam-info-item">
-                    <i class="bi bi-calendar"></i>
-                    <span>Ngày làm: 11/10/2024</span>
+        </c:if>
+        <c:forEach var="examTaken" items="${examTakens}" varStatus="status">
+            <div class="exam-item">
+                <div class="date-bubble">
+                    <fmt:formatDate value="${examTaken.dateCreated}" pattern="dd/MM/yyyy"/>
                 </div>
-                <div class="exam-info-item">
-                    <i class="bi bi-star-fill"></i>
-                    <span>Kết quả: <span class="exam-score">29/40 (Điểm: 6.5)</span></span>
+                <div class="exam-title">
+                    <!-- Exam title needs to come from Exam object -->
+                    <c:out value="Exam ID: ${examTaken.examID}"/>
+                    <span class="exam-badge full">Full test</span>
+                    <!-- Adjust badge logic based on exam type if available -->
                 </div>
-                <div class="exam-info-item">
-                    <i class="bi bi-clock"></i>
-                    <span>Thời gian làm bài: 0:27:54</span>
+                <div class="exam-info">
+                    <div class="exam-info-item">
+                        <i class="bi bi-calendar"></i>
+                        <span>Ngày làm: <fmt:formatDate value="${examTaken.dateCreated}" pattern="dd/MM/yyyy"/></span>
+                    </div>
+                    <div class="exam-info-item">
+                        <i class="bi bi-star-fill"></i>
+                        <span>Kết quả: <span class="exam-score">${examTaken.finalMark}</span></span>
+                    </div>
+                    <div class="exam-info-item">
+                        <i class="bi bi-clock"></i>
+                        <span>Thời gian làm bài:
+                            <c:choose>
+                                <c:when test="${not empty examTaken.timeTaken}">
+                                    ${examTaken.timeTaken}
+                                </c:when>
+                                <c:otherwise>Chưa ghi nhận</c:otherwise>
+                            </c:choose>
+                        </span>
+                    </div>
                 </div>
+                <a href="${pageContext.request.contextPath}/examResult?examTakenId=${examTaken.examTakenID}" class="view-detail">
+                    <i class="bi bi-chevron-right"></i> Xem chi tiết
+                </a>
             </div>
-            <a href="${pageContext.request.contextPath}/examResult?examId=1" class="view-detail">
-                <i class="bi bi-chevron-right"></i> Xem chi tiết
-            </a>
-        </div>
-
-        <div class="exam-item">
-            <div class="date-bubble">05/10/2024</div>
-            <div class="exam-title">
-                IELTS Practice Set 10 reading test 1
-                <span class="exam-badge full">Full test</span>
-            </div>
-            <div class="exam-info">
-                <div class="exam-info-item">
-                    <i class="bi bi-calendar"></i>
-                    <span>Ngày làm: 05/10/2024</span>
-                </div>
-                <div class="exam-info-item">
-                    <i class="bi bi-star-fill"></i>
-                    <span>Kết quả: <span class="exam-score">29/40 (Điểm: 6.5)</span></span>
-                </div>
-                <div class="exam-info-item">
-                    <i class="bi bi-clock"></i>
-                    <span>Thời gian làm bài: 0:24:40</span>
-                </div>
-            </div>
-            <a href="${pageContext.request.contextPath}/examResult?examId=2" class="view-detail">
-                <i class="bi bi-chevron-right"></i> Xem chi tiết
-            </a>
-        </div>
-
-        <div class="exam-item">
-            <div class="date-bubble">05/10/2024</div>
-            <div class="exam-title">
-                IELTS Practice Set 12 listening test 1
-                <span class="exam-badge full">Full test</span>
-            </div>
-            <div class="exam-info">
-                <div class="exam-info-item">
-                    <i class="bi bi-calendar"></i>
-                    <span>Ngày làm: 05/10/2024</span>
-                </div>
-                <div class="exam-info-item">
-                    <i class="bi bi-star-fill"></i>
-                    <span>Kết quả: <span class="exam-score">26/40 (Điểm: 6.5)</span></span>
-                </div>
-                <div class="exam-info-item">
-                    <i class="bi bi-clock"></i>
-                    <span>Thời gian làm bài: 0:40:00</span>
-                </div>
-            </div>
-            <a href="${pageContext.request.contextPath}/examResult?examId=3" class="view-detail">
-                <i class="bi bi-chevron-right"></i> Xem chi tiết
-            </a>
-        </div>
-
-        <div class="exam-item">
-            <div class="date-bubble">10/07/2024</div>
-            <div class="exam-title">
-                IELTS Practice Set 12 listening test 1
-                <span class="exam-badge recording">Recording 2</span>
-                <span class="exam-badge practice">Luyện tập</span>
-            </div>
-            <div class="exam-info">
-                <div class="exam-info-item">
-                    <i class="bi bi-calendar"></i>
-                    <span>Ngày làm: 10/07/2024</span>
-                </div>
-                <div class="exam-info-item">
-                    <i class="bi bi-star-fill"></i>
-                    <span>Kết quả: <span class="exam-score">10/10</span></span>
-                </div>
-                <div class="exam-info-item">
-                    <i class="bi bi-clock"></i>
-                    <span>Thời gian làm bài: 0:05:24</span>
-                </div>
-            </div>
-            <a href="${pageContext.request.contextPath}/examResult?examId=4" class="view-detail">
-                <i class="bi bi-chevron-right"></i> Xem chi tiết
-            </a>
-        </div>
-
-        <div class="exam-item">
-            <div class="date-bubble">09/07/2024</div>
-            <div class="exam-title">
-                IELTS Practice Set 12 listening test 1
-                <span class="exam-badge recording">Recording 2</span>
-                <span class="exam-badge practice">Luyện tập</span>
-            </div>
-            <div class="exam-info">
-                <div class="exam-info-item">
-                    <i class="bi bi-calendar"></i>
-                    <span>Ngày làm: 09/07/2024</span>
-                </div>
-                <div class="exam-info-item">
-                    <i class="bi bi-star-fill"></i>
-                    <span>Kết quả: <span class="exam-score">6/10</span></span>
-                </div>
-                <div class="exam-info-item">
-                    <i class="bi bi-clock"></i>
-                    <span>Thời gian làm bài: 0:10:56</span>
-                </div>
-            </div>
-            <a href="${pageContext.request.contextPath}/examResult?examId=5" class="view-detail">
-                <i class="bi bi-chevron-right"></i> Xem chi tiết
-            </a>
-        </div>
+        </c:forEach>
     </div>
 </div>
 
-<!-- Add Bootstrap Icons -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html> 
+</html>

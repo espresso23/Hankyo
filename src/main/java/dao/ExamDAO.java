@@ -271,7 +271,7 @@ public class ExamDAO {
                         question.setQuestionType(rs.getString("questionType"));
                         question.setQuestionImage(rs.getString("questionImg"));
                         question.setAudioFile(rs.getString("audio_file"));
-                        question.setQuestionMark(rs.getDouble("questionMark"));
+                        question.setQuestionMark(rs.getDouble("mark"));
 
                         System.out.println("Question details:");
                         System.out.println("- Text: " + question.getQuestionText());
@@ -552,33 +552,20 @@ public class ExamDAO {
             
             stmt.setInt(1, examTakenID);
             ResultSet rs = stmt.executeQuery();
-            
             if (rs.next()) {
                 ExamTaken examTaken = new ExamTaken();
                 examTaken.setExamTakenID(rs.getInt("examTakenID"));
                 examTaken.setExamID(rs.getInt("examID"));
-            //    examTaken.setTimeTaken(rs.getInt("timeTaken"));
-              //  examTaken.setTimeInput(rs.getInt("timeInput"));
-                examTaken.setDateCreated(rs.getTimestamp("dateCreated"));
                 examTaken.setLearnerID(rs.getInt("learnerID"));
-              //  examTaken.setFinalMark(rs.getDouble("finalMark"));
-                examTaken.setSkipQues(rs.getInt("skipQues"));
+                examTaken.setTimeTaken(rs.getTime("timeTaken"));
+                examTaken.setFinalMark(rs.getFloat("finalMark"));
                 examTaken.setDoneQues(rs.getInt("doneQues"));
-                
-                System.out.println("=== Retrieved exam taken details ===");
-                System.out.println("ExamTakenID: " + examTaken.getExamTakenID());
-                System.out.println("ExamID: " + examTaken.getExamID());
-                System.out.println("TimeTaken: " + examTaken.getTimeTaken());
-                System.out.println("FinalMark: " + examTaken.getFinalMark());
-                
+                examTaken.setSkipQues(rs.getInt("skipQues"));
                 return examTaken;
             }
-            
         } catch (SQLException e) {
-            System.out.println("Error retrieving exam taken: " + e.getMessage());
             e.printStackTrace();
         }
-        
         return null;
     }
 
