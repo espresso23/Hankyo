@@ -32,13 +32,13 @@ public class CustomFlashCardServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession();
         Learner learner = (Learner) session.getAttribute("learner");
-        Integer learnerID = learner.getLearnerID();
-
-        if (learnerID == null) {
+        
+        if (learner == null) {
             response.sendRedirect("login.jsp");
             return;
         }
 
+        Integer learnerID = learner.getLearnerID();
         request.getRequestDispatcher("quizlet").forward(request, response);
     }
 
@@ -49,13 +49,13 @@ public class CustomFlashCardServlet extends HttpServlet {
 
         HttpSession session = request.getSession();
         Learner learner = (Learner) session.getAttribute("learner");
-        Integer learnerID = learner.getLearnerID();
-
-        if (learnerID == null) {
+        
+        if (learner == null) {
             response.sendRedirect("login.jsp");
             return;
         }
 
+        Integer learnerID = learner.getLearnerID();
         String topic = request.getParameter("topic");
         String flashCardInput = request.getParameter("flashCards");
         String individualTopic = request.getParameter("individualTopic");
@@ -126,6 +126,7 @@ public class CustomFlashCardServlet extends HttpServlet {
         } else {
             errorMessages.add("Dữ liệu không hợp lệ.");
         }
+
         response.setContentType("application/json;charset=UTF-8");
         PrintWriter out = response.getWriter();
         JSONObject jsonResponse = new JSONObject();
@@ -142,8 +143,5 @@ public class CustomFlashCardServlet extends HttpServlet {
         jsonResponse.put("errorMessages", errorMessages);
         out.print(jsonResponse.toString());
         out.flush();
-        request.setAttribute("successMessages", successMessages);
-        request.setAttribute("errorMessages", errorMessages);
-        // request.getRequestDispatcher("quizlet").forward(request, response);
     }
 }

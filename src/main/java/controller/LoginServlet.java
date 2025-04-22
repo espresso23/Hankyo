@@ -32,7 +32,7 @@ public class LoginServlet extends HttpServlet {
             } else if ("admin".equalsIgnoreCase(user.getRole())) {
                 response.sendRedirect("admin.jsp");
             } else {
-                response.sendRedirect("courseHeader.jsp");
+                response.sendRedirect("home.jsp");
             }
         } else {
             request.getRequestDispatcher("login.jsp").forward(request, response);
@@ -80,7 +80,7 @@ public class LoginServlet extends HttpServlet {
                             request.getRequestDispatcher("expert.jsp").forward(request, response);
                         } else {
                             session.setAttribute("errorMsg", "Không tìm thấy hồ sơ chuyên gia.");
-                            response.sendRedirect("courseHeader.jsp");
+                            response.sendRedirect("home.jsp");
                         }
                     } else if ("admin".equalsIgnoreCase(user.getRole())) {
                         response.sendRedirect("admin.jsp");
@@ -89,13 +89,14 @@ public class LoginServlet extends HttpServlet {
                         Learner learner = learnerDAO.getLearnerByUserId(user.getUserID());
                         if (learner != null) {
                             session.setAttribute("learner", learner);
+                            session.setAttribute("learnerID", learner.getLearnerID());
                             System.out.println(learner.toString());
                         } else {
                             System.out.println("Learner is null for User ID: " + user.getUserID());
                             session.setAttribute("errorMsg", "Không tìm thấy hồ sơ người học.");
                         }
 
-                        response.sendRedirect("courseHeader.jsp");
+                        response.sendRedirect("home.jsp");
                     }
                 } else {
                     request.setAttribute("errorMsg", "Đăng nhập thất bại. Không tìm thấy người dùng.");

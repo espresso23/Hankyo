@@ -3,109 +3,162 @@
   User: bearx
   Date: 3/5/2025
   Time: 9:20 AM
-  To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page isELIgnored="false" %>
-<html>
-<head>
-  <title>Title</title>
-  <link rel="stylesheet" href="asset/css/header.css">
-  <style>
-    .button {
-      display: block;
-      position: relative;
-      width: 56px;
-      height: 56px;
-      margin: 0;
-      overflow: hidden;
-      outline: none;
-      background-color: transparent;
-      cursor: pointer;
-      border: 0;
-    }
+<style>
+  .button {
+    display: block;
+    position: relative;
+    width: 56px;
+    height: 56px;
+    margin: 0;
+    overflow: hidden;
+    outline: none;
+    background-color: transparent;
+    cursor: pointer;
+    border: 0;
+  }
 
-    .button:before,
-    .button:after {
-      content: "";
-      position: absolute;
-      border-radius: 50%;
-      inset: 7px;
-    }
+  .button:before,
+  .button:after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    inset: 7px;
+  }
 
-    .button:before {
-      border: 4px solid #96daf0 ;
-      transition: opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1) 80ms,
-      transform 0.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) 80ms;
-    }
+  .button:before {
+    border: 4px solid #96daf0;
+    transition: opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1) 80ms,
+    transform 0.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) 80ms;
+  }
 
-    .button:after {
-      border: 4px solid  #F2EB80 ;
-      transform: scale(1.3);
-      transition: opacity 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
-      transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-      opacity: 0;
-    }
+  .button:after {
+    border: 4px solid #F2EB80;
+    transform: scale(1.3);
+    transition: opacity 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
+    transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    opacity: 0;
+  }
 
-    .button:hover:before,
-    .button:focus:before {
-      opacity: 0;
-      transform: scale(0.7);
-      transition: opacity 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
-      transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    }
+  .button:hover:before,
+  .button:focus:before {
+    opacity: 0;
+    transform: scale(0.7);
+    transition: opacity 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
+    transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
 
-    .button:hover:after,
-    .button:focus:after {
-      opacity: 1;
-      transform: scale(1);
-      transition: opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1) 80ms,
-      transform 0.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) 80ms;
-    }
+  .button:hover:after,
+  .button:focus:after {
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1) 80ms,
+    transform 0.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) 80ms;
+  }
 
-    .button-box {
-      display: flex;
-      position: absolute;
-      top: 0;
-      left: 0;
-    }
+  .button-box {
+    display: flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
 
-    .button-elem {
-      display: block;
-      width: 20px;
-      height: 20px;
-      margin: 17px 18px 0 18px;
-      transform: rotate(180deg);
-      fill: #8AACFF;
-    }
+  .button-elem {
+    display: block;
+    width: 20px;
+    height: 20px;
+    margin: 17px 18px 0 18px;
+    transform: rotate(180deg);
+    fill: #8AACFF;
+  }
 
-    .button:hover .button-box,
-    .button:focus .button-box {
-      transition: 0.4s;
-      transform: translateX(-56px);
-    }
-    .back-btn .button-box {
-      display: flex;
-      align-items: center;
-    }
-    .back-btn .button-elem svg {
-      width: 24px;
-      height: 24px;
-      fill: #333; /* Màu mặc định */
-      transition: transform 0.3s ease, fill 0.3s ease;
-    }
-    .back-btn:hover .button-elem svg {
-      transform: translateX(-5px); /* Di chuyển sang trái khi hover */
-      fill: #007BFF; /* Đổi màu khi hover */
-    }
-    .logo {
-      grid-column: 2 / 3; /* Đẩy logo sang cột tiếp theo */
-      justify-self: start;
-      width: 50px;
-    }
-  </style>
-</head>
-<body>
+  .button:hover .button-box,
+  .button:focus .button-box {
+    transition: 0.4s;
+    transform: translateX(-56px);
+  }
+
+  .back-btn .button-box {
+    display: flex;
+    align-items: center;
+  }
+
+  .back-btn .button-elem svg {
+    width: 24px;
+    height: 24px;
+    fill: #333;
+    transition: transform 0.3s ease, fill 0.3s ease;
+  }
+
+  .back-btn:hover .button-elem svg {
+    transform: translateX(-5px);
+    fill: #007BFF;
+  }
+
+  .logo {
+    grid-column: 2 / 3;
+    justify-self: start;
+    width: 50px;
+  }
+
+  .navbarContainer {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+  }
+
+  .user-info-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .username {
+    font-weight: bold;
+  <% if (request.getAttribute("equippedGradientStart") != null && request.getAttribute("equippedGradientEnd") != null) { %>
+    color: transparent;
+    background: linear-gradient(45deg, <%= request.getAttribute("equippedGradientStart") %>, <%= request.getAttribute("equippedGradientEnd") %>);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  <% } else { %>
+    color: #333;
+  <% } %>
+  }
+
+  .honour-name {
+    font-size: 0.8em;
+    color: #666;
+    margin-top: 2px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.8), 0 0 10px rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .honour-image {
+    width: 60px !important;
+    height: 60px !important;
+    margin: 0 5px !important;
+    vertical-align: middle !important;
+    object-fit: contain !important;
+  }
+
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+</style>
 <header>
   <!-- Nút Quay lại với SVG -->
   <button class="button" onclick="history.back()">
@@ -145,16 +198,24 @@
         </span>
       </a>
     </div>
-
-
-    <span>Xin chào, <%= session.getAttribute("username") %>!</span>
-    <% 
-    String avatar = (String) session.getAttribute("avatar");
-    System.out.println("Debug - Avatar from session: " + avatar);
-    %>
-    <img src="${pageContext.request.contextPath}/<%= avatar != null ? avatar : "asset/png/avatar/monkey.jpg" %>" 
-         onclick="togglePopup()"
-         onerror="this.src='${pageContext.request.contextPath}/asset/png/avatar/monkey.jpg'">
+    <div class="user-info">
+      <div class="user-info-text">
+        <span class="username">Xin chào, <%= session.getAttribute("username") %>!</span>
+        <% if (request.getAttribute("equippedHonourName") != null && request.getAttribute("equippedHonourImage") != null) { %>
+        <span class="honour-name"><%= request.getAttribute("equippedHonourName") %></span>
+        <% } %>
+      </div>
+      <% if (request.getAttribute("equippedHonourName") != null && request.getAttribute("equippedHonourImage") != null) { %>
+      <img class="honour-image" src="${pageContext.request.contextPath}/<%= request.getAttribute("equippedHonourImage") %>" alt="Honour Image">
+      <% } %>
+      <%
+        String avatar = (String) session.getAttribute("avatar");
+        System.out.println("Debug - Avatar from session: " + avatar);
+      %>
+      <img class="avatar" src="${pageContext.request.contextPath}/<%= avatar != null ? avatar : "asset/png/avatar/monkey.jpg" %>"
+           onclick="togglePopup()"
+           onerror="this.src='${pageContext.request.contextPath}/asset/png/avatar/monkey.jpg'">
+    </div>
   </div>
 </header>
 
@@ -162,7 +223,6 @@
 <div class="popupContainer" id="popupContainer">
   <div class="profile">
     <div class="profileContent"><a href="${pageContext.request.contextPath}/update-profile">Tài Khoản</a></div>
-
     <div class="profileContent">
       <form action="${pageContext.request.contextPath}/logout" method="post">
         <button type="submit" class="logout-btn">Đăng Xuất</button>
@@ -170,7 +230,6 @@
     </div>
   </div>
 </div>
-
 
 <!-- Menu Button and Vertical Menu -->
 <button class="menu-btn" onclick="toggleMenu()">Menu</button>
@@ -207,6 +266,10 @@
       menu.style.display = 'none';
     }
   });
+
+  // Debug request attributes
+  console.log("equippedGradientStart: <%= request.getAttribute("equippedGradientStart") %>");
+  console.log("equippedGradientEnd: <%= request.getAttribute("equippedGradientEnd") %>");
+  console.log("equippedHonourName: <%= request.getAttribute("equippedHonourName") %>");
+  console.log("equippedHonourImage: <%= request.getAttribute("equippedHonourImage") %>");
 </script>
-</body>
-</html>

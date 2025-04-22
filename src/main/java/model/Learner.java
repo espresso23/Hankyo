@@ -23,16 +23,14 @@ public Learner(int learnerID){
         this.vip = vip;
     }
 
-    public Learner(int userID, String username, String password, String gmail, String phone, String role, String status, String fullName, String socialID, Date dateCreate, String gender, Date dateOfBirth, String avatar, double hankyoPoint, Honour honour, int learnerID, Reward reward, Vip vip) {
-        super(userID, username, password, gmail, phone, role, status, fullName, socialID, dateCreate, gender, dateOfBirth, avatar);
+    public Learner(int userID, String username, String password, String gmail, String phone, String role, String status, String fullName, String socialID, Date dateCreate, String gender, Date dateOfBirth, String avatar, Integer equippedHonourID, int learnerID, double hankyoPoint, Honour honour, Reward reward, Vip vip) {
+        super(userID, username, password, gmail, phone, role, status, fullName, socialID, dateCreate, gender, dateOfBirth, avatar, equippedHonourID);
+        this.learnerID = learnerID;
         this.hankyoPoint = hankyoPoint;
         this.honour = honour;
-        this.learnerID = learnerID;
         this.reward = reward;
         this.vip = vip;
     }
-
-
 
     public double getHankyoPoint() {
         return hankyoPoint;

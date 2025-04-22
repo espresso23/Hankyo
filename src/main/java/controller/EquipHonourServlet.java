@@ -19,11 +19,14 @@ public class EquipHonourServlet extends HttpServlet {
 
         HttpSession session = request.getSession();
         Learner learner = (Learner) session.getAttribute("learner");
-        if (learner == null) {
+        Integer userID = (Integer) session.getAttribute("userID");
+        
+        if (learner == null || userID == null) {
             session.setAttribute("errorMessage", "Bạn cần đăng nhập để thực hiện thao tác này");
             response.sendRedirect("login.jsp");
             return;
         }
+        
         Integer learnerID = learner.getLearnerID();
         String action = request.getParameter("action");
         int honourID = Integer.parseInt(request.getParameter("honourID"));
@@ -32,14 +35,14 @@ public class EquipHonourServlet extends HttpServlet {
 
         try {
             if ("equip".equals(action)) {
-                boolean success = honourOwnedDAO.equipHonour(learnerID, honourID);
+                boolean success = honourOwnedDAO.equipHonour(learnerID, honourID, userID);
                 if (success) {
                     session.setAttribute("successMessage", "Trang bị thành tựu thành công");
                 } else {
                     session.setAttribute("errorMessage", "Trang bị thất bại");
                 }
             } else if ("unequip".equals(action)) {
-                boolean success = honourOwnedDAO.unequipHonour(learnerID);
+                boolean success = honourOwnedDAO.unequipHonour(userID);
                 if (success) {
                     session.setAttribute("successMessage", "Gỡ bỏ thành tựu thành công");
                 } else {

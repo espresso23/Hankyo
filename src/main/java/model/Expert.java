@@ -15,11 +15,13 @@ public class Expert extends User {
         this.honour_ownedID = honour_ownedID;
     }
 
-    public Expert(int userID, String username, String password, String gmail, String phone, String role, String status, String fullName, String socialID, Date dateCreate, String gender, Date dateOfBirth, String avatar, String certificate, int expertID, int honour_ownedID) {
-        super(userID, username, password, gmail, phone, role, status, fullName, socialID, dateCreate, gender, dateOfBirth, avatar);
-        this.certificate = certificate;
+    public Expert(int userID, String username, String password, String gmail, String phone, String role, String status, String fullName, String socialID, Date dateCreate, String gender, Date dateOfBirth, String avatar, Integer equippedHonourID, int expertID, int honour_ownedID, String certificate, Feedback feedback, Honour honour) {
+        super(userID, username, password, gmail, phone, role, status, fullName, socialID, dateCreate, gender, dateOfBirth, avatar, equippedHonourID);
         this.expertID = expertID;
         this.honour_ownedID = honour_ownedID;
+        this.certificate = certificate;
+        this.feedback = feedback;
+        this.honour = honour;
     }
 
     public Feedback getFeedback() {

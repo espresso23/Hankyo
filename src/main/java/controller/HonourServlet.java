@@ -28,7 +28,9 @@ public class HonourServlet extends HttpServlet {
         HttpSession session = request.getSession();
         Learner learner = (Learner) session.getAttribute("learner");
         Integer learnerID = learner != null ? learner.getLearnerID() : null;
-        if (learnerID == null) {
+        Integer userID = (Integer) session.getAttribute("userID");
+        
+        if (learnerID == null || userID == null) {
             response.sendRedirect("login.jsp");
             return;
         }
@@ -44,8 +46,8 @@ public class HonourServlet extends HttpServlet {
             honourOwnedMap.put(honour.getHonourID(), owned);
         }
 
-        // Lấy ID của thành tựu đang được trang bị từ bảng IsEquippedHonour
-        Integer equippedHonourID = honourOwnedDAO.getEquippedHonourID(learnerID);
+        // Lấy ID của thành tựu đang được trang bị
+        Integer equippedHonourID = honourOwnedDAO.getEquippedHonourID(userID);
 
         Set<String> uniqueTypes = listHonour.stream()
                 .map(Honour::getHonourType)

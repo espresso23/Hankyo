@@ -47,6 +47,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const backElement = document.querySelector('.flashcard-back');
             const flashcardInner = document.querySelector('.flashcard-inner');
 
+            if (!frontElement || !backElement || !flashcardInner) {
+                console.error('Flashcard elements not found');
+                return;
+            }
+
             if (!this.flashcards.length) {
                 frontElement.textContent = 'Không có thẻ nào';
                 backElement.textContent = 'Vui lòng thêm thẻ mới';
@@ -62,6 +67,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         renderTable() {
             const tbody = document.querySelector('.wordTable tbody');
+            if (!tbody) {
+                console.error('Table body not found');
+                return;
+            }
             tbody.innerHTML = this.flashcards.map(card => `
                 <tr data-cfcid="${card.CFCID}">
                     <td class="word-cell">${card.word}</td>
@@ -79,124 +88,136 @@ document.addEventListener('DOMContentLoaded', function() {
     let initialData = [];
     try {
         initialData = JSON.parse(JSON.stringify(window.flashCardsJson));
+        console.log('FlashcardStore initialized with:', initialData);
     } catch (e) {
         console.error('Error parsing flashCardsJson:', e);
     }
     FlashcardStore.init(initialData);
 
     // Xử lý chuyển đổi tab
-    const tabs = document.querySelectorAll('.tab');
+    const tabButtons = document.querySelectorAll('.tab-button');
     const tabContents = document.querySelectorAll('.tab-content');
 
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            tabContents.forEach(c => c.classList.remove('active'));
+    function switchTab(tabId) {
+        // Remove active class from all buttons and contents
+        tabButtons.forEach(button => button.classList.remove('active'));
+        tabContents.forEach(content => content.classList.remove('active'));
 
-            tab.classList.add('active');
-            document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+        // Add active class to selected button and content
+        const selectedButton = document.querySelector(`.tab-button[data-tab="${tabId}"]`);
+        const selectedContent = document.getElementById(`${tabId}-tab`);
 
-            if (tab.dataset.tab === 'edit') {
+        if (selectedButton && selectedContent) {
+            selectedButton.classList.add('active');
+            selectedContent.classList.add('active');
+
+            // If edit tab is activated, render the table
+            if (tabId === 'edit') {
                 FlashcardStore.renderTable();
             }
+        }
+    }
+
+    // Add click event listeners to tab buttons
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const tabId = button.dataset.tab;
+            switchTab(tabId);
         });
     });
 
-    // Xử lý sự kiện flashcard (Tab Flashcard)
-    document.querySelector('.nextButton').addEventListener('click', () => {
-        FlashcardStore.nextFlashcard();
-    });
+    // Xử lý sự kiện flashcard
+    const nextButton = document.querySelector('.nextButton');
+    const previousButton = document.querySelector('.previousButton');
+    const flashcardInner = document.querySelector('.flashcard-inner');
 
-    document.querySelector('.previousButton').addEventListener('click', () => {
-        FlashcardStore.previousFlashcard();
-    });
+    if (nextButton) {
+        nextButton.addEventListener('click', () => FlashcardStore.nextFlashcard());
+    }
 
-    document.querySelector('.flashcard-inner').addEventListener('click', () => {
-        FlashcardStore.toggleFlip();
-    });
+    if (previousButton) {
+        previousButton.addEventListener('click', () => FlashcardStore.previousFlashcard());
+    }
 
-    // Xử lý sự kiện bảng (Tab Edit)
-    document.querySelector('.wordTable').addEventListener('click', function(e) {
-        const target = e.target;
-        const row = target.closest('tr');
-        if (!row) return;
+    if (flashcardInner) {
+        flashcardInner.addEventListener('click', () => FlashcardStore.toggleFlip());
+    }
 
-        const cfcid = row.dataset.cfcid;
-        if (!cfcid) {
-            console.error('Missing cfcid for row:', row);
-            alert('Lỗi: Không tìm thấy ID flashcard');
-            return;
-        }
+    // Xử lý sự kiện bảng
+    const wordTable = document.querySelector('.wordTable');
+    if (wordTable) {
+        wordTable.addEventListener('click', function(e) {
+            const target = e.target;
+            const row = target.closest('tr');
+            if (!row) return;
 
-        if (target.classList.contains('delete-btn')) {
-            const word = target.dataset.word;
-            if (confirm(`Bạn có chắc muốn xóa từ "${word}"?`)) {
-                console.log('Sending delete request:', { cfcid });
-                fetch(`${window.contextPath}/flashCard`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-                    body: `action=delete&cfcid=${cfcid}`
-                })
+            const cfcid = row.dataset.cfcid;
+            if (!cfcid) {
+                console.error('Missing cfcid for row');
+                return;
+            }
+
+            if (target.classList.contains('delete-btn')) {
+                const word = target.dataset.word;
+                if (confirm(`Bạn có chắc muốn xóa từ "${word}"?`)) {
+                    fetch(`${window.contextPath}/flashCard`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                        body: `action=delete&cfcid=${cfcid}`
+                    })
                     .then(response => {
-                        console.log('Delete response:', response.status, response.statusText);
                         if (response.ok) {
                             alert('Xóa thành công');
                             window.location.reload();
                         } else {
-                            return response.text().then(text => {
-                                throw new Error(text || 'Xóa thất bại');
-                            });
+                            throw new Error('Xóa thất bại');
                         }
                     })
                     .catch(error => {
                         console.error('Error deleting flashcard:', error);
                         alert(`Có lỗi xảy ra khi xóa: ${error.message}`);
                     });
-            }
-        }
-
-        if (target.classList.contains('edit-btn')) {
-            const wordCell = row.querySelector('.word-cell');
-            const meanCell = row.querySelector('.mean-cell');
-            const actionCell = row.querySelector('.action-cell');
-            const originalWord = wordCell.textContent;
-            const originalMean = meanCell.textContent;
-
-            wordCell.innerHTML = `<input type="text" class="edit-input" value="${originalWord}">`;
-            meanCell.innerHTML = `<input type="text" class="edit-input" value="${originalMean}">`;
-            actionCell.innerHTML = `
-                <button class="save-btn">Lưu</button>
-                <button class="cancel-btn">Hủy</button>
-            `;
-        }
-
-        if (target.classList.contains('save-btn')) {
-            const wordCell = row.querySelector('.word-cell');
-            const meanCell = row.querySelector('.mean-cell');
-            const newWord = wordCell.querySelector('.edit-input').value.trim();
-            const newMean = meanCell.querySelector('.edit-input').value.trim();
-
-            if (!newWord || !newMean) {
-                alert('Từ và nghĩa không được để trống');
-                return;
+                }
             }
 
-            console.log('Sending update request:', { cfcid, newWord, newMean });
-            fetch(`${window.contextPath}/flashCard`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-                body: `action=update&cfcid=${cfcid}&word=${encodeURIComponent(newWord)}&mean=${encodeURIComponent(newMean)}`
-            })
+            if (target.classList.contains('edit-btn')) {
+                const wordCell = row.querySelector('.word-cell');
+                const meanCell = row.querySelector('.mean-cell');
+                const actionCell = row.querySelector('.action-cell');
+                const originalWord = wordCell.textContent;
+                const originalMean = meanCell.textContent;
+
+                wordCell.innerHTML = `<input type="text" class="edit-input" value="${originalWord}">`;
+                meanCell.innerHTML = `<input type="text" class="edit-input" value="${originalMean}">`;
+                actionCell.innerHTML = `
+                    <button class="save-btn">Lưu</button>
+                    <button class="cancel-btn">Hủy</button>
+                `;
+            }
+
+            if (target.classList.contains('save-btn')) {
+                const wordCell = row.querySelector('.word-cell');
+                const meanCell = row.querySelector('.mean-cell');
+                const newWord = wordCell.querySelector('.edit-input').value.trim();
+                const newMean = meanCell.querySelector('.edit-input').value.trim();
+
+                if (!newWord || !newMean) {
+                    alert('Từ và nghĩa không được để trống');
+                    return;
+                }
+
+                fetch(`${window.contextPath}/flashCard`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                    body: `action=update&cfcid=${cfcid}&word=${encodeURIComponent(newWord)}&mean=${encodeURIComponent(newMean)}`
+                })
                 .then(response => {
-                    console.log('Update response:', response.status, response.statusText);
                     if (response.ok) {
                         FlashcardStore.updateFlashcard(cfcid, newWord, newMean);
                         FlashcardStore.renderTable();
                         alert('Lưu thành công');
                     } else {
-                        return response.text().then(text => {
-                            throw new Error(text || 'Cập nhật thất bại');
-                        });
+                        throw new Error('Cập nhật thất bại');
                     }
                 })
                 .catch(error => {
@@ -204,12 +225,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     alert(`Có lỗi xảy ra khi cập nhật: ${error.message}`);
                     FlashcardStore.renderTable();
                 });
-        }
+            }
 
-        if (target.classList.contains('cancel-btn')) {
-            FlashcardStore.renderTable();
-        }
-    });
+            if (target.classList.contains('cancel-btn')) {
+                FlashcardStore.renderTable();
+            }
+        });
+    }
 
     // Xử lý toggle chế độ nhập
     let isManualMode = true;
@@ -217,6 +239,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const manualInput = document.querySelector('.manual-input');
         const individualInput = document.querySelector('.individual-input');
         const toggleBtn = document.querySelector('.toggle-btn');
+
+        if (!manualInput || !individualInput || !toggleBtn) {
+            console.error('Input mode elements not found');
+            return;
+        }
 
         if (isManualMode) {
             manualInput.classList.remove('active');
@@ -256,41 +283,45 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             body = `action=add&mode=individual&topic=${encodeURIComponent(topic)}&word=${encodeURIComponent(word)}&mean=${encodeURIComponent(mean)}`;
+            console.log('Sending individual mode data:', {
+                topic,
+                word,
+                mean,
+                body
+            });
         }
 
-        console.log('Sending add request:', body);
         fetch(`${window.contextPath}/flashCard`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
             body: body
         })
-            .then(response => {
-                console.log('Add response:', response.status, response.statusText);
-                if (response.ok) {
-                    return response.json(); // Expect JSON with new flashcards
-                } else {
-                    return response.text().then(text => {
-                        throw new Error(text || 'Thêm thất bại');
-                    });
-                }
-            })
-            .then(data => {
-                data.forEach(card => {
-                    FlashcardStore.addFlashcard(card.CFCID, card.word, card.mean);
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (response.ok) {
+                return response.json();
+            } else {
+                return response.text().then(text => {
+                    console.error('Error response:', text);
+                    throw new Error(text || 'Thêm thất bại');
                 });
-                FlashcardStore.renderTable();
-                alert('Thêm thành công');
-                // Reset form
-                document.getElementById('manualFlashCards').value = '';
-                document.getElementById('word').value = '';
-                document.getElementById('mean').value = '';
-            })
-            .catch(error => {
-                console.error('Error adding flashcard:', error);
-                alert(`Có lỗi xảy ra khi thêm: ${error.message}`);
+            }
+        })
+        .then(data => {
+            console.log('Success response:', data);
+            data.forEach(card => {
+                FlashcardStore.addFlashcard(card.CFCID, card.word, card.mean);
             });
+            FlashcardStore.renderTable();
+            alert('Thêm thành công');
+            // Reset form
+            document.getElementById('manualFlashCards').value = '';
+            document.getElementById('word').value = '';
+            document.getElementById('mean').value = '';
+        })
+        .catch(error => {
+            console.error('Error adding flashcard:', error);
+            alert(`Có lỗi xảy ra khi thêm: ${error.message}`);
+        });
     };
-
-    // Debug log
-    console.log('FlashcardStore initialized with:', FlashcardStore.flashcards);
 });

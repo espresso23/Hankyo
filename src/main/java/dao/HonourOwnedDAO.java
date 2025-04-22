@@ -68,7 +68,7 @@ public class HonourOwnedDAO {
     }
 
     // Trang bị một thành tựu
-    public boolean equipHonour(int learnerID, int honourID) {
+    public boolean equipHonour(int learnerID, int honourID, int userID) {
         // Kiểm tra xem learner đã sở hữu honour này chưa
         if (!honourOwnedExists(learnerID, honourID)) {
             // Nếu chưa sở hữu, thêm vào Honour_Owned trước
@@ -82,50 +82,29 @@ public class HonourOwnedDAO {
             return false;
         }
 
-        try (Connection conn = DBConnect.getInstance().getConnection()) {
-            // Bắt đầu transaction để đảm bảo tính nhất quán
-            conn.setAutoCommit(false);
-            try {
-                // Xóa thành tựu đang được trang bị (nếu có)
-                String deleteQuery = "DELETE FROM IsEquippedHonour WHERE learnerID = ?";
-                try (PreparedStatement deleteStmt = conn.prepareStatement(deleteQuery)) {
-                    deleteStmt.setInt(1, learnerID);
-                    deleteStmt.executeUpdate();
-                }
-
-                // Thêm thành tựu mới vào IsEquippedHonour
-                String insertQuery = "INSERT INTO IsEquippedHonour (learnerID, honourID) VALUES (?, ?)";
-                try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
-                    insertStmt.setInt(1, learnerID);
-                    insertStmt.setInt(2, honourID);
-                    insertStmt.executeUpdate();
-                }
-
-                conn.commit();
-                return true;
-            } catch (SQLException e) {
-                conn.rollback();
-                System.err.println("Error in equipHonour: " + e.getMessage());
-                e.printStackTrace();
-                return false;
-            } finally {
-                conn.setAutoCommit(true);
-            }
+        // Cập nhật equippedHonourID trong bảng User
+        String query = "UPDATE [User] SET equippedHonourID = ? WHERE userID = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, honourID);
+            ps.setInt(2, userID);
+            int rowsUpdated = ps.executeUpdate();
+            return rowsUpdated > 0;
         } catch (SQLException e) {
-            System.err.println("Error connecting to database: " + e.getMessage());
+            System.err.println("Error in equipHonour: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
 
     // Bỏ trang bị thành tựu
-    public boolean unequipHonour(int learnerID) {
-        String query = "DELETE FROM IsEquippedHonour WHERE learnerID = ?";
+    public boolean unequipHonour(int userID) {
+        String query = "UPDATE [User] SET equippedHonourID = NULL WHERE userID = ?";
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
-            ps.setInt(1, learnerID);
-            int rowsDeleted = ps.executeUpdate();
-            return rowsDeleted > 0;
+            ps.setInt(1, userID);
+            int rowsUpdated = ps.executeUpdate();
+            return rowsUpdated > 0;
         } catch (SQLException e) {
             System.err.println("Error in unequipHonour: " + e.getMessage());
             e.printStackTrace();
@@ -134,14 +113,14 @@ public class HonourOwnedDAO {
     }
 
     // Lấy ID của thành tựu đang được trang bị
-    public Integer getEquippedHonourID(int learnerID) {
-        String query = "SELECT honourID FROM IsEquippedHonour WHERE learnerID = ?";
+    public Integer getEquippedHonourID(int userID) {
+        String query = "SELECT equippedHonourID FROM [User] WHERE userID = ?";
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
-            ps.setInt(1, learnerID);
+            ps.setInt(1, userID);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt("honourID");
+                    return rs.getInt("equippedHonourID") != 0 ? rs.getInt("equippedHonourID") : null;
                 }
             }
         } catch (SQLException e) {

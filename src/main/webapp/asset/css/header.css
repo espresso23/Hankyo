@@ -36,7 +36,7 @@ header {
 
 .navbarContainer span {
     text-decoration: Highlight;
-    color: #8AACFF;
+
 }
 
 .navbarContent a {
@@ -46,12 +46,12 @@ header {
     transition: 0.3s;
 }
 
-.navbarContainer img {
-    transition: border 0.3s ease-in-out;
-    width: 5%;
-    border-radius: 100%;
-    cursor: pointer;
-}
+/*.navbarContainer img {*/
+/*    transition: border 0.3s ease-in-out;*/
+/*    width: 5%;*/
+/*    border-radius: 100%;*/
+/*    cursor: pointer;*/
+/*}*/
 
 .navbarContainer img:hover {
     border: 5px solid black;

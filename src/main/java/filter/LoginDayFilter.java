@@ -30,31 +30,21 @@ public class LoginDayFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
+        System.out.println("LoginDayFilter doFilter called");
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         HttpSession session = httpRequest.getSession(false);
 
-        // Skip filter for login page to avoid infinite loop
-        if (httpRequest.getRequestURI().endsWith("/login")) {
-            chain.doFilter(request, response);
-            return;
-        }
-
+        System.out.println("Session exists: " + (session != null));
         if (session != null) {
-            Integer learnerID = (Integer) session.getAttribute("learnerID");
+            Learner learner = (Learner) session.getAttribute("learner");
             Integer userID = (Integer) session.getAttribute("userID");
+            System.out.println("learner: " + learner);
+            System.out.println("userID: " + userID);
 
-            if (userID != null && learnerID != null) {
-                checkAndUpdateLoginDays(userID, learnerID);
-            } else {
-                // Try to get userID from session if learnerID exists
-                if (learnerID != null && userID == null) {
-                    userID = honourDAO.getUserIDFromLearnerID(learnerID);
-                    if (userID != null) {
-                        session.setAttribute("userID", userID);
-                        checkAndUpdateLoginDays(userID, learnerID);
-                    }
-                }
+            if (userID != null && learner != null) {
+                System.out.println("Both learner and userID exist, checking login days");
+                checkAndUpdateLoginDays(userID, learner.getLearnerID());
             }
         }
 
@@ -62,16 +52,16 @@ public class LoginDayFilter implements Filter {
     }
 
     private void checkAndUpdateLoginDays(int userID, int learnerID) {
-        System.out.println("checkAndUpdateLoginDays: userID=" + userID + ", learnerID=" + learnerID);
-
+        System.out.println("Checking login days for userID: " + userID + ", learnerID: " + learnerID);
+        
         // Check or create Login record
         Login login = honourDAO.getLoginByUserID(userID);
         if (login == null) {
-            System.out.println("No Login record for userID=" + userID + ", creating new");
+            System.out.println("No login record found, creating new one");
             honourDAO.createLogin(userID);
             login = honourDAO.getLoginByUserID(userID);
             if (login == null) {
-                System.err.println("Failed to create or retrieve Login record for userID=" + userID);
+                System.out.println("Failed to create login record");
                 return;
             }
         }
@@ -82,9 +72,13 @@ public class LoginDayFilter implements Filter {
         int loginDays = login.getLoginDays();
         Date dateCreate = honourDAO.getUserDateCreate(userID);
 
+        System.out.println("Current login days: " + loginDays);
+        System.out.println("Last date login: " + lastDateLogin);
+        System.out.println("Date create: " + dateCreate);
+
         if (dateCreate == null) {
-            System.err.println("No dateCreate found for userID=" + userID + ", using currentDate");
             dateCreate = currentDate;
+            System.out.println("Using current date as date create");
         }
 
         // Truncate time for date-only comparison
@@ -103,7 +97,7 @@ public class LoginDayFilter implements Filter {
             lastLoginCal.setTime(lastDateLogin);
         } else {
             lastLoginCal.setTime(dateCreate);
-            System.out.println("lastDateLogin is null, using dateCreate=" + dateCreate);
+            System.out.println("Using date create as last login date");
         }
         truncateTime(lastLoginCal);
         Date lastLoginDateOnly = lastLoginCal.getTime();
@@ -112,13 +106,16 @@ public class LoginDayFilter implements Filter {
         boolean shouldIncrement = currentDateOnly.after(createDateOnly) &&
                 (lastDateLogin == null || currentDateOnly.after(lastLoginDateOnly));
 
+        System.out.println("Should increment login days: " + shouldIncrement);
+
         if (shouldIncrement) {
             loginDays++;
             honourDAO.updateLoginDays(userID, loginDays, currentDate);
-            System.out.println("Updated: loginDays=" + loginDays + ", lastDateLogin=" + currentDate + " for userID=" + userID);
+            System.out.println("Updated login days to: " + loginDays);
 
-            // Check for 7-day login honour (ID 12)
-            if (loginDays >= 7) {
+            // Check for 7-day login honour (ID 20)
+            if (loginDays >= 0) {
+                System.out.println("Attempting to award 7-day login honour");
                 award7DayLoginHonour(learnerID);
             }
         }
@@ -132,20 +129,24 @@ public class LoginDayFilter implements Filter {
     }
 
     private void award7DayLoginHonour(int learnerID) {
-        int honourID = 12;
+        int honourID = 20;
         if (!honourOwnedDAO.hasHonour(learnerID, honourID)) {
+            System.out.println("User doesn't have honour ID " + honourID + ", attempting to award");
             HonourOwned honourOwned = new HonourOwned();
             honourOwned.setHonour(honourDAO.getHonourById(honourID));
             if (honourOwned.getHonour() == null) {
-                System.err.println("Honour ID " + honourID + " not found");
+                System.out.println("Failed to get honour with ID " + honourID);
                 return;
             }
             Learner learner = new Learner();
             learner.setLearnerID(learnerID);
             honourOwned.setLearner(learner);
             honourOwned.setDateAdded(new Date());
+            honourOwned.setEquipped(false);
             honourOwnedDAO.addHonour(honourOwned);
-            System.out.println("Awarded honourID " + honourID + " for learnerID=" + learnerID);
+            System.out.println("Successfully awarded honour ID " + honourID);
+        } else {
+            System.out.println("User already has honour ID " + honourID);
         }
     }
 
