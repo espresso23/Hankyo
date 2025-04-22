@@ -6,7 +6,7 @@ public class AssignmentTaken {
     private int assignTakenID;
     private Date dateCreated;
     private int learnerID;
-    private boolean finalMark;
+    private float finalMark;
     private int skipQues;
     private int doneQues;
     private int assignmentID;
@@ -43,11 +43,11 @@ public class AssignmentTaken {
         this.doneQues = doneQues;
     }
 
-    public boolean isFinalMark() {
+    public float getFinalMark() {
         return finalMark;
     }
 
-    public void setFinalMark(boolean finalMark) {
+    public void setFinalMark(float finalMark) {
         this.finalMark = finalMark;
     }
 

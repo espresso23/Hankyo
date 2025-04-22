@@ -19,7 +19,7 @@ public class AssignmentTakenDAO {
             pstmt.setInt(1, taken.getAssignmentID());
             pstmt.setInt(2, taken.getLearnerID());
             pstmt.setDate(3, new java.sql.Date(taken.getDateCreated().getTime()));
-            pstmt.setFloat(4, taken.isFinalMark() ? 1.0f : 0.0f); // Convert boolean to float
+            pstmt.setFloat(4, taken.getFinalMark());
             pstmt.setInt(5, taken.getSkipQues());
             pstmt.setInt(6, taken.getDoneQues());
             
@@ -46,7 +46,7 @@ public class AssignmentTakenDAO {
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
-            pstmt.setFloat(1, taken.isFinalMark() ? 1.0f : 0.0f); // Convert boolean to float
+            pstmt.setFloat(1, taken.getFinalMark());
             pstmt.setInt(2, taken.getSkipQues());
             pstmt.setInt(3, taken.getDoneQues());
             pstmt.setInt(4, taken.getAssignTakenID());
@@ -124,7 +124,7 @@ public class AssignmentTakenDAO {
         taken.setAssignmentID(rs.getInt("assignmentID"));
         taken.setLearnerID(rs.getInt("learnerID"));
         taken.setDateCreated(rs.getDate("dateCreated"));
-        taken.setFinalMark(rs.getFloat("finalMark") > 0); // Convert float to boolean
+        taken.setFinalMark(rs.getFloat("finalMark"));
         taken.setSkipQues(rs.getInt("skipQues"));
         taken.setDoneQues(rs.getInt("doneQues"));
         return taken;

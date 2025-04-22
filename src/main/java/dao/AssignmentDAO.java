@@ -1,10 +1,6 @@
 package dao;
 
-import model.Answer;
-import model.Assignment;
-import model.AssignmentQuestion;
-import model.AssignmentTaken;
-import model.Question;
+import model.*;
 import util.DBConnect;
 
 import java.sql.*;
@@ -402,7 +398,7 @@ public class AssignmentDAO {
             pstmt.setInt(1, taken.getAssignmentID());
             pstmt.setInt(2, taken.getLearnerID());
             pstmt.setDate(3, new java.sql.Date(taken.getDateCreated().getTime()));
-            pstmt.setFloat(4, taken.isFinalMark() ? 1.0f : 0.0f); // Convert boolean to float
+            pstmt.setFloat(4, taken.getFinalMark()); // Convert boolean to float
             pstmt.setInt(5, taken.getSkipQues());
             pstmt.setInt(6, taken.getDoneQues());
             

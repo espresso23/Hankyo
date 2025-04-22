@@ -306,7 +306,7 @@ public class AssignmentService {
         taken.setAssignmentID(assignmentID);
         taken.setLearnerID(learnerID);
         taken.setDateCreated(new Date());
-        taken.setFinalMark(false);
+        taken.setFinalMark(0);
         taken.setSkipQues(0);
         taken.setDoneQues(0);
 
@@ -344,6 +344,6 @@ public class AssignmentService {
     // Kiểm tra xem học viên đã làm bài này chưa
     public boolean hasCompletedAssignment(int assignmentID, int learnerID) {
         AssignmentTaken taken = takenDAO.getAssignmentTakenByLearnerAndAssignment(learnerID, assignmentID);
-        return taken != null && taken.isFinalMark();
+        return taken != null;
     }
 } 

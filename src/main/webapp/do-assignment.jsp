@@ -175,8 +175,8 @@
         </div>
 
         <form action="submit-assignment" method="post" id="assignmentForm">
-            <input type="hidden" name="assignmentID" value="<c:out value="${assignment.assignmentID}"/>">
-            <input type="hidden" name="assignTakenID" value="<c:out value="${taken.assignTakenID}"/>">
+            <input type="hidden" name="assignmentID" value="${assignment.assignmentID}">
+            <input type="hidden" name="assignTakenID" value="${taken.assignTakenID}">
             
             <c:forEach items="${assignment.assignmentQuestions}" var="question" varStatus="loop">
                 <c:set var="questionId" value="${question.assignQuesID}"/>
@@ -233,6 +233,7 @@
                                                    value="<c:out value="${optionLabel}"/>"
                                                    class="option-input"
                                                    data-is-correct="<c:out value="${isCorrect}"/>"
+                                                   data-question-mark="<c:out value="${questionMark}"/>"
                                                    >
                                             <span class="option-text">
                                                 <c:out value="${optionLabel}"/>. <c:out value="${answerText}"/>
@@ -336,8 +337,9 @@
                 console.log('Selected Answer:', selectedAnswer);
                 console.log('Is Correct:', isCorrect);
                 
-                // Lấy điểm số từ trường mark ban đầu
-                const maxMark = parseFloat($(`#mark_${questionId}`).attr('value') || 0);
+                // Lấy điểm số từ question-mark span
+                const questionMarkText = questionContainer.find('.question-mark').text();
+                const maxMark = parseFloat(questionMarkText) || 0;
                 const mark = isCorrect ? maxMark : 0;
                 console.log('Mark:', mark, '(Max:', maxMark, ')');
 
@@ -366,65 +368,107 @@
                 const assignmentID = $('input[name="assignmentID"]').val();
                 const assignTakenID = $('input[name="assignTakenID"]').val();
                 
+                // Debug thông tin form
+                console.log('=== DEBUG FORM DATA ===');
+                console.log('Form action:', $('#assignmentForm').attr('action'));
+                console.log('Form method:', $('#assignmentForm').attr('method'));
+                console.log('assignmentID input:', $('input[name="assignmentID"]').length, 'found');
+                console.log('assignmentID value:', assignmentID);
+                console.log('assignTakenID input:', $('input[name="assignTakenID"]').length, 'found');
+                console.log('assignTakenID value:', assignTakenID);
+                
                 if (!assignmentID || !assignTakenID) {
+                    console.error('Missing required fields:');
+                    console.error('assignmentID:', assignmentID);
+                    console.error('assignTakenID:', assignTakenID);
                     alert('Lỗi: Không tìm thấy thông tin bài tập. Vui lòng thử lại.');
                     return false;
                 }
 
-                // Đảm bảo tất cả các trường ẩn được cập nhật
-                $('input[type="radio"]:checked').each(function() {
-                    updateHiddenFields($(this));
-                });
+                // Thu thập dữ liệu từ form
+                const formData = {
+                    assignmentID: assignmentID,
+                    assignTakenID: assignTakenID,
+                    assignQuesID: [],
+                    answerLabels: [],
+                    isCorrects: [],
+                    marks: []
+                };
 
-                // Kiểm tra câu trả lời trống
-                let hasEmptyAnswer = false;
+                // Thu thập dữ liệu từ form
                 $('.question-container').each(function() {
                     const questionId = $(this).data('question-id');
-                    const answerLabel = $(`#answerLabel_${questionId}`).val();
-                    if (!answerLabel || answerLabel.trim() === '') {
-                        hasEmptyAnswer = true;
-                        return false;
+                    console.log(`Processing question ${questionId}`);
+                    
+                    if (!questionId) {
+                        console.error('Thiếu question ID cho câu hỏi');
+                        return;
                     }
-                });
 
-                if (hasEmptyAnswer) {
-                    alert('Vui lòng trả lời đầy đủ tất cả các câu hỏi trước khi nộp bài.');
-                    return false;
-                }
-
-                // Tạo FormData object
-                const formData = new FormData();
-                formData.append('assignmentID', assignmentID);
-                formData.append('assignTakenID', assignTakenID);
-
-                // Thêm dữ liệu câu trả lời
-                $('.question-container').each(function() {
-                    const questionId = $(this).data('question-id');
+                    // Thêm ID câu hỏi vào mảng
+                    formData.assignQuesID.push(questionId);
                     
-                    // Thêm assignQuesID cho mỗi câu hỏi
-                    formData.append('assignQuesID[]', questionId);
+                    // Tìm radio button được chọn trong câu hỏi này
+                    const selectedRadio = $(this).find('input[type="radio"]:checked');
+                    console.log(`Found selected radio for ${questionId}:`, selectedRadio.length > 0);
                     
-                    // Lấy giá trị từ các trường ẩn của câu hỏi hiện tại
-                    const answerLabel = $(`#answerLabel_${questionId}`).val();
-                    const isCorrect = $(`#isCorrect_${questionId}`).val();
-                    const mark = $(`#mark_${questionId}`).val();
+                    // Lấy câu trả lời được chọn
+                    let answerLabel = 'SKIPPED';  // Giá trị mặc định là SKIPPED
+                    let isCorrect = false;
+                    let mark = 0;
                     
-                    // Thêm dữ liệu với key chính xác cho từng câu hỏi
-                    formData.append(`answerLabel_${questionId}`, answerLabel);
-                    formData.append(`isCorrect_${questionId}`, isCorrect);
-                    formData.append(`mark_${questionId}`, mark);
+                    if (selectedRadio.length > 0) {
+                        answerLabel = selectedRadio.val();
+                        isCorrect = selectedRadio.data('is-correct') === true;
+                        // Lấy điểm số từ question-mark span
+                        const questionMarkText = $(this).find('.question-mark').text();
+                        const questionMark = parseFloat(questionMarkText) || 0;
+                        // Nếu câu trả lời đúng thì được điểm tối đa của câu hỏi
+                        mark = isCorrect ? questionMark : 0;
+                        
+                        console.log(`Question ${questionId} data:`, {
+                            answerLabel,
+                            isCorrect,
+                            mark,
+                            questionMark,
+                            radioValue: selectedRadio.val(),
+                            isCorrectData: selectedRadio.data('is-correct')
+                        });
+                    }
 
-                    // Log để debug từng câu hỏi
-                    console.log(`=== Câu hỏi ${questionId} ===`);
-                    console.log('Answer:', answerLabel);
+                    // Thêm thông tin vào các mảng tương ứng
+                    formData.answerLabels.push(answerLabel);
+                    formData.isCorrects.push(isCorrect);
+                    formData.marks.push(mark);
+
+                    // Log thông tin chi tiết cho mỗi câu hỏi
+                    console.log(`=== Chi tiết câu hỏi ${questionId} ===`);
+                    console.log('Answer Label:', answerLabel);
                     console.log('Is Correct:', isCorrect);
                     console.log('Mark:', mark);
                 });
 
                 // Log toàn bộ dữ liệu form
                 console.log('=== Dữ liệu form trước khi gửi ===');
-                for (const pair of formData.entries()) {
-                    console.log(pair[0] + ': ' + pair[1]);
+                console.log(JSON.stringify(formData, null, 2));
+
+                // Chuẩn bị dữ liệu để gửi
+                const requestData = new URLSearchParams();
+                requestData.append('assignmentID', formData.assignmentID);
+                requestData.append('assignTakenID', formData.assignTakenID);
+                
+                // Thêm các mảng dữ liệu
+                formData.assignQuesID.forEach((id, index) => {
+                    requestData.append('assignQuesID[]', id);
+                    requestData.append('answerLabel[]', formData.answerLabels[index]);
+                    requestData.append('isCorrect[]', formData.isCorrects[index]);
+                    requestData.append('mark[]', formData.marks[index]);
+                });
+
+                // Log dữ liệu cuối cùng sẽ gửi
+                console.log('=== Dữ liệu gửi đi ===');
+                for (let [key, value] of requestData.entries()) {
+                    console.log(key + ': ' + value);
                 }
 
                 // Hiển thị loading
@@ -435,21 +479,16 @@
                 $.ajax({
                     url: 'submit-assignment',
                     method: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
+                    data: requestData.toString(),
+                    contentType: 'application/x-www-form-urlencoded',
                     success: function(response) {
                         $('.loading').hide();
                         $('#submitBtn').prop('disabled', false);
 
                         try {
-                            if (typeof response === 'string') {
-                                response = JSON.parse(response);
-                            }
-
                             if (response.success) {
                                 alert('Nộp bài thành công!');
-                                window.location.href = 'view-assignment-result?assignmentID=' + assignmentID;
+                                window.location.href = 'view-assignment-result?assignmentID=' + formData.assignmentID;
                             } else {
                                 alert(response.message || 'Có lỗi xảy ra khi nộp bài. Vui lòng thử lại.');
                             }
