@@ -88,7 +88,7 @@ public class LoginServlet extends HttpServlet {
                         LearnerDAO learnerDAO = new LearnerDAO();
                         Learner learner = learnerDAO.getLearnerById(user.getUserID());
                         session.setAttribute("learner", learner);
-                        response.sendRedirect("home.jsp");
+                        response.sendRedirect("exam");
                     }
                 } else {
                     request.setAttribute("errorMsg", "Đăng nhập thất bại. Không tìm thấy người dùng.");

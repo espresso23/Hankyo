@@ -1,5 +1,4 @@
-
-        package dao;
+package dao;
 
 import model.ExamQuestion;
 import model.ExamResult;
@@ -20,11 +19,9 @@ public class ExamResultDAO {
     }
 
     public void saveExamResult(ExamResult result, int examTakenID) throws SQLException {
-        String sqlResult = "INSERT INTO Exam_Result (examTakenID, mark, dateTaken) VALUES (?, ?, ?)";
-        String sqlDetail = "INSERT INTO Exam_Result_Detail (resultID, questionID, answerLabel, answerIsCorrect) VALUES (?, ?, ?, ?)";
+        String sqlResult = "INSERT INTO Exam_Result (examTakenID, eQuestID, mark, dateTaken, answerLabel, answerIsCorrect) VALUES (?, ?, ?, ?, ?, ?)";
 
         PreparedStatement pstmtResult = null;
-        PreparedStatement pstmtDetail = null;
         ResultSet generatedKeys = null;
 
         try {
@@ -32,21 +29,17 @@ public class ExamResultDAO {
 
             pstmtResult = connection.prepareStatement(sqlResult, Statement.RETURN_GENERATED_KEYS);
             pstmtResult.setInt(1, examTakenID);
-            pstmtResult.setDouble(2, result.getMark());
-            pstmtResult.setTimestamp(3, Timestamp.valueOf(result.getDateTaken()));
+            pstmtResult.setInt(2, result.geteQuesID()); // Lưu eQuestID thay vì questionID
+            pstmtResult.setDouble(3, result.getMark());
+            pstmtResult.setTimestamp(4, Timestamp.valueOf(result.getDateTaken()));
+            pstmtResult.setString(5, result.getAnswerLabel());
+            pstmtResult.setBoolean(6, result.isAnswerIsCorrect());
             pstmtResult.executeUpdate();
 
             generatedKeys = pstmtResult.getGeneratedKeys();
             if (generatedKeys.next()) {
                 result.setResultID(generatedKeys.getInt(1));
             }
-
-            pstmtDetail = connection.prepareStatement(sqlDetail);
-            pstmtDetail.setInt(1, result.getResultID());
-            pstmtDetail.setInt(2, result.getQuestion().getQuestionID());
-            pstmtDetail.setString(3, result.getAnswerLabel());
-            pstmtDetail.setBoolean(4, result.isAnswerIsCorrect());
-            pstmtDetail.executeUpdate();
 
             connection.commit();
         } catch (SQLException e) {
@@ -64,9 +57,6 @@ public class ExamResultDAO {
             }
             if (pstmtResult != null) {
                 pstmtResult.close();
-            }
-            if (pstmtDetail != null) {
-                pstmtDetail.close();
             }
             if (connection != null) {
                 connection.setAutoCommit(true);
@@ -98,7 +88,8 @@ public class ExamResultDAO {
                 "WHERE et.learnerID = ? " +
                 "ORDER BY er.dateTaken DESC";
 
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try (Connection connection1 = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = connection1.prepareStatement(sql)) {
             stmt.setInt(1, learnerID);
             ResultSet rs = stmt.executeQuery();
 
@@ -106,8 +97,13 @@ public class ExamResultDAO {
                 ExamResult result = new ExamResult();
                 result.setResultID(rs.getInt("resultID"));
                 result.setExamTakenID(rs.getInt("examTakenID"));
+                result.seteQuesID(rs.getInt("eQuestID"));
                 result.setMark(rs.getFloat("mark"));
-                result.setDateTaken(rs.getTimestamp("dateTaken").toLocalDateTime());
+                Timestamp timestamp = rs.getTimestamp("dateTaken");
+                LocalDateTime dateTaken = timestamp != null ? timestamp.toLocalDateTime() : null;
+                result.setDateTaken(dateTaken);
+                result.setAnswerLabel(rs.getString("answerLabel"));
+                result.setAnswerIsCorrect(rs.getBoolean("answerIsCorrect"));
 
                 model.Exam exam = new model.Exam();
                 exam.setExamID(rs.getInt("examID"));
@@ -119,7 +115,6 @@ public class ExamResultDAO {
                 learner.setLearnerID(learnerID);
                 result.setLearner(learner);
 
-                loadResultDetails(result);
                 results.add(result);
             }
         } catch (SQLException e) {
@@ -129,17 +124,19 @@ public class ExamResultDAO {
     }
 
     // Lấy danh sách kết quả theo examTakenID
-    public List<ExamResult> getExamResultsByExamTakenId(int examTakenID) {
+    public List<ExamResult> getExamResultsByExamTakenId(int examTakenID, String type) {
         List<ExamResult> results = new ArrayList<>();
-        String sql = "SELECT er.*, et.examID, et.learnerID, q.questionText " +
-                "FROM Exam_Result er " +
-                "JOIN Exam_Taken et ON er.examTakenID = et.examTakenID " +
-                "JOIN Question q ON er.eQuestID = (SELECT eQuestID FROM Exam_Question WHERE questionID = q.questionID AND examID = et.examID) " +
-                "WHERE er.examTakenID = ?";
+        String sql = "SELECT distinct er.*, et.examID, et.learnerID, q.questionText \n" +
+                "                FROM Exam_Result er \n" +
+                "                JOIN Exam_Taken et ON er.examTakenID = et.examTakenID \n" +
+                "                JOIN Exam_Question eq ON er.eQuestID = eq.eQuestID \n" +
+                "                JOIN Question q ON eq.questionID = q.questionID \n" +
+                "                WHERE er.examTakenID = ? and eq.eQuesType = ?";
 
         try (Connection connection1 = DBConnect.getInstance().getConnection();
-                PreparedStatement stmt = connection1.prepareStatement(sql)) {
+             PreparedStatement stmt = connection1.prepareStatement(sql)) {
             stmt.setInt(1, examTakenID);
+            stmt.setString(2, type);
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
@@ -148,7 +145,8 @@ public class ExamResultDAO {
                 result.setExamTakenID(rs.getInt("examTakenID"));
                 result.seteQuesID(rs.getInt("eQuestID"));
                 result.setMark(rs.getFloat("mark"));
-                result.setDateTaken(rs.getTimestamp("dateTaken").toLocalDateTime());
+                Timestamp timestamp = rs.getTimestamp("dateTaken");
+                result.setDateTaken(timestamp != null ? timestamp.toLocalDateTime() : null);
                 result.setAnswerLabel(rs.getString("answerLabel"));
                 result.setAnswerIsCorrect(rs.getBoolean("answerIsCorrect"));
 
@@ -172,66 +170,8 @@ public class ExamResultDAO {
         return results;
     }
 
-    private void loadResultDetails(ExamResult result) {
-        String sql = "SELECT questionID, answerLabel, answerIsCorrect FROM Exam_Result_Detail WHERE resultID = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, result.getResultID());
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                model.ExamQuestion examQuestion = new model.ExamQuestion();
-                model.Question question = new model.Question();
-                question.setQuestionID(rs.getInt("questionID"));
-                result.setExamQuestion(examQuestion);
-                result.setAnswerLabel(rs.getString("answerLabel"));
-                result.setAnswerIsCorrect(rs.getBoolean("answerIsCorrect"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public ExamResult getExamResultById(int resultID) {
-        String sql = "SELECT er.*, et.examID, et.timeTaken, et.timeInput, et.dateCreated, et.finalMark, et.skipQues, et.doneQues, " +
-                "e.examName, e.description, et.learnerID " +
-                "FROM Exam_Result er " +
-                "JOIN Exam_Taken et ON er.examTakenID = et.examTakenID " +
-                "JOIN Exam e ON et.examID = e.examID " +
-                "WHERE er.resultID = ?";
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, resultID);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                ExamResult result = new ExamResult();
-                result.setResultID(rs.getInt("resultID"));
-                result.setExamTakenID(rs.getInt("examTakenID"));
-                result.seteQuesID(rs.getInt("eQuestID"));
-                result.setMark(rs.getFloat("mark"));
-                result.setDateTaken(rs.getTimestamp("dateTaken").toLocalDateTime());
-
-                model.Exam exam = new model.Exam();
-                exam.setExamID(rs.getInt("examID"));
-                exam.setExamName(rs.getString("examName"));
-                exam.setExamDescription(rs.getString("description"));
-                result.setExam(exam);
-
-                model.Learner learner = new model.Learner();
-                learner.setLearnerID(rs.getInt("learnerID"));
-                result.setLearner(learner);
-
-                loadResultDetails(result);
-                return result;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     public void saveAnswer(int examTakenID, int questionID, int learnerID, String answerLabel, boolean isCorrect) {
-        String sql = "INSERT INTO ExamResult (eQuestID, learnerID, answerLabel, answerIsCorrect, examTakenID) " +
+        String sql = "INSERT INTO Exam_Result (eQuestID, learnerID, answerLabel, answerIsCorrect, examTakenID) " +
                 "VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = DBConnect.getInstance().getConnection();

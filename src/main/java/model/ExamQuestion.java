@@ -1,8 +1,10 @@
 package model;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class ExamQuestion {
+public class ExamQuestion implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int eQuestID;  // Primary key
     private Exam exam;
     private int orderIndex;

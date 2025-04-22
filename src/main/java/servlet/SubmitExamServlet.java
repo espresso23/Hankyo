@@ -168,7 +168,8 @@ public class SubmitExamServlet extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("learnerID") == null) {
+        Learner learner = (Learner) session.getAttribute("learner");
+        if (session == null || session.getAttribute("learnerID") == null || learner==null) {
             LOGGER.warning("Invalid session or learnerID not found");
             response.sendRedirect("login.jsp");
             return;

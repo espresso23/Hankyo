@@ -1,9 +1,11 @@
 package model;
 
 
+import java.io.Serializable;
 import java.util.List;
 
-public class Question {
+public class Question implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int questionID;
     private String questionText;
     private String questionImage;

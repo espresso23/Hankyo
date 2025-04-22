@@ -4,28 +4,32 @@ import model.ExamTaken;
 import util.DBConnect;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ExamTakenDAO {
-    private Connection connection;
 
     public ExamTakenDAO() {
-        this.connection = DBConnect.getInstance().getConnection();
     }
 
-    public int createExamTaken(int learnerID, int examID) throws SQLException {
-        String query = "INSERT INTO Exam_Taken (learnerID, examID, dateCreated) VALUES (?, ?, GETDATE())";
+    public int createExamTaken(int learnerID, int examID, int timeInputInMinutes) throws SQLException {
+        String query = "INSERT INTO Exam_Taken (learnerID, examID, dateCreated, timeInput, timeTaken, finalMark, skipQues, doneQues) " +
+                "VALUES (?, ?, GETDATE(), ?, '00:00:00', 0, 0, 0)";
         int examTakenID = -1;
 
-        try (Connection connection1 = DBConnect.getInstance().getConnection();
-                PreparedStatement stmt = connection1.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, learnerID);
             stmt.setInt(2, examID);
+            // Chuyển timeInput thành định dạng TIME (HH:mm:ss)
+            String timeInputFormatted = String.format("%02d:00:00", timeInputInMinutes);
+            stmt.setTime(3, Time.valueOf(timeInputFormatted));
 
             System.out.println("=== Creating new exam taken ===");
             System.out.println("learnerID: " + learnerID);
             System.out.println("examID: " + examID);
+            System.out.println("timeInput: " + timeInputFormatted);
             System.out.println("Executing INSERT query with:");
             System.out.println("learnerID: " + learnerID);
             System.out.println("examID: " + examID);
@@ -44,12 +48,12 @@ public class ExamTakenDAO {
         return examTakenID;
     }
 
-
     public List<ExamTaken> getExamTakenByLearner(int learnerID) {
         List<ExamTaken> examTakens = new ArrayList<>();
-        String query = "SELECT * FROM Exam_Taken WHERE learnerID = ? ORDER BY dateCreated DESC";
+        String query = "SELECT * FROM Exam_Taken et join Exam_Question eq on et.examID = eq.examID WHERE learnerID = ? ORDER BY dateCreated DESC";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, learnerID);
             ResultSet rs = stmt.executeQuery();
 
@@ -58,38 +62,33 @@ public class ExamTakenDAO {
                 examTaken.setExamTakenID(rs.getInt("examTakenID"));
                 examTaken.setLearnerID(rs.getInt("learnerID"));
                 examTaken.setExamID(rs.getInt("examID"));
-                examTaken.setDateCreated(rs.getTimestamp("dateCreated"));
+
+                // Xử lý dateCreated
+                Timestamp dateCreated = rs.getTimestamp("dateCreated");
+                examTaken.setDateCreated(dateCreated != null ? dateCreated.toLocalDateTime() : null);
 
                 Time timeTaken = rs.getTime("timeTaken");
-                if (!rs.wasNull()) {
-                    examTaken.setTimeTaken(timeTaken);
-                }
+                examTaken.setTimeTaken(timeTaken);
 
                 Time timeInput = rs.getTime("timeInput");
-                if (!rs.wasNull()) {
-                    examTaken.setTimeInput(timeInput);
-                }
+                examTaken.setTimeInput(timeInput);
 
                 float finalMark = rs.getFloat("finalMark");
-                if (!rs.wasNull()) {
-                    examTaken.setFinalMark(finalMark);
-                }
+                examTaken.setFinalMark(finalMark);
 
                 int skipQues = rs.getInt("skipQues");
-                if (!rs.wasNull()) {
-                    examTaken.setSkipQues(skipQues);
-                }
+                examTaken.setSkipQues(skipQues);
 
                 int doneQues = rs.getInt("doneQues");
-                if (!rs.wasNull()) {
-                    examTaken.setDoneQues(doneQues);
-                }
+                examTaken.setDoneQues(doneQues);
+                examTaken.seteQuesType(rs.getString("eQuesType"));
 
                 examTakens.add(examTaken);
             }
         } catch (SQLException e) {
             System.out.println("Error getting exam taken by learner: " + e.getMessage());
             e.printStackTrace();
+            throw new RuntimeException("Failed to retrieve exam taken records: " + e.getMessage(), e);
         }
         return examTakens;
     }
@@ -97,7 +96,8 @@ public class ExamTakenDAO {
     public ExamTaken getExamTakenById(int examTakenID) {
         String query = "SELECT * FROM Exam_Taken WHERE examTakenID = ?";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, examTakenID);
             ResultSet rs = stmt.executeQuery();
 
@@ -106,17 +106,32 @@ public class ExamTakenDAO {
                 examTaken.setExamTakenID(rs.getInt("examTakenID"));
                 examTaken.setLearnerID(rs.getInt("learnerID"));
                 examTaken.setExamID(rs.getInt("examID"));
-                examTaken.setDateCreated(rs.getTimestamp("dateCreated"));
-                examTaken.setTimeTaken(rs.getTime("timeTaken"));
-                examTaken.setTimeInput(rs.getTime("timeInput"));
-                examTaken.setFinalMark(rs.getFloat("finalMark"));
-                examTaken.setSkipQues(rs.getInt("skipQues"));
-                examTaken.setDoneQues(rs.getInt("doneQues"));
+
+                // Xử lý dateCreated
+                Timestamp dateCreated = rs.getTimestamp("dateCreated");
+                examTaken.setDateCreated(dateCreated != null ? dateCreated.toLocalDateTime() : null);
+
+                Time timeTaken = rs.getTime("timeTaken");
+                examTaken.setTimeTaken(timeTaken);
+
+                Time timeInput = rs.getTime("timeInput");
+                examTaken.setTimeInput(timeInput);
+
+                float finalMark = rs.getFloat("finalMark");
+                examTaken.setFinalMark(finalMark);
+
+                int skipQues = rs.getInt("skipQues");
+                examTaken.setSkipQues(skipQues);
+
+                int doneQues = rs.getInt("doneQues");
+                examTaken.setDoneQues(doneQues);
+
                 return examTaken;
             }
         } catch (SQLException e) {
             System.out.println("Error getting exam taken by ID: " + e.getMessage());
             e.printStackTrace();
+            throw new RuntimeException("Failed to retrieve exam taken by ID: " + e.getMessage(), e);
         }
         return null;
     }
@@ -131,9 +146,8 @@ public class ExamTakenDAO {
         System.out.println("Done Questions: " + doneQues);
         System.out.println("Skipped Questions: " + skipQues);
 
-        try (Connection connection1 = DBConnect.getInstance().getConnection();
-                PreparedStatement stmt = connection1.prepareStatement(query)) {
-
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setFloat(1, finalMark);
             stmt.setTime(2, timeTaken);
             stmt.setInt(3, doneQues);
@@ -158,8 +172,9 @@ public class ExamTakenDAO {
 
             int learnerID = 1; // thay bằng ID thật trong database của bạn
             int examID = 3;    // thay bằng ID đề thi thật trong database
+            int timeInputInMinutes = 60; // Giá trị mặc định 60 phút
 
-            int examTakenID = examTakenDAO.createExamTaken(learnerID, examID);
+            int examTakenID = examTakenDAO.createExamTaken(learnerID, examID, timeInputInMinutes);
 
             System.out.println("✅ examTakenID được tạo: " + examTakenID);
         } catch (SQLException e) {

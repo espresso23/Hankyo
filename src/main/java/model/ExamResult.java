@@ -1,9 +1,11 @@
 package model;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 
-public class ExamResult {
+public class ExamResult implements Serializable {
+    private static final long serialVersionUID = 1L;
     private Exam exam;
     private Question question;
     private int resultID;
