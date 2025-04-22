@@ -329,11 +329,21 @@
                 const questionContainer = radioElement.closest('.question-container');
                 const questionId = questionContainer.data('question-id');
                 const selectedAnswer = radioElement.val();
-                const isCorrect = radioElement.data('is-correct') === true;
-                const mark = isCorrect ? parseFloat($(`#mark_${questionId}`).val()) : 0.0;
+                const isCorrect = radioElement.data('is-correct');
+                
+                // Log để debug giá trị
+                console.log(`=== Cập nhật câu hỏi ${questionId} ===`);
+                console.log('Selected Answer:', selectedAnswer);
+                console.log('Is Correct:', isCorrect);
+                
+                // Lấy điểm số từ trường mark ban đầu
+                const maxMark = parseFloat($(`#mark_${questionId}`).attr('value') || 0);
+                const mark = isCorrect ? maxMark : 0;
+                console.log('Mark:', mark, '(Max:', maxMark, ')');
 
+                // Cập nhật các trường ẩn
                 $(`#answerLabel_${questionId}`).val(selectedAnswer);
-                $(`#isCorrect_${questionId}`).val(isCorrect.toString());
+                $(`#isCorrect_${questionId}`).val(isCorrect);
                 $(`#mark_${questionId}`).val(mark);
             }
 
@@ -352,58 +362,76 @@
             $('#assignmentForm').on('submit', function(e) {
                 e.preventDefault();
 
-                // Lấy giá trị của assignmentID và assignTakenID
+                // Kiểm tra dữ liệu bắt buộc
                 const assignmentID = $('input[name="assignmentID"]').val();
                 const assignTakenID = $('input[name="assignTakenID"]').val();
                 
-                console.log('=== DEBUG FORM VALUES ===');
-                console.log('assignmentID:', assignmentID);
-                console.log('assignTakenID:', assignTakenID);
-
-                // Kiểm tra nếu các giá trị này là null hoặc rỗng
                 if (!assignmentID || !assignTakenID) {
                     alert('Lỗi: Không tìm thấy thông tin bài tập. Vui lòng thử lại.');
                     return false;
                 }
 
-                // Đảm bảo tất cả các trường ẩn được cập nhật trước khi submit
+                // Đảm bảo tất cả các trường ẩn được cập nhật
                 $('input[type="radio"]:checked').each(function() {
                     updateHiddenFields($(this));
                 });
 
-                // Tạo object chứa dữ liệu form
+                // Kiểm tra câu trả lời trống
+                let hasEmptyAnswer = false;
+                $('.question-container').each(function() {
+                    const questionId = $(this).data('question-id');
+                    const answerLabel = $(`#answerLabel_${questionId}`).val();
+                    if (!answerLabel || answerLabel.trim() === '') {
+                        hasEmptyAnswer = true;
+                        return false;
+                    }
+                });
+
+                if (hasEmptyAnswer) {
+                    alert('Vui lòng trả lời đầy đủ tất cả các câu hỏi trước khi nộp bài.');
+                    return false;
+                }
+
+                // Tạo FormData object
                 const formData = new FormData();
                 formData.append('assignmentID', assignmentID);
                 formData.append('assignTakenID', assignTakenID);
 
-                // Thêm tất cả các câu trả lời vào formData
+                // Thêm dữ liệu câu trả lời
                 $('.question-container').each(function() {
                     const questionId = $(this).data('question-id');
-                    formData.append('assignQuesID', questionId);
                     
+                    // Thêm assignQuesID cho mỗi câu hỏi
+                    formData.append('assignQuesID[]', questionId);
+                    
+                    // Lấy giá trị từ các trường ẩn của câu hỏi hiện tại
                     const answerLabel = $(`#answerLabel_${questionId}`).val();
                     const isCorrect = $(`#isCorrect_${questionId}`).val();
                     const mark = $(`#mark_${questionId}`).val();
                     
-                    formData.append(`answerLabel_${questionId}`, answerLabel || '');
-                    formData.append(`isCorrect_${questionId}`, isCorrect || 'false');
-                    formData.append(`mark_${questionId}`, mark || '0');
+                    // Thêm dữ liệu với key chính xác cho từng câu hỏi
+                    formData.append(`answerLabel_${questionId}`, answerLabel);
+                    formData.append(`isCorrect_${questionId}`, isCorrect);
+                    formData.append(`mark_${questionId}`, mark);
+
+                    // Log để debug từng câu hỏi
+                    console.log(`=== Câu hỏi ${questionId} ===`);
+                    console.log('Answer:', answerLabel);
+                    console.log('Is Correct:', isCorrect);
+                    console.log('Mark:', mark);
                 });
 
-                // Log dữ liệu để debug
+                // Log toàn bộ dữ liệu form
                 console.log('=== Dữ liệu form trước khi gửi ===');
                 for (const pair of formData.entries()) {
                     console.log(pair[0] + ': ' + pair[1]);
                 }
 
-                // Hiển thị cảnh báo nếu có câu chưa trả lời
-                if (answeredQuestions < totalQuestions) {
-                    if (!confirm(`Bạn chưa trả lời ${totalQuestions - answeredQuestions}/${totalQuestions} câu hỏi. Bạn có chắc chắn muốn nộp bài không?`)) {
-                        return false;
-                    }
-                }
+                // Hiển thị loading
+                $('.loading').show();
+                $('#submitBtn').prop('disabled', true);
 
-                // Gửi bằng AJAX
+                // Gửi request bằng AJAX
                 $.ajax({
                     url: 'submit-assignment',
                     method: 'POST',
@@ -411,16 +439,46 @@
                     processData: false,
                     contentType: false,
                     success: function(response) {
-                        if (response.success) {
-                            alert('Nộp bài thành công!');
-                            window.location.href = 'view-assignment-result?assignmentID=' + assignmentID;
-                        } else {
-                            alert(response.message || 'Có lỗi xảy ra khi nộp bài. Vui lòng thử lại.');
+                        $('.loading').hide();
+                        $('#submitBtn').prop('disabled', false);
+
+                        try {
+                            if (typeof response === 'string') {
+                                response = JSON.parse(response);
+                            }
+
+                            if (response.success) {
+                                alert('Nộp bài thành công!');
+                                window.location.href = 'view-assignment-result?assignmentID=' + assignmentID;
+                            } else {
+                                alert(response.message || 'Có lỗi xảy ra khi nộp bài. Vui lòng thử lại.');
+                            }
+                        } catch (e) {
+                            console.error('Lỗi khi xử lý phản hồi:', e);
+                            alert('Có lỗi xảy ra khi xử lý phản hồi từ server');
                         }
                     },
-                    error: function(xhr) {
-                        console.log('Error response:', xhr.responseText);
-                        alert('Có lỗi xảy ra: ' + xhr.responseText);
+                    error: function(xhr, status, error) {
+                        $('.loading').hide();
+                        $('#submitBtn').prop('disabled', false);
+                        
+                        console.error('Lỗi AJAX:', {
+                            status: status,
+                            error: error,
+                            response: xhr.responseText
+                        });
+
+                        let errorMessage = 'Có lỗi xảy ra khi nộp bài';
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.message) {
+                                errorMessage = response.message;
+                            }
+                        } catch (e) {
+                            console.error('Lỗi khi parse JSON response:', e);
+                        }
+
+                        alert(errorMessage);
                     }
                 });
             });

@@ -15,7 +15,7 @@
 
 <div class="container my-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">Khóa học của tôi</h2>
+        <h2 class="mb-0">Khóa học của tui</h2>
     </div>
 
     <c:choose>
