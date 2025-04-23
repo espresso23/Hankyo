@@ -4,6 +4,7 @@ import dao.AssignmentResultDAO;
 import dao.CourseContentDAO;
 import dao.ProgressDAO;
 import dao.AssignmentDAO;
+import dao.AssignmentTakenDAO;
 import model.*;
 import service.CourseService;
 import service.ProgressService;
@@ -22,6 +23,7 @@ public class CourseContentServlet extends HttpServlet {
     private CourseService courseService;
     private AssignmentResultDAO assignmentResultDAO;
     private AssignmentDAO assignmentDAO;
+    private AssignmentTakenDAO assignmentTakenDAO;
 
     @Override
     public void init() {
@@ -30,6 +32,7 @@ public class CourseContentServlet extends HttpServlet {
         courseService = new CourseService();
         assignmentResultDAO = new AssignmentResultDAO();
         assignmentDAO = new AssignmentDAO();
+        assignmentTakenDAO = new AssignmentTakenDAO();
     }
 
     @Override
@@ -54,8 +57,8 @@ public class CourseContentServlet extends HttpServlet {
             }
 
             int courseID = Integer.parseInt(request.getParameter("courseID"));
-            int contentID = Integer.parseInt(request.getParameter("contentID"));
-
+            String courseContentIDStr = request.getParameter("courseContentID");
+            
             // Kiểm tra xem học viên có đăng ký khóa học này không
             if (!courseService.isEnrolled(learner.getLearnerID(), courseID)) {
                 response.sendRedirect("my-courses");
@@ -68,24 +71,32 @@ public class CourseContentServlet extends HttpServlet {
 
             // Lấy danh sách nội dung khóa học
             List<CourseContent> contents = courseContentDAO.listCourseContentsByCourseID(courseID);
-            contents.forEach(System.out::println);
             request.setAttribute("courseContents", contents);
 
             // Lấy nội dung hiện tại
             CourseContent currentContent = null;
             
-            // Tìm currentContent từ danh sách contents đã load đầy đủ
-            for (CourseContent content : contents) {
-                if (content.getCourseContentID() == contentID) {
-                    currentContent = content;
-                    break;
+            if (courseContentIDStr != null && !courseContentIDStr.isEmpty()) {
+                int courseContentID = Integer.parseInt(courseContentIDStr);
+                // Tìm currentContent từ danh sách contents đã load đầy đủ
+                for (CourseContent content : contents) {
+                    if (content.getCourseContentID() == courseContentID) {
+                        currentContent = content;
+                        break;
+                    }
                 }
+            } else if (!contents.isEmpty()) {
+                // Nếu không có courseContentID, lấy nội dung đầu tiên
+                currentContent = contents.get(0);
             }
 
-            if (currentContent == null) {
-                response.sendRedirect("my-courses");
-                return;
+            if (currentContent == null && !contents.isEmpty()) {
+                // Nếu vẫn không có currentContent nhưng có nội dung trong khóa học
+                currentContent = contents.get(0);
             }
+
+            // Gán currentContent vào request
+            request.setAttribute("currentContent", currentContent);
 
             // Load thông tin AssignmentQuestion nếu là assignment
             if (currentContent.getAssignment() != null && currentContent.getAssignment().getAssignmentID() > 0) {
@@ -93,50 +104,61 @@ public class CourseContentServlet extends HttpServlet {
                 if (assignment != null) {
                     currentContent.setAssignment(assignment);
                     
-                    // Lấy kết quả bài làm nếu có
-                    List<AssignmentResult> results = assignmentResultDAO.getResultsByLearnerAndAssignment(
+                    // Lấy AssignmentTaken gần nhất của học viên
+                    AssignmentTaken latestTaken = assignmentTakenDAO.getLatestAssignmentTaken(
                             learner.getLearnerID(),
                             assignment.getAssignmentID()
                     );
+                    
+                    if (latestTaken != null) {
+                        // Lấy kết quả bài làm từ AssignmentTaken gần nhất
+                        List<AssignmentResult> results = assignmentResultDAO.getResultsByTakenID(latestTaken.getAssignTakenID());
 
-                    if (!results.isEmpty()) {
-                        // Tính toán thống kê
-                        int totalQuestions = assignment.getAssignmentQuestions().size();
-                        int correctCount = 0;
-                        float totalMark = 0;
-                        float maxMark = 0;
+                        if (!results.isEmpty()) {
+                            // Tính toán thống kê
+                            int totalQuestions = assignment.getAssignmentQuestions().size();
+                            int correctCount = 0;
+                            float totalMark = 0;
+                            float maxMark = 0;
 
-                        // Tính tổng điểm tối đa
-                        for (AssignmentQuestion question : assignment.getAssignmentQuestions()) {
-                            maxMark += question.getQuestionMark();
-                        }
-
-                        // Tính điểm thực tế
-                        for (AssignmentResult result : results) {
-                            if (result.isAnswerIsCorrect()) {
-                                correctCount++;
-                                totalMark += result.getMark();
+                            // Tính tổng điểm tối đa
+                            for (AssignmentQuestion question : assignment.getAssignmentQuestions()) {
+                                maxMark += question.getQuestionMark();
                             }
+
+                            // Tính điểm thực tế
+                            for (AssignmentResult result : results) {
+                                if (result.isAnswerIsCorrect()) {
+                                    correctCount++;
+                                    totalMark += result.getMark();
+                                }
+                            }
+
+                            // Tạo đối tượng AssignmentResult tổng hợp
+                            AssignmentResult summary = new AssignmentResult();
+                            summary.setCorrectCount(correctCount);
+                            summary.setTotalQuestions(totalQuestions);
+                            summary.setTotalMark(totalMark);
+                            summary.setMaxMark(maxMark);
+                            
+                            // Tính điểm theo thang 10
+                            float score = (totalMark / maxMark) * 10;
+                            summary.setScore(score);
+                            
+                            // Đánh dấu bài tập đã hoàn thành
+                            currentContent.setCompleted(true);
+                            
+                            // Gán kết quả và AssignmentTaken vào request để hiển thị
+                            request.setAttribute("assignmentResult", summary);
+                            request.setAttribute("latestTaken", latestTaken);
                         }
-
-                        // Tạo đối tượng AssignmentResult tổng hợp
-                        AssignmentResult summary = new AssignmentResult();
-                        summary.setCorrectCount(correctCount);
-                        summary.setTotalQuestions(totalQuestions);
-                        summary.setTotalMark(totalMark);
-                        summary.setMaxMark(maxMark);
-                        summary.setScore((totalMark / maxMark) * 10); // Tính điểm thang 10
-
-                        request.setAttribute("assignmentResult", summary);
                     }
                 }
             }
 
-            request.setAttribute("currentContent", currentContent);
-
             // Lấy tiến độ của học viên
-//            int progress = progressService.calculateCourseProgress(learner.getLearnerID(), courseID);
-//            request.setAttribute("courseProgress", progress);
+            int courseProgress = progressService.calculateCourseProgress(learner.getLearnerID(), courseID);
+            request.setAttribute("courseProgress", courseProgress);
 
             // Chuyển hướng đến trang học
             request.getRequestDispatcher("/course-content.jsp").forward(request, response);

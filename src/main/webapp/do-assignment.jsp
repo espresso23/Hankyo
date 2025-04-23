@@ -399,7 +399,7 @@
                 $('.question-container').each(function() {
                     const questionId = $(this).data('question-id');
                     console.log(`Processing question ${questionId}`);
-                    
+
                     if (!questionId) {
                         console.error('Thiếu question ID cho câu hỏi');
                         return;
@@ -407,16 +407,16 @@
 
                     // Thêm ID câu hỏi vào mảng
                     formData.assignQuesID.push(questionId);
-                    
+
                     // Tìm radio button được chọn trong câu hỏi này
                     const selectedRadio = $(this).find('input[type="radio"]:checked');
                     console.log(`Found selected radio for ${questionId}:`, selectedRadio.length > 0);
-                    
+
                     // Lấy câu trả lời được chọn
                     let answerLabel = 'SKIPPED';  // Giá trị mặc định là SKIPPED
                     let isCorrect = false;
                     let mark = 0;
-                    
+
                     if (selectedRadio.length > 0) {
                         answerLabel = selectedRadio.val();
                         isCorrect = selectedRadio.data('is-correct') === true;
@@ -425,7 +425,7 @@
                         const questionMark = parseFloat(questionMarkText) || 0;
                         // Nếu câu trả lời đúng thì được điểm tối đa của câu hỏi
                         mark = isCorrect ? questionMark : 0;
-                        
+
                         console.log(`Question ${questionId} data:`, {
                             answerLabel,
                             isCorrect,
@@ -456,7 +456,7 @@
                 const requestData = new URLSearchParams();
                 requestData.append('assignmentID', formData.assignmentID);
                 requestData.append('assignTakenID', formData.assignTakenID);
-                
+
                 // Thêm các mảng dữ liệu
                 formData.assignQuesID.forEach((id, index) => {
                     requestData.append('assignQuesID[]', id);

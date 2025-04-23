@@ -7,7 +7,7 @@ public class AssignmentResult {
     private float mark;            // Điểm của câu trả lời
     private String answerLabel;    // Nhãn câu trả lời (A, B, C, D)
     private boolean answerIsCorrect; // Trạng thái đúng/sai
-    private int assignTakenID;     // FK to Assignment_Taken
+    private int assignTakenID;// FK to Assignment_Taken
     
     // Các trường bổ sung cho thống kê
     private int correctCount;
@@ -15,9 +15,20 @@ public class AssignmentResult {
     private float totalMark;
     private float maxMark;
     private float score;
+    private String questionText;    // Nội dung câu hỏi
+    private String correctAnswer;
+    private String questionImg; // Đáp án đúng
 
     // Constructor
     public AssignmentResult() {
+    }
+
+    public String getQuestionImg() {
+        return questionImg;
+    }
+
+    public void setQuestionImg(String questionImg) {
+        this.questionImg = questionImg;
     }
 
     // Getters and Setters
@@ -117,6 +128,22 @@ public class AssignmentResult {
         this.score = score;
     }
 
+    public String getQuestionText() {
+        return questionText;
+    }
+
+    public void setQuestionText(String questionText) {
+        this.questionText = questionText;
+    }
+
+    public String getCorrectAnswer() {
+        return correctAnswer;
+    }
+
+    public void setCorrectAnswer(String correctAnswer) {
+        this.correctAnswer = correctAnswer;
+    }
+
     @Override
     public String toString() {
         return "AssignmentResult{" +
@@ -132,6 +159,8 @@ public class AssignmentResult {
                 ", totalMark=" + totalMark +
                 ", maxMark=" + maxMark +
                 ", score=" + score +
+                ", questionText='" + questionText + '\'' +
+                ", correctAnswer='" + correctAnswer + '\'' +
                 '}';
     }
 }

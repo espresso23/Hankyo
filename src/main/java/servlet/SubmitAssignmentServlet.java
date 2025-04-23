@@ -175,6 +175,9 @@ public class SubmitAssignmentServlet extends HttpServlet {
                 
                 jsonResponse.addProperty("success", true);
                 jsonResponse.addProperty("message", "Đã lưu câu trả lời thành công");
+                // Thêm thông tin để redirect
+                jsonResponse.addProperty("redirect", true);
+                jsonResponse.addProperty("redirectUrl", "learn-course?courseID=" + request.getParameter("courseID") + "&courseContentID=" + request.getParameter("courseContentID"));
             } else {
                 System.out.println("Some answers failed to save"); // Log 11
                 jsonResponse.addProperty("success", false);

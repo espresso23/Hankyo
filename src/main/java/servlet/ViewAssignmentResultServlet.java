@@ -1,12 +1,7 @@
 package servlet;
 
-import dao.AssignmentQuestionDAO;
-import dao.AssignmentResultDAO;
-import dao.AssignmentTakenDAO;
-import model.AssignmentQuestion;
-import model.AssignmentResult;
-import model.AssignmentTaken;
-import model.Learner;
+import dao.*;
+import model.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -16,114 +11,129 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-@WebServlet("/view-assignment-result")
+@WebServlet(name = "ViewAssignmentResultServlet", value = "/view-assignment-result")
 public class ViewAssignmentResultServlet extends HttpServlet {
     private AssignmentResultDAO assignmentResultDAO;
-    private AssignmentQuestionDAO assignmentQuestionDAO;
+    private AssignmentDAO assignmentDAO;
     private AssignmentTakenDAO assignmentTakenDAO;
+    private QuestionAndAnswerDAO questionAndAnswerDAO;
 
     @Override
-    public void init() throws ServletException {
+    public void init() {
         assignmentResultDAO = new AssignmentResultDAO();
-        assignmentQuestionDAO = new AssignmentQuestionDAO();
+        assignmentDAO = new AssignmentDAO();
         assignmentTakenDAO = new AssignmentTakenDAO();
+        questionAndAnswerDAO = new QuestionAndAnswerDAO();
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        System.out.println("ViewAssignmentResultServlet.doGet() called"); // Log 1
-
         try {
+            // Kiểm tra đăng nhập
             HttpSession session = request.getSession();
             Learner learner = (Learner) session.getAttribute("learner");
-            
             if (learner == null) {
-                System.out.println("Learner not found in session"); // Log 2
-                request.setAttribute("error", "Vui lòng đăng nhập để xem kết quả");
-                request.getRequestDispatcher("/error.jsp").forward(request, response);
+                response.sendRedirect("login");
                 return;
             }
 
-            String assignTakenIDStr = request.getParameter("assignTakenID");
-            System.out.println("assignTakenID parameter: " + assignTakenIDStr); // Log 3
-
-            if (assignTakenIDStr == null || assignTakenIDStr.isEmpty()) {
-                System.out.println("Missing assignTakenID parameter"); // Log 4
-                request.setAttribute("error", "Thiếu thông tin bài làm");
-                request.getRequestDispatcher("/error.jsp").forward(request, response);
+            // Lấy assignmentID từ request
+            String assignmentIDStr = request.getParameter("assignmentID");
+            String courseIDStr = request.getParameter("courseID");
+            String courseContentIDStr = request.getParameter("courseContentID");
+            
+            if (assignmentIDStr == null || courseIDStr == null || courseContentIDStr == null) {
+                response.sendRedirect("home");
                 return;
             }
 
-            int assignTakenID = Integer.parseInt(assignTakenIDStr);
-            System.out.println("Parsed assignTakenID: " + assignTakenID); // Log 5
+            int assignmentID = Integer.parseInt(assignmentIDStr);
+            int courseID = Integer.parseInt(courseIDStr);
+            int courseContentID = Integer.parseInt(courseContentIDStr);
+
+            // Lấy thông tin bài tập
+            Assignment assignment = assignmentDAO.getAssignmentById(assignmentID);
+            if (assignment == null) {
+                response.sendRedirect("home");
+                return;
+            }
+
+            // Lấy kết quả bài làm gần nhất
+            List<AssignmentResult> results = assignmentResultDAO.getResultsByLearnerAndAssignment(learner.getLearnerID(), assignmentID);
+            if (results.isEmpty()) {
+                response.sendRedirect("home");
+                return;
+            }
 
             // Lấy thông tin bài làm
-            AssignmentTaken assignmentTaken = assignmentTakenDAO.getAssignmentTakenById(assignTakenID);
-            System.out.println("AssignmentTaken found: " + (assignmentTaken != null)); // Log 6
-
-            if (assignmentTaken == null) {
-                System.out.println("AssignmentTaken not found"); // Log 7
-                request.setAttribute("error", "Không tìm thấy bài làm");
-                request.getRequestDispatcher("/error.jsp").forward(request, response);
+            AssignmentTaken taken = assignmentTakenDAO.getAssignmentTakenById(results.get(0).getAssignTakenID());
+            if (taken == null) {
+                response.sendRedirect("home");
                 return;
             }
 
-            // Lấy danh sách câu hỏi
-            List<AssignmentQuestion> questions = assignmentQuestionDAO.getQuestionsByAssignmentId(assignmentTaken.getAssignmentID());
-            System.out.println("Number of questions found: " + questions.size()); // Log 8
-
-            // Lấy kết quả
-            List<AssignmentResult> results = assignmentResultDAO.getResultsByTakenID(assignTakenID);
-            System.out.println("Number of results found: " + results.size()); // Log 9
-
-            // Tính điểm
-            float totalMark = 0;
-            float maxMark = 0;
-            int correctCount = 0;
-
+            // Lấy danh sách câu hỏi của bài tập
+            List<AssignmentQuestion> questions = assignmentDAO.getAssignmentWithQuestions(assignmentID).getAssignmentQuestions();
+            
+            // Lấy chi tiết câu trả lời cho mỗi câu hỏi
             for (AssignmentQuestion question : questions) {
-                maxMark += question.getQuestionMark();
-                for (AssignmentResult result : results) {
-                    if (result.getAssignmentQuesID() == question.getAssignQuesID()) {
-                        totalMark += result.getMark();
-                        if (result.isAnswerIsCorrect()) {
-                            correctCount++;
-                        }
-                    }
+                List<Answer> answers = questionAndAnswerDAO.getAllAnswerOfOneQuestion(question.getQuestionID());
+                question.setAnswers(answers);
+            }
+            
+            // Tạo map để map kết quả với câu hỏi tương ứng
+            Map<Integer, AssignmentResult> resultMap = results.stream()
+                .collect(Collectors.toMap(
+                    AssignmentResult::getAssignmentQuesID,
+                    result -> result,
+                    (existing, replacement) -> replacement // Nếu có duplicate, giữ lại kết quả mới nhất
+                ));
+
+            // Tính toán thống kê
+            int correctCount = 0;
+            float totalMark = 0;
+            for (AssignmentResult result : results) {
+                if (result.isAnswerIsCorrect()) {
+                    correctCount++;
                 }
+                totalMark += result.getMark();
             }
 
-            System.out.println("Calculated marks:"); // Log 10
-            System.out.println("totalMark: " + totalMark);
-            System.out.println("maxMark: " + maxMark);
-            System.out.println("correctCount: " + correctCount);
-
-            // Tính điểm trên thang 10
-            float score = (totalMark / maxMark) * 10;
-            System.out.println("Final score: " + score); // Log 11
-
-            // Set attributes
-            request.setAttribute("assignmentTaken", assignmentTaken);
+            // Set attributes cho JSP
+            request.setAttribute("assignment", assignment);
+            request.setAttribute("assignmentTaken", taken);
+            request.setAttribute("questionResults", results);
             request.setAttribute("questions", questions);
-            request.setAttribute("results", results);
-            request.setAttribute("totalMark", totalMark);
-            request.setAttribute("maxMark", maxMark);
-            request.setAttribute("correctCount", correctCount);
-            request.setAttribute("score", score);
+            request.setAttribute("resultMap", resultMap);
+            request.setAttribute("courseID", courseID);
+            request.setAttribute("courseContentID", courseContentID);
+            
+            int finalCorrectCount = correctCount;
+            float finalTotalMark = totalMark;
+            request.setAttribute("assignmentResult", new AssignmentResult() {{
+                setCorrectCount(finalCorrectCount);
+                setTotalQuestions(results.size());
+                setTotalMark(finalTotalMark);
+                setScore(taken.getFinalMark());
+            }});
 
-            // Forward to view
-            request.getRequestDispatcher("/view-assignment-result.jsp").forward(request, response);
+            // Forward đến trang JSP
+            request.getRequestDispatcher("view-assignment-result.jsp").forward(request, response);
 
         } catch (NumberFormatException e) {
-            System.out.println("NumberFormatException: " + e.getMessage()); // Log 12
-            request.setAttribute("error", "Dữ liệu không hợp lệ");
-            request.getRequestDispatcher("/error.jsp").forward(request, response);
-        } catch (Exception e) {
-            System.out.println("Unexpected error: " + e.getMessage()); // Log 14
-            request.setAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
-            request.getRequestDispatcher("/error.jsp").forward(request, response);
+            response.sendRedirect("home");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            response.sendRedirect("error.jsp");
         }
+    }
+
+    @Override
+    public void destroy() {
     }
 } 

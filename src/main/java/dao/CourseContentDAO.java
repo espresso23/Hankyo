@@ -216,7 +216,8 @@ public class CourseContentDAO {
                 "WHERE aq.assignmentID = ? " +
                 "ORDER BY q.questionID, a.answerID";
 
-        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, assignmentID);
             try (ResultSet rs = stmt.executeQuery()) {
                 Question currentQuestion = null;

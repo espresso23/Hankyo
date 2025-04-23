@@ -18,7 +18,7 @@ public class AssignmentTakenDAO {
             
             pstmt.setInt(1, taken.getAssignmentID());
             pstmt.setInt(2, taken.getLearnerID());
-            pstmt.setDate(3, new java.sql.Date(taken.getDateCreated().getTime()));
+            pstmt.setTimestamp(3, new java.sql.Timestamp(taken.getDateCreated().getTime()));
             pstmt.setFloat(4, taken.getFinalMark());
             pstmt.setInt(5, taken.getSkipQues());
             pstmt.setInt(6, taken.getDoneQues());
@@ -123,7 +123,7 @@ public class AssignmentTakenDAO {
         taken.setAssignTakenID(rs.getInt("assignTakenID"));
         taken.setAssignmentID(rs.getInt("assignmentID"));
         taken.setLearnerID(rs.getInt("learnerID"));
-        taken.setDateCreated(rs.getDate("dateCreated"));
+        taken.setDateCreated(rs.getTimestamp("dateCreated"));
         taken.setFinalMark(rs.getFloat("finalMark"));
         taken.setSkipQues(rs.getInt("skipQues"));
         taken.setDoneQues(rs.getInt("doneQues"));
@@ -147,6 +147,29 @@ public class AssignmentTakenDAO {
             
             if (rs.next()) {
                 return mapResultSetToAssignmentTaken(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
+
+    public AssignmentTaken getLatestAssignmentTaken(int learnerID, int assignmentID) {
+        String sql = "SELECT TOP 1 * FROM Assignment_Taken " +
+                    "WHERE learnerID = ? AND assignmentID = ? " +
+                    "ORDER BY dateCreated DESC";
+        
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, learnerID);
+            pstmt.setInt(2, assignmentID);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToAssignmentTaken(rs);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();

@@ -160,17 +160,17 @@
         }
 
         .progress-bar {
-            height: 6px;
-            background-color: #e0e0e0;
-            border-radius: 3px;
-            margin-top: 8px;
+            height: 8px;
+            background-color: #e8f0fe;
+            border-radius: 4px;
+            margin: 16px 0;
             overflow: hidden;
         }
 
         .progress-value {
             height: 100%;
             background-color: #1a73e8;
-            border-radius: 3px;
+            border-radius: 4px;
             transition: width 0.3s ease;
         }
 
@@ -332,6 +332,186 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+
+        /* Assignment Result Styles */
+        .assignment-result {
+            max-width: 854px;
+            margin: 24px auto;
+            padding: 24px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .result-header {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #202124;
+            margin-bottom: 20px;
+        }
+
+        .result-stats {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .result-percentage {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a73e8;
+            margin-right: 12px;
+        }
+
+        .result-fraction {
+            color: #5f6368;
+            font-size: 1rem;
+        }
+
+        .result-progress {
+            height: 8px;
+            background-color: #e8f0fe;
+            border-radius: 4px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+
+        .result-progress-value {
+            height: 100%;
+            background-color: #1a73e8;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .result-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .result-detail-item {
+            text-align: center;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .detail-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #202124;
+            margin-bottom: 8px;
+        }
+
+        .detail-label {
+            color: #5f6368;
+            font-size: 0.875rem;
+        }
+
+        .retake-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #1a73e8;
+            color: #fff;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .retake-button:hover {
+            background-color: #1557b0;
+            color: #fff;
+        }
+
+        .stats-card {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            height: 100%;
+            transition: transform 0.2s;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stats-value h2 {
+            color: #1a73e8;
+            font-weight: 600;
+        }
+
+        .stats-value p {
+            font-size: 0.9rem;
+        }
+
+        .progress {
+            height: 8px !important;
+            background-color: #e8f0fe !important;
+            border-radius: 4px !important;
+            margin: 16px 0 !important;
+            overflow: hidden;
+        }
+
+        .progress .progress-bar {
+            height: 100%;
+            background-color: #1a73e8;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .result-details .card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+        }
+
+        .result-details .card-title {
+            color: #202124;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .result-details .card-body {
+            padding: 1.5rem;
+        }
+
+        .btn-primary {
+            background-color: #1a73e8;
+            border-color: #1a73e8;
+            padding: 10px 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #1557b0;
+            border-color: #1557b0;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Progress bar trong kết quả bài làm */
+        .result-progress .progress {
+            height: 10px !important;
+        }
+
+        .result-progress .progress-bar {
+            background-color: #28a745 !important;
+        }
+
+        /* Ẩn text trong progress bar */
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
     </style>
 </head>
 <body>
@@ -435,16 +615,86 @@
                         <div class="assignment-actions">
                             <c:choose>
                                 <c:when test="${currentContent.completed}">
-                                    <div class="alert alert-success">
-                                        <i class="fas fa-check-circle me-2"></i>Bạn đã hoàn thành bài tập này
+                                    <div class="assignment-result">
+                                        <div class="result-header mb-4">
+                                            <h3 class="text-success">
+                                                <i class="fas fa-check-circle me-2"></i>
+                                                Bài tập đã hoàn thành
+                                            </h3>
+                                            <p class="text-muted">
+                                                <i class="fas fa-clock me-2"></i>Lần làm gần nhất: 
+                                                <fmt:formatDate value="${latestTaken.dateCreated}" pattern="dd/MM/yyyy HH:mm"/>
+                                            </p>
+                                        </div>
+                                        
                                         <c:if test="${not empty assignmentResult}">
-                                            <div class="mt-3">
-                                                <p><strong>Kết quả của bạn:</strong></p>
-                                                <p>Số câu đúng: ${assignmentResult.correctCount}/${assignmentResult.totalQuestions}</p>
-                                                <p>Điểm số: ${assignmentResult.score}/10</p>
-                                                <button class="btn btn-outline-primary mt-2 view-result-btn" data-assignment-id="${currentContent.assignment.assignmentID}">
-                                                    <i class="fas fa-eye me-2"></i>Xem chi tiết bài làm
-                                                </button>
+                                            <div class="result-stats">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <div class="stats-card mb-3">
+                                                            <div class="stats-value">
+                                                                <h2 class="display-4 mb-0 text-primary">
+                                                                    <fmt:formatNumber value="${(assignmentResult.correctCount / assignmentResult.totalQuestions) * 100}" 
+                                                                                    maxFractionDigits="1"/>%
+                                                                </h2>
+                                                                <p class="text-muted mb-0">Tỷ lệ trả lời đúng</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="stats-card mb-3">
+                                                            <div class="stats-value">
+                                                                <h2 class="display-4 mb-0">
+                                                                    ${assignmentResult.correctCount}/${assignmentResult.totalQuestions}
+                                                                </h2>
+                                                                <p class="text-muted mb-0">Số câu trả lời đúng</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="progress mb-4" style="height: 10px;">
+                                                    <div class="progress-bar bg-success" 
+                                                         role="progressbar" 
+                                                         style="width: ${(assignmentResult.correctCount / assignmentResult.totalQuestions) * 100}%" 
+                                                         aria-valuenow="${(assignmentResult.correctCount / assignmentResult.totalQuestions) * 100}" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                        <span class="visually-hidden">
+                                                            ${(assignmentResult.correctCount / assignmentResult.totalQuestions) * 100}% hoàn thành
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="result-details">
+                                                    <div class="card">
+                                                        <div class="card-body">
+                                                            <h5 class="card-title mb-3">Chi tiết kết quả</h5>
+                                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                                <span>Điểm số đạt được:</span>
+                                                                <span class="fw-bold">${assignmentResult.score}/10</span>
+                                                            </div>
+                                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                                <span>Số câu trả lời đúng:</span>
+                                                                <span class="fw-bold text-success">${assignmentResult.correctCount}</span>
+                                                            </div>
+                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                <span>Tổng số câu hỏi:</span>
+                                                                <span class="fw-bold">${assignmentResult.totalQuestions}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="mt-4 d-flex gap-3 justify-content-center">
+                                                    <a href="view-assignment-result?assignmentID=${currentContent.assignment.assignmentID}&courseID=${course.courseID}&courseContentID=${currentContent.courseContentID}" 
+                                                       class="btn btn-primary">
+                                                        <i class="fas fa-eye me-2"></i>Xem chi tiết bài làm
+                                                    </a>
+                                                    <button class="btn btn-outline-primary" onclick="startAssignment('${currentContent.assignment.assignmentID}')">
+                                                        <i class="fas fa-redo me-2"></i>Làm lại bài
+                                                    </button>
+                                                </div>
                                             </div>
                                         </c:if>
                                     </div>
@@ -492,6 +742,26 @@
     </c:choose>
 </div>
 
+<!-- Modal Chi tiết bài làm -->
+<div class="modal fade" id="assignmentResultModal" tabindex="-1" aria-labelledby="assignmentResultModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assignmentResultModalLabel">Chi tiết bài làm</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="assignmentResultContent">
+                    <!-- Nội dung chi tiết bài làm sẽ được load động -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -502,7 +772,7 @@
             const isAssignment = $(this).data('is-assignment');
 
             // Xây dựng URL với các tham số cần thiết
-            let url = 'learn-course?courseID=${course.courseID}&contentID=' + contentId;
+            let url = 'learn-course?courseID=${course.courseID}&courseContentID=' + contentId;
 
             // Thêm tham số type nếu là assignment
             if (isAssignment === 'true') {

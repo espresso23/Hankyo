@@ -12,35 +12,6 @@ public class AssignmentResultDAO {
     private PreparedStatement ps = null;
     private ResultSet rs = null;
 
-    public boolean addAssignmentResult(AssignmentResult result) {
-        String sql = "INSERT INTO Assignment_Result (assignmentQuesID, learnerID, mark, answerLabel, answerIsCorrect, assignTakenID) " +
-                    "VALUES (?, ?, ?, ?, ?, ?)";
-        try {
-            conn = DBConnect.getInstance().getConnection();
-            ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            ps.setInt(1, result.getAssignmentQuesID());
-            ps.setInt(2, result.getLearnerID());
-            ps.setFloat(3, result.getMark());
-            ps.setString(4, result.getAnswerLabel());
-            ps.setBoolean(5, result.isAnswerIsCorrect());
-            ps.setInt(6, result.getAssignTakenID());
-
-            int affectedRows = ps.executeUpdate();
-            if (affectedRows > 0) {
-                try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        result.setResultID(generatedKeys.getInt(1));
-                        return true;
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            closeResources();
-        }
-        return false;
-    }
 
     public List<AssignmentResult> getResultsByTakenID(int takenID) {
         List<AssignmentResult> results = new ArrayList<>();
@@ -75,13 +46,20 @@ public class AssignmentResultDAO {
         String sql = "SELECT r.* FROM Assignment_Result r " +
                     "JOIN Assignment_Taken t ON r.assignTakenID = t.assignTakenID " +
                     "JOIN Assignment_Question aq ON r.assignmentQuesID = aq.assignmentQuesID " +
-                    "WHERE t.learnerID = ? AND t.assignmentID = ?";
+                    "WHERE t.learnerID = ? AND t.assignmentID = ? " +
+                    "AND t.assignTakenID = (" +
+                    "    SELECT MAX(assignTakenID) " +
+                    "    FROM Assignment_Taken " +
+                    "    WHERE learnerID = ? AND assignmentID = ?" +
+                    ")";
 
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, learnerID);
             ps.setInt(2, assignmentID);
+            ps.setInt(3, learnerID);
+            ps.setInt(4, assignmentID);
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
