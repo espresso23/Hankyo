@@ -78,7 +78,7 @@ public class ExamController extends HttpServlet {
                     break;
 
                 case "do":
-                    String examIDParam2 = (String) request.getSession().getAttribute("examID");
+                    String examIDParam2 = request.getParameter("examID");
                     String eQuesType = request.getParameter("eQuesType");
                     String time = request.getParameter("time");
 

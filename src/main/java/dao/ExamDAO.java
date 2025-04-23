@@ -344,7 +344,7 @@ public class ExamDAO {
                     question.setQuestionType(rs.getString("questionType"));
                     question.setQuestionImage(rs.getString("questionImg"));
                     question.setAudioFile(rs.getString("audio_file"));
-                    question.setQuestionMark(rs.getDouble("mark"));
+                    question.setQuestionMark(rs.getDouble("questionMark"));
                     
                     System.out.println("Question details:");
                     System.out.println("- Text: " + question.getQuestionText());
