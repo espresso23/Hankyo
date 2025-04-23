@@ -322,9 +322,7 @@
     if (!popup.contains(event.target) && !avatar.contains(event.target)) {
       popup.style.display = 'none';
     }
-    if (!menu.contains(event.target) && !menuBtn.contains(event.target)) {
-      menu.style.display = 'none';
-    }
+
   });
 </script>
 <script>

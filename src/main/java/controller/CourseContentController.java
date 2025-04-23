@@ -5,6 +5,7 @@ import dao.CourseContentDAO;
 import model.Assignment;
 import model.CourseContent;
 import model.Expert;
+import cloud.CloudinaryConfig;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -13,6 +14,7 @@ import javax.servlet.http.*;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.net.URLEncoder;
 
 @WebServlet("/course-content")
 @MultipartConfig(
@@ -22,6 +24,13 @@ import java.util.List;
 )
 public class CourseContentController extends HttpServlet {
     private CourseContent courseContent = new CourseContent();
+    private CloudinaryConfig cloudinaryConfig;
+    CourseContentDAO courseContentDAO = new CourseContentDAO();
+
+    @Override
+    public void init() throws ServletException {
+        cloudinaryConfig = new CloudinaryConfig();
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -89,13 +98,6 @@ public class CourseContentController extends HttpServlet {
                     throw new RuntimeException(e);
                 }
                 break;
-            case "addImage":
-                try {
-                    handleAddMedia(request, response, courseID, "image");
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-                break;
             case "addPDF":
                 try {
                     handleAddMedia(request, response, courseID, "pdf");
@@ -131,65 +133,46 @@ public class CourseContentController extends HttpServlet {
     }
 
     private void handleAddMedia(HttpServletRequest request, HttpServletResponse response, int courseID, String type)
-            throws IOException, ServletException, SQLException {
-        CourseContentDAO dao = null;
+            throws ServletException, IOException, SQLException {
         try {
-            System.out.println("=== BẮT ĐẦU XỬ LÝ THÊM " + type.toUpperCase() + " ===");
-            System.out.println("CourseID: " + courseID);
-            
-            dao = new CourseContentDAO();
-            
-            // Lấy thông tin từ request
             String title = request.getParameter("title");
             String description = request.getParameter("description");
-            System.out.println("Tiêu đề: " + title);
-            System.out.println("Mô tả: " + description);
-            
-            // Lấy file media
-            String paramName = type.equals("video") ? "video" : 
-                              type.equals("image") ? "image" : "pdf";
-            Part mediaPart = request.getPart(paramName);
-            System.out.println("Tên file " + type + ": " + mediaPart.getSubmittedFileName());
-            System.out.println("Kích thước file: " + mediaPart.getSize() + " bytes");
-            System.out.println("Content Type: " + mediaPart.getContentType());
-            
-            // Validate file type
-            String contentType = mediaPart.getContentType();
-            if (!isValidFileType(contentType, type)) {
-                throw new ServletException("Invalid file type for " + type);
+            Part filePart = request.getPart(type);
+
+            if (filePart == null || filePart.getSize() == 0) {
+                String errorMessage = URLEncoder.encode("Vui lòng chọn file để tải lên", "UTF-8");
+                response.sendRedirect("course-content?action=addContentView&courseID=" + courseID + "&error=" + errorMessage);
+                return;
             }
-            
-            // Chuyển đổi media thành URL
-            System.out.println("Đang chuyển đổi " + type + " thành URL...");
-            String mediaUrl = dao.convertMediaToUrl(mediaPart);
-            System.out.println("URL " + type + ": " + mediaUrl);
-            
-            // Tạo đối tượng CourseContent
+
+            String fileUrl;
+            if (type.equals("pdf")) {
+                fileUrl = cloudinaryConfig.convertPdfToUrl(filePart);
+            } else {
+                fileUrl = courseContentDAO.convertMediaToUrl(filePart);
+            }
+
             CourseContent content = new CourseContent();
             content.setTitle(title);
-            content.setMedia(mediaUrl);
             content.setDescription(description);
+            content.setMedia(fileUrl);
             content.setCourseID(courseID);
-            
-            System.out.println("Đối tượng content: " + content.toString());
-            
-            // Thêm vào database
-            System.out.println("Đang thêm " + type + " vào database...");
-            dao.addCourseContent(content);
-            System.out.println("Thêm " + type + " thành công!");
-            
-            // Chuyển hướng
-            System.out.println("Chuyển hướng về trang danh sách nội dung...");
-            response.sendRedirect("course-content?action=addContentView&courseID=" + courseID);
-            System.out.println("=== KẾT THÚC XỬ LÝ THÊM " + type.toUpperCase() + " ===");
-        } catch (Exception e) {
-            System.err.println("LỖI KHI THÊM " + type.toUpperCase() + ": " + e.getMessage());
-            e.printStackTrace();
-            throw e;
-        } finally {
-            if (dao != null) {
-                dao.closeConnection();
+
+            CourseContentDAO dao = new CourseContentDAO();
+            boolean success = dao.addCourseContent(content);
+
+            if (success) {
+                String successMessage = URLEncoder.encode("Thêm nội dung thành công!", "UTF-8");
+                response.sendRedirect("course-content?action=addContentView&courseID=" + courseID + "&success=" + successMessage);
+            } else {
+                String errorMessage = URLEncoder.encode("Có lỗi xảy ra khi thêm nội dung", "UTF-8");
+                response.sendRedirect("course-content?action=addContentView&courseID=" + courseID + "&error=" + errorMessage);
             }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            String errorMessage = URLEncoder.encode("Lỗi: " + e.getMessage(), "UTF-8");
+            response.sendRedirect("course-content?action=addContentView&courseID=" + courseID + "&error=" + errorMessage);
         }
     }
 
@@ -260,46 +243,86 @@ public class CourseContentController extends HttpServlet {
     }
 
     private void handleUpdateVideo(HttpServletRequest request, HttpServletResponse response, int courseID)
-            throws IOException, ServletException, SQLException {
-        CourseContentDAO dao = null;
+            throws ServletException, IOException, SQLException {
         try {
             int contentID = Integer.parseInt(request.getParameter("contentID"));
             String title = request.getParameter("title");
             String description = request.getParameter("description");
+            Part filePart = request.getPart("video");
 
-            // Lấy thông tin video hiện tại
-            dao = new CourseContentDAO();
-            CourseContent currentContent = dao.getCourseContentById(contentID);
+            CourseContentDAO dao = new CourseContentDAO();
+            CourseContent content = dao.getCourseContentById(contentID);
 
-            // Cập nhật thông tin cơ bản
-            currentContent.setTitle(title);
-            currentContent.setDescription(description);
-
-            // Kiểm tra xem có video mới được tải lên không
-            Part newVideoPart = request.getPart("video");
-            if (newVideoPart != null && newVideoPart.getSize() > 0) {
-                // Có video mới, tải lên và cập nhật URL
-                String newVideoUrl = dao.convertMediaToUrl(newVideoPart);
-                currentContent.setMedia(newVideoUrl);
+            if (content == null) {
+                request.setAttribute("errorMessage", "Không tìm thấy nội dung cần cập nhật");
+                showAddContentPage(request, response);
+                return;
             }
 
-            // Cập nhật vào database
-            dao.updateCourseContent(currentContent);
+            content.setTitle(title);
+            content.setDescription(description);
 
-            // Thêm thông báo thành công và chuyển hướng
-            request.setAttribute("successMessage", "Cập nhật video thành công!");
-            response.sendRedirect("course-content?action=addContentView&courseID=" + courseID);
+            if (filePart != null && filePart.getSize() > 0) {
+                String fileUrl = cloudinaryConfig.convertMediaToUrl(filePart);
+                content.setMedia(fileUrl);
+            }
 
-        } catch (SQLException e) {
-            handleError(request, response, "Lỗi database: " + e.getMessage(),
-                    "edit-video?contentID=" + request.getParameter("contentID") + "&courseID=" + request.getParameter("courseID"));
+            boolean success = dao.updateCourseContent(content);
+
+            if (success) {
+                request.setAttribute("successMessage", "Cập nhật nội dung thành công!");
+            } else {
+                request.setAttribute("errorMessage", "Có lỗi xảy ra khi cập nhật nội dung");
+            }
+
+            showAddContentPage(request, response);
+
         } catch (Exception e) {
-            handleError(request, response, "Lỗi hệ thống: " + e.getMessage(),
-                    "course-content?action=addContentView&courseID=" + courseID);
-        } finally {
-            if (dao != null) {
-                dao.closeConnection();
+            e.printStackTrace();
+            request.setAttribute("errorMessage", "Lỗi: " + e.getMessage());
+            showAddContentPage(request, response);
+        }
+    }
+
+    private void handleUpdatePdf(HttpServletRequest request, HttpServletResponse response, int courseID) 
+            throws ServletException, IOException, SQLException {
+        try {
+            int contentID = Integer.parseInt(request.getParameter("contentID"));
+            String title = request.getParameter("title");
+            String description = request.getParameter("description");
+            Part filePart = request.getPart("pdf");
+
+            CourseContentDAO dao = new CourseContentDAO();
+            CourseContent content = dao.getCourseContentById(contentID);
+
+            if (content == null) {
+                request.setAttribute("errorMessage", "Không tìm thấy nội dung cần cập nhật");
+                showAddContentPage(request, response);
+                return;
             }
+
+            content.setTitle(title);
+            content.setDescription(description);
+
+            if (filePart != null && filePart.getSize() > 0) {
+                String fileUrl = cloudinaryConfig.convertPdfToUrl(filePart);
+                content.setMedia(fileUrl);
+            }
+
+            boolean success = dao.updateCourseContent(content);
+
+            if (success) {
+                request.setAttribute("successMessage", "Cập nhật nội dung thành công!");
+            } else {
+                request.setAttribute("errorMessage", "Có lỗi xảy ra khi cập nhật nội dung");
+            }
+
+            showAddContentPage(request, response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("errorMessage", "Lỗi: " + e.getMessage());
+            showAddContentPage(request, response);
         }
     }
 
