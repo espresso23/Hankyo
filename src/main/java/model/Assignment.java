@@ -1,9 +1,11 @@
 package model;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-public class Assignment {
+public class Assignment implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int assignmentID;
     private String assignmentTitle;
     private Question question;

@@ -1,6 +1,9 @@
 package model;
 
-public class AssignmentResult {
+import java.io.Serializable;
+
+public class AssignmentResult implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int resultID;
     private int assignmentQuesID;  // FK to Assignment_Question
     private int learnerID;         // FK to Learner

@@ -1,8 +1,10 @@
 package model;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Expert extends User {
+public class Expert extends User implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int expertID;
     private int honour_ownedID;
     private String certificate;

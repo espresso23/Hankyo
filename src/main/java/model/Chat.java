@@ -1,8 +1,10 @@
 package model;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 
-public class Chat {
+public class Chat implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int chatID;
     private int userID; // ID của người gửi
     private String message;   // Nội dung tin nhắn

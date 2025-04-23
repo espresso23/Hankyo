@@ -1,6 +1,9 @@
 package model;
 
-public class CustomFlashCard {
+import java.io.Serializable;
+
+public class CustomFlashCard implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int CFCID;
     private Integer learnerID;
     private String word;

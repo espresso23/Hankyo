@@ -1,6 +1,9 @@
 package model;
 
-public class Newspaper {
+import java.io.Serializable;
+
+public class Newspaper implements Serializable {
+    private static final long serialVersionUID = 1L;
     int newspaperID;
     String title;
     String content;

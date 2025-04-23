@@ -1,6 +1,9 @@
 package model;
 
-public class ExpertBank {
+import java.io.Serializable;
+
+public class ExpertBank implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int eBankID;
     private String bankAccount;
     private String bankName;

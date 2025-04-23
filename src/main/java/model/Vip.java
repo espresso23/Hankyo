@@ -1,9 +1,11 @@
 package model;
 
+import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 
-public class Vip {
+public class Vip implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int vipID;
     private String vipType;
     private String status;

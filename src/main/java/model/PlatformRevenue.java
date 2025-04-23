@@ -1,8 +1,10 @@
 package model;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class PlatformRevenue {
+public class PlatformRevenue implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int revenueID;
     private int amount;
     private String description;

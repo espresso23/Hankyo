@@ -1,6 +1,9 @@
 package model;
 
-public class Enrollment {
+import java.io.Serializable;
+
+public class Enrollment implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int enrollID;
     private Learner learner;
     private Course course;

@@ -2,14 +2,18 @@ package dao;
 
 import model.Answer;
 import model.Exam;
-import model.Question;
 import model.ExamTaken;
+import model.Question;
 import util.DBConnect;
 
-import java.sql.*;
-import java.sql.Date;
-import java.time.LocalDate;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class ExamDAO {
     private Connection connection;
@@ -18,6 +22,21 @@ public class ExamDAO {
         this.connection = DBConnect.getInstance().getConnection();
     }
 
+    public void addExam(Exam exam) {
+        String query = "INSERT INTO Exam (examID, examName, description, dateCreate, examType) VALUES (?,?,?,?,?)";
+        try (Connection connection1 = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = connection1.prepareStatement(query)) {
+            stmt.setInt(1, exam.getExamID());
+            stmt.setString(2, exam.getExamName());
+            stmt.setString(3, exam.getExamDescription());
+            stmt.setDate(4, new java.sql.Date(exam.getDateCreated().getTime()));
+            stmt.setString(5, exam.getExamType());
+            stmt.executeUpdate();
+            System.out.println(exam.toString() + " added successfully.");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public List<Exam> getAllExams() {
         List<Exam> exams = new ArrayList<>();

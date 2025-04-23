@@ -1,8 +1,10 @@
 package model;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class CoursePaid {
+public class CoursePaid implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int course_paidID;
     private int courseID;//get courseID
     private int learnerID;//get learnerID

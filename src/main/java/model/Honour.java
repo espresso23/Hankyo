@@ -1,6 +1,9 @@
 package model;
 
-public class Honour {
+import java.io.Serializable;
+
+public class Honour implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int honourID;
     private String honourImg;
     private String honourName;

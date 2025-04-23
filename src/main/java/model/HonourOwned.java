@@ -1,8 +1,10 @@
 package model;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class HonourOwned {
+public class HonourOwned implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int honour_ownedID;
     Honour honour;
     Expert expert;

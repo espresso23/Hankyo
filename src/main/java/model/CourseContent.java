@@ -1,6 +1,9 @@
 package model;
 
-public class CourseContent {
+import java.io.Serializable;
+
+public class CourseContent implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int courseContentID;
     private String title;
     private String description;

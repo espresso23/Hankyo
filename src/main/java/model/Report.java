@@ -1,7 +1,9 @@
 package model;
+import java.io.Serializable;
 import java.sql.Timestamp;
 
-public class Report {
+public class Report implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int reportID;
     private int reporterID;
     private int reportedUserID;

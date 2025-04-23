@@ -1,8 +1,10 @@
 package model;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class CourseFeedback {
+public class CourseFeedback implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int feedbackID;
     private Course course;
     private Learner learner;

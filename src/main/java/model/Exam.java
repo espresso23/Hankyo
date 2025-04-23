@@ -6,7 +6,6 @@ import java.util.Date;
 public class Exam implements Serializable {
     private static final long serialVersionUID = 1L;
     private int examID;
-    private int expertID;
     private String examName;
     private String examDescription;
     private Date dateCreated;
@@ -22,7 +21,6 @@ public class Exam implements Serializable {
 
     public Exam(int examID, int expertID, String examName, String examDescription, Date dateCreated, String examType, int numCompleted) {
         this.examID = examID;
-        this.expertID = expertID;
         this.examName = examName;
         this.examDescription = examDescription;
         this.dateCreated = dateCreated;
@@ -38,13 +36,6 @@ public class Exam implements Serializable {
         this.examID = examID;
     }
 
-    public int getExpertID() {
-        return expertID;
-    }
-
-    public void setExpertID(int expertID) {
-        this.expertID = expertID;
-    }
 
     public String getExamName() {
         return examName;
@@ -90,7 +81,6 @@ public class Exam implements Serializable {
     public String toString() {
         return "Exam{" +
                 "examID=" + examID +
-                ", expertID=" + expertID +
                 ", examName='" + examName + '\'' +
                 ", examDescription='" + examDescription + '\'' +
                 ", dateCreated=" + dateCreated +
