@@ -1,6 +1,7 @@
 package model;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 public class Exam implements Serializable {
@@ -8,24 +9,30 @@ public class Exam implements Serializable {
     private int examID;
     private String examName;
     private String examDescription;
-    private Date dateCreated;
+    private LocalDateTime dateCreated;
     private String examType;
-    private int numCompleted;
+    private String status;
 
     public Exam() {
+    }
+
+    public Exam(String examName, String examType, String examDescription, String status) {
+        this.examName = examName;
+        this.examType = examType;
+        this.examDescription = examDescription;
+        this.status = status;
     }
 
     public Exam(int examID) {
         this.examID = examID;
     }
 
-    public Exam(int examID, int expertID, String examName, String examDescription, Date dateCreated, String examType, int numCompleted) {
+    public Exam(int examID, int expertID, String examName, String examDescription, LocalDateTime dateCreated, String examType, int numCompleted) {
         this.examID = examID;
         this.examName = examName;
         this.examDescription = examDescription;
         this.dateCreated = dateCreated;
         this.examType = examType;
-        this.numCompleted = numCompleted;
     }
 
     public int getExamID() {
@@ -53,11 +60,11 @@ public class Exam implements Serializable {
         this.examDescription = examDescription;
     }
 
-    public Date getDateCreated() {
+    public LocalDateTime getDateCreated() {
         return dateCreated;
     }
 
-    public void setDateCreated(Date dateCreated) {
+    public void setDateCreated(LocalDateTime dateCreated) {
         this.dateCreated = dateCreated;
     }
 
@@ -69,12 +76,12 @@ public class Exam implements Serializable {
         this.examType = examType;
     }
 
-    public int getNumCompleted() {
-        return numCompleted;
+    public String getStatus() {
+        return status;
     }
 
-    public void setNumCompleted(int numCompleted) {
-        this.numCompleted = numCompleted;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     @Override
@@ -85,7 +92,6 @@ public class Exam implements Serializable {
                 ", examDescription='" + examDescription + '\'' +
                 ", dateCreated=" + dateCreated +
                 ", examType='" + examType + '\'' +
-                ", numCompleted=" + numCompleted +
                 '}';
     }
 }

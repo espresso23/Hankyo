@@ -13,6 +13,7 @@ public class Question implements Serializable {
     private String questionType;
     private double questionMark;
     private int assignmentID;
+    private int examID;
     private List<Answer> answers = new ArrayList<>();//luu bo cau hoi cho 1 question
 
     public Question(int questionID, String questionText, String questionImage, String questionType, String audioFile) {
@@ -88,6 +89,14 @@ public class Question implements Serializable {
 
     public void setAssignmentID(int assignmentID) {
         this.assignmentID = assignmentID;
+    }
+
+    public int getExamID() {
+        return examID;
+    }
+
+    public void setExamID(int examID) {
+        this.examID = examID;
     }
 
     @Override

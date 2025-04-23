@@ -6,33 +6,71 @@ import model.ExamTaken;
 import model.Question;
 import util.DBConnect;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 public class ExamDAO {
+    private static final Logger LOGGER = Logger.getLogger(ExamDAO.class.getName());
     private Connection connection;
 
     public ExamDAO(Connection connection) {
-        this.connection = DBConnect.getInstance().getConnection();
+        this.connection = connection;
     }
 
-    public void addExam(Exam exam) {
-        String query = "INSERT INTO Exam (examID, examName, description, dateCreate, examType) VALUES (?,?,?,?,?)";
+    public boolean addExam(Exam exam) {
+        String query = "INSERT INTO Exam (examName, description, dateCreate, examType, status) VALUES (?,?,GetDate(),?,?)";
         try (Connection connection1 = DBConnect.getInstance().getConnection();
              PreparedStatement stmt = connection1.prepareStatement(query)) {
-            stmt.setInt(1, exam.getExamID());
-            stmt.setString(2, exam.getExamName());
-            stmt.setString(3, exam.getExamDescription());
-            stmt.setDate(4, new java.sql.Date(exam.getDateCreated().getTime()));
-            stmt.setString(5, exam.getExamType());
-            stmt.executeUpdate();
-            System.out.println(exam.toString() + " added successfully.");
+            stmt.setString(1, exam.getExamName());
+            stmt.setString(2, exam.getExamDescription());
+            stmt.setString(3, exam.getExamType());
+            stmt.setString(4, exam.getStatus());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean updateExam(Exam exam) {
+        String query = "UPDATE Exam SET examName =?, description =?, dateCreate = GETDATE(), examType =?, status = ? WHERE examID = ?";
+        try (Connection connection1 = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = connection1.prepareStatement(query)) {
+            stmt.setString(1, exam.getExamName());
+            stmt.setString(2, exam.getExamDescription());
+            stmt.setString(3, exam.getExamType());
+            stmt.setString(4, exam.getStatus());
+            stmt.setInt(5, exam.getExamID());
+            int rowCount = stmt.executeUpdate();
+            if (rowCount == 1) {
+                System.out.println(exam.toString() + " updated successfully.");
+                return true;
+            } else {
+                System.out.println(exam.toString() + " not updated.");
+                return false;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean deleteExam(int examID) {
+        String query = "DELETE FROM Exam WHERE examID = ?";
+        try (Connection connection1 = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = connection1.prepareStatement(query)) {
+            stmt.setInt(1, examID);
+            int rowCount = stmt.executeUpdate();
+            if (rowCount == 1) {
+                System.out.println("Exam with ID " + examID + " deleted successfully.");
+                return true;
+            } else {
+                System.out.println("Exam with ID " + examID + " not deleted.");
+                return false;
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -40,27 +78,20 @@ public class ExamDAO {
 
     public List<Exam> getAllExams() {
         List<Exam> exams = new ArrayList<>();
-        String query = "SELECT * FROM Exam";
+        String sql = "SELECT * FROM Exam ORDER BY dateCreate DESC";
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query);
-             ResultSet rs = preparedStatement.executeQuery()) {
-
+        try (PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
             while (rs.next()) {
-                Exam exam = new Exam();
-                exam.setExamID(rs.getInt("examID"));
-                exam.setExamName(rs.getString("examName"));
-                exam.setExamDescription(rs.getString("description"));
-                exam.setDateCreated(rs.getDate("dateCreate"));
-                exam.setExpertID(rs.getInt("expertID"));
-                exam.setExamType(rs.getString("examType"));
+                Exam exam = mapResultSetToExam(rs);
                 exams.add(exam);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.severe("Lỗi khi lấy danh sách đề thi: " + e.getMessage());
         }
         return exams;
     }
-
 
     public Exam getExamById(int examID) {
         String query = "SELECT * FROM Exam WHERE examID = ?";
@@ -70,42 +101,29 @@ public class ExamDAO {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                Exam exam = new Exam();
-                exam.setExamID(rs.getInt("examID"));
-                exam.setExamName(rs.getString("examName"));
-                exam.setExamDescription(rs.getString("description"));
-                exam.setDateCreated(rs.getDate("dateCreate"));
-                exam.setExpertID(rs.getInt("expertID"));
-                exam.setExamType(rs.getString("examType"));
-                return exam;
+                return mapResultSetToExam(rs);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.severe("Lỗi khi lấy thông tin đề thi: " + e.getMessage());
         }
         return null;
     }
 
     public List<Exam> getExamsByType(String examType) {
         List<Exam> exams = new ArrayList<>();
-        String query = "SELECT * FROM Exam WHERE examType = ?";
+        String sql = "SELECT * FROM Exam WHERE examType = ? ORDER BY dateCreate DESC";
 
-        try (Connection connection1 = DBConnect.getInstance().getConnection();
-             PreparedStatement stmt = connection1.prepareStatement(query)) {
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, examType);
-            ResultSet rs = stmt.executeQuery();
 
-            while (rs.next()) {
-                Exam exam = new Exam();
-                exam.setExamID(rs.getInt("examID"));
-                exam.setExamName(rs.getString("examName"));
-                exam.setExamDescription(rs.getString("description"));
-                exam.setDateCreated(rs.getDate("dateCreate"));
-                exam.setExpertID(rs.getInt("expertID"));
-                exam.setExamType(rs.getString("examType"));
-                exams.add(exam);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Exam exam = mapResultSetToExam(rs);
+                    exams.add(exam);
+                }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.severe("Lỗi khi lấy danh sách đề thi theo loại: " + e.getMessage());
         }
         return exams;
     }
@@ -268,23 +286,21 @@ public class ExamDAO {
 
     public List<Exam> searchExamsByName(String searchName) {
         List<Exam> exams = new ArrayList<>();
-        String query = "SELECT * FROM Exam WHERE examName LIKE ?";
+        String sql = "SELECT * FROM Exam WHERE examName LIKE ? ORDER BY dateCreate DESC";
 
-        try (Connection connection1 = DBConnect.getInstance().getConnection();
-                PreparedStatement stmt = connection1.prepareStatement(query)) {
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, "%" + searchName + "%");
-            ResultSet rs = stmt.executeQuery();
 
-            while (rs.next()) {
-                Exam exam = new Exam();
-                exam.setExamID(rs.getInt("examID"));
-                exam.setExamName(rs.getString("examName"));
-                exam.setExamDescription(rs.getString("description"));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Exam exam = mapResultSetToExam(rs);
+                    exams.add(exam);
+                }
             }
-            return exams;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            LOGGER.severe("Lỗi khi tìm kiếm đề thi theo tên: " + e.getMessage());
         }
+        return exams;
     }
 
     public List<Question> getQuestionsByExamIdAndType(int examID, String eQuesType) {
@@ -394,4 +410,16 @@ public class ExamDAO {
         return null;
     }
 
+    private Exam mapResultSetToExam(ResultSet rs) throws SQLException {
+        Exam exam = new Exam();
+        exam.setExamID(rs.getInt("examID"));
+        exam.setExamName(rs.getString("examName"));
+        exam.setExamType(rs.getString("examType"));
+        exam.setExamDescription(rs.getString("description"));
+        Timestamp timestamp = rs.getTimestamp("dateCreate");
+        LocalDateTime dateCreate = timestamp != null ? timestamp.toLocalDateTime() : null;
+        exam.setDateCreated(dateCreate);
+        exam.setStatus(rs.getString("status"));
+        return exam;
+    }
 }

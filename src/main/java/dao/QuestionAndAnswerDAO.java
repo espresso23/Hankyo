@@ -101,6 +101,21 @@ public class QuestionAndAnswerDAO {
         return null;
     }
 
+    public void updateQuestion(Question question) throws SQLException {
+        String sql = "UPDATE Question SET questionText = ?, questionImg = ?, audio_file = ?, questionType = ?, questionMark = ? WHERE questionID = ?";
+
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, question.getQuestionText());
+            ps.setString(2, question.getQuestionImage());
+            ps.setString(3, question.getAudioFile());
+            ps.setString(4, question.getQuestionType());
+            ps.setDouble(5, question.getQuestionMark());
+            ps.setInt(6, question.getQuestionID());
+            ps.executeUpdate();
+        }
+    }
     public void updateAnswer(Answer answer) throws SQLException {
         String sql = "UPDATE Answer SET answerText = ?, isCorrect = ?, option_label = ? WHERE questionID = ? AND option_label = ?";
 

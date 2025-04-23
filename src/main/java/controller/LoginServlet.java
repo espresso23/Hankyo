@@ -31,9 +31,12 @@ public class LoginServlet extends HttpServlet {
                 request.getRequestDispatcher("expert.jsp").forward(request, response);
             } else if ("admin".equalsIgnoreCase(user.getRole())) {
                 response.sendRedirect("admin.jsp");
+            } else if ("examManager".equalsIgnoreCase(user.getRole())) {
+                response.sendRedirect("exam?action=getExamLibrary");
             } else {
                 response.sendRedirect("home.jsp");
             }
+
         } else {
             request.getRequestDispatcher("login.jsp").forward(request, response);
         }
@@ -94,7 +97,10 @@ public class LoginServlet extends HttpServlet {
                             System.out.println("Learner is null for User ID: " + user.getUserID());
                             session.setAttribute("errorMsg", "Không tìm thấy hồ sơ người học.");
                         }
+                    } else if ("examManager".equalsIgnoreCase(user.getRole())) {
+                        response.sendRedirect("exam?action=getExamLibrary");
 
+                    } else {
                         response.sendRedirect("home.jsp");
                     }
                 } else {
