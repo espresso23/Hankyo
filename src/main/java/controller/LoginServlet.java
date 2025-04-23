@@ -32,7 +32,7 @@ public class LoginServlet extends HttpServlet {
             } else if ("admin".equalsIgnoreCase(user.getRole())) {
                 response.sendRedirect("admin.jsp");
             } else {
-                response.sendRedirect("courseHeader.jsp");
+                response.sendRedirect("home.jsp");
             }
         } else {
             request.getRequestDispatcher("login.jsp").forward(request, response);

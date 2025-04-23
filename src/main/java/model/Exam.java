@@ -1,61 +1,33 @@
 package model;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Exam {
+public class Exam implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int examID;
     private int expertID;
     private String examName;
-    private String examType;
     private String examDescription;
     private Date dateCreated;
-    private int orderIndex;
-
-    public Exam(String examName, String examDescription, int expertID) {
-        this.examName = examName;
-        this.examDescription = examDescription;
-        this.expertID = expertID;
-    }
-
-    public Exam(int examID, String examName, String examDescription) {
-        this.examID = examID;
-        this.examName = examName;
-        this.examDescription = examDescription;
-    }
+    private String examType;
+    private int numCompleted;
 
     public Exam() {
     }
 
-    public String getExamType() {
-        return examType;
+    public Exam(int examID) {
+        this.examID = examID;
     }
 
-    public void setExamType(String examType) {
-        this.examType = examType;
-    }
-
-    public int getOrderIndex() {
-        return orderIndex;
-    }
-
-    public void setOrderIndex(int orderIndex) {
-        this.orderIndex = orderIndex;
-    }
-
-    public String getExamDescription() {
-        return examDescription;
-    }
-
-    public Date getDateCreated() {
-        return dateCreated;
-    }
-
-    public void setDateCreated(Date dateCreated) {
-        this.dateCreated = dateCreated;
-    }
-
-    public void setExamDescription(String examDescription) {
+    public Exam(int examID, int expertID, String examName, String examDescription, Date dateCreated, String examType, int numCompleted) {
+        this.examID = examID;
+        this.expertID = expertID;
+        this.examName = examName;
         this.examDescription = examDescription;
+        this.dateCreated = dateCreated;
+        this.examType = examType;
+        this.numCompleted = numCompleted;
     }
 
     public int getExamID() {
@@ -66,6 +38,14 @@ public class Exam {
         this.examID = examID;
     }
 
+    public int getExpertID() {
+        return expertID;
+    }
+
+    public void setExpertID(int expertID) {
+        this.expertID = expertID;
+    }
+
     public String getExamName() {
         return examName;
     }
@@ -74,11 +54,48 @@ public class Exam {
         this.examName = examName;
     }
 
-    public int getExpertID() {
-        return expertID;
+    public String getExamDescription() {
+        return examDescription;
     }
 
-    public void setExpertID(int expertID) {
-        this.expertID = expertID;
+    public void setExamDescription(String examDescription) {
+        this.examDescription = examDescription;
+    }
+
+    public Date getDateCreated() {
+        return dateCreated;
+    }
+
+    public void setDateCreated(Date dateCreated) {
+        this.dateCreated = dateCreated;
+    }
+
+    public String getExamType() {
+        return examType;
+    }
+
+    public void setExamType(String examType) {
+        this.examType = examType;
+    }
+
+    public int getNumCompleted() {
+        return numCompleted;
+    }
+
+    public void setNumCompleted(int numCompleted) {
+        this.numCompleted = numCompleted;
+    }
+
+    @Override
+    public String toString() {
+        return "Exam{" +
+                "examID=" + examID +
+                ", expertID=" + expertID +
+                ", examName='" + examName + '\'' +
+                ", examDescription='" + examDescription + '\'' +
+                ", dateCreated=" + dateCreated +
+                ", examType='" + examType + '\'' +
+                ", numCompleted=" + numCompleted +
+                '}';
     }
 }
