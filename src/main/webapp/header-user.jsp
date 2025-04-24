@@ -1,16 +1,10 @@
-<%--
-  Created by IntelliJ IDEA.
-  User: bearx
-  Date: 3/5/2025
-  Time: 9:20 AM
-  To change this template use File | Settings | File Templates.
---%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page isELIgnored="false" %>
 <html>
 <head>
   <title>Title</title>
   <link rel="stylesheet" href="asset/css/header.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
     .button {
       display: block;
@@ -91,21 +85,77 @@
     .back-btn .button-elem svg {
       width: 24px;
       height: 24px;
-      fill: #333; /* Màu mặc định */
+      fill: #333;
       transition: transform 0.3s ease, fill 0.3s ease;
     }
     .back-btn:hover .button-elem svg {
-      transform: translateX(-5px); /* Di chuyển sang trái khi hover */
-      fill: #007BFF; /* Đổi màu khi hover */
+      transform: translateX(-5px);
+      fill: #007BFF;
     }
     .logo {
-      grid-column: 2 / 3; /* Đẩy logo sang cột tiếp theo */
+      grid-column: 2 / 3;
       justify-self: start;
       width: 50px;
     }
-  </style>
-  <style>
-    /* Mobile Menu Button Styles - New Class Name */
+
+    /* Notification dropdown styles */
+    .notification-bell {
+      position: relative;
+      cursor: pointer;
+      margin-right: 20px;
+    }
+
+    .notification-bell i {
+      font-size: 24px;
+      color: #333;
+    }
+
+    .notification-bell:hover i {
+      color: #007bff;
+    }
+
+    .notification-count {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background-color: #ff4444;
+      color: white;
+      border-radius: 50%;
+      padding: 2px 6px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .notification-dropdown {
+      display: none;
+      position: absolute;
+      top: 30px;
+      right: 0;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      width: 200px;
+      padding: 10px;
+      z-index: 1000;
+    }
+
+    .notification-dropdown.show {
+      display: block;
+    }
+
+    .notification-dropdown a {
+      text-decoration: none;
+      color: #333;
+      padding: 8px;
+      display: block;
+    }
+
+    .notification-dropdown a:hover {
+      background-color: #f7f7f7;
+    }
+
+    /* Mobile Menu Styles */
     .mobile-menu-btn {
       position: fixed;
       top: 15%;
@@ -156,7 +206,6 @@
       transform: translateY(-8px) rotate(-45deg);
     }
 
-    /* Vertical Menu Styles - Also renamed to avoid conflict */
     .mobile-vertical-menu {
       position: fixed;
       top: 15%;
@@ -217,29 +266,25 @@
       transform: scale(1.5);
     }
   </style>
-
 </head>
 <body>
 <header>
-  <!-- Nút Quay lại với SVG -->
+  <!-- Back Button -->
   <button class="button" onclick="history.back()">
     <div class="button-box">
       <span class="button-elem">
         <svg viewBox="0 0 46 40" xmlns="http://www.w3.org/2000/svg">
-          <path
-                  d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"
-          ></path>
+          <path d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"></path>
         </svg>
       </span>
       <span class="button-elem">
         <svg viewBox="0 0 46 40">
-          <path
-                  d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"
-          ></path>
+          <path d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"></path>
         </svg>
       </span>
     </div>
   </button>
+
   <img class="logo" src="${pageContext.request.contextPath}/asset/png/loginPage/logo.png" alt="Logo" onclick="window.location.href='courseHeader.jsp'">
   <div class="navbarContainer">
     <div class="navbarContent"><a href="courses">Khóa Học</a></div>
@@ -249,7 +294,8 @@
     <div class="navbarContent"><a href="dictionary">Thi Thử</a></div>
     <div class="navbarContent"><a href="/about-us.html">Về Chúng Tôi</a></div>
     <div class="navbarContent"><a href="${pageContext.request.contextPath}/chat/<%= session.getAttribute("userID") %>">Phòng Chat</a></div>
-    <!-- Thêm icon giỏ hàng vào đây -->
+
+    <!-- Cart Icon -->
     <div class="navbarContent">
       <a class="nav-link position-relative" href="cart">
         <i class="fas fa-shopping-cart"></i>
@@ -260,11 +306,19 @@
       </a>
     </div>
 
+    <!-- Notification Bell -->
+    <div class="notification-bell" onclick="toggleNotifications()">
+      <i class="fas fa-bell"></i>
+      <span class="notification-count">0</span>
+      <div class="notification-dropdown">
+        <!-- Notifications will be loaded here -->
+      </div>
+    </div>
 
     <span>Xin chào, <%= session.getAttribute("username") %>!</span>
     <%
-    String avatar = (String) session.getAttribute("avatar");
-    System.out.println("Debug - Avatar from session: " + avatar);
+      String avatar = (String) session.getAttribute("avatar");
+      System.out.println("Debug - Avatar from session: " + avatar);
     %>
     <img src="${pageContext.request.contextPath}/<%= avatar != null ? avatar : "asset/png/avatar/monkey.jpg" %>"
          onclick="togglePopup()"
@@ -285,9 +339,7 @@
   </div>
 </div>
 
-
-<!-- Menu Button and Vertical Menu -->
-<!-- Menu Button and Vertical Menu -->
+<!-- Mobile Menu -->
 <button class="mobile-menu-btn" id="mobileMenuButton" onclick="toggleMobileMenu()">
   <span class="mobile-menu-line"></span>
   <span class="mobile-menu-line"></span>
@@ -299,6 +351,7 @@
   <div class="mobile-menu-item"><a href="dictionary">Từ điển</a></div>
   <div class="mobile-menu-item"><a href="chat">Chat</a></div>
 </div>
+
 <script>
   // Toggle Popup Container
   function togglePopup() {
@@ -306,29 +359,13 @@
     popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
   }
 
-  // // Toggle Vertical Menu
-  // function toggleMenu() {
-  //   const menu = document.getElementById('verticalMenu');
-  //   menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-  // }
+  // Toggle Notifications
+  function toggleNotifications() {
+    const dropdown = document.querySelector('.notification-dropdown');
+    dropdown.classList.toggle('show');
+  }
 
-  // Close popup and menu when clicking outside
-  document.addEventListener('click', function(event) {
-    const popup = document.getElementById('popupContainer');
-    const menu = document.getElementById('verticalMenu');
-    const avatar = document.querySelector('header img[onclick="togglePopup()"]');
-    const menuBtn = document.querySelector('.menu-btn');
-
-    if (!popup.contains(event.target) && !avatar.contains(event.target)) {
-      popup.style.display = 'none';
-    }
-    if (!menu.contains(event.target) && !menuBtn.contains(event.target)) {
-      menu.style.display = 'none';
-    }
-  });
-</script>
-<script>
-  // Updated function name to match new class
+  // Toggle Mobile Menu
   function toggleMobileMenu() {
     const menu = document.getElementById('mobileVerticalMenu');
     const btn = document.getElementById('mobileMenuButton');
@@ -346,10 +383,18 @@
     }
   }
 
-  // Updated click handler with new class names
+  // Close popups when clicking outside
   document.addEventListener('click', function(event) {
+    const popup = document.getElementById('popupContainer');
+    const avatar = document.querySelector('header img[onclick="togglePopup()"]');
     const menu = document.getElementById('mobileVerticalMenu');
     const menuBtn = document.getElementById('mobileMenuButton');
+    const notificationBell = document.querySelector('.notification-bell');
+    const notificationDropdown = document.querySelector('.notification-dropdown');
+
+    if (!popup.contains(event.target) && !avatar.contains(event.target)) {
+      popup.style.display = 'none';
+    }
 
     if (!menu.contains(event.target) && !menuBtn.contains(event.target)) {
       menu.style.animation = 'fadeIn 0.3s ease-out reverse';
@@ -357,6 +402,10 @@
         menu.style.display = 'none';
       }, 250);
       menuBtn.classList.remove('active');
+    }
+
+    if (!notificationDropdown.contains(event.target) && !notificationBell.contains(event.target)) {
+      notificationDropdown.classList.remove('show');
     }
   });
 </script>

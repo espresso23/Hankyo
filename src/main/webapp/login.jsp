@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="asset/css/login.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/asset/css/login.css">
     <title>Login Page</title>
 
 </head>
@@ -21,7 +21,7 @@
         background-size: auto;
     }
 </style>
-<jsp:include page="/header.jsp" />
+<jsp:include page="header.jsp"/>
 <body>
 <div class="container-fluid">
     <div class="login-form">
@@ -76,5 +76,5 @@
 </div>
 
 </body>
-<jsp:include page="/footer.jsp" />
+<jsp:include page="footer.jsp"/>
 </html>
