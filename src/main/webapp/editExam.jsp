@@ -1,3 +1,4 @@
+
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
@@ -5,189 +6,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chỉnh sửa bài tập</title>
+    <title>Chỉnh sửa bài thi</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="asset/css/editAssignment.css">
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-
-        .card {
-            margin-bottom: 15px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            border: none;
-        }
-
-        .card-header {
-            border-radius: 8px 8px 0 0 !important;
-            padding: 10px 15px;
-            font-weight: 500;
-        }
-
-        .card-body {
-            padding: 15px;
-        }
-
-        .preview-container {
-            margin-top: 10px;
-            max-width: 100%;
-        }
-
-        .preview-container img {
-            max-height: 150px;
-            width: auto;
-            border-radius: 4px;
-        }
-
-        .answer-option {
-            margin-bottom: 10px;
-        }
-
-        .loading {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.8);
-            z-index: 1000;
-        }
-
-        .loading-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-        }
-
-        .question-card {
-            transition: all 0.3s ease;
-        }
-
-        .question-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        .form-control, .form-select {
-            border-radius: 6px;
-        }
-
-        .btn {
-            border-radius: 6px;
-            padding: 6px 12px;
-        }
-
-        .badge {
-            border-radius: 4px;
-            padding: 5px 8px;
-        }
-
-        .list-group-item {
-            border-radius: 4px;
-            margin-bottom: 5px;
-        }
-
-        .add-question-btn {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: #28a745;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        .add-question-btn:hover {
-            transform: scale(1.1);
-            background-color: #218838;
-            color: white;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1050;
-        }
-
-        .modal.show {
-            display: block;
-        }
-
-        .modal-dialog {
-            position: relative;
-            width: auto;
-            margin: 1.75rem auto;
-            max-width: 800px;
-        }
-
-        .modal-content {
-            position: relative;
-            background-color: #fff;
-            border-radius: 12px;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
-        }
-
-        .modal-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1rem;
-            border-bottom: 1px solid #dee2e6;
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
-        }
-
-        .modal-body {
-            position: relative;
-            padding: 1rem;
-        }
-
-        .btn-close {
-            background: transparent;
-            border: 0;
-            padding: 0.5rem;
-            cursor: pointer;
-            color: #fff;
-            font-size: 1.5rem;
-            line-height: 1;
-        }
-
-        .option-label {
-            min-width: 40px;
-            background-color: #e9ecef;
-            border: 1px solid #ced4da;
-            border-radius: 4px 0 0 4px;
-            padding: 6px 12px;
-            font-weight: bold;
-            text-align: center;
-        }
-
-        .correct-label {
-            margin-left: 5px;
-            margin-bottom: 0;
-        }
-    </style>
 </head>
 <body>
 <c:import url="header.jsp"/>
@@ -203,7 +27,7 @@
 
 <div class="container-fluid py-3">
     <h4 class="mb-3">
-        <i class="fas fa-edit me-2"></i>Chỉnh sửa bài tập
+        <i class="fas fa-edit me-2"></i>Chỉnh sửa bài thi
     </h4>
 
     <div class="row">
@@ -211,25 +35,41 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <i class="fas fa-info-circle me-2"></i>Thông tin bài tập
+                    <i class="fas fa-info-circle me-2"></i>Thông Tin Bài Thi
                 </div>
                 <div class="card-body">
-                    <form id="assignmentForm" action="edit-exam" method="post">
+                    <form id="examForm" action="edit-exam" method="post">
                         <input type="hidden" name="action" value="updateExam">
                         <input type="hidden" name="examID" value="${exam.examID}">
 
                         <div class="mb-3">
-                            <label class="form-label">Tiêu đề bài tập</label>
-                            <input type="text" name="title" class="form-control" value="${exam.examName}"
+                            <label class="form-label">Tiêu đề bài thi</label>
+                            <input type="text" name="examName" class="form-control" value="${exam.examName}"
                                    required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Mô tả</label>
-                            <textarea name="description" class="form-control" rows="4"
+                            <textarea name="examDescription" class="form-control" rows="4"
                                       required>${exam.examDescription}</textarea>
                         </div>
-
+                        <div class="mb-3">
+                            <label for="examType">Loại đề thi <span class="text-danger">*</span></label>
+                            <select id="examType" name="examType" class="form-control" required>
+                                <option value="">Chọn loại đề thi</option>
+                                <option value="TOPIKI" ${exam.examType == 'TOPIKI' ? 'selected' : ''}>TOPIK I</option>
+                                <option value="TOPIKII" ${exam.examType == 'TOPIKII' ? 'selected' : ''}>TOPIK II
+                                </option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="status">Trạng thái <span class="text-danger">*</span></label>
+                            <select id="status" name="status" class="form-control" required>
+                                <option value="">Chọn trạng thái</option>
+                                <option value="ACTIVE" ${exam.status == 'ACTIVE' ? 'selected' : ''}>Mở</option>
+                                <option value="CLOSED" ${exam.status == 'CLOSED' ? 'selected' : ''}>Đóng</option>
+                            </select>
+                        </div>
                         <button type="submit" class="btn btn-primary w-100">
                             <i class="fas fa-save me-1"></i> Lưu thay đổi
                         </button>
@@ -359,7 +199,7 @@
                     Exam ID: ${exam.examID}<br>
                 </div>
 
-                <form id="questionForm" method="post" action="edit-assignment" enctype="multipart/form-data">
+                <form id="questionForm" method="post" action="edit-exam" enctype="multipart/form-data">
                     <input type="hidden" name="action" value="addQuestion">
                     <input type="hidden" name="examID" value="${exam.examID}">
 

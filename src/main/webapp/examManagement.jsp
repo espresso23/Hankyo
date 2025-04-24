@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.*, model.Exam" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <html>
 <head>
     <title>Quản lý đề thi</title>
@@ -414,44 +415,35 @@
     </div>
 
     <div class="exam-grid">
-        <%
-            List<Exam> exams = (List<Exam>) request.getAttribute("exams");
-            if (exams != null && !exams.isEmpty()) {
-                for (Exam exam : exams) {
-        %>
-        <div class="exam-card">
-            <div class="exam-title"><%= exam.getExamName() %>
-            </div>
-            <div class="exam-desc"><%= exam.getExamDescription() %>
-            </div>
-            <div class="exam-meta">
-                <div>Loại đề: <%= exam.getExamType() != null ? exam.getExamType() : "Chưa xác định" %>
+        <c:choose>
+            <c:when test="${not empty exams}">
+                <c:forEach items="${exams}" var="exam">
+                    <div class="exam-card">
+                        <div class="exam-title">${exam.examName}</div>
+                        <div class="exam-desc">${exam.examDescription}</div>
+                        <div class="exam-meta">
+                            <div>Loại đề: ${not empty exam.examType ? exam.examType : 'Chưa xác định'}</div>
+                            <div>Ngày tạo: ${not empty exam.dateCreated ? exam.dateCreated : 'Chưa xác định'}</div>
+                            <div>Trạng thái: ${not empty exam.status ? exam.status : 'Chưa xác định'}</div>
+                        </div>
+                        <div class="btn-container">
+                            <a href="edit-exam?action=getExam&examID=${exam.examID}" class="btn btn-edit">
+                                <i class="fas fa-edit"></i> Chỉnh sửa
+                            </a>
+                            <button class="btn btn-delete" onclick="confirmDelete(${exam.examID})">
+                                <i class="fas fa-trash-alt"></i> Xóa
+                            </button>
+                        </div>
+                    </div>
+                </c:forEach>
+            </c:when>
+            <c:otherwise>
+                <div class="no-exams">
+                    <i class="fas fa-book-open" style="font-size: 2rem; color: var(--primary-pink); margin-bottom: 15px;"></i>
+                    <p>Hiện chưa có đề thi nào trong thư viện</p>
                 </div>
-                <div>Ngày tạo: <%= exam.getDateCreated() != null ? exam.getDateCreated() : "Chưa xác định" %>
-                </div>
-                <div>Trạng thái: <%= exam.getStatus() != null ? exam.getStatus() : "Chưa xác định" %>
-                </div>
-            </div>
-            <div class="btn-container">
-                <a href="edit-exam?action=getExam&examID=<%= exam.getExamID() %>" class="btn btn-edit">
-                    <i class="fas fa-edit"></i> Chỉnh sửa
-                </a>
-                <button class="btn btn-delete" onclick="confirmDelete(<%= exam.getExamID() %>)">
-                    <i class="fas fa-trash-alt"></i> Xóa
-                </button>
-            </div>
-        </div>
-        <%
-            }
-        } else {
-        %>
-        <div class="no-exams">
-            <i class="fas fa-book-open" style="font-size: 2rem; color: var(--primary-pink); margin-bottom: 15px;"></i>
-            <p>Hiện chưa có đề thi nào trong thư viện</p>
-        </div>
-        <%
-            }
-        %>
+            </c:otherwise>
+        </c:choose>
     </div>
 </div>
 

@@ -291,6 +291,7 @@ public class EditExamController extends HttpServlet {
         String examName = request.getParameter("examName");
         String examDescription = request.getParameter("examDescription");
         String examType = request.getParameter("examType");
+        String status = request.getParameter("status");
 
         // Cập nhật thông tin exam
         Exam exam = new Exam();
@@ -298,10 +299,11 @@ public class EditExamController extends HttpServlet {
         exam.setExamName(examName);
         exam.setExamDescription(examDescription);
         exam.setExamType(examType);
+        exam.setStatus(status);
 
         boolean isUpdated = examDAO.updateExam(exam);
         if (isUpdated) {
-            response.sendRedirect("edit-exam?action=getAssignment&examID=" + examID);
+            response.sendRedirect("edit-exam?action=getExam&examID=" + examID);
         } else {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Không thể cập nhật thông tin bài thi");
         }

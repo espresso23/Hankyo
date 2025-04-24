@@ -93,13 +93,16 @@ public class LoginServlet extends HttpServlet {
                         if (learner != null) {
                             session.setAttribute("learner", learner);
                             System.out.println(learner.toString());
+                            response.sendRedirect("home.jsp");
                         } else {
                             System.out.println("Learner is null for User ID: " + user.getUserID());
                             session.setAttribute("errorMsg", "Không tìm thấy hồ sơ người học.");
                         }
                     } else if ("examManager".equalsIgnoreCase(user.getRole())) {
-                        response.sendRedirect("exam?action=getExamLibrary");
-
+                        System.out.println("Redirecting examManager to exam library");
+                        String redirectUrl = request.getContextPath() + "/exam?action=getExamLibrary";
+                        System.out.println("Redirect URL: " + redirectUrl);
+                        response.sendRedirect(redirectUrl);
                     } else {
                         response.sendRedirect("home.jsp");
                     }
