@@ -47,12 +47,14 @@
 
         <%-- Card 2: Thống kê chi tiết --%>
         <div class="col-md-3">
-            <div class="card p-3 shadow">
-                <img src="./asset/jpg/cld-sample_Square.jpg" class="card-img-top" alt="Thống kê chi tiết">
-                <div class="card-body">
-                    <h5 class="card-title">Thống kê chi tiết</h5>
+            <a href="${pageContext.request.contextPath}/expert-dashboard" class="text-decoration-none">
+                <div class="card p-3 shadow clickable-card">
+                    <img src="./asset/jpg/cld-sample_Square.jpg" class="card-img-top" alt="Thống kê chi tiết">
+                    <div class="card-body">
+                        <h5 class="card-title">Thống kê chi tiết</h5>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <%-- Card 3: Xem Đề Thi, Bài Tập --%>

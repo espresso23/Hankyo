@@ -14,6 +14,11 @@ import java.util.List;
 
 public class PaymentDAO {
 
+    private Connection connection;
+
+    public PaymentDAO() {
+        this.connection = DBConnect.getInstance().getConnection();
+    }
 
     public List<CoursePaid> getAllCoursePaid() {
         List<CoursePaid> list = new ArrayList<>();
@@ -193,5 +198,59 @@ public class PaymentDAO {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public boolean createPayment(Payment payment) {
+        String sql = "INSERT INTO Payment (paymentID, learnerID, totalAmount, description, payDate, status) " +
+                    "VALUES (?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, payment.getPaymentID());
+            stmt.setInt(2, payment.getLearnerID());
+            stmt.setBigDecimal(3, payment.getTotalAmount());
+            stmt.setString(4, payment.getDescription());
+            stmt.setTimestamp(5, Timestamp.valueOf(payment.getPayDate()));
+            stmt.setString(6, payment.getStatus());
+            
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean createCoursePaid(CoursePaid coursePaid) {
+        String sql = "INSERT INTO CoursePaid (courseID, learnerID) VALUES (?, ?)";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, coursePaid.getCourseID());
+            stmt.setInt(2, coursePaid.getLearnerID());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public List<Payment> getPaymentsByLearner(int learnerId) {
+        List<Payment> payments = new ArrayList<>();
+        String sql = "SELECT * FROM Payment WHERE learnerID = ? ORDER BY payDate DESC";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, learnerId);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                Payment payment = new Payment();
+                payment.setPaymentID(rs.getString("paymentID"));
+                payment.setLearnerID(rs.getInt("learnerID"));
+                payment.setTotalAmount(rs.getBigDecimal("totalAmount"));
+                payment.setDescription(rs.getString("description"));
+                payment.setPayDate(rs.getTimestamp("payDate").toLocalDateTime());
+                payment.setStatus(rs.getString("status"));
+                payments.add(payment);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return payments;
     }
 }

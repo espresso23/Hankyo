@@ -29,6 +29,7 @@ public class Course implements Serializable {
     private int progress;
     private int firstContentID;
     private BigDecimal totalRevenue;
+    private BigDecimal totalSales;
 
     public Course() {
     }
@@ -209,6 +210,13 @@ public class Course implements Serializable {
         this.totalRevenue = totalRevenue;
     }
 
+    public BigDecimal getTotalSales() {
+        return totalSales;
+    }
+
+    public void setTotalSales(BigDecimal totalSales) {
+        this.totalSales = totalSales;
+    }
 
     @Override
     public String toString() {

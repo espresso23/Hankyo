@@ -740,4 +740,52 @@ public class CourseDAO {
         }
         return null;
     }
+
+    // Lấy khóa học nổi bật cho expert dashboard
+    public List<Course> getHighlightedCoursesForExpert(int expertId) throws SQLException {
+        List<Course> courses = new ArrayList<>();
+        String sql = "SELECT c.courseID, c.title, c.price, " +
+                    "(SELECT COUNT(*) FROM enrollments e WHERE e.courseID = c.courseID AND e.status = 'active') as student_count, " +
+                    "(SELECT AVG(CAST(f.rating AS FLOAT)) FROM CourseFeedback f WHERE f.courseID = c.courseID) as avg_rating, " +
+                    "(SELECT COUNT(*) FROM CourseFeedback f WHERE f.courseID = c.courseID) as rating_count, " +
+                    "(SELECT COUNT(*) * c.price FROM Course_Paid cp WHERE cp.courseID = c.courseID) as total_revenue, " +
+                    "(SELECT COUNT(*) FROM Course_Paid cp WHERE cp.courseID = c.courseID) as total_sales " +
+                    "FROM Course c " +
+                    "WHERE c.expertID = ? AND c.status = 'active' " +
+                    "ORDER BY student_count DESC, avg_rating DESC";
+
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, expertId);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                Course course = new Course();
+                course.setCourseID(rs.getInt("courseID"));
+                course.setCourseTitle(rs.getString("title"));
+                course.setPrice(rs.getBigDecimal("price"));
+                course.setLearnersCount(rs.getInt("student_count"));
+                
+                // Xử lý rating
+                Double rating = rs.getObject("avg_rating") != null ? rs.getDouble("avg_rating") : 0.0;
+                course.setRating(rating);
+                course.setRatingCount(rs.getInt("rating_count"));
+
+                // Xử lý doanh thu
+                BigDecimal totalRevenue = rs.getBigDecimal("total_revenue");
+                if (totalRevenue == null) {
+                    totalRevenue = BigDecimal.ZERO;
+                }
+                course.setTotalRevenue(totalRevenue);
+
+                // Xử lý tổng số lượng bán
+                BigDecimal totalSales = BigDecimal.valueOf(rs.getLong("total_sales"));
+                course.setTotalSales(totalSales);
+
+                courses.add(course);
+            }
+        }
+        return courses;
+    }
 }
