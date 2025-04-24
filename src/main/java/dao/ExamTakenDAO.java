@@ -50,7 +50,10 @@ public class ExamTakenDAO {
 
     public List<ExamTaken> getExamTakenByLearner(int learnerID) {
         List<ExamTaken> examTakens = new ArrayList<>();
-        String query = "SELECT * FROM Exam_Taken et join Exam_Question eq on et.examID = eq.examID WHERE learnerID = ? ORDER BY dateCreated DESC";
+        String query = "SELECT DISTINCT et.*, eq.eQuesType FROM Exam_Taken et " +
+                      "LEFT JOIN Exam_Question eq on et.examID = eq.examID " +
+                      "WHERE et.learnerID = ? " +
+                      "ORDER BY et.dateCreated DESC";
 
         try (Connection connection = DBConnect.getInstance().getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
