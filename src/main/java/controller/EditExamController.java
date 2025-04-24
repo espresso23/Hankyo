@@ -6,6 +6,7 @@ import dao.ExamDAO;
 import dao.ExamQuestionDAO;
 import model.Answer;
 import model.Exam;
+import model.ExamQuestion;
 import model.Question;
 import model.User;
 import service.ExamService;
@@ -18,11 +19,24 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 @WebServlet("/edit-exam")
 @MultipartConfig(
@@ -111,6 +125,9 @@ public class EditExamController extends HttpServlet {
                     break;
                 case "updateQuestion":
                     handleUpdateQuestion(request, response);
+                    break;
+                case "importQuestions":
+                    handleImportQuestions(request, response);
                     break;
                 default:
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Hành động không hợp lệ");
@@ -491,12 +508,12 @@ public class EditExamController extends HttpServlet {
             // Xử lý câu trả lời (nếu là trắc nghiệm)
             List<Answer> answers = new ArrayList<>();
             if ("multiple_choice".equals(questionType)) {
-                String[] answerTexts = request.getParameterValues("answers");
-                String[] isCorrects = request.getParameterValues("isCorrect");
-                String[] optionLabels = request.getParameterValues("option_labels");
+                String[] answerTexts = request.getParameterValues("edit_answers");
+                String[] isCorrects = request.getParameterValues("edit_isCorrect");
+                String[] optionLabels = {"A", "B", "C", "D"}; // Sử dụng labels cố định
 
-                if (answerTexts == null || isCorrects == null || optionLabels == null ||
-                        answerTexts.length != 4 || isCorrects.length != 4 || optionLabels.length != 4) {
+                if (answerTexts == null || isCorrects == null || 
+                    answerTexts.length != 4 || isCorrects.length != 4) {
                     out.write("{\"success\": false, \"message\": \"Câu hỏi trắc nghiệm phải có đúng 4 đáp án\"}");
                     return;
                 }
@@ -504,7 +521,7 @@ public class EditExamController extends HttpServlet {
                 // Kiểm tra ít nhất một đáp án đúng
                 boolean hasCorrectAnswer = false;
                 for (String correct : isCorrects) {
-                    if ("1".equals(correct)) {
+                    if ("1".equals(correct) || "on".equals(correct)) {
                         hasCorrectAnswer = true;
                         break;
                     }
@@ -536,7 +553,7 @@ public class EditExamController extends HttpServlet {
                     Answer answer = new Answer();
                     answer.setQuestionID(questionID);
                     answer.setAnswerText(answerTexts[i]);
-                    answer.setCorrect("1".equals(isCorrects[i]));
+                    answer.setCorrect("1".equals(isCorrects[i]) || "on".equals(isCorrects[i]));
                     answer.setOptionLabel(optionLabels[i]);
                     answers.add(answer);
                 }
@@ -553,6 +570,335 @@ public class EditExamController extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             out.write("{\"success\": false, \"message\": \"Lỗi: " + e.getMessage() + "\"}");
+        }
+    }
+
+    private void handleImportQuestions(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        PrintWriter out = response.getWriter();
+
+        try {
+            int examID = Integer.parseInt(request.getParameter("examID"));
+            Part filePart = request.getPart("questionFile");
+            String fileName = filePart.getSubmittedFileName().toLowerCase();
+            int importedCount = 0;
+            int totalCount = 0;
+
+            if (fileName.endsWith(".csv")) {
+                importedCount = importQuestionsFromCSV(filePart.getInputStream(), examID);
+                System.out.println("Đã import " + importedCount + " câu hỏi từ file CSV");
+            } else if (fileName.endsWith(".xlsx") || fileName.endsWith(".xls")) {
+                importedCount = importQuestionsFromExcel(filePart.getInputStream(), examID);
+                System.out.println("Đã import " + importedCount + " câu hỏi từ file Excel");
+            } else {
+                out.write("{\"success\": false, \"message\": \"Định dạng file không được hỗ trợ\"}");
+                return;
+            }
+
+            out.write("{\"success\": true, \"message\": \"Đã import thành công " + importedCount + " câu hỏi\", \"importedCount\": " + importedCount + "}");
+        } catch (Exception e) {
+            e.printStackTrace();
+            out.write("{\"success\": false, \"message\": \"Lỗi khi import: " + e.getMessage() + "\"}");
+        }
+    }
+
+    private int importQuestionsFromCSV(InputStream inputStream, int examID) throws Exception {
+        int importedCount = 0;
+        int totalCount = 0;
+        Connection conn = null;
+        BufferedReader reader = null;
+        CSVParser parser = null;
+        
+        try {
+            // Tạo connection mới cho mỗi lần import
+            conn = DBConnect.getInstance().getConnection();
+            if (conn == null) {
+                throw new SQLException("Không thể tạo kết nối database");
+            }
+            
+            // Kiểm tra connection có đóng không
+            if (conn.isClosed()) {
+                conn = DBConnect.getInstance().getConnection();
+                if (conn == null || conn.isClosed()) {
+                    throw new SQLException("Không thể tạo kết nối database mới");
+                }
+            }
+
+            conn.setAutoCommit(false);
+
+            // Đọc file CSV với encoding UTF-8
+            reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+            parser = CSVFormat.DEFAULT
+                    .withFirstRecordAsHeader()
+                    .withIgnoreEmptyLines()
+                    .withTrim()
+                    .parse(reader);
+            
+            // Đếm tổng số records
+            List<CSVRecord> records = parser.getRecords();
+            totalCount = records.size();
+            
+            System.out.println("Tổng số câu hỏi cần import: " + totalCount);
+            
+            for (CSVRecord record : records) {
+                // Kiểm tra connection trước mỗi lần insert
+                if (conn.isClosed()) {
+                    conn = DBConnect.getInstance().getConnection();
+                    if (conn == null || conn.isClosed()) {
+                        throw new SQLException("Connection bị đóng trong quá trình xử lý");
+                    }
+                    conn.setAutoCommit(false);
+                }
+
+                try {
+                    // Debug: In ra thông tin record đang xử lý
+                    System.out.println("\nĐang xử lý câu hỏi thứ " + (importedCount + 1));
+                    System.out.println("Question Type: " + record.get("questionType"));
+                    System.out.println("Question Text: " + record.get("questionText"));
+                    System.out.println("Question Mark: " + record.get("questionMark"));
+
+                    Question question = new Question();
+                    question.setExamID(examID);
+                    question.setQuestionType(record.get("questionType"));
+                    question.setQuestionText(record.get("questionText"));
+                    question.setQuestionMark(Double.parseDouble(record.get("questionMark")));
+
+                    // Xử lý hình ảnh và audio nếu có
+                    String questionImg = record.get("questionImg");
+                    String audioFile = record.get("audioFile");
+                    if (questionImg != null && !questionImg.trim().isEmpty()) {
+                        question.setQuestionImage(questionImg);
+                    }
+                    if (audioFile != null && !audioFile.trim().isEmpty()) {
+                        question.setAudioFile(audioFile);
+                    }
+
+                    // Debug: In ra thông tin câu trả lời
+                    System.out.println("Đang xử lý câu trả lời:");
+                    List<Answer> answers = new ArrayList<>();
+                    for (int i = 1; i <= 4; i++) {
+                        Answer answer = new Answer();
+                        String answerText = record.get("answer" + i);
+                        String isCorrectStr = record.get("isCorrect" + i);
+                        
+                        System.out.println("Answer " + i + ": " + answerText);
+                        System.out.println("Is Correct " + i + ": " + isCorrectStr);
+                        
+                        answer.setAnswerText(answerText);
+                        answer.setCorrect("1".equals(isCorrectStr));
+                        answer.setOptionLabel(String.valueOf((char)('A' + i - 1)));
+                        answers.add(answer);
+                    }
+
+                    // Thêm câu hỏi và câu trả lời vào database
+                    if (examService.addQuestionToExam(question, 
+                        answers.stream().map(Answer::getAnswerText).toArray(String[]::new),
+                        answers.stream().map(a -> a.isCorrect() ? "1" : "0").toArray(String[]::new),
+                        answers.stream().map(Answer::getOptionLabel).toArray(String[]::new),
+                        examID)) {
+                        importedCount++;
+                        System.out.println("Thêm câu hỏi thành công!");
+                    } else {
+                        System.out.println("Không thể thêm câu hỏi!");
+                    }
+                } catch (Exception e) {
+                    System.out.println("Lỗi khi xử lý record: " + e.getMessage());
+                    e.printStackTrace();
+                    throw e;
+                }
+            }
+            
+            // Commit transaction nếu thành công
+            if (!conn.isClosed()) {
+                conn.commit();
+                System.out.println("Đã commit transaction thành công!");
+            }
+            
+            return importedCount;
+        } catch (Exception e) {
+            // Rollback nếu có lỗi
+            if (conn != null && !conn.isClosed()) {
+                try {
+                    conn.rollback();
+                    System.out.println("Đã rollback transaction!");
+                } catch (SQLException ex) {
+                    throw new Exception("Lỗi khi rollback: " + ex.getMessage());
+                }
+            }
+            throw new Exception("Lỗi khi import CSV: " + e.getMessage());
+        } finally {
+            // Đóng tất cả resources trong finally block
+            if (parser != null) {
+                try {
+                    parser.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (conn != null) {
+                try {
+                    if (!conn.isClosed()) {
+                        conn.setAutoCommit(true);
+                        conn.close();
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private int importQuestionsFromExcel(InputStream inputStream, int examID) throws Exception {
+        int importedCount = 0;
+        int totalCount = 0;
+        Connection conn = null;
+        Workbook workbook = null;
+        
+        try {
+            // Tạo connection mới cho mỗi lần import
+            conn = DBConnect.getInstance().getConnection();
+            if (conn == null) {
+                throw new SQLException("Không thể tạo kết nối database");
+            }
+            
+            // Kiểm tra connection có đóng không
+            if (conn.isClosed()) {
+                conn = DBConnect.getInstance().getConnection();
+                if (conn == null || conn.isClosed()) {
+                    throw new SQLException("Không thể tạo kết nối database mới");
+                }
+            }
+
+            conn.setAutoCommit(false);
+
+            // Đọc file Excel
+            workbook = WorkbookFactory.create(inputStream);
+            Sheet sheet = workbook.getSheetAt(0);
+            Row headerRow = sheet.getRow(0);
+            Map<String, Integer> headers = new HashMap<>();
+            
+            // Đếm tổng số records
+            totalCount = sheet.getLastRowNum();
+            
+            // Đọc header
+            for (int i = 0; i < headerRow.getLastCellNum(); i++) {
+                Cell cell = headerRow.getCell(i);
+                if (cell != null) {
+                    headers.put(cell.getStringCellValue(), i);
+                }
+            }
+
+            // Đọc dữ liệu
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                // Kiểm tra connection trước mỗi lần insert
+                if (conn.isClosed()) {
+                    conn = DBConnect.getInstance().getConnection();
+                    if (conn == null || conn.isClosed()) {
+                        throw new SQLException("Connection bị đóng trong quá trình xử lý");
+                    }
+                    conn.setAutoCommit(false);
+                }
+
+                Row row = sheet.getRow(i);
+                if (row == null) continue;
+
+                Question question = new Question();
+                question.setExamID(examID);
+                question.setQuestionType(getCellValue(row.getCell(headers.get("questionType"))));
+                question.setQuestionText(getCellValue(row.getCell(headers.get("questionText"))));
+                question.setQuestionMark(Double.parseDouble(getCellValue(row.getCell(headers.get("questionMark")))));
+
+                // Xử lý hình ảnh và audio nếu có
+                String questionImg = getCellValue(row.getCell(headers.get("questionImg")));
+                String audioFile = getCellValue(row.getCell(headers.get("audioFile")));
+                if (questionImg != null && !questionImg.trim().isEmpty()) {
+                    question.setQuestionImage(questionImg);
+                }
+                if (audioFile != null && !audioFile.trim().isEmpty()) {
+                    question.setAudioFile(audioFile);
+                }
+
+                List<Answer> answers = new ArrayList<>();
+                for (int j = 1; j <= 4; j++) {
+                    Answer answer = new Answer();
+                    answer.setAnswerText(getCellValue(row.getCell(headers.get("answer" + j))));
+                    answer.setCorrect("1".equals(getCellValue(row.getCell(headers.get("isCorrect" + j)))));
+                    answer.setOptionLabel(String.valueOf((char)('A' + j - 1)));
+                    answers.add(answer);
+                }
+
+                // Thêm câu hỏi và câu trả lời vào database
+                if (examService.addQuestionToExam(question,
+                    answers.stream().map(Answer::getAnswerText).toArray(String[]::new),
+                    answers.stream().map(a -> a.isCorrect() ? "1" : "0").toArray(String[]::new),
+                    answers.stream().map(Answer::getOptionLabel).toArray(String[]::new),
+                    examID)) {
+                    importedCount++;
+                }
+            }
+            
+            // Commit transaction nếu thành công
+            if (!conn.isClosed()) {
+                conn.commit();
+            }
+            return importedCount;
+        } catch (Exception e) {
+            // Rollback nếu có lỗi
+            if (conn != null && !conn.isClosed()) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    throw new Exception("Lỗi khi rollback: " + ex.getMessage());
+                }
+            }
+            throw new Exception("Lỗi khi import Excel: " + e.getMessage());
+        } finally {
+            // Đóng workbook trong finally block
+            if (workbook != null) {
+                try {
+                    workbook.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            
+            // Đóng connection trong finally block
+            if (conn != null) {
+                try {
+                    if (!conn.isClosed()) {
+                        conn.setAutoCommit(true);
+                        conn.close();
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private String getCellValue(Cell cell) {
+        if (cell == null) return "";
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    return cell.getDateCellValue().toString();
+                }
+                return String.valueOf(cell.getNumericCellValue());
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            default:
+                return "";
         }
     }
 

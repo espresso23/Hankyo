@@ -12,19 +12,22 @@ import java.util.List;
 
 public class ExamQuestionDAO {
 
-    public void saveExamQuestion(int examId, int questionId, String eQuesType) {
+    public void saveExamQuestion(int examId, int questionId, String eQuesType, Connection conn) throws SQLException {
         System.out.println("Saving exam question: " + examId + " - " + questionId + " - " + eQuesType);
         String sql = "INSERT INTO exam_question (examID, questionID, eQuesType) VALUES (?,?,?)";
-        try {
-            Connection con = DBConnect.getInstance().getConnection();
-            PreparedStatement ps = con.prepareStatement(sql);
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, examId);
             ps.setInt(2, questionId);
             ps.setString(3, eQuesType);
-            ps.executeUpdate();
-            con.close();
-        } catch (Exception e) {
+            int result = ps.executeUpdate();
+            System.out.println("ExamQuestion insert result: " + result);
+            if (result <= 0) {
+                throw new SQLException("Không thể thêm liên kết exam-question");
+            }
+        } catch (SQLException e) {
             System.out.println("Error while saving exam question: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
     }
 

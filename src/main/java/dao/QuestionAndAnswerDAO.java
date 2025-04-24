@@ -13,12 +13,10 @@ import java.util.List;
 
 public class QuestionAndAnswerDAO {
 
-    public int addQuestion(Question question) throws SQLException {
+    public int addQuestion(Question question, Connection conn) throws SQLException {
         String sql = "INSERT INTO Question (questionText,questionImg,audio_file, questionType, questionMark) VALUES (?, ?, ?, ?,?)";
 
-        try (Connection conn = DBConnect.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
-
+        try (PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, question.getQuestionText());
             ps.setString(2, question.getQuestionImage());
             ps.setString(3, question.getAudioFile());
@@ -29,7 +27,9 @@ public class QuestionAndAnswerDAO {
 
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
-                    return rs.getInt(1);
+                    int id = rs.getInt(1);
+                    System.out.println("Generated Question ID: " + id);
+                    return id;
                 }
             }
         }
@@ -37,17 +37,27 @@ public class QuestionAndAnswerDAO {
         throw new SQLException("Không thể tạo câu hỏi, không nhận được ID.");
     }
 
-    public void addAnswer(Answer answer) throws SQLException {
-        String sql = "INSERT INTO Answer (questionID, answerText, isCorrect, option_label) VALUES (?, ?, ?,?)";
-
-        try (Connection conn = DBConnect.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
+    public boolean addAnswer(Answer answer, Connection conn) throws SQLException {
+        String sql = "INSERT INTO Answer (questionID, answerText, isCorrect, option_label) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, answer.getQuestionID());
             ps.setString(2, answer.getAnswerText());
             ps.setBoolean(3, answer.isCorrect());
             ps.setString(4, answer.getOptionLabel());
-            ps.executeUpdate();
+            
+            System.out.println("Executing SQL: " + sql);
+            System.out.println("Parameters: questionID=" + answer.getQuestionID() + 
+                             ", text=" + answer.getAnswerText() + 
+                             ", isCorrect=" + answer.isCorrect() + 
+                             ", option_label=" + answer.getOptionLabel());
+            
+            int result = ps.executeUpdate();
+            System.out.println("Answer insert result: " + result);
+            return result > 0;
+        } catch (SQLException e) {
+            System.out.println("Error while adding answer: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
     }
 

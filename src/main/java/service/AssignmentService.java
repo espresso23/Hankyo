@@ -11,6 +11,7 @@ import model.Question;
 import model.AssignmentQuestion;
 import model.AssignmentTaken;
 import model.AssignmentResult;
+import util.DBConnect;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -136,7 +137,7 @@ public class AssignmentService {
         if (answers != null && !answers.isEmpty()) {
             for (Answer answer : answers) {
                 answer.setQuestionID(question.getQuestionID());
-                questionAndAnswerDAO.addAnswer(answer);
+                questionAndAnswerDAO.addAnswer(answer, DBConnect.getInstance().getConnection());
             }
         }
     }
@@ -188,7 +189,7 @@ public class AssignmentService {
     public boolean addQuestion(Question question, String[] answers, String[] isCorrect, String[] optionLabels, int assignmentID) throws SQLException {
         // Thêm câu hỏi vào database
         try {
-            int questionId = questionAndAnswerDAO.addQuestion(question);
+            int questionId = questionAndAnswerDAO.addQuestion(question,DBConnect.getInstance().getConnection());
             assignmentDAO.addQuestionsToAssignment(assignmentID, questionId);
 
             // Cập nhật audio file và question image nếu có
@@ -201,7 +202,7 @@ public class AssignmentService {
                     answer.setAnswerText(answers[i]);
                     answer.setCorrect(isCorrect[i].equals("1")); // 1 = đúng, 0 = sai
                     answer.setOptionLabel(optionLabels[i]); // Thêm option_label
-                    questionAndAnswerDAO.addAnswer(answer);
+                    questionAndAnswerDAO.addAnswer(answer,DBConnect.getInstance().getConnection());
                 }
             }
             return true;
