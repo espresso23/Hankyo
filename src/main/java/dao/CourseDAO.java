@@ -505,23 +505,6 @@ public class CourseDAO {
         return 0.0;
     }
 
-    // Tạo bảng Category
-    public void createCategoryTable() throws SQLException {
-        String sql = "CREATE TABLE Category (" +
-                    "categoryID INT IDENTITY(1,1) PRIMARY KEY, " +
-                    "categoryName NVARCHAR(100) NOT NULL, " +
-                    "description NVARCHAR(500), " +
-                    "parentID INT, " +
-                    "FOREIGN KEY (parentID) REFERENCES Category(categoryID)" +
-                    ")";
-        
-        try (Connection conn = DBConnect.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.executeUpdate();
-        }
-    }
-
-
     // Thêm category mới
     public int addCategory(String name, String description, Integer parentID) throws SQLException {
         String sql = "INSERT INTO Category (categoryName, description, parentID) VALUES (?, ?, ?)";

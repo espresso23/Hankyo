@@ -297,7 +297,7 @@
                                         <div class="input-group-text">
                                             <input type="checkbox" name="isCorrect" value="1" class="answer-checkbox me-2">
                                             <label class="correct-label mb-0">Đúng</label>
-                                        </div>
+                        </div>
                                     </div>
                                 </div>
                             </c:forEach>
@@ -375,7 +375,7 @@
                                         <div class="input-group-text">
                                             <input type="checkbox" name="edit_isCorrect" class="answer-checkbox" data-option="${['A', 'B', 'C', 'D'][i]}">
                                             <label class="correct-label">Đúng</label>
-                                        </div>
+                        </div>
                                     </div>
                                 </div>
                             </c:forEach>
@@ -893,13 +893,13 @@
 
             if (!questionType) {
                 alert('Vui lòng chọn loại câu hỏi');
-                return false;
-            }
+                    return false;
+                }
 
             if (!questionMark) {
                 alert('Vui lòng nhập điểm cho câu hỏi');
-                return false;
-            }
+                    return false;
+                }
 
             // Xử lý câu trả lời trắc nghiệm
             if (questionType === 'multiple_choice') {

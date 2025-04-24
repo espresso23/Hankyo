@@ -579,7 +579,7 @@
                         <small class="text-muted d-block">Hỗ trợ file Excel (.xlsx, .xls) và CSV (.csv)</small>
                         <small class="text-muted d-block">Kích thước file tối đa: 10MB</small>
                     </div>
-
+                         <%--Tạo upload status --%>
                     <div class="mb-3">
                         <div class="progress" style="display: none;">
                             <div class="progress-bar" role="progressbar" style="width: 0%"></div>
