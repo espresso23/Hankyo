@@ -8,7 +8,6 @@ import model.Expert;
 import model.Question;
 import service.AssignmentService;
 import com.google.gson.Gson;
-import util.ExcelTemplateGenerator;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -577,7 +576,7 @@ public class EditAssignmentController extends HttpServlet {
                     }
 
                     if (questionType == null || (!questionType.equals("multiple_choice") && !questionType.equals("short_answer"))) {
-                        throw new IllegalArgumentException("Loại câu hỏi không hợp lệ. Phải là 'multiple_choice' hoặc 'short_answer'. Giá trị hiện tại: '" + questionType + "'");
+                        throw new IllegalArgumentException("Loại câu hỏi không hợp lệ. Phải là 'multiple_choice' hoặc 'short_answer'");
                     }
 
                     double questionMark;
@@ -617,49 +616,71 @@ public class EditAssignmentController extends HttpServlet {
                     }
 
                     // Xử lý câu trả lời cho câu hỏi trắc nghiệm
-                    String[] answers = null;
-                    String[] isCorrect = null;
-                    String[] optionLabels = null;
-
                     if ("multiple_choice".equals(questionType)) {
                         List<String> answerList = new ArrayList<>();
                         List<String> correctList = new ArrayList<>();
                         List<String> labelList = new ArrayList<>();
+                        boolean hasCorrectAnswer = false;
+                        int answerCount = 0;
 
-                        // Đọc 4 câu trả lời
-                        for (int i = 1; i <= 4; i++) {
+                        // Đếm số lượng câu trả lời có sẵn
+                        for (int j = 1; j <= 10; j++) {
                             try {
-                                String answerText = record.get("answer" + i);
-                                String isCorrectValue = record.get("isCorrect" + i);
-
+                                String answerText = record.get("answer" + j);
                                 if (answerText == null || answerText.trim().isEmpty()) {
-                                    throw new IllegalArgumentException("Nội dung đáp án " + i + " không được để trống");
+                                    break;
                                 }
-
-                                answerList.add(answerText);
-                                correctList.add(isCorrectValue != null && isCorrectValue.equals("1") ? "1" : "0");
-                                labelList.add(String.valueOf((char)('A' + i - 1)));
+                                answerCount++;
                             } catch (IllegalArgumentException e) {
-                                throw new IllegalArgumentException("Thiếu thông tin cho đáp án " + i);
+                                break;
+                            }
+                        }
+
+                        // Kiểm tra số lượng câu trả lời
+                        if (answerCount < 2) {
+                            throw new IllegalArgumentException("Câu hỏi trắc nghiệm phải có ít nhất 2 đáp án");
+                        }
+
+                        if (answerCount > 10) {
+                            throw new IllegalArgumentException("Câu hỏi trắc nghiệm không được có quá 10 đáp án");
+                        }
+
+                        // Đọc các câu trả lời
+                        for (int j = 1; j <= answerCount; j++) {
+                            String answerText = record.get("answer" + j);
+                            String isCorrectValue = record.get("isCorrect" + j);
+
+                            if (answerText == null || answerText.trim().isEmpty()) {
+                                throw new IllegalArgumentException("Nội dung đáp án " + j + " không được để trống");
+                            }
+
+                            answerList.add(answerText);
+                            correctList.add(isCorrectValue != null && isCorrectValue.equals("1") ? "1" : "0");
+                            labelList.add(String.valueOf((char)('A' + j - 1)));
+
+                            if ("1".equals(isCorrectValue)) {
+                                hasCorrectAnswer = true;
                             }
                         }
 
                         // Kiểm tra ít nhất một đáp án đúng
-                        if (!correctList.contains("1")) {
+                        if (!hasCorrectAnswer) {
                             throw new IllegalArgumentException("Câu hỏi trắc nghiệm phải có ít nhất một đáp án đúng");
                         }
 
-                        answers = answerList.toArray(new String[0]);
-                        isCorrect = correctList.toArray(new String[0]);
-                        optionLabels = labelList.toArray(new String[0]);
-                    }
-
-                    // Thêm câu hỏi vào database
-                    if (assignmentService.addQuestion(question, answers, isCorrect, optionLabels, assignmentID)) {
-                        importedCount++;
-                        System.out.println("Thêm câu hỏi thành công!");
+                        // Thêm câu hỏi vào database
+                        if (assignmentService.addQuestion(question, 
+                                                        answerList.toArray(new String[0]), 
+                                                        correctList.toArray(new String[0]), 
+                                                        labelList.toArray(new String[0]), 
+                                                        assignmentID)) {
+                            importedCount++;
+                        }
                     } else {
-                        System.out.println("Không thể thêm câu hỏi!");
+                        // Câu hỏi tự luận
+                        if (assignmentService.addQuestion(question, null, null, null, assignmentID)) {
+                            importedCount++;
+                        }
                     }
 
                 } catch (Exception e) {
@@ -670,7 +691,6 @@ public class EditAssignmentController extends HttpServlet {
             return importedCount;
 
         } finally {
-            // Đóng tất cả resources
             if (parser != null) {
                 try {
                     parser.close();
@@ -693,7 +713,6 @@ public class EditAssignmentController extends HttpServlet {
         Workbook workbook = null;
         
         try {
-            // Đọc file Excel
             workbook = WorkbookFactory.create(inputStream);
             Sheet sheet = workbook.getSheetAt(0);
             
@@ -773,30 +792,44 @@ public class EditAssignmentController extends HttpServlet {
                     }
 
                     // Xử lý câu trả lời cho câu hỏi trắc nghiệm
-                    String[] answers = null;
-                    String[] isCorrect = null;
-                    String[] optionLabels = null;
-
                     if ("multiple_choice".equals(questionType)) {
                         List<String> answerList = new ArrayList<>();
                         List<String> correctList = new ArrayList<>();
                         List<String> labelList = new ArrayList<>();
-
                         boolean hasCorrectAnswer = false;
-                        
-                        // Debug log
-                        System.out.println("\nĐang xử lý câu hỏi tại dòng " + (i + 1) + ":");
-                        System.out.println("Nội dung: " + questionText);
+                        int answerCount = 0;
 
-                        // Đọc 4 câu trả lời
-                        for (int j = 1; j <= 4; j++) {
+                        // Đếm số lượng câu trả lời có sẵn
+                        for (int j = 1; j <= 10; j++) {
                             String answerKey = "answer" + j;
                             String correctKey = "isCorrect" + j;
                             
                             if (!headers.containsKey(answerKey) || !headers.containsKey(correctKey)) {
-                                throw new IllegalArgumentException("Thiếu cột " + answerKey + " hoặc " + correctKey + " cho câu hỏi trắc nghiệm tại dòng " + (i + 1));
+                                break;
                             }
 
+                            String answerText = getCellValue(row.getCell(headers.get(answerKey)));
+                            if (answerText == null || answerText.trim().isEmpty()) {
+                                break;
+                            }
+
+                            answerCount++;
+                        }
+
+                        // Kiểm tra số lượng câu trả lời
+                        if (answerCount < 2) {
+                            throw new IllegalArgumentException("Câu hỏi trắc nghiệm phải có ít nhất 2 đáp án");
+                        }
+
+                        if (answerCount > 10) {
+                            throw new IllegalArgumentException("Câu hỏi trắc nghiệm không được có quá 10 đáp án");
+                        }
+
+                        // Đọc các câu trả lời
+                        for (int j = 1; j <= answerCount; j++) {
+                            String answerKey = "answer" + j;
+                            String correctKey = "isCorrect" + j;
+                            
                             String answerText = getCellValue(row.getCell(headers.get(answerKey)));
                             Cell correctCell = row.getCell(headers.get(correctKey));
                             
@@ -822,13 +855,6 @@ public class EditAssignmentController extends HttpServlet {
                                         isCorrectValue = "0";
                                 }
                             }
-                            
-                            // Debug log
-                            System.out.println("isCorrect" + j + " final value: " + isCorrectValue);
-
-                            if (answerText == null || answerText.trim().isEmpty()) {
-                                throw new IllegalArgumentException("Nội dung đáp án " + j + " không được để trống tại dòng " + (i + 1));
-                            }
 
                             answerList.add(answerText);
                             correctList.add(isCorrectValue);
@@ -841,19 +867,22 @@ public class EditAssignmentController extends HttpServlet {
 
                         // Kiểm tra ít nhất một đáp án đúng
                         if (!hasCorrectAnswer) {
-                            System.out.println("Lỗi: Không tìm thấy đáp án đúng cho câu hỏi tại dòng " + (i + 1));
-                            System.out.println("Các giá trị isCorrect: " + String.join(", ", correctList));
-                            throw new IllegalArgumentException("Câu hỏi trắc nghiệm phải có ít nhất một đáp án đúng tại dòng " + (i + 1));
+                            throw new IllegalArgumentException("Câu hỏi trắc nghiệm phải có ít nhất một đáp án đúng");
                         }
 
-                        answers = answerList.toArray(new String[0]);
-                        isCorrect = correctList.toArray(new String[0]);
-                        optionLabels = labelList.toArray(new String[0]);
-                    }
-
-                    // Thêm câu hỏi vào database
-                    if (assignmentService.addQuestion(question, answers, isCorrect, optionLabels, assignmentID)) {
-                        importedCount++;
+                        // Thêm câu hỏi vào database
+                        if (assignmentService.addQuestion(question, 
+                                                        answerList.toArray(new String[0]), 
+                                                        correctList.toArray(new String[0]), 
+                                                        labelList.toArray(new String[0]), 
+                                                        assignmentID)) {
+                            importedCount++;
+                        }
+                    } else {
+                        // Câu hỏi tự luận
+                        if (assignmentService.addQuestion(question, null, null, null, assignmentID)) {
+                            importedCount++;
+                        }
                     }
 
                 } catch (Exception e) {
