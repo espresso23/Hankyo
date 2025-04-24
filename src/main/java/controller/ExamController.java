@@ -222,7 +222,7 @@ public class ExamController extends HttpServlet {
             if (examResults == null || examResults.size() != questions.size()) {
                 LOGGER.warning("Mismatch between questions and examResults: questions=" + questions.size() + ", examResults=" + (examResults != null ? examResults.size() : 0));
                 request.setAttribute("errorMessage", "Số lượng câu hỏi và kết quả không khớp: questions=" + questions.size() + ", examResults=" + (examResults != null ? examResults.size() : 0));
-               // request.getRequestDispatcher("error.jsp").forward(request, response);
+                // request.getRequestDispatcher("error.jsp").forward(request, response);
                 return;
             }
 
@@ -232,7 +232,7 @@ public class ExamController extends HttpServlet {
                     correctAnswers++;
                 }
             }
-HttpSession session = request.getSession();
+            HttpSession session = request.getSession();
             session.setAttribute("exam", exam);
             session.setAttribute("skill", skill != null ? skill : "Full");
             session.setAttribute("time", time);

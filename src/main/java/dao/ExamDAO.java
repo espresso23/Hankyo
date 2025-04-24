@@ -46,7 +46,7 @@ public class ExamDAO {
     public Exam getExamById(int examID) {
         String query = "SELECT * FROM Exam WHERE examID = ?";
         try (Connection connection1 = DBConnect.getInstance().getConnection();
-                PreparedStatement stmt = connection1.prepareStatement(query)) {
+             PreparedStatement stmt = connection1.prepareStatement(query)) {
             stmt.setInt(1, examID);
             ResultSet rs = stmt.executeQuery();
 
@@ -208,8 +208,8 @@ public class ExamDAO {
                 "JOIN Answer a ON q.questionID = a.questionID " +
                 "WHERE q.questionID = ? AND a.isCorrect = 1";
 
-         try (Connection connection1 = DBConnect.getInstance().getConnection();
-                 PreparedStatement stmt = connection1.prepareStatement(query)) {
+        try (Connection connection1 = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = connection1.prepareStatement(query)) {
             stmt.setInt(1, questionID);
             ResultSet rs = stmt.executeQuery();
 
@@ -252,7 +252,7 @@ public class ExamDAO {
         String query = "SELECT * FROM Exam WHERE examName LIKE ?";
 
         try (Connection connection1 = DBConnect.getInstance().getConnection();
-                PreparedStatement stmt = connection1.prepareStatement(query)) {
+             PreparedStatement stmt = connection1.prepareStatement(query)) {
             stmt.setString(1, "%" + searchName + "%");
             ResultSet rs = stmt.executeQuery();
 
@@ -272,7 +272,7 @@ public class ExamDAO {
         System.out.println("\n=== DEBUG: Getting questions for exam ID: " + examID + " and type: " + eQuesType + " ===");
         List<Question> questions = new ArrayList<>();
         String query;
-        
+
         if ("Full".equals(eQuesType)) {
             // Nếu là Full thì lấy tất cả câu hỏi của exam
             query = "SELECT DISTINCT q.* FROM Question q " +
@@ -286,15 +286,15 @@ public class ExamDAO {
         }
 
         try (Connection connection1 = DBConnect.getInstance().getConnection();
-                PreparedStatement stmt = connection1.prepareStatement(query)) {
+             PreparedStatement stmt = connection1.prepareStatement(query)) {
             stmt.setInt(1, examID);
             if (!"Full".equals(eQuesType)) {
                 stmt.setString(2, eQuesType);
             }
-            
+
             System.out.println("Executing query: " + query);
             System.out.println("Parameters: examID=" + examID + (!"Full".equals(eQuesType) ? ", eQuesType=" + eQuesType : ""));
-            
+
             ResultSet rs = stmt.executeQuery();
             Set<Integer> questionIds = new HashSet<>();
 
@@ -310,7 +310,7 @@ public class ExamDAO {
                     question.setQuestionImage(rs.getString("questionImg"));
                     question.setAudioFile(rs.getString("audio_file"));
                     question.setQuestionMark(rs.getDouble("mark"));
-                    
+
                     System.out.println("Question details:");
                     System.out.println("- Text: " + question.getQuestionText());
                     System.out.println("- Type: " + question.getQuestionType());
@@ -336,8 +336,8 @@ public class ExamDAO {
             }
             System.out.println("\nTotal unique questions found: " + questions.size());
             for (Question q : questions) {
-                System.out.println("Question " + q.getQuestionID() + " has " + 
-                    (q.getAnswers() != null ? q.getAnswers().size() : "0") + " answers");
+                System.out.println("Question " + q.getQuestionID() + " has " +
+                        (q.getAnswers() != null ? q.getAnswers().size() : "0") + " answers");
             }
 
         } catch (SQLException e) {
@@ -351,11 +351,11 @@ public class ExamDAO {
 
     public ExamTaken getExamTakenById(int examTakenID) {
         String sql = "SELECT * FROM Exam_Taken WHERE examTakenID = ?";
-        
+
         try (Connection conn = DBConnect.getInstance().getConnection();
 
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+
             stmt.setInt(1, examTakenID);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
