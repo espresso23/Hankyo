@@ -187,6 +187,48 @@
             margin-left: 5px;
             margin-bottom: 0;
         }
+
+        .import-question-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 100px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #17a2b8;
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .import-question-btn:hover {
+            background-color: #138496;
+        }
+
+        #uploadProgress {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .progress {
+            height: 25px;
+            border-radius: 15px;
+            background-color: #f0f0f0;
+        }
+
+        .progress-bar {
+            transition: width 0.3s ease-in-out;
+        }
+
+        #uploadStatus {
+            font-weight: bold;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -480,6 +522,67 @@
                         <button type="button" class="btn btn-secondary" id="editCancelBtn">Hủy</button>
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save me-1"></i> Lưu thay đổi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Nút import câu hỏi -->
+<button type="button" class="import-question-btn" id="importQuestionBtn">
+    <i class="fas fa-file-import"></i>
+</button>
+
+<!-- Modal import câu hỏi -->
+<div id="importQuestionModal" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-file-import me-2"></i>Import câu hỏi từ file
+                </h5>
+                <button type="button" class="btn-close" id="closeImportModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="importForm" method="post" action="edit-assignment" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="importQuestions">
+                    <input type="hidden" name="assignmentID" value="${assignment.assignmentID}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Tải template mẫu:</label>
+                        <div class="mb-2">
+                            <a href="templates/question_template.xlsx" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-download"></i> Excel Template
+                            </a>
+                            <a href="templates/question_template.csv" class="btn btn-sm btn-outline-primary ms-2">
+                                <i class="fas fa-download"></i> CSV Template
+                            </a>
+                        </div>
+                        <small class="text-muted d-block">
+                            Template bao gồm các cột: questionType, questionText, questionMark, answer1-4, isCorrect1-4
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Chọn file Excel/CSV</label>
+                        <input type="file" name="questionFile" class="form-control" accept=".xlsx,.xls,.csv" required>
+                        <small class="text-muted d-block">Hỗ trợ file Excel (.xlsx, .xls) và CSV (.csv)</small>
+                        <small class="text-muted d-block">Kích thước file tối đa: 10MB</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="progress" style="display: none;">
+                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div id="uploadStatus"></div>
+                    </div>
+
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" id="cancelImportBtn">Hủy</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload me-1"></i> Import
                         </button>
                     </div>
                 </form>
@@ -1089,6 +1192,123 @@
                     }
                     
                     alert(errorMessage);
+                }
+            });
+        });
+
+        // Xử lý hiển thị modal import
+        $('#importQuestionBtn').on('click', function() {
+            $('#importQuestionModal').css('display', 'block');
+            document.body.style.overflow = 'hidden';
+        });
+
+        // Xử lý đóng modal import
+        $('#closeImportModalBtn, #cancelImportBtn').on('click', function() {
+            $('#importQuestionModal').css('display', 'none');
+            document.body.style.overflow = '';
+            $('#importForm')[0].reset();
+            $('.progress').hide();
+            $('#uploadStatus').empty();
+        });
+
+        // Xử lý submit form import
+        $('#importForm').on('submit', function(e) {
+            e.preventDefault();
+            var formData = new FormData(this);
+            
+            // Kiểm tra kích thước file
+            var fileInput = $('input[name="questionFile"]')[0];
+            if (fileInput.files.length > 0) {
+                var fileSize = fileInput.files[0].size; // bytes
+                var maxSize = 10 * 1024 * 1024; // 10MB
+                if (fileSize > maxSize) {
+                    alert('Kích thước file không được vượt quá 10MB');
+                    return;
+                }
+            }
+            
+            // Hiển thị progress bar
+            $('.progress').show();
+            $('.progress-bar').css('width', '50%');
+            $('#uploadStatus').html('<div class="text-center">' +
+                '<i class="fas fa-spinner fa-spin me-2"></i>' +
+                '<span>Đang import câu hỏi...</span>' +
+                '</div>');
+
+            $.ajax({
+                url: 'edit-assignment',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    try {
+                        if (typeof response === 'string') {
+                            response = JSON.parse(response);
+                        }
+                        
+                        if (response.success) {
+                            $('.progress-bar').css('width', '100%')
+                                .removeClass('bg-danger')
+                                .addClass('bg-success');
+                            
+                            var successMessage = '<div class="alert alert-success mb-0">' +
+                                '<i class="fas fa-check-circle me-2"></i>' +
+                                response.message +
+                                '</div>';
+                            
+                            $('#uploadStatus').html(successMessage);
+
+                            // Delay trước khi reload trang
+                            setTimeout(function() {
+                                $('#importQuestionModal').css('display', 'none');
+                                document.body.style.overflow = '';
+                                location.reload();
+                            }, 2000);
+                        } else {
+                            $('.progress-bar').css('width', '100%')
+                                .removeClass('bg-success')
+                                .addClass('bg-danger');
+                            
+                            var errorMessage = '<div class="alert alert-danger mb-0">' +
+                                '<i class="fas fa-times-circle me-2"></i>' +
+                                (response.message || 'Có lỗi xảy ra khi import file') +
+                                '</div>';
+                            
+                            $('#uploadStatus').html(errorMessage);
+                        }
+                    } catch (e) {
+                        console.error('Lỗi khi xử lý phản hồi:', e);
+                        $('.progress-bar').css('width', '100%')
+                            .removeClass('bg-success')
+                            .addClass('bg-danger');
+                        
+                        var errorMessage = '<div class="alert alert-danger mb-0">' +
+                            '<i class="fas fa-times-circle me-2"></i>' +
+                            'Có lỗi xảy ra khi xử lý phản hồi từ server' +
+                            '</div>';
+                        
+                        $('#uploadStatus').html(errorMessage);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Lỗi AJAX:', error);
+                    $('.progress-bar').css('width', '100%')
+                        .removeClass('bg-success')
+                        .addClass('bg-danger');
+                    
+                    var errorMessage = '<div class="alert alert-danger mb-0">' +
+                        '<i class="fas fa-times-circle me-2"></i>';
+                    
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        errorMessage += response.message || 'Có lỗi xảy ra khi import file';
+                    } catch (e) {
+                        errorMessage += 'Có lỗi xảy ra khi import file';
+                    }
+                    
+                    errorMessage += '</div>';
+                    $('#uploadStatus').html(errorMessage);
                 }
             });
         });

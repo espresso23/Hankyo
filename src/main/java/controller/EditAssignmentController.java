@@ -8,6 +8,7 @@ import model.Expert;
 import model.Question;
 import service.AssignmentService;
 import com.google.gson.Gson;
+import util.ExcelTemplateGenerator;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -21,6 +22,21 @@ import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.InputStream;
+import java.util.Map;
+import java.util.HashMap;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 
 @WebServlet("/edit-assignment")
 @MultipartConfig(
@@ -104,6 +120,9 @@ public class EditAssignmentController extends HttpServlet {
                     break;
                 case "updateQuestion":
                     handleUpdateQuestion(request, response);
+                    break;
+                case "importQuestions":
+                    handleImportQuestions(request, response);
                     break;
                 default:
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Hành động không hợp lệ");
@@ -470,6 +489,414 @@ public class EditAssignmentController extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             out.write("{\"success\": false, \"message\": \"Lỗi: " + e.getMessage() + "\"}");
+        }
+    }
+
+    private void handleImportQuestions(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        PrintWriter out = response.getWriter();
+        
+        try {
+            int assignmentID = Integer.parseInt(request.getParameter("assignmentID"));
+            Part filePart = request.getPart("questionFile");
+            
+            if (filePart == null) {
+                out.write("{\"success\": false, \"message\": \"Vui lòng chọn file\"}");
+                return;
+            }
+
+            String fileName = filePart.getSubmittedFileName();
+            if (fileName == null || fileName.trim().isEmpty()) {
+                out.write("{\"success\": false, \"message\": \"Tên file không hợp lệ\"}");
+                return;
+            }
+
+            fileName = fileName.toLowerCase();
+            int importedCount = 0;
+
+            if (fileName.endsWith(".csv")) {
+                importedCount = importQuestionsFromCSV(filePart.getInputStream(), assignmentID);
+                System.out.println("Đã import " + importedCount + " câu hỏi từ file CSV");
+            } else if (fileName.endsWith(".xlsx") || fileName.endsWith(".xls")) {
+                importedCount = importQuestionsFromExcel(filePart.getInputStream(), assignmentID);
+                System.out.println("Đã import " + importedCount + " câu hỏi từ file Excel");
+            } else {
+                out.write("{\"success\": false, \"message\": \"Chỉ chấp nhận file Excel (.xlsx, .xls) hoặc CSV (.csv)\"}");
+                return;
+            }
+
+            out.write("{\"success\": true, \"message\": \"Đã import thành công " + importedCount + " câu hỏi\"}");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            String errorMessage = e.getMessage();
+            if (errorMessage == null || errorMessage.trim().isEmpty()) {
+                errorMessage = "Có lỗi xảy ra khi import file. Vui lòng kiểm tra định dạng file và thử lại.";
+            }
+            out.write("{\"success\": false, \"message\": \"" + errorMessage + "\"}");
+        }
+    }
+
+    private int importQuestionsFromCSV(InputStream inputStream, int assignmentID) throws Exception {
+        int importedCount = 0;
+        BufferedReader reader = null;
+        CSVParser parser = null;
+        
+        try {
+            // Đọc file CSV với encoding UTF-8
+            reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+            parser = CSVFormat.DEFAULT
+                    .withFirstRecordAsHeader()
+                    .withIgnoreEmptyLines()
+                    .withTrim()
+                    .parse(reader);
+            
+            // Lấy danh sách records
+            List<CSVRecord> records = parser.getRecords();
+            if (records.isEmpty()) {
+                throw new IllegalArgumentException("File CSV không có dữ liệu");
+            }
+            
+            System.out.println("Tổng số câu hỏi cần import: " + records.size());
+            
+            for (CSVRecord record : records) {
+                try {
+                    // Debug: In ra thông tin record đang xử lý
+                    System.out.println("\nĐang xử lý câu hỏi thứ " + (importedCount + 1));
+                    
+                    // Validate và đọc thông tin cơ bản
+                    String questionType = record.get("questionType");
+                    String questionText = record.get("questionText");
+                    String questionMarkStr = record.get("questionMark");
+
+                    // Validate dữ liệu
+                    if (questionText == null || questionText.trim().isEmpty()) {
+                        throw new IllegalArgumentException("Nội dung câu hỏi không được để trống");
+                    }
+
+                    if (questionType == null || (!questionType.equals("multiple_choice") && !questionType.equals("short_answer"))) {
+                        throw new IllegalArgumentException("Loại câu hỏi không hợp lệ. Phải là 'multiple_choice' hoặc 'short_answer'. Giá trị hiện tại: '" + questionType + "'");
+                    }
+
+                    double questionMark;
+                    try {
+                        questionMark = Double.parseDouble(questionMarkStr);
+                        if (questionMark <= 0) {
+                            throw new IllegalArgumentException("Điểm số phải lớn hơn 0");
+                        }
+                    } catch (NumberFormatException e) {
+                        throw new IllegalArgumentException("Điểm số không hợp lệ");
+                    }
+
+                    // Tạo đối tượng Question
+                    Question question = new Question();
+                    question.setAssignmentID(assignmentID);
+                    question.setQuestionText(questionText);
+                    question.setQuestionType(questionType);
+                    question.setQuestionMark(questionMark);
+
+                    // Xử lý hình ảnh và audio nếu có
+                    try {
+                        String questionImg = record.get("questionImage");
+                        if (questionImg != null && !questionImg.trim().isEmpty()) {
+                            question.setQuestionImage(questionImg);
+                        }
+                    } catch (IllegalArgumentException e) {
+                        // Bỏ qua nếu không có cột questionImage
+                    }
+
+                    try {
+                        String audioFile = record.get("audioFile");
+                        if (audioFile != null && !audioFile.trim().isEmpty()) {
+                            question.setAudioFile(audioFile);
+                        }
+                    } catch (IllegalArgumentException e) {
+                        // Bỏ qua nếu không có cột audioFile
+                    }
+
+                    // Xử lý câu trả lời cho câu hỏi trắc nghiệm
+                    String[] answers = null;
+                    String[] isCorrect = null;
+                    String[] optionLabels = null;
+
+                    if ("multiple_choice".equals(questionType)) {
+                        List<String> answerList = new ArrayList<>();
+                        List<String> correctList = new ArrayList<>();
+                        List<String> labelList = new ArrayList<>();
+
+                        // Đọc 4 câu trả lời
+                        for (int i = 1; i <= 4; i++) {
+                            try {
+                                String answerText = record.get("answer" + i);
+                                String isCorrectValue = record.get("isCorrect" + i);
+
+                                if (answerText == null || answerText.trim().isEmpty()) {
+                                    throw new IllegalArgumentException("Nội dung đáp án " + i + " không được để trống");
+                                }
+
+                                answerList.add(answerText);
+                                correctList.add(isCorrectValue != null && isCorrectValue.equals("1") ? "1" : "0");
+                                labelList.add(String.valueOf((char)('A' + i - 1)));
+                            } catch (IllegalArgumentException e) {
+                                throw new IllegalArgumentException("Thiếu thông tin cho đáp án " + i);
+                            }
+                        }
+
+                        // Kiểm tra ít nhất một đáp án đúng
+                        if (!correctList.contains("1")) {
+                            throw new IllegalArgumentException("Câu hỏi trắc nghiệm phải có ít nhất một đáp án đúng");
+                        }
+
+                        answers = answerList.toArray(new String[0]);
+                        isCorrect = correctList.toArray(new String[0]);
+                        optionLabels = labelList.toArray(new String[0]);
+                    }
+
+                    // Thêm câu hỏi vào database
+                    if (assignmentService.addQuestion(question, answers, isCorrect, optionLabels, assignmentID)) {
+                        importedCount++;
+                        System.out.println("Thêm câu hỏi thành công!");
+                    } else {
+                        System.out.println("Không thể thêm câu hỏi!");
+                    }
+
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("Lỗi tại câu hỏi " + (importedCount + 1) + ": " + e.getMessage());
+                }
+            }
+            
+            return importedCount;
+
+        } finally {
+            // Đóng tất cả resources
+            if (parser != null) {
+                try {
+                    parser.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private int importQuestionsFromExcel(InputStream inputStream, int assignmentID) throws Exception {
+        int importedCount = 0;
+        Workbook workbook = null;
+        
+        try {
+            // Đọc file Excel
+            workbook = WorkbookFactory.create(inputStream);
+            Sheet sheet = workbook.getSheetAt(0);
+            
+            if (sheet.getPhysicalNumberOfRows() <= 1) {
+                throw new IllegalArgumentException("File Excel không có dữ liệu (chỉ có header hoặc trống)");
+            }
+
+            // Đọc header
+            Row headerRow = sheet.getRow(0);
+            Map<String, Integer> headers = new HashMap<>();
+            for (int i = 0; i < headerRow.getLastCellNum(); i++) {
+                Cell cell = headerRow.getCell(i);
+                if (cell != null) {
+                    headers.put(cell.getStringCellValue().trim(), i);
+                }
+            }
+
+            // Validate required columns
+            String[] requiredColumns = {"questionType", "questionText", "questionMark"};
+            for (String column : requiredColumns) {
+                if (!headers.containsKey(column)) {
+                    throw new IllegalArgumentException("File thiếu cột bắt buộc: " + column);
+                }
+            }
+
+            // Đọc dữ liệu từng dòng
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null) continue;
+
+                try {
+                    // Đọc thông tin câu hỏi
+                    String questionType = getCellValue(row.getCell(headers.get("questionType")));
+                    String questionText = getCellValue(row.getCell(headers.get("questionText")));
+                    String questionMarkStr = getCellValue(row.getCell(headers.get("questionMark")));
+
+                    // Validate dữ liệu
+                    if (questionText == null || questionText.trim().isEmpty()) {
+                        throw new IllegalArgumentException("Nội dung câu hỏi không được để trống tại dòng " + (i + 1));
+                    }
+
+                    if (questionType == null || (!questionType.equals("multiple_choice") && !questionType.equals("short_answer"))) {
+                        throw new IllegalArgumentException("Loại câu hỏi không hợp lệ tại dòng " + (i + 1) + 
+                            ". Phải là 'multiple_choice' hoặc 'short_answer'. Giá trị hiện tại: '" + questionType + "'");
+                    }
+
+                    double questionMark;
+                    try {
+                        questionMark = Double.parseDouble(questionMarkStr);
+                        if (questionMark <= 0) {
+                            throw new IllegalArgumentException("Điểm số phải lớn hơn 0 tại dòng " + (i + 1));
+                        }
+                    } catch (NumberFormatException e) {
+                        throw new IllegalArgumentException("Điểm số không hợp lệ tại dòng " + (i + 1));
+                    }
+
+                    // Tạo đối tượng Question
+                    Question question = new Question();
+                    question.setAssignmentID(assignmentID);
+                    question.setQuestionText(questionText);
+                    question.setQuestionType(questionType);
+                    question.setQuestionMark(questionMark);
+
+                    // Xử lý hình ảnh và audio nếu có
+                    if (headers.containsKey("questionImage")) {
+                        String imageUrl = getCellValue(row.getCell(headers.get("questionImage")));
+                        if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+                            question.setQuestionImage(imageUrl);
+                        }
+                    }
+
+                    if (headers.containsKey("audioFile")) {
+                        String audioUrl = getCellValue(row.getCell(headers.get("audioFile")));
+                        if (audioUrl != null && !audioUrl.trim().isEmpty()) {
+                            question.setAudioFile(audioUrl);
+                        }
+                    }
+
+                    // Xử lý câu trả lời cho câu hỏi trắc nghiệm
+                    String[] answers = null;
+                    String[] isCorrect = null;
+                    String[] optionLabels = null;
+
+                    if ("multiple_choice".equals(questionType)) {
+                        List<String> answerList = new ArrayList<>();
+                        List<String> correctList = new ArrayList<>();
+                        List<String> labelList = new ArrayList<>();
+
+                        boolean hasCorrectAnswer = false;
+                        
+                        // Debug log
+                        System.out.println("\nĐang xử lý câu hỏi tại dòng " + (i + 1) + ":");
+                        System.out.println("Nội dung: " + questionText);
+
+                        // Đọc 4 câu trả lời
+                        for (int j = 1; j <= 4; j++) {
+                            String answerKey = "answer" + j;
+                            String correctKey = "isCorrect" + j;
+                            
+                            if (!headers.containsKey(answerKey) || !headers.containsKey(correctKey)) {
+                                throw new IllegalArgumentException("Thiếu cột " + answerKey + " hoặc " + correctKey + " cho câu hỏi trắc nghiệm tại dòng " + (i + 1));
+                            }
+
+                            String answerText = getCellValue(row.getCell(headers.get(answerKey)));
+                            Cell correctCell = row.getCell(headers.get(correctKey));
+                            
+                            // Debug log
+                            System.out.println("Đáp án " + j + ": " + answerText);
+                            System.out.println("Cell isCorrect" + j + " type: " + (correctCell != null ? correctCell.getCellType() : "null"));
+                            System.out.println("Cell isCorrect" + j + " raw value: " + (correctCell != null ? correctCell.toString() : "null"));
+
+                            String isCorrectValue = "0";
+                            if (correctCell != null) {
+                                switch (correctCell.getCellType()) {
+                                    case NUMERIC:
+                                        isCorrectValue = correctCell.getNumericCellValue() > 0 ? "1" : "0";
+                                        break;
+                                    case STRING:
+                                        String strValue = correctCell.getStringCellValue().trim();
+                                        isCorrectValue = "1".equals(strValue) || "true".equalsIgnoreCase(strValue) ? "1" : "0";
+                                        break;
+                                    case BOOLEAN:
+                                        isCorrectValue = correctCell.getBooleanCellValue() ? "1" : "0";
+                                        break;
+                                    default:
+                                        isCorrectValue = "0";
+                                }
+                            }
+                            
+                            // Debug log
+                            System.out.println("isCorrect" + j + " final value: " + isCorrectValue);
+
+                            if (answerText == null || answerText.trim().isEmpty()) {
+                                throw new IllegalArgumentException("Nội dung đáp án " + j + " không được để trống tại dòng " + (i + 1));
+                            }
+
+                            answerList.add(answerText);
+                            correctList.add(isCorrectValue);
+                            labelList.add(String.valueOf((char)('A' + j - 1)));
+                            
+                            if ("1".equals(isCorrectValue)) {
+                                hasCorrectAnswer = true;
+                            }
+                        }
+
+                        // Kiểm tra ít nhất một đáp án đúng
+                        if (!hasCorrectAnswer) {
+                            System.out.println("Lỗi: Không tìm thấy đáp án đúng cho câu hỏi tại dòng " + (i + 1));
+                            System.out.println("Các giá trị isCorrect: " + String.join(", ", correctList));
+                            throw new IllegalArgumentException("Câu hỏi trắc nghiệm phải có ít nhất một đáp án đúng tại dòng " + (i + 1));
+                        }
+
+                        answers = answerList.toArray(new String[0]);
+                        isCorrect = correctList.toArray(new String[0]);
+                        optionLabels = labelList.toArray(new String[0]);
+                    }
+
+                    // Thêm câu hỏi vào database
+                    if (assignmentService.addQuestion(question, answers, isCorrect, optionLabels, assignmentID)) {
+                        importedCount++;
+                    }
+
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("Lỗi tại dòng " + (i + 1) + ": " + e.getMessage());
+                }
+            }
+
+            return importedCount;
+
+        } finally {
+            if (workbook != null) {
+                try {
+                    workbook.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private String getCellValue(Cell cell) {
+        if (cell == null) return null;
+        
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue().trim();
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    return cell.getDateCellValue().toString();
+                }
+                // Tránh hiển thị số dưới dạng khoa học (1.0E-4)
+                return String.valueOf(cell.getNumericCellValue());
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            case BLANK:
+                return null;
+            default:
+                return null;
         }
     }
 

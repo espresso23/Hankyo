@@ -1,0 +1,26 @@
+Hướng dẫn sử dụng template import câu hỏi
+
+1. Cấu trúc file:
+- Question Text: Nội dung câu hỏi (bắt buộc)
+- Question Type: Loại câu hỏi (multiple_choice hoặc short_answer) (bắt buộc) 
+- Question Mark: Điểm số của câu hỏi (bắt buộc)
+- Option A-D: Các lựa chọn cho câu hỏi trắc nghiệm (bắt buộc nếu là multiple_choice)
+- Correct Answer: Đáp án đúng (A,B,C,D) (bắt buộc nếu là multiple_choice)
+- Image URL: Link hình ảnh cho câu hỏi (không bắt buộc)
+- Audio URL: Link audio cho câu hỏi (không bắt buộc)
+
+2. Quy tắc:
+- Với câu hỏi trắc nghiệm (multiple_choice):
+  + Phải có đầy đủ 4 lựa chọn (A,B,C,D)
+  + Phải chọn 1 đáp án đúng (A,B,C hoặc D)
+  + Điểm số phải là số dương
+  
+- Với câu hỏi tự luận (short_answer):
+  + Không cần điền Option A-D và Correct Answer
+  + Điểm số phải là số dương
+
+3. Lưu ý:
+- Không được để trống các trường bắt buộc
+- Đảm bảo định dạng file là .xlsx, .xls hoặc .csv
+- Tối đa 100 câu hỏi trong 1 lần import
+- URL hình ảnh và audio phải là đường dẫn hợp lệ 
