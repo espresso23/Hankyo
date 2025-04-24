@@ -277,20 +277,13 @@ public class ExamController extends HttpServlet {
                 return;
             }
 
-            if (examResults == null || examResults.size() != questions.size()) {
-                LOGGER.warning("Mismatch between questions and examResults: questions=" + questions.size() + ", examResults=" + (examResults != null ? examResults.size() : 0));
-                request.setAttribute("errorMessage", "Số lượng câu hỏi và kết quả không khớp: questions=" + questions.size() + ", examResults=" + (examResults != null ? examResults.size() : 0));
-               // request.getRequestDispatcher("error.jsp").forward(request, response);
-                return;
-            }
-
             int correctAnswers = 0;
             for (ExamResult result : examResults) {
                 if (result.isAnswerIsCorrect()) {
                     correctAnswers++;
                 }
             }
-HttpSession session = request.getSession();
+            HttpSession session = request.getSession();
             session.setAttribute("exam", exam);
             session.setAttribute("skill", skill != null ? skill : "Full");
             session.setAttribute("time", time);
@@ -336,10 +329,10 @@ HttpSession session = request.getSession();
                     String examName = req.getParameter("examName");
                     String examType = req.getParameter("examType");
                     String examDescription = req.getParameter("examDescription");
-                    
-                    if (examName == null || examName.isEmpty() || 
-                        examType == null || examType.isEmpty() || 
-                        examDescription == null || examDescription.isEmpty()) {
+
+                    if (examName == null || examName.isEmpty() ||
+                            examType == null || examType.isEmpty() ||
+                            examDescription == null || examDescription.isEmpty()) {
                         req.setAttribute("error", "Vui lòng điền đầy đủ thông tin bắt buộc");
                         req.getRequestDispatcher("/examManagement.jsp").forward(req, resp);
                         return;
@@ -370,9 +363,9 @@ HttpSession session = request.getSession();
                             String updatedDescription = req.getParameter("examDescription");
                             String updatedStatus = req.getParameter("status");
 
-                            if (updatedName == null || updatedName.isEmpty() || 
-                                updatedType == null || updatedType.isEmpty() || 
-                                updatedDescription == null || updatedDescription.isEmpty()) {
+                            if (updatedName == null || updatedName.isEmpty() ||
+                                    updatedType == null || updatedType.isEmpty() ||
+                                    updatedDescription == null || updatedDescription.isEmpty()) {
                                 req.setAttribute("error", "Vui lòng điền đầy đủ thông tin bắt buộc");
                                 req.getRequestDispatcher("/editExam.jsp").forward(req, resp);
                                 return;

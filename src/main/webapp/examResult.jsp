@@ -165,34 +165,25 @@
             background-color: var(--primary-pink);
         }
         .question-details {
-            background-color: #fefefe;
+            margin-bottom: 20px;
             padding: 15px;
-            margin-bottom: 10px;
             border-radius: 8px;
-            border-left: 4px solid var(--light-pink);
-        }
-        .question-details.correct {
-            border-left-color: #a8e6cf;
-        }
-        .question-details.incorrect {
-            border-left-color: #ffaaa5;
-        }
-        .question-details.skipped {
-            border-left-color: var(--pastel-blue);
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .question-details p {
-            margin: 0 0 5px;
+            margin-bottom: 10px;
         }
-        .question-details .answer-correct {
-            color: #5cb85c;
+        .answer-correct {
+            color: #28a745;
             font-weight: 500;
         }
-        .question-details .answer-incorrect {
-            color: #ff6b6b;
+        .answer-incorrect {
+            color: #dc3545;
             font-weight: 500;
         }
-        .question-details .answer-skipped {
-            color: var(--pastel-blue);
+        .answer-skipped {
+            color: #6c757d;
             font-weight: 500;
         }
     </style>
@@ -276,7 +267,7 @@
             <c:forEach var="question" items="${questions}" varStatus="loop">
                 <c:set var="result" value="${examResults[loop.index]}" />
                 <c:if test="${result != null}">
-                    <div class="question-details ${result.answerIsCorrect ? 'correct' : (result.answerLabel == null || result.answerLabel == '' ? 'skipped' : 'incorrect')}">
+                    <div class="question-details">
                         <p><strong>Câu ${loop.index + 1}:</strong> ${question.questionText}</p>
                         <p>
                             <strong>Đáp án của bạn:</strong>

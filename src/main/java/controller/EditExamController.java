@@ -252,22 +252,59 @@ public class EditExamController extends HttpServlet {
             // Xử lý câu trả lời (nếu là trắc nghiệm)
             String[] answers = null;
             String[] isCorrect = null;
-            String[] option_labels = request.getParameterValues("option_labels");
+            String[] option_labels = null;
 
             if ("multiple_choice".equals(questionType)) {
                 answers = request.getParameterValues("answers");
                 isCorrect = request.getParameterValues("isCorrect");
+                option_labels = request.getParameterValues("option_labels");
 
-                if (answers == null || isCorrect == null || option_labels == null ||
-                        answers.length == 0 || isCorrect.length != answers.length || option_labels.length != answers.length) {
-                    out.write("{\"success\": false, \"message\": \"Thông tin câu trả lời không hợp lệ\"}");
+                // Debug log
+                System.out.println("=== Debug thông tin câu trả lời ===");
+                System.out.println("answers: " + (answers != null ? answers.length : "null"));
+                System.out.println("isCorrect: " + (isCorrect != null ? isCorrect.length : "null"));
+                System.out.println("option_labels: " + (option_labels != null ? option_labels.length : "null"));
+
+                if (answers == null || isCorrect == null || option_labels == null) {
+                    out.write("{\"success\": false, \"message\": \"Thiếu thông tin đáp án\"}");
                     return;
                 }
 
+                // Kiểm tra số lượng đáp án
+                if (answers.length != 4) {
+                    out.write("{\"success\": false, \"message\": \"Câu hỏi trắc nghiệm phải có đúng 4 đáp án. Hiện tại có " + answers.length + " đáp án.\"}");
+                    return;
+                }
+
+                // Kiểm tra ít nhất một đáp án đúng
+                boolean hasCorrectAnswer = false;
+                for (String correct : isCorrect) {
+                    if ("1".equals(correct)) {
+                        hasCorrectAnswer = true;
+                        break;
+                    }
+                }
+
+                if (!hasCorrectAnswer) {
+                    out.write("{\"success\": false, \"message\": \"Phải có ít nhất một đáp án đúng\"}");
+                    return;
+                }
+
+                // Kiểm tra nội dung đáp án không được trống
+                for (String answer : answers) {
+                    if (answer == null || answer.trim().isEmpty()) {
+                        out.write("{\"success\": false, \"message\": \"Nội dung đáp án không được để trống\"}");
+                        return;
+                    }
+                }
+
                 // Debug: Log các câu trả lời
-                System.out.println("=== Câu trả lời ===");
+                System.out.println("=== Chi tiết câu trả lời ===");
                 for (int i = 0; i < answers.length; i++) {
-                    System.out.println(answers[i] + " - " + isCorrect[i] + " - " + option_labels[i]);
+                    System.out.println("Đáp án " + (i + 1) + ":");
+                    System.out.println("- Nội dung: " + answers[i]);
+                    System.out.println("- Đúng/Sai: " + (isCorrect != null && i < isCorrect.length ? isCorrect[i] : "N/A"));
+                    System.out.println("- Label: " + (option_labels != null && i < option_labels.length ? option_labels[i] : "N/A"));
                 }
             }
 
@@ -459,9 +496,31 @@ public class EditExamController extends HttpServlet {
                 String[] optionLabels = request.getParameterValues("option_labels");
 
                 if (answerTexts == null || isCorrects == null || optionLabels == null ||
-                        answerTexts.length == 0 || isCorrects.length != answerTexts.length || optionLabels.length != answerTexts.length) {
-                    out.write("{\"success\": false, \"message\": \"Thông tin câu trả lời không hợp lệ\"}");
+                        answerTexts.length != 4 || isCorrects.length != 4 || optionLabels.length != 4) {
+                    out.write("{\"success\": false, \"message\": \"Câu hỏi trắc nghiệm phải có đúng 4 đáp án\"}");
                     return;
+                }
+
+                // Kiểm tra ít nhất một đáp án đúng
+                boolean hasCorrectAnswer = false;
+                for (String correct : isCorrects) {
+                    if ("1".equals(correct)) {
+                        hasCorrectAnswer = true;
+                        break;
+                    }
+                }
+
+                if (!hasCorrectAnswer) {
+                    out.write("{\"success\": false, \"message\": \"Phải có ít nhất một đáp án đúng\"}");
+                    return;
+                }
+
+                // Kiểm tra nội dung đáp án không được trống
+                for (String answer : answerTexts) {
+                    if (answer == null || answer.trim().isEmpty()) {
+                        out.write("{\"success\": false, \"message\": \"Nội dung đáp án không được để trống\"}");
+                        return;
+                    }
                 }
 
                 // Debug log

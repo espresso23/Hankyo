@@ -126,17 +126,30 @@ public class ExamResultDAO {
     // Lấy danh sách kết quả theo examTakenID
     public List<ExamResult> getExamResultsByExamTakenId(int examTakenID, String type) {
         List<ExamResult> results = new ArrayList<>();
-        String sql = "SELECT distinct er.*, et.examID, et.learnerID, q.questionText \n" +
-                "                FROM Exam_Result er \n" +
-                "                JOIN Exam_Taken et ON er.examTakenID = et.examTakenID \n" +
-                "                JOIN Exam_Question eq ON er.eQuestID = eq.eQuestID \n" +
-                "                JOIN Question q ON eq.questionID = q.questionID \n" +
-                "                WHERE er.examTakenID = ? and eq.eQuesType = ?";
+        String sql;
+        
+        if (type == null || "Full".equals(type)) {
+            sql = "SELECT distinct er.*, et.examID, et.learnerID, q.questionText \n" +
+                "FROM Exam_Result er \n" +
+                "JOIN Exam_Taken et ON er.examTakenID = et.examTakenID \n" +
+                "JOIN Exam_Question eq ON er.eQuestID = eq.eQuestID \n" +
+                "JOIN Question q ON eq.questionID = q.questionID \n" +
+                "WHERE er.examTakenID = ?";
+        } else {
+            sql = "SELECT distinct er.*, et.examID, et.learnerID, q.questionText \n" +
+                "FROM Exam_Result er \n" +
+                "JOIN Exam_Taken et ON er.examTakenID = et.examTakenID \n" +
+                "JOIN Exam_Question eq ON er.eQuestID = eq.eQuestID \n" +
+                "JOIN Question q ON eq.questionID = q.questionID \n" +
+                "WHERE er.examTakenID = ? and eq.eQuesType = ?";
+        }
 
         try (Connection connection1 = DBConnect.getInstance().getConnection();
              PreparedStatement stmt = connection1.prepareStatement(sql)) {
             stmt.setInt(1, examTakenID);
-            stmt.setString(2, type);
+            if (type != null && !"Full".equals(type)) {
+                stmt.setString(2, type);
+            }
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {

@@ -1,4 +1,3 @@
-
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
@@ -12,6 +11,14 @@
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="asset/css/editAssignment.css">
+    <style>
+        .question-item {
+            display: none;
+        }
+        .question-item.active {
+            display: block;
+        }
+    </style>
 </head>
 <body>
 <c:import url="header.jsp"/>
@@ -88,7 +95,7 @@
                 <div class="card-body">
                     <div class="row">
                         <c:forEach items="${questions}" var="question" varStatus="status">
-                            <div class="col-md-6 mb-3 question-item" style="display: ${status.index < 12 ? 'block' : 'none'}">
+                            <div class="col-md-6 mb-3 question-item" data-index="${status.index}">
                                 <div class="card question-card h-100">
                                     <div class="card-header d-flex justify-content-between align-items-center py-2">
                                         <span class="fw-bold">Câu ${status.index + 1}</span>
@@ -204,7 +211,7 @@
                     <input type="hidden" name="examID" value="${exam.examID}">
 
                     <div class="mb-3">
-                        <label class="form-label">Loại câu hỏi</label>
+                        <label for="questionType" class="form-label">Loại câu hỏi</label>
                         <select name="questionType" class="form-select" id="questionType" required>
                             <option value="multiple_choice">Trắc nghiệm</option>
                             <option value="short_answer">Câu trả lời ngắn</option>
@@ -212,13 +219,15 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Nội dung câu hỏi</label>
-                        <textarea name="questionText" class="form-control" rows="3" required></textarea>
+                        <label for="questionText" class="form-label">Nội dung câu hỏi</label>
+                        <textarea id="questionText" name="questionText" class="form-control" rows="3" 
+                            placeholder="Nhập nội dung câu hỏi" required></textarea>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Điểm</label>
-                        <input type="number" name="questionMark" class="form-control" min="0" step="0.01" required>
+                        <label for="questionMark" class="form-label">Điểm</label>
+                        <input type="number" id="questionMark" name="questionMark" class="form-control" 
+                            min="0" step="0.25" value="1" required>
                         <small class="text-muted">Nhập số điểm (ví dụ: 0.25, 0.5, 1.0)</small>
                     </div>
 
@@ -238,10 +247,20 @@
                     <div id="multipleChoiceAnswers" class="mb-3">
                         <label class="form-label">Các lựa chọn</label>
                         <div id="answerOptions">
+                            <c:forEach begin="0" end="3" var="i">
+                                <div class="answer-option mb-2">
+                                    <div class="input-group">
+                                        <div class="input-group-text option-label">${['A', 'B', 'C', 'D'][i]}</div>
+                                        <input type="text" name="answers" class="form-control" placeholder="Nhập lựa chọn ${['A', 'B', 'C', 'D'][i]}" required>
+                                        <input type="hidden" name="option_labels" value="${['A', 'B', 'C', 'D'][i]}">
+                                        <div class="input-group-text">
+                                            <input type="checkbox" name="isCorrect" value="1" class="answer-checkbox me-2">
+                                            <label class="correct-label mb-0">Đúng</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </c:forEach>
                         </div>
-                        <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="addAnswerOption">
-                            <i class="fas fa-plus me-1"></i> Thêm lựa chọn
-                        </button>
                     </div>
 
                     <div class="text-end">
@@ -307,10 +326,19 @@
                     <div id="editMultipleChoiceAnswers" class="mb-3">
                         <label class="form-label">Các lựa chọn</label>
                         <div id="editAnswerOptions">
+                            <c:forEach begin="0" end="3" var="i">
+                                <div class="answer-option">
+                                    <div class="input-group">
+                                        <div class="option-label">${['A', 'B', 'C', 'D'][i]}</div>
+                                        <input type="text" name="edit_answers" class="form-control" placeholder="Nhập lựa chọn" required>
+                                        <div class="input-group-text">
+                                            <input type="checkbox" name="edit_isCorrect" class="answer-checkbox" data-option="${['A', 'B', 'C', 'D'][i]}">
+                                            <label class="correct-label">Đúng</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </c:forEach>
                         </div>
-                        <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="editAddAnswerOption">
-                            <i class="fas fa-plus me-1"></i> Thêm lựa chọn
-                        </button>
                     </div>
 
                     <div class="text-end">
@@ -476,9 +504,9 @@
                                         '<div class="answer-option">' +
                                         '<div class="input-group">' +
                                         '<div class="option-label">' + answer.optionLabel + '</div>' +
-                                        '<input type="text" name="answers" class="form-control" value="' + answer.answerText + '" required>' +
+                                        '<input type="text" name="edit_answers" class="form-control" value="' + answer.answerText + '" required>' +
                                         '<div class="input-group-text">' +
-                                        '<input type="checkbox" name="isCorrect" class="answer-checkbox"' +
+                                        '<input type="checkbox" name="edit_isCorrect" class="answer-checkbox"' +
                                         (answer.isCorrect === true ? ' checked="checked"' : '') +
                                         ' data-option="' + answer.optionLabel + '">' +
                                         '<label class="correct-label">Đúng</label>' +
@@ -614,10 +642,11 @@
             $('#currentPage').text(currentPage);
 
             // Hiển thị/ẩn các câu hỏi theo trang
-            $('.question-item').each(function(index) {
+            $('.question-item').each(function() {
+                const index = parseInt($(this).data('index'));
                 const start = (currentPage - 1) * itemsPerPage;
                 const end = start + itemsPerPage;
-                $(this).toggle(index >= start && index < end);
+                $(this).toggleClass('active', index >= start && index < end);
             });
         }
 
@@ -646,12 +675,15 @@
         $('#questionForm').on('submit', function (e) {
             e.preventDefault();
 
-            // Kiểm tra các trường bắt buộc
-            const questionText = $('textarea[name="questionText"]').val().trim();
-            const questionType = $('#questionType').val();
-            const questionMark = $('input[name="questionMark"]').val();
+            // Tạo FormData object
+            const formData = new FormData(this);
 
-            if (!questionText) {
+            // Kiểm tra các trường bắt buộc
+            const questionText = $('#questionText').val() || '';
+            const questionType = $('#questionType').val();
+            const questionMark = $('#questionMark').val();
+
+            if (!questionText.trim()) {
                 alert('Vui lòng nhập nội dung câu hỏi');
                 return false;
             }
@@ -668,70 +700,63 @@
 
             // Nếu là câu hỏi trắc nghiệm
             if (questionType === 'multiple_choice') {
-                // Kiểm tra số lượng câu trả lời
-                if ($('.answer-option').length === 0) {
-                    alert('Vui lòng thêm ít nhất một câu trả lời');
-                    return false;
-                }
+                // Thu thập dữ liệu câu trả lời
+                const answers = [];
+                let hasCorrectAnswer = false;
+
+                $('.answer-option').each(function() {
+                    const answerInput = $(this).find('input[name="answers"]');
+                    const answerText = answerInput.val() || '';
+                    const optionLabel = $(this).find('.option-label').text() || '';
+                    const isChecked = $(this).find('.answer-checkbox').is(':checked');
+
+                    if (isChecked) {
+                        hasCorrectAnswer = true;
+                    }
+
+                    if (!answerText.trim()) {
+                        alert('Vui lòng nhập đầy đủ nội dung cho tất cả các câu trả lời');
+                        e.preventDefault();
+                        return false;
+                    }
+
+                    answers.push({
+                        text: answerText.trim(),
+                        label: optionLabel.trim(),
+                        isCorrect: isChecked
+                    });
+                });
 
                 // Kiểm tra đáp án đúng
-                if ($('.answer-checkbox:checked').length === 0) {
+                if (!hasCorrectAnswer) {
                     alert('Vui lòng chọn ít nhất một đáp án đúng');
                     return false;
                 }
 
-                // Kiểm tra nội dung câu trả lời
-                let hasEmptyAnswer = false;
-                $('.answer-option input[type="text"]').each(function () {
-                    if (!$(this).val().trim()) {
-                        hasEmptyAnswer = true;
-                        return false;
-                    }
+                // Xóa dữ liệu cũ
+                formData.delete('answers');
+                formData.delete('option_labels');
+                formData.delete('isCorrect');
+
+                // Thêm dữ liệu mới
+                answers.forEach(answer => {
+                    formData.append('answers', answer.text);
+                    formData.append('option_labels', answer.label);
+                    formData.append('isCorrect', answer.isCorrect ? '1' : '0');
                 });
 
-                if (hasEmptyAnswer) {
-                    alert('Vui lòng nhập đầy đủ nội dung cho tất cả các câu trả lời');
-                    return false;
-                }
-            }
-
-            // Tạo FormData object
-            const formData = new FormData(this);
-
-            // Xóa tất cả input hidden isCorrect và option_labels cũ
-            formData.delete('isCorrect');
-            formData.delete('option_labels');
-            formData.delete('answers');
-
-            // Thêm lại các giá trị mới cho câu hỏi trắc nghiệm
-            if (questionType === 'multiple_choice') {
-                $('.answer-option').each(function(index) {
-                    const answerText = $(this).find('input[type="text"]').val().trim();
-                    const optionLabel = $(this).find('.option-label').text();
-                    const isChecked = $(this).find('.answer-checkbox').prop('checked');
-
-                    formData.append('answers', answerText);
-                    formData.append('option_labels', optionLabel);
-                    formData.append('isCorrect', isChecked ? "1" : "0");
+                // Log dữ liệu form trước khi gửi
+                console.log('Form data before submit:', {
+                    answers: formData.getAll('answers'),
+                    option_labels: formData.getAll('option_labels'),
+                    isCorrect: formData.getAll('isCorrect')
                 });
             }
-
-            // Log form data trước khi gửi
-            console.log('Form data:', {
-                action: formData.get('action'),
-                examID: formData.get('examID'),
-                questionType: formData.get('questionType'),
-                questionText: formData.get('questionText'),
-                questionMark: formData.get('questionMark'),
-                answers: formData.getAll('answers'),
-                option_labels: formData.getAll('option_labels'),
-                isCorrect: formData.getAll('isCorrect')
-            });
 
             // Hiển thị loading
             $('.loading').show();
 
-            // Gửi request bằng AJAX
+            // Gửi request
             $.ajax({
                 url: 'edit-exam',
                 type: 'POST',
@@ -745,10 +770,8 @@
                             response = JSON.parse(response);
                         }
                         if (response.success) {
-                            // Đóng modal
                             $('#addQuestionModal').css('display', 'none');
                             document.body.style.overflow = '';
-                            // Reload trang
                             location.reload();
                         } else {
                             alert(response.message || 'Có lỗi xảy ra khi thêm câu hỏi');
@@ -762,18 +785,7 @@
                     $('.loading').hide();
                     console.error('Error:', error);
                     console.error('Response:', xhr.responseText);
-
-                    let errorMessage = 'Có lỗi xảy ra khi thêm câu hỏi';
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        if (response.message) {
-                            errorMessage = response.message;
-                        }
-                    } catch (e) {
-                        console.error('Error parsing error response:', e);
-                    }
-
-                    alert(errorMessage);
+                    alert('Có lỗi xảy ra khi thêm câu hỏi: ' + error);
                 }
             });
         });
@@ -794,9 +806,9 @@
                 '<div class="answer-option">' +
                 '<div class="input-group">' +
                 '<div class="option-label">' + currentLabel + '</div>' +
-                '<input type="text" name="answers" class="form-control" placeholder="Nhập lựa chọn" required>' +
+                '<input type="text" name="edit_answers" class="form-control" placeholder="Nhập lựa chọn" required>' +
                 '<div class="input-group-text">' +
-                '<input type="checkbox" name="isCorrect" class="answer-checkbox">' +
+                '<input type="checkbox" name="edit_isCorrect" class="answer-checkbox">' +
                 '<label class="correct-label">Đúng</label>' +
                 '</div>' +
                 '</div>' +
@@ -810,71 +822,72 @@
             e.preventDefault();
 
             // Kiểm tra các trường bắt buộc
-            const questionText = $('#editQuestionText').val().trim();
+            const questionText = $('#editQuestionText').val() || '';
             const questionType = $('#editQuestionType').val();
             const questionMark = $('#editQuestionMark').val();
 
-            if (!questionText || !questionType || !questionMark) {
-                alert('Vui lòng điền đầy đủ thông tin bắt buộc');
+            if (!questionText.trim()) {
+                alert('Vui lòng nhập nội dung câu hỏi');
                 return false;
             }
 
-            // Kiểm tra câu trả lời nếu là câu hỏi trắc nghiệm
-            if (questionType === 'multiple_choice') {
-                if ($('#editAnswerOptions .answer-option').length === 0) {
-                    alert('Vui lòng thêm ít nhất một câu trả lời');
-                    return false;
-                }
+            if (!questionType) {
+                alert('Vui lòng chọn loại câu hỏi');
+                return false;
+            }
 
-                if ($('#editAnswerOptions .answer-checkbox:checked').length === 0) {
-                    alert('Vui lòng chọn ít nhất một đáp án đúng');
-                    return false;
-                }
-
-                let hasEmptyAnswer = false;
-                $('#editAnswerOptions input[type="text"]').each(function() {
-                    if (!$(this).val().trim()) {
-                        hasEmptyAnswer = true;
-                        return false;
-                    }
-                });
-
-                if (hasEmptyAnswer) {
-                    alert('Vui lòng nhập đầy đủ nội dung cho tất cả các câu trả lời');
-                    return false;
-                }
+            if (!questionMark) {
+                alert('Vui lòng nhập điểm cho câu hỏi');
+                return false;
             }
 
             // Tạo FormData object
             const formData = new FormData(this);
 
-            // Thêm hình ảnh và audio hiện tại vào formData nếu không có file mới
-            const imageFile = formData.get('questionImage');
-            const audioFile = formData.get('audioFile');
-            const currentImage = $('input[name="currentQuestionImage"]').val();
-            const currentAudio = $('input[name="currentAudioFile"]').val();
-
-            if (!imageFile || imageFile.size === 0) {
-                formData.set('questionImage', currentImage || '');
-            }
-            if (!audioFile || audioFile.size === 0) {
-                formData.set('audioFile', currentAudio || '');
-            }
-
-            // Xóa và thêm lại các giá trị cho câu trả lời trắc nghiệm
+            // Xử lý câu trả lời trắc nghiệm
             if (questionType === 'multiple_choice') {
-                formData.delete('isCorrect');
-                formData.delete('option_labels');
-                formData.delete('answers');
+                const answers = [];
+                let hasCorrectAnswer = false;
 
                 $('#editAnswerOptions .answer-option').each(function() {
-                    const answerText = $(this).find('input[type="text"]').val().trim();
-                    const optionLabel = $(this).find('.option-label').text();
-                    const isChecked = $(this).find('.answer-checkbox').prop('checked');
+                    const answerInput = $(this).find('input[name="edit_answers"]');
+                    const answerText = answerInput.val() || '';
+                    const optionLabel = $(this).find('.option-label').text() || '';
+                    const isChecked = $(this).find('input[name="edit_isCorrect"]').is(':checked');
 
-                    formData.append('answers', answerText);
-                    formData.append('option_labels', optionLabel);
-                    formData.append('isCorrect', isChecked ? "1" : "0");
+                    if (isChecked) {
+                        hasCorrectAnswer = true;
+                    }
+
+                    if (!answerText.trim()) {
+                        alert('Vui lòng nhập đầy đủ nội dung cho tất cả các câu trả lời');
+                        e.preventDefault();
+                        return false;
+                    }
+
+                    answers.push({
+                        text: answerText.trim(),
+                        label: optionLabel.trim(),
+                        isCorrect: isChecked
+                    });
+                });
+
+                // Kiểm tra đáp án đúng
+                if (!hasCorrectAnswer) {
+                    alert('Vui lòng chọn ít nhất một đáp án đúng');
+                    return false;
+                }
+
+                // Xóa dữ liệu cũ
+                formData.delete('answers');
+                formData.delete('option_labels');
+                formData.delete('isCorrect');
+
+                // Thêm dữ liệu mới
+                answers.forEach(answer => {
+                    formData.append('answers', answer.text);
+                    formData.append('option_labels', answer.label);
+                    formData.append('isCorrect', answer.isCorrect ? '1' : '0');
                 });
             }
 
