@@ -229,6 +229,14 @@
             font-weight: bold;
             margin-top: 10px;
         }
+
+        .btn-delete-option {
+            border-radius: 0 6px 6px 0 !important;
+        }
+
+        .input-group > .btn-delete-option {
+            margin-left: -1px;
+        }
     </style>
 </head>
 <body>
@@ -651,11 +659,30 @@
                 '<input type="checkbox" name="isCorrect" class="answer-checkbox" data-option="' + currentLabel + '">' +
                 '<label class="correct-label">Đúng</label>' +
                 '</div>' +
+                '<button type="button" class="btn btn-danger btn-delete-option">' +
+                '<i class="fas fa-times"></i>' +
+                '</button>' +
                 '</div>' +
                 '</div>';
 
             $('#answerOptions').append(newOptionHtml);
+            updateOptionLabels();
         });
+
+        // Xử lý xóa lựa chọn
+        $(document).on('click', '.btn-delete-option', function() {
+            $(this).closest('.answer-option').remove();
+            updateOptionLabels();
+        });
+
+        // Cập nhật lại labels sau khi xóa
+        function updateOptionLabels() {
+            $('.answer-option').each(function(index) {
+                const label = String.fromCharCode(65 + index); // 65 là mã ASCII của 'A'
+                $(this).find('.option-label').text(label);
+                $(this).find('.answer-checkbox').attr('data-option', label);
+            });
+        }
 
         // Hàm hiển thị modal chỉnh sửa
         function showEditModal() {
@@ -745,19 +772,22 @@
                                                 '<input type="text" name="answers" class="form-control" value="' + answer.answerText + '" required>' +
                                                 '<div class="input-group-text">' +
                                                     '<input type="checkbox" name="isCorrect" class="answer-checkbox"' + 
-                                                    (answer.isCorrect === true ? ' checked="checked"' : '') +
+                                                    (answer.isCorrect ? ' checked="checked"' : '') +
                                                     ' data-option="' + answer.optionLabel + '">' +
                                                     '<label class="correct-label">Đúng</label>' +
                                                 '</div>' +
+                                                '<button type="button" class="btn btn-danger btn-delete-option">' +
+                                                    '<i class="fas fa-times"></i>' +
+                                                '</button>' +
                                             '</div>' +
                                         '</div>';
                                     $('#editAnswerOptions').append(optionHtml);
 
-                                    // Log trạng thái của câu trả lời sau khi thêm
+                                    // Debug log để kiểm tra trạng thái đúng/sai
                                     console.log('Câu trả lời ' + answer.optionLabel + ':', {
                                         text: answer.answerText,
-                                        isCorrect: answer.correct,
-                                        checked: answer.correct === true
+                                        isCorrect: answer.isCorrect,
+                                        checked: answer.isCorrect === true
                                     });
                                 });
 
@@ -1045,7 +1075,7 @@
             });
         });
 
-        // Xử lý thêm lựa chọn mới trong modal chỉnh sửa
+        // Thêm lựa chọn mới trong modal chỉnh sửa
         $('#editAddAnswerOption').click(function(e) {
             e.preventDefault();
             const optionLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
@@ -1066,11 +1096,45 @@
                             '<input type="checkbox" name="isCorrect" class="answer-checkbox">' +
                             '<label class="correct-label">Đúng</label>' +
                         '</div>' +
+                        '<button type="button" class="btn btn-danger btn-delete-option">' +
+                            '<i class="fas fa-times"></i>' +
+                        '</button>' +
                     '</div>' +
                 '</div>';
 
             $('#editAnswerOptions').append(newOptionHtml);
+            updateEditOptionLabels();
         });
+
+        // Xử lý xóa lựa chọn trong modal chỉnh sửa
+        $(document).on('click', '#editAnswerOptions .btn-delete-option', function() {
+            const totalOptions = $('#editAnswerOptions .answer-option').length;
+            if (totalOptions <= 2) {
+                alert('Câu hỏi trắc nghiệm phải có ít nhất 2 đáp án');
+                return;
+            }
+            
+            // Kiểm tra xem còn bao nhiêu đáp án đúng
+            const correctAnswers = $('#editAnswerOptions .answer-checkbox:checked').length;
+            const isCurrentCorrect = $(this).closest('.answer-option').find('.answer-checkbox').prop('checked');
+            
+            if (correctAnswers <= 1 && isCurrentCorrect) {
+                alert('Phải có ít nhất một đáp án đúng');
+                return;
+            }
+            
+            $(this).closest('.answer-option').remove();
+            updateEditOptionLabels();
+        });
+
+        // Cập nhật lại labels sau khi xóa
+        function updateEditOptionLabels() {
+            $('#editAnswerOptions .answer-option').each(function(index) {
+                const label = String.fromCharCode(65 + index); // 65 là mã ASCII của 'A'
+                $(this).find('.option-label').text(label);
+                $(this).find('.answer-checkbox').attr('data-option', label);
+            });
+        }
 
         // Xử lý submit form chỉnh sửa
         $('#editQuestionForm').on('submit', function(e) {
@@ -1088,16 +1152,27 @@
 
             // Kiểm tra câu trả lời nếu là câu hỏi trắc nghiệm
             if (questionType === 'multiple_choice') {
-                if ($('#editAnswerOptions .answer-option').length === 0) {
-                    alert('Vui lòng thêm ít nhất một câu trả lời');
+                const answerCount = $('#editAnswerOptions .answer-option').length;
+                
+                // Kiểm tra số lượng đáp án tối thiểu
+                if (answerCount < 2) {
+                    alert('Câu hỏi trắc nghiệm phải có ít nhất 2 đáp án');
                     return false;
                 }
 
+                // Kiểm tra số lượng đáp án tối đa
+                if (answerCount > 10) {
+                    alert('Câu hỏi trắc nghiệm không được có quá 10 đáp án');
+                    return false;
+                }
+
+                // Kiểm tra đáp án đúng
                 if ($('#editAnswerOptions .answer-checkbox:checked').length === 0) {
                     alert('Vui lòng chọn ít nhất một đáp án đúng');
                     return false;
                 }
 
+                // Kiểm tra nội dung đáp án
                 let hasEmptyAnswer = false;
                 $('#editAnswerOptions input[type="text"]').each(function() {
                     if (!$(this).val().trim()) {
