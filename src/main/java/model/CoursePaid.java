@@ -8,6 +8,7 @@ public class CoursePaid implements Serializable {
     private int course_paidID;
     private int courseID;//get courseID
     private int learnerID;//get learnerID
+    private int expertID; //get expertID
     private Course course;
     private String paymentID;
     private LocalDateTime datePaid;
@@ -59,5 +60,13 @@ public class CoursePaid implements Serializable {
 
     public void setPaymentID(String paymentID) {
         this.paymentID = paymentID;
+    }
+
+    public int getExpertID() {
+        return expertID;
+    }
+
+    public void setExpertID(int expertID) {
+        this.expertID = expertID;
     }
 }

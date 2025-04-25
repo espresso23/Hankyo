@@ -4,6 +4,7 @@ import dao.LearnerDAO;
 import model.*;
 import service.CartService;
 import service.PaymentService;
+import util.DBConnect;
 import vn.payos.type.PaymentData;
 
 import javax.servlet.ServletException;
@@ -11,6 +12,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -27,20 +29,44 @@ public class PaymentSuccessServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            // Lấy thông tin từ request
+            // Validate input parameters
             String orderCode = request.getParameter("orderCode");
-            Integer learnerID = Integer.parseInt(request.getParameter("learnerID"));
-            String[] courseIDs = request.getParameter("courses").split(",");
-            PaymentData paymentData = (PaymentData) request.getSession().getAttribute("paymentData");
-            String transactionDescription = (String) request.getSession().getAttribute("transactionCode");
-            System.out.println("leanerIDpayment= " + learnerID);
-            // Lấy thông tin người học
+            String coursesParam = request.getParameter("courses");
+            String learnerIDParam = request.getParameter("learnerID");
+
+            if (orderCode == null || coursesParam == null || learnerIDParam == null) {
+                throw new Exception("Thiếu thông tin thanh toán");
+            }
+
+            Integer learnerID = Integer.parseInt(learnerIDParam);
+            String[] courseIDs = coursesParam.split(",");
+            
+            if (courseIDs.length == 0) {
+                throw new Exception("Không có khóa học được chọn");
+            }
+
+            // Validate payment data from session
+            HttpSession session = request.getSession();
+            PaymentData paymentData = (PaymentData) session.getAttribute("paymentData");
+            String transactionDescription = (String) session.getAttribute("transactionCode");
+
+            if (paymentData == null) {
+                throw new Exception("Không tìm thấy thông tin thanh toán");
+            }
+
+            // Validate learner
             Learner learner = learnerDAO.getLearnerById(learnerID);
             if (learner == null) {
                 throw new Exception("Không tìm thấy thông tin người học");
             }
 
-            // Tạo đối tượng Payment - setup thông tin payment
+            // Get all pending cart items once
+            List<Cart> allCartItems = cartService.getPendingCartItems(learnerID);
+            if (allCartItems.isEmpty()) {
+                throw new Exception("Giỏ hàng trống");
+            }
+
+            // Create payment object
             Payment payment = new Payment();
             payment.setPaymentID(orderCode);
             payment.setLearnerID(learnerID);
@@ -48,53 +74,73 @@ public class PaymentSuccessServlet extends HttpServlet {
             payment.setPayDate(Timestamp.valueOf(LocalDateTime.now()).toLocalDateTime());
             payment.setStatus("Completed");
 
-            // Tạo danh sách CoursePaid
+            // Process courses
             List<CoursePaid> coursePaids = new ArrayList<>();
             BigDecimal totalAmount = BigDecimal.ZERO;
 
-            // Xử lý từng khóa học
-            for (String courseID : courseIDs) {
-                // Lấy thông tin khóa học từ giỏ hàng
-                List<Cart> cartItems = cartService.getPendingCartItems(learnerID);
-                for (Cart cartItem : cartItems) {
-                    if (cartItem.getCourse().getCourseID() == Integer.parseInt(courseID)) {
-                        Course course = cartItem.getCourse();
+            for (String courseIDStr : courseIDs) {
+                int courseID = Integer.parseInt(courseIDStr);
+                Cart matchingCart = allCartItems.stream()
+                    .filter(cart -> cart.getCourse().getCourseID() == courseID)
+                    .findFirst()
+                    .orElse(null);
 
-                        // Tạo CoursePaid
-                        CoursePaid coursePaid = new CoursePaid();
-                        coursePaid.setCourseID(course.getCourseID());
-                        coursePaid.setLearnerID(learnerID);
-                        coursePaids.add(coursePaid);
+                if (matchingCart == null) {
+                    throw new Exception("Không tìm thấy khóa học trong giỏ hàng: " + courseID);
+                }
 
-                        // Cộng dồn tổng tiền
-                        totalAmount = totalAmount.add(course.getPrice());
+                Course course = matchingCart.getCourse();
+                
+                // Create CoursePaid
+                CoursePaid coursePaid = new CoursePaid();
+                coursePaid.setCourseID(course.getCourseID());
+                coursePaid.setLearnerID(learnerID);
+                coursePaid.setPaymentID(orderCode);
+                coursePaid.setExpertID(course.getExpertID());
+                coursePaid.setCourse(course);
+                coursePaids.add(coursePaid);
 
-                        // Xóa khóa học khỏi giỏ hàng
-                        cartService.removeFromCart(cartItem.getCartID(), learnerID);
-                        break;
-                    }
+                // Add to total amount
+                totalAmount = totalAmount.add(course.getPrice());
+
+                // Remove from cart
+                cartService.removeFromCart(matchingCart.getCartID(), learnerID);
+            }
+
+            // Validate total amount with payment data
+            if (paymentData != null) {
+                // Làm tròn số tiền để so sánh
+                BigDecimal paymentAmount = new BigDecimal(paymentData.getAmount()).setScale(2, BigDecimal.ROUND_HALF_UP);
+                totalAmount = totalAmount.setScale(2, BigDecimal.ROUND_HALF_UP);
+                
+                if (!totalAmount.equals(paymentAmount)) {
+                    System.out.println("Expected amount: " + paymentAmount + ", Actual amount: " + totalAmount);
+                    throw new Exception("Số tiền thanh toán không khớp");
                 }
             }
 
-            // Cập nhật tổng tiền cho payment
+            // Update payment total
             payment.setTotalAmount(totalAmount);
 
-            // Lưu thông tin thanh toán và khóa học đã mua
-            boolean paymentSuccess = paymentService.addPaymentWithCourse(payment, coursePaids);
+            // Save payment and course information
+            boolean paymentSuccess = paymentService.addPaymentWithCourse(payment, coursePaids, DBConnect.getInstance().getConnection());
 
             if (!paymentSuccess) {
                 throw new Exception("Lỗi khi lưu thông tin thanh toán");
             }
-// Xóa session sau khi thanh toán thành công
-            request.getSession().removeAttribute("paymentData");
-            request.getSession().removeAttribute("courseDescriptions");
-            request.getSession().removeAttribute("coursePrices");
-            request.getSession().removeAttribute("transactionCode"); // nếu có
 
-            // Chuyển hướng đến trang thông báo thành công
+            // Clear session data
+            session.removeAttribute("paymentData");
+            session.removeAttribute("courseDescriptions");
+            session.removeAttribute("coursePrices");
+            session.removeAttribute("transactionCode");
+
+            // Redirect to success page
             response.sendRedirect("payment-success.jsp");
         } catch (Exception e) {
             e.printStackTrace();
+            // Log the error
+            System.err.println("Payment processing error: " + e.getMessage());
             response.sendRedirect("payment-error.jsp");
         }
     }

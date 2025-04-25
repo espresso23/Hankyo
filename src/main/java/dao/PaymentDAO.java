@@ -200,8 +200,8 @@ public class PaymentDAO {
         }
     }
 
-    public boolean createPayment(Payment payment) {
-        String sql = "INSERT INTO Payment (paymentID, learnerID, totalAmount, description, payDate, status) " +
+    public boolean createPayment(Payment payment, Connection connection) {
+        String sql = "INSERT INTO Payment (paymentID, learnerID, amount, description, paymentDate, status) " +
                     "VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, payment.getPaymentID());
@@ -218,11 +218,12 @@ public class PaymentDAO {
         }
     }
 
-    public boolean createCoursePaid(CoursePaid coursePaid) {
-        String sql = "INSERT INTO CoursePaid (courseID, learnerID) VALUES (?, ?)";
+    public boolean createCoursePaid(CoursePaid coursePaid, Connection connection) {
+        String sql = "INSERT INTO Course_Paid (courseID, learnerID,paymentID, datePaid) VALUES (?, ?,?,GETDATE())";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, coursePaid.getCourseID());
             stmt.setInt(2, coursePaid.getLearnerID());
+            stmt.setString(3, coursePaid.getPaymentID());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -232,7 +233,7 @@ public class PaymentDAO {
 
     public List<Payment> getPaymentsByLearner(int learnerId) {
         List<Payment> payments = new ArrayList<>();
-        String sql = "SELECT * FROM Payment WHERE learnerID = ? ORDER BY payDate DESC";
+        String sql = "SELECT * FROM Payment WHERE learnerID = ? ORDER BY paymentDate DESC";
         
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, learnerId);
@@ -242,9 +243,9 @@ public class PaymentDAO {
                 Payment payment = new Payment();
                 payment.setPaymentID(rs.getString("paymentID"));
                 payment.setLearnerID(rs.getInt("learnerID"));
-                payment.setTotalAmount(rs.getBigDecimal("totalAmount"));
+                payment.setTotalAmount(rs.getBigDecimal("amount"));
                 payment.setDescription(rs.getString("description"));
-                payment.setPayDate(rs.getTimestamp("payDate").toLocalDateTime());
+                payment.setPayDate(rs.getTimestamp("paymentDate").toLocalDateTime());
                 payment.setStatus(rs.getString("status"));
                 payments.add(payment);
             }
