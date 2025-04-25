@@ -76,18 +76,19 @@ public class OrderDAO {
             stmt.setInt(1, expertId);
             stmt.setTimestamp(2, Timestamp.valueOf(startDate));
             stmt.setTimestamp(3, Timestamp.valueOf(endDate));
-            ResultSet rs = stmt.executeQuery();
             
-            while (rs.next()) {
-                LocalDateTime period = rs.getTimestamp("date").toLocalDateTime();
-                BigDecimal amount = rs.getBigDecimal("totalAmount");
-                if (amount == null) {
-                    amount = BigDecimal.ZERO;
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    LocalDateTime period = rs.getTimestamp("date").toLocalDateTime();
+                    BigDecimal amount = rs.getBigDecimal("totalAmount");
+                    if (amount == null) {
+                        amount = BigDecimal.ZERO;
+                    }
+                    long orderCount = rs.getLong("orderCount");
+                    String status = rs.getString("status");
+                    
+                    stats.add(new RevenueStatDTO(period, amount, orderCount, status));
                 }
-                long orderCount = rs.getLong("orderCount");
-                String status = rs.getString("status");
-                
-                stats.add(new RevenueStatDTO(period, amount, orderCount, status));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -111,17 +112,18 @@ public class OrderDAO {
         
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, expertId);
-            ResultSet rs = stmt.executeQuery();
             
-            while (rs.next()) {
-                int courseId = rs.getInt("courseID");
-                String title = rs.getString("title");
-                BigDecimal totalRevenue = rs.getBigDecimal("totalRevenue");
-                BigDecimal totalSales = BigDecimal.valueOf(rs.getLong("totalSales"));
-                int studentCount = rs.getInt("studentCount");
-                double rating = rs.getDouble("avgRating");
-                
-                topCourses.add(new TopCourseDTO(courseId, title, totalRevenue, totalSales, studentCount, rating));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    int courseId = rs.getInt("courseID");
+                    String title = rs.getString("title");
+                    BigDecimal totalRevenue = rs.getBigDecimal("totalRevenue");
+                    BigDecimal totalSales = BigDecimal.valueOf(rs.getLong("totalSales"));
+                    int studentCount = rs.getInt("studentCount");
+                    double rating = rs.getDouble("avgRating");
+                    
+                    topCourses.add(new TopCourseDTO(courseId, title, totalRevenue, totalSales, studentCount, rating));
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -140,5 +142,63 @@ public class OrderDAO {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public List<Order> getAllCompletedOrdersByExpert(int expertId) {
+        List<Order> orders = new ArrayList<>();
+        String sql = "SELECT * FROM Orders WHERE expertID = ? AND status = 'Completed'";
+        
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, expertId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Order order = mapResultSetToOrder(rs);
+                    orders.add(order);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return orders;
+    }
+    
+    public List<Order> getOrdersByExpertAndDateRange(int expertId, LocalDateTime startDate, LocalDateTime endDate, Connection conn) {
+        List<Order> orders = new ArrayList<>();
+        String sql = "SELECT * FROM Orders WHERE expertID = ? AND orderDate BETWEEN ? AND ?";
+        
+        try (
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, expertId);
+            stmt.setTimestamp(2, Timestamp.valueOf(startDate));
+            stmt.setTimestamp(3, Timestamp.valueOf(endDate));
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Order order = mapResultSetToOrder(rs);
+                    orders.add(order);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return orders;
+    }
+    
+    private Order mapResultSetToOrder(ResultSet rs) throws SQLException {
+        Order order = new Order();
+        order.setOrderID(rs.getString("orderID"));
+        order.setPaymentID(rs.getString("paymentID"));
+        order.setExpertID(rs.getInt("expertID"));
+        order.setCourseID(rs.getInt("courseID"));
+        order.setLearnerID(rs.getInt("learnerID"));
+        order.setOrderDate(rs.getTimestamp("orderDate").toLocalDateTime());
+        order.setTotalAmount(rs.getBigDecimal("totalAmount"));
+        order.setStatus(rs.getString("status"));
+        return order;
     }
 } 

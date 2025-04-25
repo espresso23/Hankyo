@@ -13,7 +13,7 @@
     <!-- Font Awesome for icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <!-- Custom CSS -->
     <style>
         .sidebar {
@@ -94,6 +94,7 @@
             margin-bottom: 20px;
             border: 1px solid #dee2e6;
             position: relative;
+            height: 400px;
         }
 
         .course-item {
@@ -215,81 +216,8 @@
 
 <!-- Main Content -->
 <div class="main-content">
-    <!-- Thêm nút xem toàn bộ doanh thu vào phần filter -->
-    <div class="filter-buttons mb-4">
-        <button class="btn btn-outline-primary me-2" data-period="day">Ngày</button>
-        <button class="btn btn-outline-primary me-2" data-period="week">Tuần</button>
-        <button class="btn btn-outline-primary me-2" data-period="month">Tháng</button>
-        <button class="btn btn-outline-primary me-2" data-period="year">Năm</button>
-        <button class="btn btn-outline-success" data-period="all">Toàn bộ</button>
-    </div>
-
-    <!-- Cards thống kê -->
-    <div class="row mb-4">
-        <!-- Card doanh thu hôm nay -->
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Doanh thu hôm nay</h5>
-                    <p class="card-text h3" id="todayRevenue">
-                        <span class="placeholder-glow">
-                            <span class="placeholder col-6"></span>
-                        </span>
-                    </p>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Card tổng doanh thu -->
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Tổng doanh thu</h5>
-                    <p class="card-text h3" id="totalRevenue">
-                        <span class="placeholder-glow">
-                            <span class="placeholder col-6"></span>
-                        </span>
-                    </p>
-                    <p class="card-text text-muted" id="revenueChange">
-                        <span class="placeholder-glow">
-                            <span class="placeholder col-4"></span>
-                        </span>
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Card tổng đơn hàng -->
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Tổng đơn hàng</h5>
-                    <p class="card-text h3" id="totalOrders">
-                        <span class="placeholder-glow">
-                            <span class="placeholder col-6"></span>
-                        </span>
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Card tổng doanh thu từ trước đến nay -->
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Tổng doanh thu từ trước đến nay</h5>
-                    <p class="card-text h3" id="totalAllTimeRevenue">
-                        <span class="placeholder-glow">
-                            <span class="placeholder col-6"></span>
-                        </span>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Time Filter -->
-    <div class="time-filter">
+    <div class="time-filter mb-4">
         <button data-period="yesterday" data-text="hôm qua">Hôm qua</button>
         <button data-period="today" data-text="hôm nay" class="active">Hôm nay</button>
         <button data-period="week" data-text="tuần này">Tuần này</button>
@@ -297,75 +225,38 @@
         <button data-period="last-month" data-text="tháng trước">Tháng trước</button>
         <button data-period="year" data-text="năm nay">Năm nay</button>
         <button data-period="last-year" data-text="năm trước">Năm trước</button>
+        <button data-period="all" data-text="toàn bộ">Toàn bộ</button>
         <button data-period="custom" data-text="">Tùy chỉnh</button>
     </div>
 
     <!-- Stats Cards -->
-    <div class="row">
+    <div class="row mb-4">
         <div class="col-md-6">
             <div class="stat-card purple clickable-card" data-type="revenue">
-                <h6>Tổng doanh thu hôm nay</h6>
-                <h3 id="totalRevenue">
-                    <fmt:formatNumber value="0" type="currency" currencyCode="VND" maxFractionDigits="0"/>
-                </h3>
-                <small id="revenueChange" class="text-white">
-                    <i class="fas fa-arrow-up"></i> 0%
-                </small>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="stat-card blue clickable-card" data-type="orders">
-                <h6>Tổng đơn hàng hôm nay</h6>
-                <h3 id="totalOrders">0 đơn hàng</h3>
-                <small id="orderChange" class="text-white">
-                    <i class="fas fa-arrow-up"></i> 0%
-                </small>
-            </div>
-        </div>
-    </div>
-
-    <!-- Revenue Details -->
-    <div class="row">
-        <div class="col-md-6">
-            <h5>Doanh thu theo ngân hàng</h5>
-            <div id="bankRevenue">
-                <div class="bank-info d-flex align-items-center justify-content-between">
-                    <div class="d-flex align-items-center">
-                        <img src="${pageContext.request.contextPath}/images/bidv-logo.png" alt="BIDV">
-                        <div>
-                            <div><c:out value="${expert.fullName}"/></div>
-                            <div class="text-muted">6261 1569 16</div>
-                        </div>
-                    </div>
-                    <div class="text-end">
-                        <div>
-                            <fmt:formatNumber value="55000" type="currency" currencyCode="VND" maxFractionDigits="0"/>
-                        </div>
-                        <span class="badge bg-success">Đang kết nối</span>
-                    </div>
+                <h6 class="revenue-title">Tổng doanh thu hôm nay</h6>
+                <div class="revenue-stats">
+                    <h3 class="revenue-amount" id="revenue-amount">₫0</h3>
+                    <small class="revenue-change text-white" id="revenue-change">
+                        <i class="fas fa-arrow-up"></i> 0%
+                    </small>
                 </div>
             </div>
         </div>
         <div class="col-md-6">
-            <h5>Doanh thu theo kênh thanh toán</h5>
-            <div id="paymentChannels">
-                <div class="bank-info d-flex align-items-center justify-content-between">
-                    <div class="d-flex align-items-center">
-                        <img src="${pageContext.request.contextPath}/images/hankyo-logo.png" alt="Hankyo">
-                        <div>
-                            <div>Kênh: Hankyo</div>
-                        </div>
-                    </div>
-                    <div class="text-end">
-                        <fmt:formatNumber value="55000" type="currency" currencyCode="VND" maxFractionDigits="0"/>
-                    </div>
+            <div class="stat-card blue clickable-card" data-type="orders">
+                <h6 class="orders-title">Tổng đơn hàng hôm nay</h6>
+                <div class="orders-stats">
+                    <h3 class="orders-amount" id="orders-amount">0 đơn hàng</h3>
+                    <small class="orders-change text-white" id="orders-change">
+                        <i class="fas fa-arrow-up"></i> 0%
+                    </small>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Chart -->
-    <div class="chart-container">
+    <div class="chart-container mb-4">
         <div id="chartLoading" class="loading-overlay" style="display: none;">
             <div class="loading-spinner"></div>
         </div>
@@ -373,9 +264,14 @@
     </div>
 
     <!-- Top Courses -->
-    <div class="row mt-4">
+    <div class="row">
         <div class="col-12">
-            <h5>Khóa học nổi bật</h5>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Khóa học nổi bật</h5>
+                <div class="course-loading spinner-border text-primary" role="status" style="display: none;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
             <div id="topCourses">
                 <!-- Top courses will be dynamically inserted by JavaScript -->
             </div>
@@ -385,60 +281,63 @@
 
 <!-- JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="${pageContext.request.contextPath}/js/expert-dashboard.js"></script>
 <script>
-    // Hàm format tiền tệ VND
-    function formatCurrency(amount) {
-        return new Intl.NumberFormat('vi-VN', {
+    // Kiểm tra xem Chart.js đã được load chưa
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js is not loaded!');
+    } else {
+        console.log('Chart.js loaded successfully');
+    }
+
+    // Đảm bảo tất cả code chạy sau khi DOM đã load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Khởi tạo formatter cho tiền tệ
+        const formatter = new Intl.NumberFormat('vi-VN', {
             style: 'currency',
-            currency: 'VND'
-        }).format(amount);
-    }
-
-    // Hàm cập nhật thống kê
-    function updateStats(stats) {
-        document.getElementById('todayRevenue').textContent = formatCurrency(stats.todayRevenue);
-        document.getElementById('totalRevenue').textContent = formatCurrency(stats.totalRevenue);
-        document.getElementById('totalOrders').textContent = stats.totalOrders;
-        document.getElementById('totalAllTimeRevenue').textContent = formatCurrency(stats.totalAllTimeRevenue);
-
-        const change = stats.comparedToLastPeriod;
-        const changeElement = document.getElementById('revenueChange');
-        if (change > 0) {
-            changeElement.innerHTML = `<i class="fas fa-arrow-up text-success"></i> ${change}%`;
-        } else if (change < 0) {
-            changeElement.innerHTML = `<i class="fas fa-arrow-down text-danger"></i> ${change}%`;
-        } else {
-            changeElement.innerHTML = `<i class="fas fa-equals text-muted"></i> ${change}%`;
-        }
-    }
-
-    // Xử lý sự kiện click nút filter
-    document.querySelectorAll('.filter-buttons button').forEach(button => {
-        button.addEventListener('click', function() {
-            // Xóa active class từ tất cả các nút
-            document.querySelectorAll('.filter-buttons button').forEach(btn => {
-                btn.classList.remove('active', 'btn-primary');
-                btn.classList.add('btn-outline-primary');
-            });
-            
-            // Thêm active class cho nút được click
-            this.classList.remove('btn-outline-primary');
-            this.classList.add('active', 'btn-primary');
-            
-            // Lấy period từ data attribute
-            const period = this.dataset.period;
-            
-            // Hiển thị loading state
-            showLoading(true);
-            
-            // Gọi API với period tương ứng
-            loadDashboardData(period);
+            currency: 'VND',
+            maximumFractionDigits: 0
         });
-    });
 
-    // Mặc định chọn filter "Ngày"
-    document.querySelector('[data-period="day"]').click();
+        // Hàm hiển thị/ẩn loading
+        function showLoading(show) {
+            const loadingOverlay = document.getElementById('chartLoading');
+            if (loadingOverlay) {
+                loadingOverlay.style.display = show ? 'flex' : 'none';
+            }
+        }
+
+        // Hàm hiển thị lỗi
+        function showError(message) {
+            console.error(message);
+            // Thêm code hiển thị thông báo lỗi tại đây nếu cần
+        }
+
+        // Khởi tạo sự kiện cho các nút filter
+        const timeFilterButtons = document.querySelectorAll('.time-filter button');
+        timeFilterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                timeFilterButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                const period = this.dataset.period;
+                const periodText = this.dataset.text;
+                
+                // Cập nhật tiêu đề
+                document.querySelector('.revenue-title').textContent = `Tổng doanh thu ${periodText}`;
+                document.querySelector('.orders-title').textContent = `Tổng đơn hàng ${periodText}`;
+                
+                // Load dữ liệu mới
+                loadDashboardData(period);
+            });
+        });
+
+        // Chọn nút mặc định và load dữ liệu ban đầu
+        const defaultButton = document.querySelector('.time-filter button[data-period="today"]');
+        if (defaultButton) {
+            defaultButton.click();
+        }
+    });
 </script>
+<script src="${pageContext.request.contextPath}/js/expert-dashboard.js"></script>
 </body>
 </html> 

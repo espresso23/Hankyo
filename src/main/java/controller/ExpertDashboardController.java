@@ -25,7 +25,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import com.google.gson.JsonObject;
 
-@WebServlet("/expert-dashboard/*")
+@WebServlet(name = "ExpertDashboardController", urlPatterns = {
+    "/expert-dashboard",
+    "/expert-dashboard/stats",
+    "/expert-dashboard/revenue",
+    "/expert-dashboard/top-courses"
+})
 public class ExpertDashboardController extends HttpServlet {
     private static final Logger logger = LoggerFactory.getLogger(ExpertDashboardController.class);
     private final ExpertDashboardService dashboardService;
@@ -47,8 +52,8 @@ public class ExpertDashboardController extends HttpServlet {
             return;
         }
 
-        String pathInfo = request.getPathInfo();
-        if (pathInfo == null || pathInfo.equals("/")) {
+        String pathInfo = request.getServletPath();
+        if ("/expert-dashboard".equals(pathInfo)) {
             // Trả về trang dashboard
             request.getRequestDispatcher("/expert-dashboard.jsp").forward(request, response);
             return;
@@ -60,13 +65,13 @@ public class ExpertDashboardController extends HttpServlet {
         try {
             logger.info("Processing request for path: {}", pathInfo);
             switch (pathInfo) {
-                case "/stats":
+                case "/expert-dashboard/stats":
                     handleStats(request, response, expert);
                     break;
-                case "/revenue":
+                case "/expert-dashboard/revenue":
                     handleRevenue(request, response, expert);
                     break;
-                case "/top-courses":
+                case "/expert-dashboard/top-courses":
                     handleTopCourses(request, response, expert);
                     break;
                 default:
@@ -103,10 +108,11 @@ public class ExpertDashboardController extends HttpServlet {
                 throw new IllegalArgumentException("JSON không hợp lệ");
             }
 
-            if (!jsonRequest.has("startDate") || !jsonRequest.has("endDate")) {
-                throw new IllegalArgumentException("Thiếu tham số startDate hoặc endDate");
+            if (!jsonRequest.has("startDate") || !jsonRequest.has("endDate") || !jsonRequest.has("period")) {
+                throw new IllegalArgumentException("Thiếu tham số startDate, endDate hoặc period");
             }
             
+            String period = jsonRequest.get("period").getAsString();
             LocalDateTime startDate = LocalDateTime.parse(
                 jsonRequest.get("startDate").getAsString(), 
                 DateTimeFormatter.ISO_DATE_TIME
@@ -116,11 +122,11 @@ public class ExpertDashboardController extends HttpServlet {
                 DateTimeFormatter.ISO_DATE_TIME
             );
 
-            logger.info("Getting stats for expert {} from {} to {}", 
-                expert.getExpertID(), startDate, endDate);
+            logger.info("Getting stats for expert {} from {} to {} with period {}", 
+                expert.getExpertID(), startDate, endDate, period);
 
             // Lấy thống kê từ service
-            var stats = dashboardService.getDashboardStats(expert.getExpertID(), startDate, endDate);
+            var stats = dashboardService.getDashboardStats(expert.getExpertID(), startDate, endDate, period);
             
             // Trả về kết quả
             String json = gson.toJson(stats);
