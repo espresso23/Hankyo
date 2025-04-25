@@ -259,55 +259,40 @@ public class PostDetailsServlet extends HttpServlet {
     private void handleAddComment(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            // Check if user is logged in
             HttpSession session = request.getSession();
-            User loggedUser = (User) session.getAttribute("user");
-            if (loggedUser == null) {
+            User user = (User) session.getAttribute("user");
+            if (user == null) {
                 response.sendRedirect("login.jsp");
                 return;
             }
 
-            String commentText = request.getParameter("commentInput");
-            String postIdParam = request.getParameter("postID");
+            int postID = Integer.parseInt(request.getParameter("postID"));
+            String content = request.getParameter("content");
+            String parentCommentIDStr = request.getParameter("parentCommentID");
 
-            if (postIdParam == null || commentText == null || commentText.trim().isEmpty()) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing post ID or comment text");
-                return;
-            }
-
-            int postId = Integer.parseInt(postIdParam);
-            int userID = loggedUser.getUserID();
-            String userFullName = userDAO.getFullNameByUserId(userID);
-            String userAvtURL = userDAO.getAvatarByUserId(userID);
-            Comment comment = new Comment(userID, userFullName, userAvtURL, postId, commentText);
-
+            Comment comment = new Comment();
+            comment.setUserID(user.getUserID());
+            comment.setUserFullName(user.getFullName());
+            comment.setPostID(postID);
+            comment.setContent(content);
             comment.setCreatedDate(new Date());
-            int parentID = 0;
-            try{
-                parentID = Integer.parseInt(request.getParameter("parentID"));
-                comment.setParentCommentID(parentID);
 
-            }catch(NumberFormatException e){
-                System.out.println("root comment");
-            }
-            boolean isAdded;
-            if(parentID != 0){
-
-                isAdded = commentDAO.addReplyComment(comment);
-            }else{
-                isAdded = commentDAO.addComment(comment);
-            }
-
-
-            if (isAdded) {
-                response.sendRedirect("postDetails?postID=" + postId);
+            if (parentCommentIDStr != null && !parentCommentIDStr.isEmpty()) {
+                // This is a reply to another comment
+                int parentCommentID = Integer.parseInt(parentCommentIDStr);
+                comment.setParentCommentID(parentCommentID);
+                CommentDAO commentDAO = new CommentDAO();
+                commentDAO.addReplyComment(comment);
             } else {
-                request.setAttribute("error", "Failed to post comment. Please try again.");
-                doGet(request, response);
+                // This is a new comment on the post
+                PostDAO postDAO = new PostDAO();
+                postDAO.addComment(comment);
             }
+
+            response.sendRedirect("postDetails?postID=" + postID);
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error occurred");
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error adding comment");
         }
     }
 

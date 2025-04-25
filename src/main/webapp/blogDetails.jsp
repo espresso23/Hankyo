@@ -285,7 +285,7 @@
         <c:when test="${user != null}">
             <form action="postDetails" method="POST">
                 <div class="comment-box">
-                    <textarea name="commentInput" rows="4" placeholder="Nhập bình luận của bạn..."
+                    <textarea name="content" rows="4" placeholder="Nhập bình luận của bạn..."
                               required></textarea><br><br>
                     <input type="hidden" name="postID" value="${post.postID}">
                     <input type="hidden" name="action" value="addComment">
@@ -386,7 +386,7 @@
                             <c:when test="${user != null}">
                                 <form style="display: inline" action="postDetails" method="POST">
                                     <div class="comment-box">
-                                        <textarea name="commentInput" rows="4" placeholder="Nhập bình luận của bạn..."
+                                        <textarea name="content" rows="4" placeholder="Nhập bình luận của bạn..."
                                                   required></textarea><br><br>
                                         <input type="hidden" name="postID" value="${post.postID}">
                                         <input type="hidden" name="parentID" value="${comment.commentID}">

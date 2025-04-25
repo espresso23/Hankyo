@@ -9,12 +9,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import model.Post;
+import model.Comment;
 import util.DBConnect;
 
 public class PostDAO {
@@ -640,6 +642,10 @@ public class PostDAO {
         String insertSql = "INSERT INTO PostVotes (UserID, PostID, VoteType) VALUES (?, ?, ?)";
 
         try (Connection conn = dbContext.getConnection()) {
+            // Get post owner's ID and voter's name
+            int postOwnerID = getPostOwnerID(postID);
+            String voterFullName = getUserFullName(userID);
+
             // Check existing vote
             int existingVote = 0;
             try (PreparedStatement ps = conn.prepareStatement(checkSql)) {
@@ -687,6 +693,17 @@ public class PostDAO {
                     ps.setInt(2, postID);
                     ps.setInt(3, voteType);
                     ps.executeUpdate();
+
+                    // Create notification for new votes only
+                    if (postOwnerID != -1 && postOwnerID != userID && voterFullName != null) {
+                        SignificationDAO significationDAO = new SignificationDAO();
+                        significationDAO.addPostVoteNotification(
+                            postOwnerID,
+                            postID,
+                            voterFullName,
+                            voteType == 1
+                        );
+                    }
                 }
             }
 
@@ -790,6 +807,68 @@ public class PostDAO {
         return posts;
     }
 
+    private int getPostOwnerID(int postID) {
+        String sql = "SELECT UserID FROM Post WHERE PostID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, postID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("UserID");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    private String getUserFullName(int userID) {
+        String sql = "SELECT fullName FROM [User] WHERE UserID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("fullName");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // Add comment to post
+    public boolean addComment(Comment comment) throws Exception {
+        String sql = "INSERT INTO Comment (UserID, PostID, Content, CreatedDate) VALUES (?, ?, ?, ?)";
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, comment.getUserID());
+            ps.setInt(2, comment.getPostID());
+            ps.setString(3, comment.getContent());
+            ps.setTimestamp(4, new Timestamp(comment.getCreatedDate().getTime()));
+            
+            boolean success = ps.executeUpdate() > 0;
+            
+            if (success) {
+                // Get post owner's ID and create notification
+                int postOwnerID = getPostOwnerID(comment.getPostID());
+                if (postOwnerID != -1 && postOwnerID != comment.getUserID()) {
+                    SignificationDAO significationDAO = new SignificationDAO();
+                    significationDAO.addPostCommentNotification(
+                        postOwnerID,
+                        comment.getPostID(),
+                        comment.getUserFullName()
+                    );
+                }
+            }
+            
+            return success;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
 }
 

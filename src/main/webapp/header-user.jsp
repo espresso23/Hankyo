@@ -5,6 +5,7 @@
   <title>Title</title>
   <link rel="stylesheet" href="asset/css/header.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="asset/js/header.js" defer></script>
   <style>
     .button {
       display: block;
@@ -103,11 +104,13 @@
       position: relative;
       cursor: pointer;
       margin-right: 20px;
+      z-index: 1000;
     }
 
     .notification-bell i {
       font-size: 24px;
       color: #333;
+      transition: color 0.3s ease;
     }
 
     .notification-bell:hover i {
@@ -116,43 +119,139 @@
 
     .notification-count {
       position: absolute;
-      top: -5px;
-      right: -5px;
+      top: -8px;
+      right: -8px;
       background-color: #ff4444;
       color: white;
       border-radius: 50%;
       padding: 2px 6px;
       font-size: 12px;
       font-weight: bold;
+      min-width: 18px;
+      text-align: center;
     }
 
     .notification-dropdown {
       display: none;
       position: absolute;
-      top: 30px;
-      right: 0;
+      top: 40px;
+      right: -10px;
       background-color: #fff;
       border: 1px solid #ddd;
-      border-radius: 5px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      width: 200px;
-      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      width: 360px;
+      max-height: 600px;
+      overflow-y: auto;
       z-index: 1000;
+    }
+
+    .notification-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid #eee;
+      position: sticky;
+      top: 0;
+      background-color: #fff;
+      z-index: 1;
+    }
+
+    .notification-header span {
+      font-weight: 600;
+      color: #1c1e21;
+      font-size: 24px;
+    }
+
+    .mark-all-read {
+      background: none;
+      border: none;
+      color: #1877f2;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 6px;
+      transition: background-color 0.2s ease;
+    }
+
+    .mark-all-read:hover {
+      background-color: #e7f3ff;
+    }
+
+    .notification-item {
+      padding: 12px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .notification-item:last-child {
+      border-bottom: none;
+    }
+
+    .notification-item.unread {
+      background-color: #e7f3ff;
+    }
+
+    .notification-item:hover {
+      background-color: #f5f6f7;
+    }
+
+    .notification-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: #e4e6eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .notification-icon i {
+      font-size: 16px;
+      color: #1877f2;
+    }
+
+    .notification-content {
+      flex-grow: 1;
+      font-size: 15px;
+      color: #1c1e21;
+      line-height: 1.3333;
+    }
+
+    .notification-time {
+      font-size: 13px;
+      color: #65676b;
+      margin-top: 4px;
+    }
+
+    .empty-notifications {
+      text-align: center;
+      color: #65676b;
+      padding: 32px 16px;
+      font-size: 15px;
     }
 
     .notification-dropdown.show {
       display: block;
+      animation: fadeIn 0.2s ease-out;
     }
 
-    .notification-dropdown a {
-      text-decoration: none;
-      color: #333;
-      padding: 8px;
-      display: block;
-    }
-
-    .notification-dropdown a:hover {
-      background-color: #f7f7f7;
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* Mobile Menu Styles */
@@ -307,11 +406,17 @@
     </div>
 
     <!-- Notification Bell -->
-    <div class="notification-bell" onclick="toggleNotifications()">
+    <div class="notification-bell">
       <i class="fas fa-bell"></i>
-      <span class="notification-count">0</span>
+      <span id="notificationCount" class="notification-count" style="display: none;">0</span>
       <div class="notification-dropdown">
-        <!-- Notifications will be loaded here -->
+        <div class="notification-header">
+          <span>Thông báo</span>
+          <button class="mark-all-read" onclick="markAllAsRead(event)">Đánh dấu đã đọc</button>
+        </div>
+        <div id="notificationList">
+          <!-- Notifications will be loaded here -->
+        </div>
       </div>
     </div>
 
@@ -353,61 +458,7 @@
 </div>
 
 <script>
-  // Toggle Popup Container
-  function togglePopup() {
-    const popup = document.getElementById('popupContainer');
-    popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
-  }
-
-  // Toggle Notifications
-  function toggleNotifications() {
-    const dropdown = document.querySelector('.notification-dropdown');
-    dropdown.classList.toggle('show');
-  }
-
-  // Toggle Mobile Menu
-  function toggleMobileMenu() {
-    const menu = document.getElementById('mobileVerticalMenu');
-    const btn = document.getElementById('mobileMenuButton');
-
-    if (menu.style.display === 'block') {
-      menu.style.animation = 'fadeIn 0.3s ease-out reverse';
-      setTimeout(() => {
-        menu.style.display = 'none';
-      }, 250);
-      btn.classList.remove('active');
-    } else {
-      menu.style.display = 'block';
-      menu.style.animation = 'fadeIn 0.3s ease-out';
-      btn.classList.add('active');
-    }
-  }
-
-  // Close popups when clicking outside
-  document.addEventListener('click', function(event) {
-    const popup = document.getElementById('popupContainer');
-    const avatar = document.querySelector('header img[onclick="togglePopup()"]');
-    const menu = document.getElementById('mobileVerticalMenu');
-    const menuBtn = document.getElementById('mobileMenuButton');
-    const notificationBell = document.querySelector('.notification-bell');
-    const notificationDropdown = document.querySelector('.notification-dropdown');
-
-    if (!popup.contains(event.target) && !avatar.contains(event.target)) {
-      popup.style.display = 'none';
-    }
-
-    if (!menu.contains(event.target) && !menuBtn.contains(event.target)) {
-      menu.style.animation = 'fadeIn 0.3s ease-out reverse';
-      setTimeout(() => {
-        menu.style.display = 'none';
-      }, 250);
-      menuBtn.classList.remove('active');
-    }
-
-    if (!notificationDropdown.contains(event.target) && !notificationBell.contains(event.target)) {
-      notificationDropdown.classList.remove('show');
-    }
-  });
+  // The functions are now in header.js, so we can remove them from here
 </script>
 </body>
 </html>

@@ -24,9 +24,15 @@ function toggleMobileMenu() {
 
 // Notification functions
 function loadNotifications() {
-    fetch('/notifications')
-        .then(response => response.json())
+    fetch(window.location.origin + '/Hankyo/notifications')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
+            console.log('Received notifications:', data); // Debug log
             updateNotificationCount(data.length);
             renderNotifications(data);
         })
@@ -34,9 +40,15 @@ function loadNotifications() {
 }
 
 function loadNotificationCount() {
-    fetch('/notifications?action=count')
-        .then(response => response.json())
+    fetch(window.location.origin + '/Hankyo/notifications?action=count')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(count => {
+            console.log('Notification count:', count); // Debug log
             updateNotificationCount(count);
         })
         .catch(error => console.error('Error loading notification count:', error));
@@ -50,35 +62,73 @@ function updateNotificationCount(count) {
 
 function renderNotifications(notifications) {
     const notificationList = document.getElementById('notificationList');
+    const dropdown = document.querySelector('.notification-dropdown');
 
-    if (notifications.length === 0) {
-        notificationList.innerHTML = '<div class="empty-notifications">Không có thông báo mới</div>';
+    if (!notificationList) {
+        console.error('Notification list element not found');
         return;
     }
 
-    notificationList.innerHTML = notifications.map(notification => `
-    <div class="notification-item ${notification.read ? '' : 'unread'}" 
-         onclick="markAsRead(${notification.significationID}, this)">
-      <div class="notification-content">${notification.content}</div>
-      <div class="notification-time">${formatTime(notification.createdAt)}</div>
-    </div>
-  `).join('');
+    // Clear existing content
+    const header = notificationList.querySelector('.notification-header');
+    notificationList.innerHTML = '';
+    if (header) {
+        notificationList.appendChild(header);
+    }
+
+    if (!notifications || notifications.length === 0) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.className = 'empty-notifications';
+        emptyDiv.textContent = 'Không có thông báo mới';
+        notificationList.appendChild(emptyDiv);
+        return;
+    }
+
+    notifications.forEach(notification => {
+        const notificationDiv = document.createElement('div');
+        notificationDiv.className = `notification-item ${notification.isRead === 0 ? 'unread' : ''}`;
+        notificationDiv.onclick = () => markAsRead(notification.significationID, notificationDiv);
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'notification-content';
+        contentDiv.textContent = notification.description;
+
+        const timeDiv = document.createElement('div');
+        timeDiv.className = 'notification-time';
+        timeDiv.textContent = formatTime(notification.dateGiven);
+
+        notificationDiv.appendChild(contentDiv);
+        notificationDiv.appendChild(timeDiv);
+        notificationList.appendChild(notificationDiv);
+    });
 }
 
 function formatTime(timestamp) {
     const date = new Date(timestamp);
-    return date.toLocaleString();
+    const options = { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit',
+        hour: '2-digit', 
+        minute: '2-digit'
+    };
+    return date.toLocaleString('vi-VN', options);
 }
 
 function markAsRead(significationID, element) {
-    fetch('/notifications', {
+    fetch(window.location.origin + '/Hankyo/notifications', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: `action=markRead&significationID=${significationID}`
     })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(() => {
             element.classList.remove('unread');
             loadNotificationCount();
@@ -87,10 +137,15 @@ function markAsRead(significationID, element) {
 }
 
 function markAllAsRead() {
-    fetch('/notifications?action=markAllRead', {
+    fetch(window.location.origin + '/Hankyo/notifications?action=markAllRead', {
         method: 'POST'
     })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(() => {
             loadNotifications();
             loadNotificationCount();

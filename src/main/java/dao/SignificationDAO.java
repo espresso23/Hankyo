@@ -16,13 +16,7 @@ public class SignificationDAO {
 
     public List<Signification> getUnreadSignifications(int userID) {
         List<Signification> significations = new ArrayList<>();
-        String sql = "SELECT s.*, st.typeName, " +
-                "CASE " +
-                "   WHEN st.typeName = 'Forum' THEN (SELECT title FROM Post WHERE postID = s.sourceID) " +
-                "   WHEN st.typeName = 'Comment' THEN (SELECT content FROM Comment WHERE commentID = s.sourceID) " +
-                "   WHEN st.typeName = 'Course' THEN (SELECT courseName FROM Course WHERE courseID = s.sourceID) " +
-                "   WHEN st.typeName = 'Honour' THEN (SELECT honourName FROM Honour WHERE honourID = s.sourceID) " +
-                "END as sourceTitle " +
+        String sql = "SELECT s.*, st.typeName " +
                 "FROM Signification s " +
                 "JOIN SignificationType st ON s.typeID = st.typeID " +
                 "WHERE s.userID = ? AND s.isRead = 0 " +
@@ -32,11 +26,54 @@ public class SignificationDAO {
             ps.setInt(1, userID);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    significations.add(mapSignification(rs));
+                    Signification sig = new Signification();
+                    sig.setSignificationID(rs.getInt("significationID"));
+                    sig.setUserID(rs.getInt("userID"));
+                    sig.setTypeID(rs.getInt("typeID"));
+                    sig.setSourceID(rs.getInt("sourceID"));
+                    sig.setDescription(rs.getString("description"));
+                    sig.setDateGiven(rs.getTimestamp("dateGiven"));
+                    sig.setTypeName(rs.getString("typeName"));
+                    // We'll handle sourceTitle separately
+                    significations.add(sig);
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+
+        // Now let's fetch the source titles separately for each notification
+        for (Signification sig : significations) {
+            try {
+                String titleSql = "";
+                switch (sig.getTypeName()) {
+                    case "Forum":
+                        titleSql = "SELECT heading as title FROM Post WHERE postID = ?";
+                        break;
+                    case "Comment":
+                        titleSql = "SELECT content as title FROM Comment WHERE commentID = ?";
+                        break;
+                    case "Course":
+                        titleSql = "SELECT courseName as title FROM Course WHERE courseID = ?";
+                        break;
+                    case "Honour":
+                        titleSql = "SELECT honourName as title FROM Honour WHERE honourID = ?";
+                        break;
+                }
+                if (!titleSql.isEmpty()) {
+                    try (PreparedStatement ps = conn.prepareStatement(titleSql)) {
+                        ps.setInt(1, sig.getSourceID());
+                        try (ResultSet rs = ps.executeQuery()) {
+                            if (rs.next()) {
+                                sig.setSourceTitle(rs.getString("title"));
+                            }
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                // If we fail to get the source title, just continue with the next notification
+            }
         }
         return significations;
     }
@@ -88,6 +125,48 @@ public class SignificationDAO {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public void addCommentReplyNotification(int recipientUserID, int commentID, String replierName) {
+        String description = replierName + " replied to your comment";
+        Signification notification = new Signification();
+        notification.setUserID(recipientUserID);
+        notification.setTypeID(2); // Assuming 2 is for Comment type
+        notification.setSourceID(commentID);
+        notification.setDescription(description);
+        addSignification(notification);
+    }
+
+    public void addCommentVoteNotification(int recipientUserID, int commentID, String voterName, boolean isUpvote) {
+        String voteType = isUpvote ? "upvoted" : "downvoted";
+        String description = voterName + " " + voteType + " your comment";
+        Signification notification = new Signification();
+        notification.setUserID(recipientUserID);
+        notification.setTypeID(2); // Assuming 2 is for Comment type
+        notification.setSourceID(commentID);
+        notification.setDescription(description);
+        addSignification(notification);
+    }
+
+    public void addPostCommentNotification(int postOwnerID, int postID, String commenterName) {
+        String description = commenterName + " commented on your post";
+        Signification notification = new Signification();
+        notification.setUserID(postOwnerID);
+        notification.setTypeID(1); // Assuming 1 is for Forum/Post type
+        notification.setSourceID(postID);
+        notification.setDescription(description);
+        addSignification(notification);
+    }
+
+    public void addPostVoteNotification(int postOwnerID, int postID, String voterName, boolean isUpvote) {
+        String voteType = isUpvote ? "upvoted" : "downvoted";
+        String description = voterName + " " + voteType + " your post";
+        Signification notification = new Signification();
+        notification.setUserID(postOwnerID);
+        notification.setTypeID(1); // Assuming 1 is for Forum/Post type
+        notification.setSourceID(postID);
+        notification.setDescription(description);
+        addSignification(notification);
     }
 
     private Signification mapSignification(ResultSet rs) throws SQLException {
