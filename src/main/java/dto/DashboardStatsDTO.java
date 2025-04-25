@@ -6,6 +6,11 @@ public class DashboardStatsDTO {
     private BigDecimal totalRevenue;
     private long totalOrders;
     private double comparedToLastPeriod;
+    private BigDecimal todayRevenue;
+    private BigDecimal totalAllTimeRevenue;
+
+    public DashboardStatsDTO() {
+    }
 
     public BigDecimal getTotalRevenue() {
         return totalRevenue;
@@ -29,5 +34,21 @@ public class DashboardStatsDTO {
 
     public void setComparedToLastPeriod(double comparedToLastPeriod) {
         this.comparedToLastPeriod = comparedToLastPeriod;
+    }
+
+    public BigDecimal getTodayRevenue() {
+        return todayRevenue;
+    }
+
+    public void setTodayRevenue(BigDecimal todayRevenue) {
+        this.todayRevenue = todayRevenue;
+    }
+
+    public BigDecimal getTotalAllTimeRevenue() {
+        return totalAllTimeRevenue;
+    }
+
+    public void setTotalAllTimeRevenue(BigDecimal totalAllTimeRevenue) {
+        this.totalAllTimeRevenue = totalAllTimeRevenue;
     }
 } 

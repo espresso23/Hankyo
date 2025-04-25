@@ -745,11 +745,11 @@ public class CourseDAO {
     public List<Course> getHighlightedCoursesForExpert(int expertId) throws SQLException {
         List<Course> courses = new ArrayList<>();
         String sql = "SELECT c.courseID, c.title, c.price, " +
-                    "(SELECT COUNT(*) FROM enrollments e WHERE e.courseID = c.courseID AND e.status = 'active') as student_count, " +
+                    "(SELECT COUNT(DISTINCT cp.learnerID) FROM Course_Paid cp WHERE cp.courseID = c.courseID) as student_count, " +
                     "(SELECT AVG(CAST(f.rating AS FLOAT)) FROM CourseFeedback f WHERE f.courseID = c.courseID) as avg_rating, " +
                     "(SELECT COUNT(*) FROM CourseFeedback f WHERE f.courseID = c.courseID) as rating_count, " +
-                    "(SELECT COUNT(*) * c.price FROM Course_Paid cp WHERE cp.courseID = c.courseID) as total_revenue, " +
-                    "(SELECT COUNT(*) FROM Course_Paid cp WHERE cp.courseID = c.courseID) as total_sales " +
+                    "(SELECT SUM(c2.price) FROM Course_Paid cp2 JOIN Course c2 ON cp2.courseID = c2.courseID WHERE cp2.courseID = c.courseID) as total_revenue, " +
+                    "(SELECT COUNT(*) FROM Course_Paid cp3 WHERE cp3.courseID = c.courseID) as total_sales " +
                     "FROM Course c " +
                     "WHERE c.expertID = ? AND c.status = 'active' " +
                     "ORDER BY student_count DESC, avg_rating DESC";
