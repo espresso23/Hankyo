@@ -10,7 +10,18 @@ public class ExpertBank implements Serializable {
     private String binCode;
     private int expertID;
 
+    public ExpertBank() {
+    }
+
     public ExpertBank(String bankName, String bankAccount, String binCode, int expertID) {
+        this.bankName = bankName;
+        this.bankAccount = bankAccount;
+        this.binCode = binCode;
+        this.expertID = expertID;
+    }
+
+    public ExpertBank(int eBankID, String bankName, String bankAccount, String binCode, int expertID) {
+        this.eBankID = eBankID;
         this.bankName = bankName;
         this.bankAccount = bankAccount;
         this.binCode = binCode;

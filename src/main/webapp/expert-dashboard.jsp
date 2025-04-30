@@ -209,7 +209,7 @@
     <div class="nav flex-column">
         <a href="#" class="nav-link active"><i class="fas fa-home"></i> Tổng quan</a>
         <a href="${pageContext.request.contextPath}/expert/transactions" class="nav-link"><i class="fas fa-exchange-alt"></i> Giao dịch</a>
-        <a href="#" class="nav-link"><i class="fas fa-university"></i> Ngân hàng</a>
+        <a href="${pageContext.request.contextPath}/expert/bank-management" class="nav-link"><i class="fas fa-university"></i> Ngân hàng</a>
         <a href="#" class="nav-link"><i class="fas fa-credit-card"></i> Kênh thanh toán</a>
         <a href="#" class="nav-link"><i class="fas fa-link"></i> Tạo link thanh toán</a>
         <a href="#" class="nav-link"><i class="fas fa-cog"></i> Thiết lập</a>
