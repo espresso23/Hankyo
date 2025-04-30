@@ -447,21 +447,20 @@ async function processChartData(data) {
         const dayData = groupedData[dateKey];
         return {
             date: dayData.date,
-            revenue: dayData.totalAmount,
-            orders: dayData.orderCount
+            revenue: dayData.totalAmount || 0,  // Đảm bảo có giá trị mặc định
+            orders: dayData.orderCount || 0     // Đảm bảo có giá trị mặc định
         };
     });
 
     // Log tổng kết cuối cùng
+    const totalRevenue = chartData.reduce((sum, item) => sum + (item.revenue || 0), 0);
+    const totalOrders = chartData.reduce((sum, item) => sum + (item.orders || 0), 0);
+    
     console.log('Final processed data:', {
         totalDays: chartData.length,
-        totalRevenue: chartData.reduce((sum, item) => sum + item.revenue, 0),
-        totalOrders: chartData.reduce((sum, item) => sum + item.orders, 0),
-        sampleDay: chartData.find(day => 
-            day.date.getDate() === 14 && 
-            day.date.getMonth() === 2 && // Tháng 3 (0-based)
-            day.date.getFullYear() === 2025
-        )
+        totalRevenue: totalRevenue,
+        totalOrders: totalOrders,
+        chartData: chartData
     });
 
     // Format nhãn dựa trên period
@@ -469,12 +468,22 @@ async function processChartData(data) {
         const date = item.date;
         switch (period) {
             case 'year':
-                return `Tháng ${date.getMonth() + 1}`;
+                return date.toLocaleString('vi-VN', { month: 'long' });
             case 'month':
+                return `${date.getDate()}/${date.getMonth() + 1}`;
             case 'week':
+                return `${date.getDate()}/${date.getMonth() + 1}`;
             default:
                 return `${date.getDate()}/${date.getMonth() + 1}`;
         }
+    });
+
+    // Cập nhật thống kê tổng quan
+    updateStats({
+        totalRevenue: totalRevenue,
+        totalOrders: totalOrders,
+        comparedToLastPeriod: 0,  // Sẽ được tính toán bởi backend
+        orderComparedToLastPeriod: 0  // Sẽ được tính toán bởi backend
     });
 
     return { labels, chartData };
@@ -525,9 +534,23 @@ function getDateRange(period) {
             // Lấy ngày đầu tháng hiện tại
             startDate = new Date(now.getFullYear(), now.getMonth(), 1);
             startDate = setStartOfDay(startDate);
+            
             // Lấy ngày cuối tháng hiện tại
             endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
             endDate = setEndOfDay(endDate);
+            
+            // Log chi tiết cho debug
+            console.log('Month range calculation:', {
+                currentDate: now.toLocaleString('vi-VN'),
+                startDate: startDate.toLocaleString('vi-VN'),
+                endDate: endDate.toLocaleString('vi-VN'),
+                daysInMonth: endDate.getDate(),
+                currentMonth: now.getMonth() + 1,
+                startMonth: startDate.getMonth() + 1,
+                endMonth: endDate.getMonth() + 1,
+                startDateISO: startDate.toISOString(),
+                endDateISO: endDate.toISOString()
+            });
             break;
             
         case 'last-month':
@@ -541,9 +564,16 @@ function getDateRange(period) {
             // Lấy ngày đầu năm hiện tại
             startDate = new Date(now.getFullYear(), 0, 1);
             startDate = setStartOfDay(startDate);
-            // Lấy ngày cuối năm hiện tại
+            // Lấy ngày cuối năm hiện tại (31/12)
             endDate = new Date(now.getFullYear(), 11, 31);
             endDate = setEndOfDay(endDate);
+            
+            // Log chi tiết cho debug
+            console.log('Year range:', {
+                startDate: startDate.toLocaleString('vi-VN'),
+                endDate: endDate.toLocaleString('vi-VN'),
+                totalDays: Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24) + 1)
+            });
             break;
             
         case 'last-year':
@@ -570,18 +600,30 @@ function getDateRange(period) {
             endDate = setEndOfDay(new Date(now));
     }
 
-    // Log chi tiết về khoảng thời gian
-    console.log('Date range details:', {
+    // Log chi tiết về khoảng thời gian cuối cùng
+    console.log('Final date range:', {
         period,
         startDate: {
             raw: startDate,
             iso: startDate.toISOString(),
-            local: startDate.toLocaleString('vi-VN')
+            local: startDate.toLocaleString('vi-VN'),
+            year: startDate.getFullYear(),
+            month: startDate.getMonth() + 1,
+            date: startDate.getDate(),
+            hours: startDate.getHours(),
+            minutes: startDate.getMinutes(),
+            seconds: startDate.getSeconds()
         },
         endDate: {
             raw: endDate,
             iso: endDate.toISOString(),
-            local: endDate.toLocaleString('vi-VN')
+            local: endDate.toLocaleString('vi-VN'),
+            year: endDate.getFullYear(),
+            month: endDate.getMonth() + 1,
+            date: endDate.getDate(),
+            hours: endDate.getHours(),
+            minutes: endDate.getMinutes(),
+            seconds: endDate.getSeconds()
         },
         totalDays: Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24) + 1)
     });

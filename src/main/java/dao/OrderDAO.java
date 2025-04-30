@@ -83,95 +83,18 @@ public class OrderDAO {
 
     public List<RevenueStatDTO> getRevenueStatsByPeriod(int expertId, LocalDateTime startDate, LocalDateTime endDate) {
         List<RevenueStatDTO> stats = new ArrayList<>();
-        String sql;
         
-        // Xác định loại filter dựa vào khoảng thời gian
-        LocalDateTime now = LocalDateTime.now();
-        
-        // Hôm qua
-        if (startDate.getDayOfYear() == now.minusDays(1).getDayOfYear() 
-            && endDate.getDayOfYear() == now.getDayOfYear()) {
-            sql = "SELECT CAST(orderDate AS DATE) as date, status, " +
-                  "COUNT(*) as orderCount, SUM(totalAmount) as totalAmount " +
-                  "FROM Orders " +
-                  "WHERE expertID = ? " +
-                  "AND orderDate >= DATEADD(day, -1, CAST(GETDATE() AS DATE)) " +
-                  "AND orderDate < CAST(GETDATE() AS DATE) " +
-                  "GROUP BY CAST(orderDate AS DATE), status " +
-                  "ORDER BY date";
-        }
-        // Hôm nay 
-        else if (startDate.getDayOfYear() == now.getDayOfYear()) {
-            sql = "SELECT CAST(orderDate AS DATE) as date, status, " +
-                  "COUNT(*) as orderCount, SUM(totalAmount) as totalAmount " +
-                  "FROM Orders " +
-                  "WHERE expertID = ? " +
-                  "AND CAST(orderDate AS DATE) = CAST(GETDATE() AS DATE) " +
-                  "GROUP BY CAST(orderDate AS DATE), status " +
-                  "ORDER BY date";
-        }
-        // Tuần này
-        else if (startDate.get(ChronoField.ALIGNED_WEEK_OF_YEAR) == now.get(ChronoField.ALIGNED_WEEK_OF_YEAR)) {
-            sql = "SELECT CAST(orderDate AS DATE) as date, status, " +
-                  "COUNT(*) as orderCount, SUM(totalAmount) as totalAmount " +
-                  "FROM Orders " +
-                  "WHERE expertID = ? " +
-                  "AND orderDate >= DATEADD(week, DATEDIFF(week, 0, GETDATE()), 0) " +
-                  "AND orderDate < DATEADD(week, DATEDIFF(week, 0, GETDATE()) + 1, 0) " +
-                  "GROUP BY CAST(orderDate AS DATE), status " +
-                  "ORDER BY date";
-        }
-        // Tháng này
-        else if (startDate.getMonth() == now.getMonth()) {
-            sql = "SELECT CAST(orderDate AS DATE) as date, status, " +
-                  "COUNT(*) as orderCount, SUM(totalAmount) as totalAmount " +
-                  "FROM Orders " +
-                  "WHERE expertID = ? " +
-                  "AND orderDate >= DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0) " +
-                  "AND orderDate < DATEADD(month, DATEDIFF(month, 0, GETDATE()) + 1, 0) " +
-                  "GROUP BY CAST(orderDate AS DATE), status " +
-                  "ORDER BY date";
-        }
-        // Tháng trước
-        else if (startDate.getMonth() == now.minusMonths(1).getMonth()) {
-            sql = "SELECT CAST(orderDate AS DATE) as date, status, " +
-                  "COUNT(*) as orderCount, SUM(totalAmount) as totalAmount " +
-                  "FROM Orders " +
-                  "WHERE expertID = ? " +
-                  "AND orderDate >= DATEADD(month, DATEDIFF(month, 0, GETDATE()) - 1, 0) " +
-                  "AND orderDate < DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0) " +
-                  "GROUP BY CAST(orderDate AS DATE), status " +
-                  "ORDER BY date";
-        }
-        // Năm nay
-        else if (startDate.getYear() == now.getYear()) {
-            sql = "SELECT CAST(orderDate AS DATE) as date, status, " +
-                  "COUNT(*) as orderCount, SUM(totalAmount) as totalAmount " +
-                  "FROM Orders " +
-                  "WHERE expertID = ? " +
-                  "AND YEAR(orderDate) = YEAR(GETDATE()) " +
-                  "GROUP BY CAST(orderDate AS DATE), status " +
-                  "ORDER BY date";
-        }
-        // Năm trước
-        else if (startDate.getYear() == now.minusYears(1).getYear()) {
-            sql = "SELECT CAST(orderDate AS DATE) as date, status, " +
-                  "COUNT(*) as orderCount, SUM(totalAmount) as totalAmount " +
-                  "FROM Orders " +
-                  "WHERE expertID = ? " +
-                  "AND YEAR(orderDate) = YEAR(GETDATE()) - 1 " +
-                  "GROUP BY CAST(orderDate AS DATE), status " +
-                  "ORDER BY date";
-        }
-        // Mặc định - toàn bộ
-        else {
-            sql = "SELECT CAST(orderDate AS DATE) as date, status, " +
-                  "COUNT(*) as orderCount, SUM(totalAmount) as totalAmount " +
-                  "FROM Orders " +
-                  "WHERE expertID = ? " +
-                  "GROUP BY CAST(orderDate AS DATE), status " +
-                  "ORDER BY date";
-        }
+        // SQL cơ bản cho tất cả các trường hợp
+        String sql = "SELECT CAST(o.orderDate AS DATE) as date, o.status, " +
+                    "COUNT(*) as orderCount, " +
+                    "SUM(CASE WHEN o.status = 'Completed' THEN o.totalAmount ELSE 0 END) as totalAmount " +
+                    "FROM Orders o " +
+                    "INNER JOIN Course c ON o.courseID = c.courseID " +
+                    "WHERE c.expertID = ? " +
+                    "AND o.orderDate >= ? " +
+                    "AND o.orderDate <= ? " +
+                    "GROUP BY CAST(o.orderDate AS DATE), o.status " +
+                    "ORDER BY date";
 
         System.out.println("Executing revenue query for expertId=" + expertId);
         System.out.println("Start date: " + startDate);
@@ -182,6 +105,8 @@ public class OrderDAO {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, expertId);
+            stmt.setTimestamp(2, Timestamp.valueOf(startDate));
+            stmt.setTimestamp(3, Timestamp.valueOf(endDate));
             
             System.out.println("Executing prepared statement...");
             
