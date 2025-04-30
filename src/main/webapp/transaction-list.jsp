@@ -17,98 +17,8 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
-    <style>
-        .sidebar {
-            height: 100vh;
-            background-color: #f8f9fa;
-            padding: 20px;
-            position: fixed;
-            left: 0;
-            width: 250px;
-        }
-        
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-        }
-        
-        .filter-section {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        
-        .table-section {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
-            color: #6c757d;
-            transition: all 0.2s ease;
-        }
-        
-        .nav-link:hover, .nav-link.active {
-            color: #6f42c1;
-            background-color: #fff;
-            border-radius: 8px;
-        }
-        
-        .nav-link i {
-            width: 20px;
-            text-align: center;
-        }
-        
-        .date-filter {
-            cursor: pointer;
-            padding: 8px 12px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            background-color: white;
-        }
-        
-        .status-badge {
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 0.875rem;
-        }
-        
-        .status-completed {
-            background-color: #d1e7dd;
-            color: #0f5132;
-        }
-        
-        .status-pending {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-        
-        .status-cancelled {
-            background-color: #f8d7da;
-            color: #842029;
-        }
-        
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-            }
-            
-            .main-content {
-                margin-left: 0;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/asset/css/transaction.css">
+
 </head>
 <body>
 
@@ -144,9 +54,9 @@
         
         <!-- Filter Section -->
         <div class="filter-section">
-            <div class="row g-3 align-items-center">
-                <div class="col-md-4">
-                    <div class="input-group">
+            <div class="row g-3 align-items-center justify-content-between">
+                <div class="col-auto">
+                    <div class="input-group date-range-group">
                         <span class="input-group-text">
                             <i class="fas fa-calendar"></i>
                         </span>
@@ -154,18 +64,9 @@
                                placeholder="Chọn khoảng thời gian">
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="input-group">
-                        <span class="input-group-text">
-                            <i class="fas fa-search"></i>
-                        </span>
-                        <input type="text" id="searchInput" class="form-control" 
-                               placeholder="Tìm kiếm giao dịch...">
-                    </div>
-                </div>
-                <div class="col-md-4 text-end">
-                    <button class="btn btn-primary" id="exportExcel">
-                        <i class="fas fa-file-excel"></i> Xuất Excel
+                <div class="col-auto">
+                    <button class="btn btn-success" id="exportExcel">
+                        <i class="fas fa-file-excel me-1"></i>Xuất Excel
                     </button>
                 </div>
             </div>

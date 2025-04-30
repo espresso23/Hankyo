@@ -32,64 +32,63 @@ $(document).ready(function() {
     let table = $('#transactionTable').DataTable({
         processing: true,
         serverSide: true,
+        scrollX: true,
+        autoWidth: false,
+        responsive: false,
         ajax: {
             url: contextPath + '/api/transactions/search',
             method: 'GET',
             data: function(d) {
                 let dates = $('#dateRange').val().split(' - ');
-                let params = {
+                let searchValue = $('.dataTables_filter input').val();
+                return {
                     draw: d.draw,
                     start: d.start,
                     length: d.length,
-                    'search[value]': d.search.value,
+                    'search[value]': searchValue,
                     startDate: moment(dates[0], 'DD/MM/YYYY').startOf('day').toISOString(),
-                    endDate: moment(dates[1], 'DD/MM/YYYY').endOf('day').toISOString()
+                    endDate: moment(dates[1], 'DD/MM/YYYY').endOf('day').toISOString(),
+                    order: d.order.map(order => ({
+                        column: d.columns[order.column].data,
+                        dir: order.dir
+                    }))
                 };
-                console.log('Request params:', params);
-                return params;
-            },
-            dataSrc: function(json) {
-                console.log('Response data:', json);
-                if (!json || !json.data) {
-                    console.error('Invalid response format');
-                    return [];
-                }
-                return json.data;
-            },
-            error: function(xhr, error, thrown) {
-                console.error('AJAX Error:', error);
-                console.error('Error details:', thrown);
-                console.error('Response:', xhr.responseText);
             }
         },
         columns: [
             { 
                 data: 'orderId',
-                title: 'Mã giao dịch'
+                title: 'Mã giao dịch',
+                width: '110px'
             },
             { 
                 data: 'orderDate',
                 title: 'Ngày đặt hàng',
+                width: '100px',
                 render: function(data) {
                     return moment(data).format('DD/MM/YYYY HH:mm');
                 }
             },
             { 
                 data: 'courseName',
-                title: 'Khóa học'
+                title: 'Khóa học',
+                width: '180px'
             },
             { 
                 data: 'learnerName',
-                title: 'Học viên'
+                title: 'Học viên',
+                width: '110px'
             },
             { 
                 data: 'gmail',
                 title: 'Email',
+                width: '160px',
                 defaultContent: 'Chưa cập nhật'
             },
             { 
                 data: 'totalAmount',
                 title: 'Số tiền',
+                width: '90px',
                 render: function(data) {
                     return new Intl.NumberFormat('vi-VN', {
                         style: 'currency',
@@ -100,6 +99,9 @@ $(document).ready(function() {
             { 
                 data: 'status',
                 title: 'Trạng thái',
+                width: '90px',
+                className: 'status-column',
+                responsivePriority: 1,
                 render: function(data) {
                     let statusText = {
                         'Completed': 'Hoàn thành',
@@ -119,10 +121,22 @@ $(document).ready(function() {
         ],
         order: [[1, 'desc']],
         language: {
-            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json'
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json',
+            search: "",
+            searchPlaceholder: "Nhập tìm kiếm..."
         },
         pageLength: 10,
-        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Tất cả"]]
+        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Tất cả"]],
+        dom: '<"filter-section"<"date-filter"l><"search-filter"f>><"table-responsive"t><"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+        drawCallback: function() {
+            // Đảm bảo các cột được hiển thị đúng sau mỗi lần vẽ lại bảng
+            $(this).find('td.status-column').each(function() {
+                if ($(this).children('.dtr-control').length > 0) {
+                    let statusContent = $(this).children('.dtr-control').html();
+                    $(this).html(statusContent);
+                }
+            });
+        }
     });
 
     // Xử lý sự kiện thay đổi date range
@@ -130,13 +144,11 @@ $(document).ready(function() {
         table.ajax.reload();
     });
 
-    // Xử lý sự kiện tìm kiếm
-    let searchTimeout;
-    $('#searchInput').on('keyup', function() {
-        clearTimeout(searchTimeout);
-        let searchValue = $(this).val();
-        searchTimeout = setTimeout(function() {
-            table.search(searchValue).draw();
+    // Xử lý sự kiện tìm kiếm từ ô tìm kiếm tùy chỉnh
+    $('.search-input').on('keyup', function() {
+        clearTimeout(window.searchTimeout);
+        window.searchTimeout = setTimeout(function() {
+            table.search($(this).val()).draw();
         }, 500);
     });
 
@@ -145,7 +157,7 @@ $(document).ready(function() {
         let dates = $('#dateRange').val().split(' - ');
         let startDate = moment(dates[0], 'DD/MM/YYYY').startOf('day').toISOString();
         let endDate = moment(dates[1], 'DD/MM/YYYY').endOf('day').toISOString();
-        let searchTerm = $('#searchInput').val();
+        let searchTerm = $('.dataTables_filter input').val();
 
         window.location.href = `${contextPath}/api/transactions/export?startDate=${startDate}&endDate=${endDate}&search=${searchTerm}`;
     });
