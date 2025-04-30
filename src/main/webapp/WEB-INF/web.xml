@@ -40,7 +40,7 @@
 
     <error-page>
         <error-code>404</error-code>
-        <location>/404-page.html</location>
+        <location>/404-page.jsp</location>
     </error-page>
     <servlet-mapping>
         <servlet-name>default</servlet-name>

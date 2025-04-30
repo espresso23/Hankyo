@@ -14,6 +14,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Chart.js Zoom Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
     <!-- Custom CSS -->
     <style>
         .sidebar {
@@ -206,7 +208,7 @@
     <h5 class="mb-4"><c:out value="${expert.fullName}"/></h5>
     <div class="nav flex-column">
         <a href="#" class="nav-link active"><i class="fas fa-home"></i> Tổng quan</a>
-        <a href="#" class="nav-link"><i class="fas fa-exchange-alt"></i> Giao dịch</a>
+        <a href="${pageContext.request.contextPath}/expert/transactions" class="nav-link"><i class="fas fa-exchange-alt"></i> Giao dịch</a>
         <a href="#" class="nav-link"><i class="fas fa-university"></i> Ngân hàng</a>
         <a href="#" class="nav-link"><i class="fas fa-credit-card"></i> Kênh thanh toán</a>
         <a href="#" class="nav-link"><i class="fas fa-link"></i> Tạo link thanh toán</a>
@@ -259,6 +261,11 @@
     <div class="chart-container mb-4">
         <div id="chartLoading" class="loading-overlay" style="display: none;">
             <div class="loading-spinner"></div>
+        </div>
+        <div class="d-flex justify-content-end mb-2">
+            <button id="resetZoom" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-search-minus"></i> Reset Zoom
+            </button>
         </div>
         <canvas id="revenueChart"></canvas>
     </div>

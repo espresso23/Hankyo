@@ -27,11 +27,11 @@ async function initializeChart() {
     try {
         await destroyChart();
         
-        const ctx = document.getElementById('revenueChart');
-        if (!ctx) {
-            console.error('Không tìm thấy canvas cho biểu đồ');
-            return;
-        }
+    const ctx = document.getElementById('revenueChart');
+    if (!ctx) {
+        console.error('Không tìm thấy canvas cho biểu đồ');
+        return;
+    }
 
         // Đợi một frame để đảm bảo DOM đã được cập nhật
         await new Promise(requestAnimationFrame);
@@ -40,11 +40,11 @@ async function initializeChart() {
             type: 'bar',
             data: {
                 labels: [],
-                datasets: [
-                    {
+        datasets: [
+            {
                         label: 'Doanh thu',
                         data: [],
-                        backgroundColor: 'rgb(99, 61, 227)',
+                backgroundColor: 'rgb(99, 61, 227)',
                         borderColor: 'rgb(99, 61, 227)',
                         borderWidth: 1,
                         yAxisID: 'y'
@@ -60,25 +60,25 @@ async function initializeChart() {
                     }
                 ]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        grid: {
-                            display: false
-                        }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
                             callback: function(value) {
                                 return formatter.format(value);
                             }
-                        },
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.1)'
-                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
                     },
                     y1: {
                         type: 'linear',
@@ -98,16 +98,16 @@ async function initializeChart() {
                         grid: {
                             drawOnChartArea: false
                         }
-                    }
-                },
-                plugins: {
-                    legend: {
+                }
+            },
+            plugins: {
+                legend: {
                         display: true,
-                        position: 'top',
+                    position: 'top',
                         align: 'center',
-                        labels: {
-                            usePointStyle: true,
-                            padding: 20
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20
                         }
                     },
                     tooltip: {
@@ -297,6 +297,33 @@ async function updateChart(data) {
                     }
                 },
                 plugins: {
+                    zoom: {
+                        pan: {
+                            enabled: true,
+                            mode: 'x',
+                            modifierKey: 'ctrl',
+                        },
+                        zoom: {
+                            wheel: {
+                                enabled: true,
+                                modifierKey: 'ctrl',
+                            },
+                            pinch: {
+                                enabled: true
+                            },
+                            mode: 'x',
+                            drag: {
+                                enabled: true,
+                                backgroundColor: 'rgba(99, 61, 227, 0.1)',
+                                borderColor: 'rgb(99, 61, 227)',
+                                borderWidth: 1
+                            }
+                        },
+                        limits: {
+                            x: {min: 'original', max: 'original'},
+                            y: {min: 'original', max: 'original'}
+                        }
+                    },
                     tooltip: {
                         mode: 'index',
                         intersect: false,
@@ -797,7 +824,7 @@ async function loadDashboardData(period) {
 
         // Đảm bảo chart cũ được hủy trước
         await destroyChart();
-
+        
         const contextPath = document.querySelector('meta[name="context-path"]')?.content || '';
         const dateRange = getDateRange(period);
 
@@ -852,7 +879,7 @@ async function loadDashboardData(period) {
         if (statsData.topCourses) {
             updateTopCourses(statsData.topCourses);
         }
-
+        
     } catch (error) {
         console.error('Error in loadDashboardData:', error);
         await destroyChart();
@@ -907,15 +934,22 @@ document.addEventListener('DOMContentLoaded', function() {
     
     try {
         // Khởi tạo biểu đồ trống
-        initializeChart();
+    initializeChart();
         console.log('Empty chart initialized');
 
-        // Load khóa học nổi bật ngay khi trang được tải
-        loadTopCourses();
+    // Load khóa học nổi bật ngay khi trang được tải
+    loadTopCourses();
 
-        // Xử lý sự kiện click cho các nút filter
-        const timeFilterButtons = document.querySelectorAll('.time-filter button');
-        timeFilterButtons.forEach(button => {
+        // Xử lý sự kiện click cho nút reset zoom
+        document.getElementById('resetZoom')?.addEventListener('click', function() {
+            if (revenueChart) {
+                revenueChart.resetZoom();
+            }
+        });
+
+    // Xử lý sự kiện click cho các nút filter
+    const timeFilterButtons = document.querySelectorAll('.time-filter button');
+    timeFilterButtons.forEach(button => {
             button.addEventListener('click', async function(e) {
                 // Ngăn chặn việc xử lý nhiều lần
                 if (isLoading) {
@@ -924,19 +958,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 console.log('Filter button clicked:', this.dataset.period);
-                timeFilterButtons.forEach(btn => btn.classList.remove('active'));
-                this.classList.add('active');
-                
-                const period = this.dataset.period;
+            timeFilterButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            const period = this.dataset.period;
                 await loadDashboardData(period);
             });
-        });
+    });
 
-        // Chọn nút mặc định
-        const defaultButton = document.querySelector('.time-filter button[data-period="today"]');
-        if (defaultButton) {
+    // Chọn nút mặc định
+    const defaultButton = document.querySelector('.time-filter button[data-period="today"]');
+    if (defaultButton) {
             console.log('Clicking default button (today)');
-            defaultButton.click();
+        defaultButton.click();
         }
     } catch (error) {
         console.error('Error during initialization:', error);

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+@page {isErrorPage="true"}
 <head>
     <meta charset="UTF-8">
     <title>404 Page</title>
