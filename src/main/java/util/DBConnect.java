@@ -1,89 +1,92 @@
 package util;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DBConnect {
     private static volatile DBConnect instance;
-    private Connection connection;
+    private static HikariDataSource dataSource;
     private static final String USERNAME = "sa";
     private static final String PASSWORD = "123";
     private static final String DB_URL = "jdbc:sqlserver://localhost:1433;databaseName=Hankyo;encrypt=true;trustServerCertificate=true;useUnicode=true&characterEncoding=UTF-8";
     private static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
     private static final Logger LOGGER = Logger.getLogger(DBConnect.class.getName());
+    
+    // Cấu hình connection pool
+    private static final int MAX_POOL_SIZE = 10;
+    private static final int MIN_IDLE = 5;
+    private static final int IDLE_TIMEOUT = 300000; // 5 phút
+    private static final int CONNECTION_TIMEOUT = 30000; // 30 giây
+    private static final int MAX_LIFETIME = 1800000; // 30 phút
 
-    public DBConnect() {
-        initializeConnection();
+    protected DBConnect() {
+        initializeConnectionPool();
     }
 
-    private void initializeConnection() {
+    private void initializeConnectionPool() {
         try {
-            Class.forName(DRIVER_CLASS);
-            this.connection = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
-            // Thiết lập auto-commit là true để tránh deadlock
-            this.connection.setAutoCommit(true);
-            LOGGER.info("Database connection initialized successfully");
-        } catch (ClassNotFoundException | SQLException e) {
-            LOGGER.log(Level.SEVERE, "Database connection error: " + e.getMessage(), e);
-            throw new RuntimeException("Database connection error: " + e.getMessage(), e);
+            HikariConfig config = new HikariConfig();
+            config.setDriverClassName(DRIVER_CLASS);
+            config.setJdbcUrl(DB_URL);
+            config.setUsername(USERNAME);
+            config.setPassword(PASSWORD);
+            
+            // Cấu hình connection pool
+            config.setMaximumPoolSize(MAX_POOL_SIZE);
+            config.setMinimumIdle(MIN_IDLE);
+            config.setIdleTimeout(IDLE_TIMEOUT);
+            config.setConnectionTimeout(CONNECTION_TIMEOUT);
+            config.setMaxLifetime(MAX_LIFETIME);
+            
+            // Cấu hình thêm
+            config.addDataSourceProperty("cachePrepStmts", "true");
+            config.addDataSourceProperty("prepStmtCacheSize", "250");
+            config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+            config.addDataSourceProperty("useServerPrepStmts", "true");
+            
+            // Tạo connection pool
+            dataSource = new HikariDataSource(config);
+            LOGGER.info("Database connection pool initialized successfully");
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Database connection pool initialization error: " + e.getMessage(), e);
+            throw new RuntimeException("Database connection pool initialization error", e);
         }
     }
 
-    public static DBConnect getInstance() {
+    public static synchronized DBConnect getInstance() {
         if (instance == null) {
-            synchronized (DBConnect.class) {
-                if (instance == null) {
-                    instance = new DBConnect();
-                }
-            }
+            instance = new DBConnect();
         }
         return instance;
     }
 
     public Connection getConnection() {
         try {
-            if (connection == null || connection.isClosed()) {
-                synchronized (this) {
-                    if (connection == null || connection.isClosed()) {
-                        LOGGER.info("Connection is closed or null, reinitializing...");
-                        initializeConnection();
-                    }
-                }
-            }
-            // Kiểm tra kết nối còn hoạt động không
-            if (!connection.isValid(5)) { // 5 giây timeout
-                LOGGER.warning("Connection is not valid, reinitializing...");
-                synchronized (this) {
-                    initializeConnection();
-                }
-            }
+            return dataSource.getConnection();
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Failed to reinitialize database connection", e);
-            throw new RuntimeException("Failed to reinitialize database connection", e);
+            LOGGER.log(Level.SEVERE, "Failed to get database connection", e);
+            throw new RuntimeException("Failed to get database connection", e);
         }
-        return connection;
     }
 
-    public void closeConnection() {
+    public void closeConnection(Connection connection) {
         if (connection != null) {
             try {
-                if (!connection.isClosed()) {
-                    connection.close();
-                    LOGGER.info("Database connection closed successfully");
-                }
+                connection.close();
             } catch (SQLException e) {
                 LOGGER.log(Level.SEVERE, "Error closing database connection", e);
             }
         }
     }
 
-    public void reconnect() {
-        synchronized (this) {
-            closeConnection();
-            initializeConnection();
+    public void shutdown() {
+        if (dataSource != null && !dataSource.isClosed()) {
+            dataSource.close();
+            LOGGER.info("Database connection pool closed successfully");
         }
     }
 }

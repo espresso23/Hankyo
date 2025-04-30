@@ -23,7 +23,7 @@ public class PostDAO {
     private DBConnect dbContext;
 
     public PostDAO() {
-        dbContext = new DBConnect();
+        dbContext = (DBConnect) DBConnect.getInstance().getConnection();
     }
 
     public boolean checkConnection() throws Exception {

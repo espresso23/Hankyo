@@ -37,7 +37,7 @@ public class MediaController extends HttpServlet {
     public void init() throws ServletException {
         cloudinaryConfig = new CloudinaryConfig();
         Connection conn = DBConnect.getInstance().getConnection();
-        mediaDAO = new MediaDAO(conn);
+        mediaDAO = new MediaDAO();
         gson = new Gson();
     }
 

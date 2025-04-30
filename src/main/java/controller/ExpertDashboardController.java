@@ -1,6 +1,6 @@
 package controller;
 
-import com.google.gson.Gson;
+import com.google.gson.*;
 import model.Expert;
 import dto.DashboardStatsDTO;
 import dto.RevenueStatDTO;
@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -38,7 +39,28 @@ public class ExpertDashboardController extends HttpServlet {
 
     public ExpertDashboardController() {
         this.dashboardService = new ExpertDashboardService();
-        this.gson = new Gson();
+        
+        // Tạo TypeAdapter cho LocalDateTime
+        JsonSerializer<LocalDateTime> serializer = new JsonSerializer<LocalDateTime>() {
+            @Override
+            public JsonElement serialize(LocalDateTime src, Type typeOfSrc, JsonSerializationContext context) {
+                return new JsonPrimitive(src.format(DateTimeFormatter.ISO_DATE_TIME));
+            }
+        };
+        
+        JsonDeserializer<LocalDateTime> deserializer = new JsonDeserializer<LocalDateTime>() {
+            @Override
+            public LocalDateTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                    throws JsonParseException {
+                return LocalDateTime.parse(json.getAsString(), DateTimeFormatter.ISO_DATE_TIME);
+            }
+        };
+        
+        // Cấu hình Gson với TypeAdapter
+        this.gson = new GsonBuilder()
+            .registerTypeAdapter(LocalDateTime.class, serializer)
+            .registerTypeAdapter(LocalDateTime.class, deserializer)
+            .create();
     }
 
     @Override
@@ -95,47 +117,45 @@ public class ExpertDashboardController extends HttpServlet {
     private void handleStats(HttpServletRequest request, HttpServletResponse response, Expert expert) 
             throws IOException {
         try {
-            // Đọc tham số từ request
-            String requestBody = request.getReader().lines().collect(Collectors.joining());
-            logger.debug("Received stats request body: {}", requestBody);
+            // Đọc tham số từ query parameters
+            String startDateStr = request.getParameter("startDate");
+            String endDateStr = request.getParameter("endDate");
             
-            if (requestBody == null || requestBody.isEmpty()) {
-                throw new IllegalArgumentException("Request body không được để trống");
+            if (startDateStr == null || endDateStr == null) {
+                throw new IllegalArgumentException("Thiếu tham số startDate hoặc endDate");
             }
 
-            JsonObject jsonRequest = gson.fromJson(requestBody, JsonObject.class);
-            if (jsonRequest == null) {
-                throw new IllegalArgumentException("JSON không hợp lệ");
-            }
+            LocalDateTime startDate = LocalDateTime.parse(startDateStr, DateTimeFormatter.ISO_DATE_TIME);
+            LocalDateTime endDate = LocalDateTime.parse(endDateStr, DateTimeFormatter.ISO_DATE_TIME);
 
-            if (!jsonRequest.has("startDate") || !jsonRequest.has("endDate") || !jsonRequest.has("period")) {
-                throw new IllegalArgumentException("Thiếu tham số startDate, endDate hoặc period");
-            }
-            
-            String period = jsonRequest.get("period").getAsString();
-            LocalDateTime startDate = LocalDateTime.parse(
-                jsonRequest.get("startDate").getAsString(), 
-                DateTimeFormatter.ISO_DATE_TIME
-            );
-            LocalDateTime endDate = LocalDateTime.parse(
-                jsonRequest.get("endDate").getAsString(), 
-                DateTimeFormatter.ISO_DATE_TIME
-            );
-
-            logger.info("Getting stats for expert {} from {} to {} with period {}", 
-                expert.getExpertID(), startDate, endDate, period);
+            logger.info("Getting stats for expert {} from {} to {}", 
+                expert.getExpertID(), startDate, endDate);
 
             // Lấy thống kê từ service
-            var stats = dashboardService.getDashboardStats(expert.getExpertID(), startDate, endDate, period);
+            DashboardStatsDTO stats = dashboardService.getDashboardStats(expert.getExpertID(), startDate, endDate);
+            
+            // Lấy dữ liệu doanh thu theo ngày
+            List<RevenueStatDTO> dailyStats = dashboardService.getRevenueStats(expert.getExpertID(), startDate, endDate);
+            
+            // Lấy top khóa học
+            List<TopCourseDTO> topCourses = dashboardService.getTopCourses(expert.getExpertID());
+            
+            // Tạo response object
+            JsonObject response_data = new JsonObject();
+            response_data.add("stats", gson.toJsonTree(stats));
+            response_data.add("dailyStats", gson.toJsonTree(dailyStats));
+            response_data.add("topCourses", gson.toJsonTree(topCourses));
             
             // Trả về kết quả
-            String json = gson.toJson(stats);
-            response.getWriter().write(json);
+            response.getWriter().write(gson.toJson(response_data));
             
-            logger.debug("Successfully returned stats: {}", json);
+            logger.debug("Successfully returned dashboard data: {}", response_data);
         } catch (Exception e) {
             logger.error("Error handling stats request: ", e);
-            throw e;
+            JsonObject error = new JsonObject();
+            error.addProperty("error", e.getMessage());
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write(gson.toJson(error));
         }
     }
 
@@ -144,7 +164,7 @@ public class ExpertDashboardController extends HttpServlet {
         try {
             // Đọc tham số từ request
             String requestBody = request.getReader().lines().collect(Collectors.joining());
-            logger.debug("Received revenue request body: {}", requestBody);
+            System.out.println("Received revenue request body: " + requestBody);
             
             if (requestBody == null || requestBody.isEmpty()) {
                 throw new IllegalArgumentException("Request body không được để trống");
@@ -159,28 +179,36 @@ public class ExpertDashboardController extends HttpServlet {
                 throw new IllegalArgumentException("Thiếu tham số startDate hoặc endDate");
             }
             
-            LocalDateTime startDate = LocalDateTime.parse(
-                jsonRequest.get("startDate").getAsString(), 
-                DateTimeFormatter.ISO_DATE_TIME
-            );
-            LocalDateTime endDate = LocalDateTime.parse(
-                jsonRequest.get("endDate").getAsString(), 
-                DateTimeFormatter.ISO_DATE_TIME
-            );
+            String startDateStr = jsonRequest.get("startDate").getAsString();
+            String endDateStr = jsonRequest.get("endDate").getAsString();
+            
+            System.out.println("Parsing dates from request:");
+            System.out.println("startDate: " + startDateStr);
+            System.out.println("endDate: " + endDateStr);
+            
+            LocalDateTime startDate = LocalDateTime.parse(startDateStr, DateTimeFormatter.ISO_DATE_TIME);
+            LocalDateTime endDate = LocalDateTime.parse(endDateStr, DateTimeFormatter.ISO_DATE_TIME);
 
-            logger.info("Getting revenue stats for expert {} from {} to {}", 
-                expert.getExpertID(), startDate, endDate);
+            System.out.println("Getting revenue stats for expert " + expert.getExpertID());
+            System.out.println("From: " + startDate);
+            System.out.println("To: " + endDate);
 
             // Lấy dữ liệu doanh thu từ service
-            var revenueStats = dashboardService.getRevenueStats(expert.getExpertID(), startDate, endDate);
+            List<RevenueStatDTO> revenueStats = dashboardService.getRevenueStats(expert.getExpertID(), startDate, endDate);
+            
+            System.out.println("Retrieved " + revenueStats.size() + " revenue stats");
+            for (RevenueStatDTO stat : revenueStats) {
+                System.out.println("Revenue stat: " + stat.toString());
+            }
             
             // Trả về kết quả
             String json = gson.toJson(revenueStats);
-            response.getWriter().write(json);
+            System.out.println("Returning JSON response: " + json);
             
-            logger.debug("Successfully returned revenue stats: {}", json);
+            response.getWriter().write(json);
         } catch (Exception e) {
-            logger.error("Error handling revenue request: ", e);
+            System.err.println("Error handling revenue request: " + e.getMessage());
+            e.printStackTrace();
             throw e;
         }
     }

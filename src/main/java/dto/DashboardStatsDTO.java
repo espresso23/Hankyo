@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class DashboardStatsDTO {
-    private BigDecimal todayRevenue;
+    private BigDecimal totalRevenue;
     private int totalOrders;
     private double comparedToLastPeriod;
     private double orderComparedToLastPeriod;

@@ -10,7 +10,7 @@ public class DocumentaryDAO {
     private DBConnect dbContext;
 
     public DocumentaryDAO() {
-        dbContext = new DBConnect();
+        dbContext = DBConnect.getInstance();
     }
     public boolean checkConnection() throws Exception {
         try (Connection conn = dbContext.getConnection()) {

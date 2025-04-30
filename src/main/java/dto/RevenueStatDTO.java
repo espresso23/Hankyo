@@ -5,13 +5,13 @@ import java.time.LocalDateTime;
 
 public class RevenueStatDTO {
     private LocalDateTime period;
-    private BigDecimal amount;
+    private BigDecimal totalAmount;
     private long orderCount;
     private String status;
 
-    public RevenueStatDTO(LocalDateTime period, BigDecimal amount, long orderCount, String status) {
+    public RevenueStatDTO(LocalDateTime period, BigDecimal totalAmount, long orderCount, String status) {
         this.period = period;
-        this.amount = amount;
+        this.totalAmount = totalAmount;
         this.orderCount = orderCount;
         this.status = status;
     }
@@ -24,12 +24,12 @@ public class RevenueStatDTO {
         this.period = period;
     }
 
-    public BigDecimal getAmount() {
-        return amount;
+    public BigDecimal getTotalAmount() {
+        return totalAmount;
     }
 
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
+    public void setTotalAmount(BigDecimal totalAmount) {
+        this.totalAmount = totalAmount;
     }
 
     public long getOrderCount() {
@@ -46,5 +46,13 @@ public class RevenueStatDTO {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+            "RevenueStatDTO[period=%s, status=%s, totalAmount=%s, orderCount=%d]",
+            period, status, totalAmount, orderCount
+        );
     }
 } 

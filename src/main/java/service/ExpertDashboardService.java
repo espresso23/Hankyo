@@ -32,37 +32,33 @@ public class ExpertDashboardService {
         this.courseDAO = new CourseDAO();
     }
 
-    public DashboardStatsDTO getDashboardStats(int expertId, LocalDateTime startDate, LocalDateTime endDate, String period) {
+    public DashboardStatsDTO getDashboardStats(int expertId, LocalDateTime startDate, LocalDateTime endDate) {
         DashboardStatsDTO stats = new DashboardStatsDTO();
         
-        if ("all".equals(period)) {
-            // Nếu là "all", lấy tất cả đơn hàng completed
-            List<Order> allOrders = orderDAO.getAllCompletedOrdersByExpert(expertId);
-            BigDecimal totalRevenue = allOrders.stream()
-                .map(Order::getTotalAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-            
-            stats.setTodayRevenue(totalRevenue);
-            stats.setTotalOrders(allOrders.size());
-            stats.setComparedToLastPeriod(0.0); // Không có so sánh cho toàn bộ
-            stats.setOrderComparedToLastPeriod(0.0);
-        } else {
-            // Lấy đơn hàng trong khoảng thời gian
-
-            List<Order> currentOrders = orderDAO.getOrdersByExpertAndDateRange(expertId, startDate, endDate, DBConnect.getInstance().getConnection());
-            BigDecimal currentRevenue = currentOrders.stream()
-                .filter(order -> "Completed".equals(order.getStatus()))
-                .map(Order::getTotalAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-            
-            stats.setTodayRevenue(currentRevenue);
-            stats.setTotalOrders(currentOrders.size());
-            
-            // Tính toán so sánh với kỳ trước
-            double revenueChange = calculateRevenueChange(expertId, startDate, endDate);
-            stats.setComparedToLastPeriod(revenueChange);
-            stats.setOrderComparedToLastPeriod(0.0); // TODO: Implement order comparison
-        }
+        // Lấy đơn hàng trong khoảng thời gian
+        List<Order> currentOrders = orderDAO.getOrdersByExpertAndDateRange(expertId, startDate, endDate);
+        
+        // Tính tổng doanh thu từ các đơn hàng đã hoàn thành
+        BigDecimal currentRevenue = currentOrders.stream()
+            .filter(order -> "Completed".equals(order.getStatus()))
+            .map(Order::getTotalAmount)
+            .filter(amount -> amount != null)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        // Đếm số đơn hàng (bao gồm cả pending và cancelled)
+        int totalOrders = currentOrders.size();
+        
+        stats.setTotalRevenue(currentRevenue);
+        stats.setTotalOrders(totalOrders);
+        
+        // Tính toán so sánh với kỳ trước
+        double revenueChange = calculateRevenueChange(expertId, startDate, endDate);
+        stats.setComparedToLastPeriod(revenueChange);
+        
+        // Tính toán phần trăm thay đổi số đơn hàng
+        long previousOrders = getPreviousOrderCount(expertId, startDate, endDate);
+        double orderChange = calculateOrderChange(totalOrders, previousOrders);
+        stats.setOrderComparedToLastPeriod(orderChange);
         
         return stats;
     }
@@ -93,7 +89,7 @@ public class ExpertDashboardService {
     }
 
     private BigDecimal getRevenueForPeriod(int expertId, LocalDateTime startDate, LocalDateTime endDate) {
-        List<Order> orders = orderDAO.getOrdersByExpertAndDateRange(expertId, startDate, endDate,DBConnect.getInstance().getConnection());
+        List<Order> orders = orderDAO.getOrdersByExpertAndDateRange(expertId, startDate, endDate);
         return orders.stream()
             .filter(order -> "Completed".equals(order.getStatus()))
             .map(Order::getTotalAmount)
@@ -101,7 +97,7 @@ public class ExpertDashboardService {
     }
 
     public List<RevenueStatDTO> getRevenueStats(int expertId, LocalDateTime startDate, LocalDateTime endDate) {
-        return orderDAO.getRevenueStatsByPeriod(expertId, startDate, endDate, DBConnect.getInstance().getConnection());
+        return orderDAO.getRevenueStatsByPeriod(expertId, startDate, endDate);
     }
 
     public List<TopCourseDTO> getTopCourses(int expertId) {
@@ -126,5 +122,21 @@ public class ExpertDashboardService {
             e.printStackTrace();
             return new ArrayList<>();
         }
+    }
+
+    private long getPreviousOrderCount(int expertId, LocalDateTime currentStart, LocalDateTime currentEnd) {
+        long periodDays = ChronoUnit.DAYS.between(currentStart, currentEnd);
+        LocalDateTime previousStart = currentStart.minusDays(periodDays);
+        LocalDateTime previousEnd = currentStart;
+        
+        List<Order> previousOrders = orderDAO.getOrdersByExpertAndDateRange(expertId, previousStart, previousEnd);
+        return previousOrders.size();
+    }
+
+    private double calculateOrderChange(long currentOrders, long previousOrders) {
+        if (previousOrders == 0) {
+            return currentOrders == 0 ? 0.0 : 100.0;
+        }
+        return ((double) (currentOrders - previousOrders) / previousOrders) * 100;
     }
 } 

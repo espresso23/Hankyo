@@ -1,4 +1,4 @@
-//package main;
+package main;//package main;
 //
 //import dao.PaymentDAO;
 //import model.*;
@@ -124,6 +124,11 @@
 //        }
 //    }
 //
+
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
 ////    public static void main(String[] args) {
 ////        try {
 ////            URL url = new URL("https://api.payos.vn/v2/banks");
@@ -147,3 +152,46 @@
 ////    }
 //
 //}
+
+public class Main {
+
+    private String name;
+    private int age = 18;
+
+    public Main() {
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public static void main(String[] args) {
+        Set<String> set1 = new HashSet<>();
+        String[] items = {"apple", "banana", "orange", "apple", "pear"};
+        for (String item : items) {
+            if (set1.contains(item)) {
+                System.out.println(item.toUpperCase() + " is already in the set");
+            } else {
+                set1.add(item);
+                System.out.println(item.toUpperCase() + " is added to the set");
+            }
+        }
+        Iterator<String> iterator = set1.iterator();
+        while (iterator.hasNext()) {
+            System.out.println(iterator.next());
+        }
+    }
+
+}

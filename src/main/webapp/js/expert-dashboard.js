@@ -19,50 +19,36 @@ function initializeChart() {
         revenueChart.destroy();
     }
 
-    // Dữ liệu mẫu
-    const mockData = {
-        labels: ['Th04-21 T2', 'Th04-22 T3', 'Th04-23 T4', 'Th04-24 T5', 'Th04-25 T6', 'Th04-26 T7', 'Th04-27 CN'],
-        datasets: [
-            {
-                label: 'Đã thanh toán',
-                data: [0, 2, 0, 0, 0, 8, 0],
-                backgroundColor: 'rgb(99, 61, 227)',
-                stack: 'Stack 0'
-            },
-            {
-                label: 'Hủy',
-                data: [0, 1, 0, 0, 0, 0, 0],
-                backgroundColor: 'rgb(255, 73, 73)',
-                stack: 'Stack 0'
-            },
-            {
-                label: 'Chờ thanh toán',
-                data: [0, 0, 0, 0, 0, 3, 0],
-                backgroundColor: 'rgb(69, 123, 229)',
-                stack: 'Stack 0'
-            }
-        ]
-    };
-
     // Cấu hình biểu đồ
     const config = {
         type: 'bar',
-        data: mockData,
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'Doanh thu',
+                    data: [],
+                    backgroundColor: 'rgb(99, 61, 227)',
+                    borderColor: 'rgb(99, 61, 227)',
+                    borderWidth: 1
+                }
+            ]
+        },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
                 x: {
-                    stacked: true,
                     grid: {
                         display: false
                     }
                 },
                 y: {
-                    stacked: true,
                     beginAtZero: true,
                     ticks: {
-                        stepSize: 2
+                        callback: function(value) {
+                            return formatter.format(value);
+                        }
                     },
                     grid: {
                         color: 'rgba(0, 0, 0, 0.1)'
@@ -71,10 +57,13 @@ function initializeChart() {
             },
             plugins: {
                 legend: {
-                    position: 'top',
-                    labels: {
-                        usePointStyle: true,
-                        padding: 20
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Doanh thu: ' + formatter.format(context.raw);
+                        }
                     }
                 }
             }
@@ -87,14 +76,71 @@ function initializeChart() {
 
 // Cập nhật dữ liệu biểu đồ
 function updateChart(data) {
+    console.log('Updating chart with data:', data);
+    
     if (!revenueChart) {
         initializeChart();
+    }
+
+    if (!Array.isArray(data)) {
+        console.error('Invalid data format for chart update');
         return;
     }
 
-    // Cập nhật dữ liệu mới
-    revenueChart.data.labels = data.labels;
-    revenueChart.data.datasets = data.datasets;
+    // Nhóm dữ liệu theo ngày từ SQL query
+    const groupedData = data.reduce((acc, item) => {
+        // Lấy ngày từ timestamp
+        const date = item.period.split('T')[0];
+        if (!acc[date]) {
+            acc[date] = {
+                total: 0,
+                completed: 0
+            };
+        }
+        
+        // Tính tổng doanh thu cho tất cả trạng thái
+        acc[date].total += parseFloat(item.totalAmount) || 0;
+        
+        // Tính riêng doanh thu từ đơn hàng đã hoàn thành
+        if (item.status === 'Completed') {
+            acc[date].completed += parseFloat(item.totalAmount) || 0;
+        }
+        
+        return acc;
+    }, {});
+
+    // Sắp xếp ngày tăng dần
+    const sortedDates = Object.keys(groupedData).sort();
+    
+    // Chuẩn bị dữ liệu cho biểu đồ
+    const revenueData = sortedDates.map(date => groupedData[date].completed);
+
+    // Format ngày hiển thị theo định dạng Việt Nam
+    const formattedDates = sortedDates.map(date => {
+        return new Intl.DateTimeFormat('vi-VN', {
+            day: '2-digit',
+            month: '2-digit'
+        }).format(new Date(date));
+    });
+
+    // Cập nhật dữ liệu biểu đồ
+    revenueChart.data.labels = formattedDates;
+    revenueChart.data.datasets[0].data = revenueData;
+
+    // Thêm dataset cho tổng doanh thu
+    revenueChart.data.datasets = [{
+        label: 'Doanh thu hoàn thành',
+        data: revenueData,
+        backgroundColor: 'rgb(99, 61, 227)',
+        borderColor: 'rgb(99, 61, 227)',
+        borderWidth: 1
+    }];
+
+    console.log('Chart data updated:', {
+        labels: formattedDates,
+        revenue: revenueData
+    });
+
     revenueChart.update();
 }
 
@@ -117,25 +163,35 @@ function getDateRange(period) {
             break;
         case 'week':
             startDate.setDate(now.getDate() - 7);
+            startDate.setHours(0, 0, 0, 0);
+            endDate.setHours(23, 59, 59, 999);
             break;
         case 'month':
-            startDate.setMonth(now.getMonth() - 1);
+            startDate.setMonth(now.getMonth(), 1); // Ngày đầu tháng
+            startDate.setHours(0, 0, 0, 0);
+            endDate.setHours(23, 59, 59, 999);
             break;
         case 'last-month':
-            startDate.setMonth(now.getMonth() - 2);
-            endDate.setMonth(now.getMonth() - 1);
-            endDate.setDate(0);
+            startDate.setMonth(now.getMonth() - 1, 1); // Ngày đầu tháng trước
+            startDate.setHours(0, 0, 0, 0);
+            endDate.setMonth(now.getMonth(), 0); // Ngày cuối tháng trước
+            endDate.setHours(23, 59, 59, 999);
             break;
         case 'year':
-            startDate.setFullYear(now.getFullYear() - 1);
+            startDate.setMonth(0, 1); // Ngày đầu năm
+            startDate.setHours(0, 0, 0, 0);
+            endDate.setHours(23, 59, 59, 999);
             break;
         case 'last-year':
-            startDate.setFullYear(now.getFullYear() - 2);
-            endDate.setFullYear(now.getFullYear() - 1);
-            endDate.setMonth(11, 31);
+            startDate.setFullYear(now.getFullYear() - 1, 0, 1); // Ngày đầu năm trước
+            startDate.setHours(0, 0, 0, 0);
+            endDate.setFullYear(now.getFullYear() - 1, 11, 31); // Ngày cuối năm trước
+            endDate.setHours(23, 59, 59, 999);
             break;
         case 'all':
-            startDate = new Date(2000, 0, 1); // Từ năm 2000
+            startDate = new Date(2000, 0, 1);
+            startDate.setHours(0, 0, 0, 0);
+            endDate.setHours(23, 59, 59, 999);
             break;
         default:
             startDate.setHours(0, 0, 0, 0);
@@ -151,36 +207,60 @@ function getDateRange(period) {
 // Cập nhật thống kê tổng quan
 function updateStats(stats) {
     try {
+        console.log('Raw stats data:', stats);
+        if (!stats) {
+            console.error('Stats data is null or undefined');
+            return;
+        }
+
         // Cập nhật doanh thu
         const revenueAmount = document.querySelector('.revenue-amount');
         if (revenueAmount) {
-            revenueAmount.textContent = formatter.format(stats.todayRevenue || 0);
+            const revenue = stats.totalRevenue || 0;
+            console.log('Updating revenue amount:', revenue);
+            revenueAmount.textContent = formatter.format(revenue);
+        } else {
+            console.error('Revenue amount element not found');
         }
 
         // Cập nhật phần trăm thay đổi doanh thu
         const revenueChange = document.querySelector('.revenue-change');
         if (revenueChange) {
             const changeValue = stats.comparedToLastPeriod || 0;
+            console.log('Revenue change value:', changeValue);
             const icon = changeValue >= 0 ? 'up' : 'down';
             revenueChange.innerHTML = `
-                <i class="fas fa-arrow-${icon}"></i> ${Math.abs(changeValue)}%
+                <i class="fas fa-arrow-${icon}"></i> ${Math.abs(changeValue).toFixed(1)}%
             `;
+            revenueChange.classList.remove('text-success', 'text-danger');
+            revenueChange.classList.add(changeValue >= 0 ? 'text-success' : 'text-danger');
+        } else {
+            console.error('Revenue change element not found');
         }
 
         // Cập nhật số đơn hàng
         const ordersAmount = document.querySelector('.orders-amount');
         if (ordersAmount) {
-            ordersAmount.textContent = `${stats.totalOrders || 0} đơn hàng`;
+            const orders = stats.totalOrders || 0;
+            console.log('Updating orders amount:', orders);
+            ordersAmount.textContent = `${orders} đơn hàng`;
+        } else {
+            console.error('Orders amount element not found');
         }
 
         // Cập nhật phần trăm thay đổi đơn hàng
         const ordersChange = document.querySelector('.orders-change');
         if (ordersChange) {
             const orderChangeValue = stats.orderComparedToLastPeriod || 0;
+            console.log('Orders change value:', orderChangeValue);
             const icon = orderChangeValue >= 0 ? 'up' : 'down';
             ordersChange.innerHTML = `
-                <i class="fas fa-arrow-${icon}"></i> ${Math.abs(orderChangeValue)}%
+                <i class="fas fa-arrow-${icon}"></i> ${Math.abs(orderChangeValue).toFixed(1)}%
             `;
+            ordersChange.classList.remove('text-success', 'text-danger');
+            ordersChange.classList.add(orderChangeValue >= 0 ? 'text-success' : 'text-danger');
+        } else {
+            console.error('Orders change element not found');
         }
     } catch (error) {
         console.error('Error updating stats:', error);
@@ -254,61 +334,88 @@ function showError(message) {
     // Thêm code hiển thị thông báo lỗi tại đây nếu cần
 }
 
-// Hàm tải dữ liệu dashboard
+// Load dữ liệu dashboard
 async function loadDashboardData(period) {
     try {
+        console.log('Loading data for period:', period);
         showLoading(true);
+        
+        // Lấy context path từ meta tag
+        const contextPath = document.querySelector('meta[name="context-path"]')?.content || '';
         const dateRange = getDateRange(period);
         
-        // Lấy context path từ thẻ meta
-        const contextPath = document.querySelector('meta[name="context-path"]')?.content || '';
+        // Format ngày tháng theo ISO string và encode URI
+        const startDate = encodeURIComponent(dateRange.startDate);
+        const endDate = encodeURIComponent(dateRange.endDate);
         
-        // Chuẩn bị dữ liệu request
-        const requestData = {
-            startDate: dateRange.startDate,
-            endDate: dateRange.endDate,
-            period: period
-        };
+        // Gọi API revenue để lấy dữ liệu cho biểu đồ
+        const revenueUrl = `${contextPath}/expert-dashboard/revenue`;
+        console.log('Revenue request URL:', revenueUrl);
         
-        console.log('Loading dashboard data with:', requestData);
-        
-        // Gọi API lấy thống kê
-        const statsResponse = await fetch(`${contextPath}/expert-dashboard/stats`, {
+        const revenueResponse = await fetch(revenueUrl, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
-            body: JSON.stringify(requestData)
+            body: JSON.stringify({
+                startDate: dateRange.startDate,
+                endDate: dateRange.endDate
+            }),
+            credentials: 'same-origin'
         });
-
-        if (!statsResponse.ok) {
-            throw new Error(`HTTP error! status: ${statsResponse.status}`);
-        }
-
-        const stats = await statsResponse.json();
-        console.log('Received stats:', stats);
-        updateStats(stats);
         
-        // Gọi API lấy dữ liệu doanh thu cho biểu đồ
-        const revenueResponse = await fetch(`${contextPath}/expert-dashboard/revenue`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(requestData)
-        });
-
         if (!revenueResponse.ok) {
+            const errorText = await revenueResponse.text();
+            console.error('Revenue server response:', revenueResponse.status, errorText);
             throw new Error(`HTTP error! status: ${revenueResponse.status}`);
         }
-
+        
         const revenueData = await revenueResponse.json();
         console.log('Received revenue data:', revenueData);
-        updateChart(revenueData);
+        
+        // Gọi API stats để lấy thống kê tổng quan
+        const statsUrl = `${contextPath}/expert-dashboard/stats?startDate=${startDate}&endDate=${endDate}`;
+        console.log('Stats request URL:', statsUrl);
+        
+        const statsResponse = await fetch(statsUrl, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            },
+            credentials: 'same-origin'
+        });
+        
+        if (!statsResponse.ok) {
+            const errorText = await statsResponse.text();
+            console.error('Stats server response:', statsResponse.status, errorText);
+            throw new Error(`HTTP error! status: ${statsResponse.status}`);
+        }
+        
+        const statsData = await statsResponse.json();
+        console.log('Received stats data:', statsData);
+        
+        // Cập nhật thống kê
+        if (statsData.stats) {
+            console.log('Updating stats with:', statsData.stats);
+            updateStats(statsData.stats);
+        }
+        
+        // Cập nhật biểu đồ với dữ liệu doanh thu
+        if (Array.isArray(revenueData)) {
+            console.log('Updating chart with revenue data:', revenueData);
+            updateChart(revenueData);
+        }
+        
+        // Cập nhật top khóa học
+        if (statsData.topCourses) {
+            console.log('Updating top courses with:', statsData.topCourses);
+            updateTopCourses(statsData.topCourses);
+        }
         
     } catch (error) {
         console.error('Error loading dashboard data:', error);
-        showError(`Có lỗi xảy ra khi tải dữ liệu: ${error.message}`);
+        showError('Có lỗi xảy ra khi tải dữ liệu');
     } finally {
         showLoading(false);
     }
@@ -346,8 +453,11 @@ async function loadTopCourses() {
 
 // Khởi tạo khi trang được load
 document.addEventListener('DOMContentLoaded', function() {
-    // Khởi tạo biểu đồ với dữ liệu mẫu
+    console.log('DOM Content Loaded');
+    
+    // Chỉ khởi tạo cấu trúc biểu đồ, không có dữ liệu mẫu
     initializeChart();
+    console.log('Empty chart initialized');
 
     // Load khóa học nổi bật ngay khi trang được tải
     loadTopCourses();
@@ -356,6 +466,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const timeFilterButtons = document.querySelectorAll('.time-filter button');
     timeFilterButtons.forEach(button => {
         button.addEventListener('click', function() {
+            console.log('Filter button clicked:', this.dataset.period);
             timeFilterButtons.forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
             
@@ -381,6 +492,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Chọn nút mặc định
     const defaultButton = document.querySelector('.time-filter button[data-period="today"]');
     if (defaultButton) {
+        console.log('Clicking default button (today)');
         defaultButton.click();
     }
 }); 

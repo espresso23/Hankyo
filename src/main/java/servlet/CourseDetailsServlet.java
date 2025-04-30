@@ -1,6 +1,11 @@
 package servlet;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 import dao.*;
 import model.Course;
 import model.CourseContent;
@@ -15,6 +20,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +33,7 @@ public class CourseDetailsServlet extends HttpServlet {
     private ExpertDAO expertDAO;
     private CoursePaidDAO coursePaidDAO;
     private EnrollmentDAO enrollmentDAO;
+    private Gson gson;
 
     @Override
     public void init() throws ServletException {
@@ -35,6 +43,16 @@ public class CourseDetailsServlet extends HttpServlet {
             expertDAO = new ExpertDAO();
             coursePaidDAO = new CoursePaidDAO();
             enrollmentDAO = new EnrollmentDAO();
+            
+            // Cấu hình Gson với TypeAdapter cho LocalDateTime
+            gson = new GsonBuilder()
+                .registerTypeAdapter(LocalDateTime.class, new JsonSerializer<LocalDateTime>() {
+                    @Override
+                    public JsonElement serialize(LocalDateTime src, java.lang.reflect.Type typeOfSrc, JsonSerializationContext context) {
+                        return new JsonPrimitive(src.format(DateTimeFormatter.ISO_DATE_TIME));
+                    }
+                })
+                .create();
         } catch (Exception e) {
             throw new ServletException("Không thể khởi tạo DAO", e);
         }
@@ -109,7 +127,6 @@ public class CourseDetailsServlet extends HttpServlet {
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
             // Gửi response
-            Gson gson = new Gson();
             String json = gson.toJson(courseDetail);
             response.getWriter().write(json);
 
@@ -135,7 +152,6 @@ public class CourseDetailsServlet extends HttpServlet {
         List<CourseContent> courseContent = courseContentDAO.listCourseContentsByCourseID(courseID);
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
-        Gson gson = new Gson();
         String json = gson.toJson(courseContent);
         resp.getWriter().write(json);
         resp.getWriter().flush();
@@ -146,6 +162,4 @@ public class CourseDetailsServlet extends HttpServlet {
         resp.setHeader("Pragma", "no-cache");
         resp.setDateHeader("Expires", 0);
     }
-
-
 } 
