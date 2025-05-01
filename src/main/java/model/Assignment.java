@@ -15,6 +15,7 @@ public class Assignment implements Serializable {
     private Date lastUpdated;
     private List<AssignmentQuestion> assignmentQuestions;
     private int courseContentID;
+    private AssignmentResult assignmentResult;
 
     public List<AssignmentQuestion> getAssignmentQuestions() {
         return assignmentQuestions;
@@ -23,6 +24,15 @@ public class Assignment implements Serializable {
     public void setAssignmentQuestions(List<AssignmentQuestion> assignmentQuestions) {
         this.assignmentQuestions = assignmentQuestions;
     }
+
+    public AssignmentResult getAssignmentResult() {
+        return assignmentResult;
+    }
+
+    public void setAssignmentResult(AssignmentResult assignmentResult) {
+        this.assignmentResult = assignmentResult;
+    }
+
     //constructor
 
     public Assignment(int assignmentID, String assignmentTitle, Question question, List<Answer> answer, String media) {
@@ -115,6 +125,7 @@ public class Assignment implements Serializable {
                 ", lastUpdated=" + lastUpdated +
                 ", assignmentQuestions=" + assignmentQuestions +
                 ", courseContentID=" + courseContentID +
+                ", assignmentResult=" + assignmentResult +
                 '}';
     }
 }

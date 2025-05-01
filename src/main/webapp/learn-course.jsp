@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="asset/css/learn-course.css">
     <link rel="stylesheet" href="asset/css/pdf-viewer.css">
     <link rel="stylesheet" href="asset/css/video-player.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js"></script>
 </head>
 <body>
 <c:import url="header.jsp"/>
@@ -37,13 +39,13 @@
     </div>
     <div class="lessons-list">
         <c:forEach items="${courseContents}" var="content">
-            <div class="lesson-item ${content.courseContentID == currentContent.courseContentID ? 'active' : ''} ${content.completed ? 'completed' : ''}"
+            <div class="lesson-item ${content.courseContentID == currentContent.courseContentID ? 'active' : ''} ${content.completed && content.assignment != null && content.assignment.assignmentResult != null && ((content.assignment.assignmentResult.correctCount / content.assignment.assignmentResult.totalQuestions) * 100) >= 80 ? 'completed' : ''}"
                  data-content-id="${content.courseContentID}"
                  data-is-assignment="${not empty content.assignment}">
                 <i class="fas ${not empty content.assignment ? 'fa-file-alt' : (not empty content.media and content.media.endsWith('.pdf') ? 'fa-file-text' : (not empty content.media ? 'fa-play-circle' : 'fa-file-text'))} lesson-icon"></i>
                 <span class="lesson-title">${not empty content.assignment ? content.assignment.assignmentTitle : content.title}</span>
-                <c:if test="${content.completed}">
-                    <i class="fas fa-check-circle ms-auto text-success"></i>
+                <c:if test="${content.completed && content.assignment != null && content.assignment.assignmentResult != null}">
+                    <i class="fas fa-check-circle ms-auto ${((content.assignment.assignmentResult.correctCount / content.assignment.assignmentResult.totalQuestions) * 100) >= 80 ? 'text-success' : 'text-secondary'}"></i>
                 </c:if>
                 <c:if test="${not empty content.media && !content.media.endsWith('.pdf') && !content.completed}">
                     <span class="content-duration ms-auto">
@@ -81,131 +83,96 @@
                             <p><i class="fas fa-clock me-2"></i>Thời gian làm bài: Không giới hạn</p>
                             <p><i class="fas fa-check-circle me-2"></i>Yêu cầu: Trả lời đúng tất cả câu hỏi</p>
                             <p><i class="fas fa-exclamation-circle me-2"></i>Lưu ý: Bạn chỉ có thể nộp bài một lần</p>
-
-                            <c:if test="${not empty currentContent.assignment.assignmentQuestions}">
-                                <div class="mt-4">
-                                    <h4 class="mb-3">Danh sách câu hỏi:</h4>
-                                    <div class="list-group">
-                                        <c:forEach items="${currentContent.assignment.assignmentQuestions}" var="question" varStatus="status">
-                                            <div class="list-group-item">
-                                                <div class="d-flex w-100 justify-content-between align-items-center">
-                                                    <h5 class="mb-1">Câu ${status.index + 1} (${question.questionMark} điểm)</h5>
-                                                    <div>
-                                                        <c:if test="${not empty question.questionImg}">
-                                                            <span class="badge bg-info me-1" title="Có hình ảnh"><i class="fas fa-image"></i></span>
-                                                        </c:if>
-                                                        <c:if test="${not empty question.audioFile}">
-                                                            <span class="badge bg-warning" title="Có audio"><i class="fas fa-volume-up"></i></span>
-                                                        </c:if>
-                                                    </div>
-                                                </div>
-                                                <p class="mb-1">${question.questionText}</p>
-                                                <small class="text-muted">
-                                                    <i class="fas fa-tag me-1"></i>${question.questionType}
-                                                </small>
-                                            </div>
-                                        </c:forEach>
-                                    </div>
-                                </div>
-                            </c:if>
                         </div>
 
                         <div class="assignment-actions">
                             <c:choose>
-                                <c:when test="${currentContent.completed}">
+                                <c:when test="${currentContent.completed && ((assignmentResult.correctCount / assignmentResult.totalQuestions) * 100) >= 80}">
                                     <div class="assignment-result">
                                         <div class="result-header mb-4">
-                                            <h3 class="text-success">
-                                                <i class="fas fa-check-circle me-2"></i>
-                                                Bài tập đã hoàn thành
-                                            </h3>
-                                            <p class="text-muted">
+                                            <div class="d-flex align-items-center gap-2 text-success">
+                                                <i class="fas fa-check-circle fs-4"></i>
+                                                <h3 class="mb-0">Bài tập đã hoàn thành</h3>
+                                            </div>
+                                            <p class="text-muted mt-2 mb-0">
                                                 <i class="fas fa-clock me-2"></i>Lần làm gần nhất:
                                                 <fmt:formatDate value="${latestTaken.dateCreated}" pattern="dd/MM/yyyy HH:mm"/>
                                             </p>
                                         </div>
 
-                                        <c:if test="${not empty assignmentResult}">
-                                            <div class="result-stats">
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <div class="stats-card mb-3">
-                                                            <div class="stats-value">
-                                                                <h2 class="display-4 mb-0 text-primary">
-                                                                    <fmt:formatNumber
-                                                                            value="${(assignmentResult.correctCount / assignmentResult.totalQuestions) * 100}"
-                                                                            maxFractionDigits="1"/>%
-                                                                </h2>
-                                                                <p class="text-muted mb-0">Tỷ lệ trả lời đúng</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div class="stats-card mb-3">
-                                                            <div class="stats-value">
-                                                                <h2 class="display-4 mb-0">
-                                                                        ${assignmentResult.correctCount}/${assignmentResult.totalQuestions}
-                                                                </h2>
-                                                                <p class="text-muted mb-0">Số câu trả lời đúng</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                <c:if test="${not empty assignmentResult}">
+                                    <div class="result-overview ${((assignmentResult.correctCount / assignmentResult.totalQuestions) * 100) >= 80 ? 'bg-success-subtle' : 'bg-warning-subtle'} rounded-3 p-4">
+                                        <div class="mb-4">
+                                            <h5 class="mb-2">Điểm của bạn</h5>
+                                            <p class="text-muted mb-3">Để pass bạn cần đạt ít nhất 80% số điểm. Chúng tôi sẽ lưu giữ số điểm cao nhất của bạn</p>
 
-                                                <div class="progress mb-4" style="height: 10px;">
-                                                    <div class="progress-bar bg-success"
-                                                         role="progressbar"
-                                                         style="width: ${(assignmentResult.correctCount / assignmentResult.totalQuestions) * 100}%"
-                                                         aria-valuenow="${(assignmentResult.correctCount / assignmentResult.totalQuestions) * 100}"
-                                                         aria-valuemin="0"
-                                                         aria-valuemax="100">
-                                                        <span class="visually-hidden">
-                                                            ${(assignmentResult.correctCount / assignmentResult.totalQuestions) * 100}% hoàn thành
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                <div class="result-details">
-                                                    <div class="card">
-                                                        <div class="card-body">
-                                                            <h5 class="card-title mb-3">Chi tiết kết quả</h5>
-                                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                                <span>Điểm số đạt được:</span>
-                                                                <span class="fw-bold">${assignmentResult.score}/10</span>
-                                                            </div>
-                                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                                <span>Số câu trả lời đúng:</span>
-                                                                <span class="fw-bold text-success">${assignmentResult.correctCount}</span>
-                                                            </div>
-                                                            <div class="d-flex justify-content-between align-items-center">
-                                                                <span>Tổng số câu hỏi:</span>
-                                                                <span class="fw-bold">${assignmentResult.totalQuestions}</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="mt-4 d-flex gap-3 justify-content-center">
-                                                    <a href="view-assignment-result?assignmentID=${currentContent.assignment.assignmentID}&courseID=${course.courseID}&courseContentID=${currentContent.courseContentID}"
-                                                       class="btn btn-primary">
-                                                        <i class="fas fa-eye me-2"></i>Xem chi tiết bài làm
-                                                    </a>
-                                                    <button class="btn btn-outline-primary" onclick="startAssignment('${currentContent.assignment.assignmentID}')">
-                                                        <i class="fas fa-redo me-2"></i>Làm lại bài
-                                                    </button>
-                                                </div>
+                                            <div class="d-flex align-items-baseline">
+                                                <h1 class="display-4 mb-0 fw-bold me-2 ${((assignmentResult.correctCount / assignmentResult.totalQuestions) * 100) >= 80 ? 'text-success' : 'text-warning'}">
+                                                    <fmt:formatNumber value="${(assignmentResult.correctCount / assignmentResult.totalQuestions) * 100}" maxFractionDigits="0"/>%
+                                                </h1>
+                                                <span class="text-muted ms-2">(${assignmentResult.correctCount}/${assignmentResult.totalQuestions})</span>
                                             </div>
-                                        </c:if>
+                                        </div>
+
+                                        <div class="d-flex gap-3 justify-content-center">
+                                            <a href="view-assignment-result?assignmentID=${currentContent.assignment.assignmentID}&courseID=${course.courseID}&courseContentID=${currentContent.courseContentID}"
+                                               class="btn btn-primary">
+                                                Xem bài làm
+                                            </a>
+                                            <button class="btn btn-primary" onclick="startAssignment('${currentContent.assignment.assignmentID}')">
+                                                Làm lại
+                                            </button>
+                                        </div>
                                     </div>
-                                </c:when>
-                                <c:otherwise>
-                                    <button class="btn btn-primary start-assignment-btn" data-assignment-id="${currentContent.assignment.assignmentID}">
-                                        <i class="fas fa-play me-2"></i>Bắt đầu làm bài
-                                    </button>
-                                </c:otherwise>
-                            </c:choose>
-                        </div>
-                    </div>
+                                </c:if>
+                            </div>
+                        </c:when>
+                        <c:when test="${currentContent.completed && ((assignmentResult.correctCount / assignmentResult.totalQuestions) * 100) < 80}">
+                            <div class="assignment-result">
+                                <div class="result-header mb-4">
+                                    <div class="d-flex align-items-center gap-2 text-warning">
+                                        <i class="fas fa-exclamation-circle fs-4"></i>
+                                        <h3 class="mb-0">Bài tập chưa đạt yêu cầu</h3>
+                                    </div>
+                                    <p class="text-muted mt-2 mb-0">
+                                        <i class="fas fa-clock me-2"></i>Lần làm gần nhất:
+                                        <fmt:formatDate value="${latestTaken.dateCreated}" pattern="dd/MM/yyyy HH:mm"/>
+                                    </p>
+                                </div>
+
+                                <c:if test="${not empty assignmentResult}">
+                                    <div class="result-overview ${((assignmentResult.correctCount / assignmentResult.totalQuestions) * 100) >= 80 ? 'bg-success-subtle' : 'bg-warning-subtle'} rounded-3 p-4">
+                                        <div class="mb-4">
+                                            <h4 class="mb-2">Điểm của bạn</h4>
+                                            <p class="text-muted mb-3">Để pass bạn cần đạt ít nhất 80% số điểm. Chúng tôi sẽ lưu giữ số điểm cao nhất của bạn</p>
+
+                                            <div class="d-flex align-items-baseline">
+                                                <h1 class="display-4 mb-0 fw-bold me-2 ${((assignmentResult.correctCount / assignmentResult.totalQuestions) * 100) >= 80 ? 'text-success' : 'text-warning'}">
+                                                    <fmt:formatNumber value="${(assignmentResult.correctCount / assignmentResult.totalQuestions) * 100}" maxFractionDigits="0"/>%
+                                                </h1>
+                                                <span class="text-muted ms-2">(${assignmentResult.correctCount}/${assignmentResult.totalQuestions})</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex gap-3 justify-content-center">
+                                            <a href="view-assignment-result?assignmentID=${currentContent.assignment.assignmentID}&courseID=${course.courseID}&courseContentID=${currentContent.courseContentID}"
+                                               class="btn btn-primary">
+                                                Xem bài làm
+                                            </a>
+                                            <button class="btn btn-primary" onclick="startAssignment('${currentContent.assignment.assignmentID}')">
+                                                Làm lại
+                                            </button>
+                                        </div>
+                                    </div>
+                                </c:if>
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <button class="btn btn-primary start-assignment-btn" data-assignment-id="${currentContent.assignment.assignmentID}">
+                                <i class="fas fa-play me-2"></i>Bắt đầu làm bài
+                            </button>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </div>
         </c:when>
@@ -305,69 +272,68 @@
         <c:when test="${not empty currentContent}">
             <div class="pdf-container" id="pdfViewer_${currentContent.courseContentID}"
                  data-pdf-url="${currentContent.media}">
-                <div class="pdf-header">
-                    <h2 class="pdf-title">${currentContent.title}</h2>
-                    <div class="pdf-controls">
-                        <button class="pdf-control-btn zoom-in" title="Phóng to">
-                            <i class="fas fa-search-plus"></i>
-                        </button>
-                        <button class="pdf-control-btn zoom-out" title="Thu nhỏ">
-                            <i class="fas fa-search-minus"></i>
-                        </button>
-                        <button class="pdf-control-btn prev-page" title="Trang trước">
+                <div class="pdf-toolbar">
+                    <div class="toolbar-left">
+                        <button class="toolbar-btn prev-page" title="Trang trước">
                             <i class="fas fa-chevron-left"></i>
                         </button>
-                        <button class="pdf-control-btn next-page" title="Trang sau">
+                        <div class="page-info">
+                            <span class="current-page">1</span>
+                            <span>/</span>
+                            <span class="total-pages">1</span>
+                        </div>
+                        <button class="toolbar-btn next-page" title="Trang sau">
                             <i class="fas fa-chevron-right"></i>
                         </button>
-                        <button class="pdf-control-btn highlight-btn" title="Đánh dấu">
-                            <i class="fas fa-highlighter"></i>
+                    </div>
+
+                    <div class="toolbar-center">
+                        <button class="toolbar-btn zoom-out" title="Thu nhỏ">
+                            <i class="fas fa-search-minus"></i>
                         </button>
-                        <button class="pdf-control-btn note-btn" title="Ghi chú">
-                            <i class="fas fa-sticky-note"></i>
+                        <span class="zoom-level">100%</span>
+                        <button class="toolbar-btn zoom-in" title="Phóng to">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                    </div>
+
+                    <div class="toolbar-right">
+                        <div class="search-wrapper">
+                            <div class="search-input-wrapper">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" class="search-input" placeholder="Tìm kiếm trong tài liệu...">
+                                <button class="clear-search" title="Xóa">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="search-results">
+                                <div class="results-info">
+                                    <span class="results-count">0 kết quả</span>
+                                    <div class="results-navigation">
+                                        <button class="nav-btn prev-result" disabled>
+                                            <i class="fas fa-chevron-up"></i>
+                                        </button>
+                                        <button class="nav-btn next-result" disabled>
+                                            <i class="fas fa-chevron-down"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="results-list"></div>
+                            </div>
+                        </div>
+                        <button class="toolbar-btn download-btn" title="Tải xuống">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="toolbar-btn fullscreen-btn" title="Toàn màn hình">
+                            <i class="fas fa-expand"></i>
                         </button>
                     </div>
                 </div>
 
-                <div class="pdf-viewer">
-                    <div class="pdf-loading">
-                        <div class="pdf-loading-spinner"></div>
+                <div class="pdf-content">
+                    <div class="pdf-viewer">
+                        <canvas id="pdf-canvas"></canvas>
                     </div>
-                    <div class="pdf-search-container">
-                        <input type="text" class="pdf-search-input" placeholder="Tìm kiếm trong tài liệu...">
-                        <div class="pdf-search-results"></div>
-                    </div>
-                    <div class="pdf-annotation-toolbar">
-                        <button class="pdf-annotation-btn highlight-btn">
-                            <i class="fas fa-highlighter"></i> Đánh dấu
-                        </button>
-                        <button class="pdf-annotation-btn note-btn">
-                            <i class="fas fa-sticky-note"></i> Ghi chú
-                        </button>
-                    </div>
-                    <div class="pdf-page-controls">
-                        <span class="pdf-page-info"></span>
-                    </div>
-                </div>
-
-                <div class="pdf-metadata">
-                    <div class="pdf-metadata-item">
-                        <i class="fas fa-file-pdf"></i>
-                        <span>PDF Document</span>
-                    </div>
-                    <div class="pdf-metadata-item">
-                        <i class="fas fa-clock"></i>
-                        <span>Thời gian đọc ước tính: 10 phút</span>
-                    </div>
-                    <div class="pdf-metadata-item">
-                        <i class="fas fa-download"></i>
-                        <a href="${currentContent.media}" download>Download PDF</a>
-                    </div>
-                </div>
-
-                <div class="pdf-description">
-                    <h3>Mô tả tài liệu</h3>
-                    <p>${currentContent.description}</p>
                 </div>
             </div>
         </c:when>

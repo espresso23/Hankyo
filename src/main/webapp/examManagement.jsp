@@ -6,7 +6,7 @@
     <title>Quản lý đề thi</title>
     <style>
         :root {
-            --primary-pink: #ff9bb3;
+            --primary-pink: #ff99b1;
             --light-pink: #ffd6e7;
             --soft-pink: #fff0f6;
             --primary-blue: #89c4f4;

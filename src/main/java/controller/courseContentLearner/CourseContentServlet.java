@@ -147,6 +147,9 @@ public class CourseContentServlet extends HttpServlet {
 
                             // Đánh dấu bài tập đã hoàn thành
                             currentContent.setCompleted(true);
+                            
+                            // Gắn assignmentResult vào assignment
+                            currentContent.getAssignment().setAssignmentResult(summary);
 
                             // Gán kết quả và AssignmentTaken vào request để hiển thị
                             request.setAttribute("assignmentResult", summary);

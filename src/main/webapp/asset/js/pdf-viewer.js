@@ -17,88 +17,130 @@ class PDFViewer {
     }
 
     async init() {
-        // Khởi tạo PDF.js
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
-        
-        // Tạo canvas
-        this.canvas = document.createElement('canvas');
-        this.canvas.className = 'pdf-canvas';
-        this.ctx = this.canvas.getContext('2d');
-        
-        // Thêm canvas vào container
-        const viewer = this.container.querySelector('.pdf-viewer');
-        viewer.appendChild(this.canvas);
-        
-        // Load PDF
         try {
+            // Khởi tạo PDF.js
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+            
+            // Tìm canvas có sẵn thay vì tạo mới
+            this.canvas = this.container.querySelector('#pdf-canvas');
+            if (!this.canvas) {
+                console.error('Canvas element not found');
+                return;
+            }
+            this.ctx = this.canvas.getContext('2d');
+            
+            // Load PDF
             this.pdfDoc = await pdfjsLib.getDocument(this.pdfUrl).promise;
+            
+            // Cập nhật UI
+            this.updatePageCount();
             this.renderPage(this.pageNum);
-            this.updatePageInfo();
             this.setupControls();
+            this.setupSearch();
+            
+            // Hiển thị toolbar
+            this.container.querySelector('.pdf-toolbar').style.display = 'flex';
+            
         } catch (error) {
-            console.error('Error loading PDF:', error);
-            this.showError('Không thể tải tài liệu PDF');
+            console.error('Error initializing PDF viewer:', error);
+            this.showError('Không thể tải tài liệu PDF. Vui lòng thử lại sau.');
         }
     }
 
+    updatePageCount() {
+        if (!this.pdfDoc) return;
+        
+        const currentPage = this.container.querySelector('.current-page');
+        const totalPages = this.container.querySelector('.total-pages');
+        
+        if (currentPage) currentPage.textContent = this.pageNum;
+        if (totalPages) totalPages.textContent = this.pdfDoc.numPages;
+        
+        // Cập nhật trạng thái nút
+        const prevBtn = this.container.querySelector('.prev-page');
+        const nextBtn = this.container.querySelector('.next-page');
+        
+        if (prevBtn) prevBtn.disabled = this.pageNum <= 1;
+        if (nextBtn) nextBtn.disabled = this.pageNum >= this.pdfDoc.numPages;
+    }
+
     setupControls() {
-        // Setup zoom controls
-        const zoomInBtn = this.container.querySelector('.zoom-in');
-        const zoomOutBtn = this.container.querySelector('.zoom-out');
-        const prevPageBtn = this.container.querySelector('.prev-page');
-        const nextPageBtn = this.container.querySelector('.next-page');
+        // Điều hướng trang
+        this.container.querySelector('.prev-page')?.addEventListener('click', () => this.prevPage());
+        this.container.querySelector('.next-page')?.addEventListener('click', () => this.nextPage());
+        
+        // Zoom
+        this.container.querySelector('.zoom-in')?.addEventListener('click', () => this.zoom(0.25));
+        this.container.querySelector('.zoom-out')?.addEventListener('click', () => this.zoom(-0.25));
+        
+        // Fullscreen
+        this.container.querySelector('.fullscreen-btn')?.addEventListener('click', () => this.toggleFullscreen());
+        
+        // Download
+        this.container.querySelector('.download-btn')?.addEventListener('click', () => this.downloadPDF());
+    }
+
+    setupSearch() {
         const searchInput = this.container.querySelector('.pdf-search-input');
-        const searchResults = this.container.querySelector('.pdf-search-results');
-
-        zoomInBtn.addEventListener('click', () => this.zoom(0.1));
-        zoomOutBtn.addEventListener('click', () => this.zoom(-0.1));
-        prevPageBtn.addEventListener('click', () => this.prevPage());
-        nextPageBtn.addEventListener('click', () => this.nextPage());
+        const searchClear = this.container.querySelector('.search-clear');
         
-        // Setup search
-        let searchTimeout;
-        searchInput.addEventListener('input', (e) => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                this.search(e.target.value);
-            }, 300);
-        });
-
-        // Setup annotation tools
-        const highlightBtn = this.container.querySelector('.highlight-btn');
-        const noteBtn = this.container.querySelector('.note-btn');
+        if (searchInput) {
+            let searchTimeout;
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                const text = e.target.value.trim();
+                
+                if (text === '') {
+                    this.clearSearch();
+                    return;
+                }
+                
+                searchTimeout = setTimeout(() => this.search(text), 300);
+            });
+        }
         
-        highlightBtn.addEventListener('click', () => this.startHighlighting());
-        noteBtn.addEventListener('click', () => this.startNoteTaking());
+        if (searchClear) {
+            searchClear.addEventListener('click', () => {
+                if (searchInput) searchInput.value = '';
+                this.clearSearch();
+            });
+        }
     }
 
     async renderPage(num) {
+        if (!this.pdfDoc || num < 1 || num > this.pdfDoc.numPages) return;
+        
         this.pageRendering = true;
         
         try {
             const page = await this.pdfDoc.getPage(num);
             const viewport = page.getViewport({ scale: this.scale });
             
+            // Điều chỉnh kích thước canvas
             this.canvas.height = viewport.height;
             this.canvas.width = viewport.width;
             
+            // Render PDF page
             const renderContext = {
                 canvasContext: this.ctx,
                 viewport: viewport
             };
             
             await page.render(renderContext).promise;
-            this.pageRendering = false;
             
+            this.pageRendering = false;
+            this.updatePageCount();
+            
+            // Xử lý trang đang chờ
             if (this.pageNumPending !== null) {
                 this.renderPage(this.pageNumPending);
                 this.pageNumPending = null;
             }
             
-            this.updatePageInfo();
         } catch (error) {
             console.error('Error rendering page:', error);
-            this.showError('Không thể hiển thị trang');
+            this.pageRendering = false;
+            this.showError('Không thể hiển thị trang. Vui lòng thử lại.');
         }
     }
 
@@ -117,107 +159,105 @@ class PDFViewer {
     }
 
     nextPage() {
-        if (this.pageNum >= this.pdfDoc.numPages) return;
+        if (!this.pdfDoc || this.pageNum >= this.pdfDoc.numPages) return;
         this.pageNum++;
         this.queueRenderPage(this.pageNum);
     }
 
     zoom(delta) {
-        this.scale += delta;
-        if (this.scale < 0.5) this.scale = 0.5;
-        if (this.scale > 3) this.scale = 3;
-        this.renderPage(this.pageNum);
-    }
-
-    updatePageInfo() {
-        const pageInfo = this.container.querySelector('.pdf-page-info');
-        pageInfo.textContent = `Trang ${this.pageNum} / ${this.pdfDoc.numPages}`;
+        const newScale = this.scale + delta;
+        if (newScale >= 0.25 && newScale <= 3) {
+            this.scale = newScale;
+            this.renderPage(this.pageNum);
+            
+            // Cập nhật hiển thị tỷ lệ zoom
+            const zoomLevel = this.container.querySelector('.zoom-level');
+            if (zoomLevel) {
+                zoomLevel.textContent = `${Math.round(this.scale * 100)}%`;
+            }
+        }
     }
 
     async search(text) {
-        if (!text) {
-            this.clearSearch();
-            return;
-        }
-
-        this.searchResults = [];
-        this.currentSearchIndex = -1;
-
-        for (let i = 1; i <= this.pdfDoc.numPages; i++) {
-            const page = await this.pdfDoc.getPage(i);
+        if (!text || !this.pdfDoc) return;
+        
+        const searchResults = this.container.querySelector('.search-results');
+        const searchCount = this.container.querySelector('.search-count');
+        
+        try {
+            const page = await this.pdfDoc.getPage(this.pageNum);
             const textContent = await page.getTextContent();
+            
             const matches = textContent.items.filter(item => 
                 item.str.toLowerCase().includes(text.toLowerCase())
             );
             
-            if (matches.length > 0) {
-                this.searchResults.push({
-                    page: i,
-                    matches: matches
-                });
+            // Hiển thị kết quả
+            if (searchCount) {
+                searchCount.textContent = `${matches.length} kết quả`;
             }
+            
+            if (searchResults) {
+                searchResults.classList.add('show');
+            }
+            
+        } catch (error) {
+            console.error('Search error:', error);
         }
-
-        this.displaySearchResults();
-    }
-
-    displaySearchResults() {
-        const resultsContainer = this.container.querySelector('.pdf-search-results');
-        resultsContainer.innerHTML = '';
-        
-        if (this.searchResults.length === 0) {
-            resultsContainer.style.display = 'none';
-            return;
-        }
-
-        this.searchResults.forEach((result, index) => {
-            const item = document.createElement('div');
-            item.className = 'pdf-search-result-item';
-            item.textContent = `Trang ${result.page}: ${result.matches[0].str.substring(0, 50)}...`;
-            item.addEventListener('click', () => {
-                this.pageNum = result.page;
-                this.renderPage(this.pageNum);
-                this.highlightMatch(result.matches[0]);
-            });
-            resultsContainer.appendChild(item);
-        });
-
-        resultsContainer.style.display = 'block';
     }
 
     clearSearch() {
-        this.searchResults = [];
-        this.currentSearchIndex = -1;
-        const resultsContainer = this.container.querySelector('.pdf-search-results');
-        resultsContainer.style.display = 'none';
-        this.renderPage(this.pageNum);
+        const searchResults = this.container.querySelector('.search-results');
+        const searchCount = this.container.querySelector('.search-count');
+        
+        if (searchResults) {
+            searchResults.classList.remove('show');
+        }
+        
+        if (searchCount) {
+            searchCount.textContent = '0 kết quả';
+        }
     }
 
-    highlightMatch(match) {
-        // Implementation for highlighting text
-        // This is a simplified version - actual implementation would require
-        // more complex text layer handling
+    toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            this.container.requestFullscreen().catch(err => {
+                console.error('Error attempting to enable fullscreen:', err);
+            });
+        } else {
+            document.exitFullscreen();
+        }
     }
 
-    startHighlighting() {
-        // Implementation for text highlighting
-    }
-
-    startNoteTaking() {
-        // Implementation for adding notes
+    downloadPDF() {
+        const link = document.createElement('a');
+        link.href = this.pdfUrl;
+        link.download = 'document.pdf';
+        link.click();
     }
 
     showError(message) {
         const errorDiv = document.createElement('div');
         errorDiv.className = 'pdf-error';
-        errorDiv.textContent = message;
+        errorDiv.innerHTML = `
+            <div class="error-content">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        
         this.container.appendChild(errorDiv);
+        
+        // Tự động ẩn sau 5 giây
+        setTimeout(() => {
+            errorDiv.remove();
+        }, 5000);
     }
 }
 
-// Initialize PDF viewer when document is ready
+// Khởi tạo PDF viewer khi trang đã load
 document.addEventListener('DOMContentLoaded', () => {
-    const pdfContainers = document.querySelectorAll('.pdf-container');
+    const pdfContainers = document.querySelectorAll('[id^="pdfViewer_"]');
     pdfContainers.forEach(container => {
         const pdfUrl = container.dataset.pdfUrl;
         if (pdfUrl) {
