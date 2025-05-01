@@ -729,9 +729,39 @@
             </div>
         </c:when>
         <c:when test="${not empty currentContent}">
-            <div class="content-description">
-                <h3>${currentContent.title}</h3>
-                <p>${currentContent.description}</p>
+            <div class="container mt-4">
+                <c:choose>
+                    <c:when test="${not empty currentContent}">
+                        <!-- Hiển thị nội dung khóa học -->
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">${currentContent.contentTitle}</h5>
+                                        <div class="content-body">
+                                            ${currentContent.contentBody}
+                                        </div>
+                                        
+                                        <c:if test="${not empty currentContent.assignment}">
+                                            <!-- Hiển thị bài tập nếu có -->
+                                            <div class="assignment-section mt-4">
+                                                <h6>Bài tập</h6>
+                                                <p>${currentContent.assignment.description}</p>
+                                            </div>
+                                        </c:if>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <!-- Hiển thị thông báo khi không có nội dung -->
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Không có nội dung nào để hiển thị. Vui lòng chọn nội dung khác.
+                        </div>
+                    </c:otherwise>
+                </c:choose>
             </div>
         </c:when>
         <c:otherwise>

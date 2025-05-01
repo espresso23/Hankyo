@@ -69,10 +69,20 @@
                                         <div class="text-muted">
                                             <i class="fas fa-users me-1"></i>${course.learnersCount} học viên
                                         </div>
-                                        <a href="learn-course?courseID=${course.courseID}&contentID=${course.firstContentID}" 
-                                           class="btn btn-success">
-                                            <i class="fas fa-play me-2"></i>Tiếp tục học
-                                        </a>
+                                        <c:choose>
+                                            <c:when test="${courseDAO.isEnrolled(learner.learnerID, course.courseID)}">
+                                                <a href="learn-course?courseID=${course.courseID}&contentID=${course.firstContentID}" 
+                                                   class="btn btn-success">
+                                                    <i class="fas fa-play me-2"></i>Tiếp tục học
+                                                </a>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <a href="enroll-course?courseID=${course.courseID}&contentID=${course.firstContentID}" 
+                                                   class="btn btn-primary">
+                                                    <i class="fas fa-graduation-cap me-2"></i>Tham gia học
+                                                </a>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </div>
                                 </div>
                             </div>

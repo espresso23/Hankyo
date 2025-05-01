@@ -45,6 +45,8 @@ public class MyCoursesServlet extends HttpServlet {
             }
 
             request.setAttribute("courses", purchasedCourses);
+            request.setAttribute("courseDAO", courseDAO);
+            request.setAttribute("enrollmentService", enrollmentService);
             request.getRequestDispatcher("/my-courses.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();

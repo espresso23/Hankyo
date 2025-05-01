@@ -1,4 +1,4 @@
-package controller.authenication;
+package controller.authentication;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;

@@ -17,11 +17,11 @@ public class DBConnect {
     private static final Logger LOGGER = Logger.getLogger(DBConnect.class.getName());
     
     // Cấu hình connection pool
-    private static final int MAX_POOL_SIZE = 10;
-    private static final int MIN_IDLE = 5;
-    private static final int IDLE_TIMEOUT = 300000; // 5 phút
-    private static final int CONNECTION_TIMEOUT = 30000; // 30 giây
-    private static final int MAX_LIFETIME = 1800000; // 30 phút
+    private static final int MAX_POOL_SIZE = 20;
+    private static final int MIN_IDLE = 10;
+    private static final int IDLE_TIMEOUT = 600000; // 10 phút
+    private static final int CONNECTION_TIMEOUT = 60000; // 1 phút
+    private static final int MAX_LIFETIME = 3600000; // 1 giờ
 
     protected DBConnect() {
         initializeConnectionPool();

@@ -68,7 +68,7 @@
                                 </c:forEach>
                                 
                                 <div class="d-flex justify-content-between mt-4">
-                                    <a href="course-content.jsp?contentID=${param.contentID}" class="btn btn-secondary">
+                                    <a href="learn-course.jsp?contentID=${param.contentID}" class="btn btn-secondary">
                                         <i class="fas fa-arrow-left me-2"></i>Quay lại
                                     </a>
                                     <button type="submit" class="btn btn-primary">
