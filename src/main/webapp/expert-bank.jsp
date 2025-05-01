@@ -346,10 +346,7 @@
             <i class="fas fa-university"></i> Ngân hàng
         </a>
         <a href="#" class="nav-link">
-            <i class="fas fa-credit-card"></i> Kênh thanh toán
-        </a>
-        <a href="#" class="nav-link">
-            <i class="fas fa-link"></i> Tạo link thanh toán
+            <i class="fas fa-link"></i> Tạo yêu cầu rút tiền
         </a>
         <a href="#" class="nav-link">
             <i class="fas fa-cog"></i> Thiết lập
@@ -511,7 +508,7 @@ $(document).ready(function() {
                         let bankLogo = bankInfo ? bankInfo.logo : '';
                         
                         banksHtml += `
-                            <div class="bank-item">
+                            <div class="bank-item" data-bank-id="\${bank.eBankID}">
                                 <img src="\${bankLogo}" alt="\${bank.bankName}" class="bank-logo">
                                 <div class="bank-info">
                                     <h5 class="mb-1">\${bank.bankName}</h5>
@@ -519,7 +516,7 @@ $(document).ready(function() {
                                 </div>
                                 <span class="bank-status connected me-3">Đã liên kết</span>
                                 <div class="bank-actions">
-                                    <button class="btn-action btn-edit" data-bs-toggle="modal" data-bs-target="#editBankModal">
+                                    <button class="btn-action btn-edit" data-bank-id="\${bank.eBankID}" data-bs-toggle="modal" data-bs-target="#editBankModal">
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <button class="btn-action btn-delete" data-bs-toggle="modal" data-bs-target="#deleteBankModal">
@@ -534,8 +531,8 @@ $(document).ready(function() {
                     
                     // Handle edit button click
                     $('.btn-edit').click(function() {
+                        let bankId = $(this).data('bank-id');
                         let bankItem = $(this).closest('.bank-item');
-                        let bankId = bankItem.data('bank-id');
                         let bankName = bankItem.find('h5').text();
                         let bankAccount = bankItem.find('p').text();
                         

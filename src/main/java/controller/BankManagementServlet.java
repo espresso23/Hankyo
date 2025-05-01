@@ -109,26 +109,36 @@ public class BankManagementServlet extends HttpServlet {
 
     private void handleDeleteBank(HttpServletRequest request, HttpServletResponse response, Expert expert) 
             throws IOException {
-        int bankId = Integer.parseInt(request.getParameter("bankId"));
-        
-        ExpertBank existingBank = expertBankDAO.getExpertBankById(bankId);
-        if (existingBank == null || existingBank.getExpertID() != expert.getExpertID()) {
-            sendJsonResponse(response, false, "Tài khoản không tồn tại hoặc không thuộc quyền sở hữu");
+        String bankIdStr = request.getParameter("bankId");
+        if (bankIdStr == null || bankIdStr.trim().isEmpty()) {
+            sendJsonResponse(response, false, "Mã ngân hàng không hợp lệ");
             return;
         }
         
-        boolean success = expertBankDAO.deleteExpertBank(bankId);
-        
-        if (success) {
-            sendJsonResponse(response, true, "Xóa tài khoản thành công");
-        } else {
-            sendJsonResponse(response, false, "Xóa tài khoản thất bại");
+        try {
+            int bankId = Integer.parseInt(bankIdStr);
+            
+            ExpertBank existingBank = expertBankDAO.getExpertBankById(bankId);
+            if (existingBank == null || existingBank.getExpertID() != expert.getExpertID()) {
+                sendJsonResponse(response, false, "Tài khoản không tồn tại hoặc không thuộc quyền sở hữu");
+                return;
+            }
+            
+            boolean success = expertBankDAO.deleteExpertBank(bankId);
+            
+            if (success) {
+                sendJsonResponse(response, true, "Xóa tài khoản thành công");
+            } else {
+                sendJsonResponse(response, false, "Xóa tài khoản thất bại");
+            }
+        } catch (NumberFormatException e) {
+            sendJsonResponse(response, false, "Mã ngân hàng không hợp lệ");
         }
     }
 
     private void handleListBanks(HttpServletRequest request, HttpServletResponse response, Expert expert) 
             throws IOException {
-        List<ExpertBank> banks = expertBankDAO.getExpertBanksByExpertId(expert.getExpertID());
+        List<ExpertBank> banks = expertBankDAO.getExpertBanks(expert.getExpertID());
         
         Map<String, Object> result = new HashMap<>();
         result.put("success", true);
