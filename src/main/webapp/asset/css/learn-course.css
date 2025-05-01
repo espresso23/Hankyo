@@ -56,23 +56,23 @@ body {
 }
 
 .video-container {
+    /* These styles will be handled by video-player.css */
     position: relative;
     width: 100%;
-    height: 720px; /* Chiều cao cố định */
     background: #000;
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    margin-bottom: 24px;
 }
 
 .video-wrapper {
+    /* These styles will be handled by video-player.css */
     position: relative;
     width: 100%;
     height: 100%;
 }
 
 .video-wrapper iframe {
+    /* These styles will be handled by video-player.css */
     position: absolute;
     top: 0;
     left: 0;
@@ -91,7 +91,7 @@ body {
     background-color: white;
     padding: 20px;
     border-radius: 4px;
-    margin-top: 20px;
+    margin-top: 10px;
     margin-bottom: 20px;
 }
 
@@ -137,14 +137,21 @@ body {
     color: var(--accent-color);
 }
 
-.progress-bar {
-    height: 4px;
-    background-color: #d1d7dc;
-    border-radius: 2px;
-    margin-top: 5px;
+.course-progress-container {
+    width: 100%;
+    background-color: #e8f0fe;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 8px 0;
 }
 
-.progress-value {
+.course-progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: transparent;
+}
+
+.course-progress-value {
     height: 100%;
     background-color: var(--accent-color);
     border-radius: 2px;
@@ -155,7 +162,7 @@ body {
     background-color: white;
     padding: 20px;
     border-bottom: 1px solid #d1d7dc;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .course-title {
@@ -267,38 +274,6 @@ body {
     margin-left: 0;
 }
 
-/* Video Player Styles - Chỉ giữ lại các style không có trong learn-course.css */
-.video-controls, 
-.video-progress, 
-.video-buttons, 
-.video-time, 
-.video-volume, 
-.volume-slider, 
-.volume-level, 
-.video-quality, 
-.quality-menu, 
-.quality-option, 
-.video-title, 
-.video-fullscreen {
-    display: none !important;
-}
-
-/* Ẩn các elements video controls không sử dụng nữa */
-.video-controls, 
-.video-progress, 
-.video-buttons, 
-.video-time, 
-.video-volume, 
-.volume-slider, 
-.volume-level, 
-.video-quality, 
-.quality-menu, 
-.quality-option, 
-.video-title, 
-.video-fullscreen {
-    display: none !important;
-}
-
 @media (max-width: 768px) {
     .sidebar-hidden {
         transform: translateX(-320px);
@@ -349,13 +324,11 @@ body {
 
 /* Fixed Video Container */
 .fixed-video-container {
-    position: relative;
+    position: sticky;
+    top: 10px;
     z-index: 100;
-    background-color: #fff;
-    padding: 12px;
     margin-bottom: 24px;
-    border-radius: 8px;
-    max-width: 854px;
+    max-width: 100%;
     margin-left: auto;
     margin-right: auto;
 }
@@ -363,12 +336,58 @@ body {
 .video-container {
     position: relative;
     width: 100%;
-    height: 480px; /* Tỉ lệ 16:9 cho kích thước tiêu chuẩn 854px */
+    padding-top: 56.25%; /* 16:9 Aspect Ratio */
     background: #000;
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    margin-bottom: 0;
+    cursor: pointer;
+}
+
+/* Play Button Overlay */
+.video-play-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.video-container:hover .video-play-overlay {
+    opacity: 1;
+}
+
+.video-play-button {
+    width: 80px;
+    height: 80px;
+    background: rgba(0, 0, 0, 0.7);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.video-play-button:hover {
+    background: rgba(0, 0, 0, 0.9);
+    transform: scale(1.1);
+}
+
+.video-play-button i {
+    margin-left: 5px; /* Để icon play căn giữa hơn */
+}
+
+.video-container.playing .video-play-overlay {
+    display: none;
 }
 
 .video-container.expanded {
@@ -526,4 +545,508 @@ body {
         padding: 0.7rem 1.2rem;
         font-size: 1rem;
     }
+}
+/* Styles riêng cho Course Content */
+.course-sidebar {
+    position: fixed;
+    left: 0;
+    top: 56px;
+    height: calc(100vh - 56px);
+    width: 320px;
+    background: #fff;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+    z-index: 1000;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+    border-right: 1px solid #e0e0e0;
+}
+
+.sidebar-toggle-container {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    height: 56px;
+    z-index: 1001;
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    width: 320px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.sidebar-toggle-container.collapsed {
+    width: auto;
+    border-right: 1px solid #e0e0e0;
+    box-shadow: 2px 0 4px rgba(0,0,0,0.08);
+}
+
+.sidebar-toggle {
+    background: none;
+    border: none;
+    color: #1a73e8;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s ease;
+    border-radius: 4px;
+}
+
+.sidebar-toggle i {
+    margin-right: 8px;
+}
+
+.sidebar-toggle:hover {
+    background-color: rgba(26, 115, 232, 0.08);
+}
+
+.sidebar-hidden {
+    transform: translateX(-320px);
+}
+
+.course-content {
+    margin-left: 320px;
+    margin-top: 56px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 20px;
+}
+
+.course-content.full-width {
+    margin-left: 0;
+}
+
+.hide-menu-text {
+    font-weight: 500;
+    color: #1a73e8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.sidebar-toggle:hover .hide-menu-text {
+    background-color: rgba(26, 115, 232, 0.12);
+}
+
+.section-title {
+    padding: 16px 20px;
+    font-weight: 600;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 1rem;
+    color: #202124;
+    background-color: #f8f9fa;
+}
+
+.lessons-list {
+    padding: 8px 0;
+}
+
+.lesson-item {
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    border-left: 3px solid transparent;
+}
+
+.lesson-item:hover {
+    background-color: rgba(0,0,0,0.04);
+}
+
+.lesson-item.active {
+    background-color: rgba(26, 115, 232, 0.08);
+    border-left: 3px solid #1a73e8;
+}
+
+.lesson-item.completed {
+    color: #5f6368;
+}
+
+.lesson-icon {
+    margin-right: 12px;
+    color: #5f6368;
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+}
+
+.lesson-item.active .lesson-icon {
+    color: #1a73e8;
+}
+
+.content-duration {
+    margin-left: auto;
+    font-size: 0.85rem;
+    color: #5f6368;
+}
+
+.progress-info {
+    padding: 16px 20px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.progress-bar {
+    height: 8px;
+    background-color: #e8f0fe;
+    border-radius: 4px;
+    margin: 16px 0;
+    overflow: hidden;
+}
+
+.progress-value {
+    height: 100%;
+    background-color: #1a73e8;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+/* Video container styles */
+.fixed-video-container {
+    position: sticky;
+    top: 10px;
+    z-index: 100;
+    margin-bottom: 24px;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Nút điều khiển video container */
+.video-controls-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 10px;
+    z-index: 20;
+    display: flex;
+    gap: 10px;
+}
+
+.video-control-btn {
+    background: rgba(0,0,0,0.5);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.video-control-btn:hover {
+    background: rgba(0,0,0,0.7);
+    transform: scale(1.1);
+}
+
+/* Video Title */
+.video-title-overlay {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    max-width: 80%;
+    z-index: 10;
+}
+
+/* Video container khi phát hiện fullscreen */
+.fixed-video-container.expanded {
+    position: fixed;
+    top: 76px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    height: calc(100vh - 76px);
+    z-index: 1100;
+    padding: 0;
+    border-radius: 0;
+    margin: 0;
+}
+
+.fixed-video-container.expanded .video-container {
+    height: 100%;
+    border-radius: 0;
+}
+
+.content-description {
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1.5rem;
+
+}
+
+@media (max-width: 768px) {
+    .course-sidebar {
+        transform: translateX(-320px);
+    }
+    .course-content {
+        margin-left: 0;
+    }
+    .sidebar-visible {
+        transform: translateX(0);
+    }
+    .sidebar-toggle-container {
+        width: auto;
+    }
+}
+
+.assignment-container {
+    max-width: 854px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.assignment-header {
+    margin-bottom: 30px;
+}
+
+.assignment-header h2 {
+    color: #1a73e8;
+    margin-bottom: 10px;
+}
+
+.assignment-description {
+    color: #5f6368;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.assignment-overview {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.overview-card {
+    background: white;
+    border-radius: 8px;
+    padding: 25px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.overview-card h3 {
+    color: #202124;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+}
+
+.overview-content p {
+    color: #5f6368;
+    margin-bottom: 15px;
+    font-size: 1rem;
+}
+
+.start-assignment-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 1.1rem;
+    margin-top: 20px;
+    background: #1a73e8;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.start-assignment-btn:hover {
+    background: #1557b0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Assignment Result Styles */
+.assignment-result {
+    max-width: 854px;
+    margin: 24px auto;
+    padding: 24px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.result-header {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #202124;
+    margin-bottom: 20px;
+}
+
+.result-stats {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.result-percentage {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1a73e8;
+    margin-right: 12px;
+}
+
+.result-fraction {
+    color: #5f6368;
+    font-size: 1rem;
+}
+
+.result-progress {
+    height: 8px;
+    background-color: #e8f0fe;
+    border-radius: 4px;
+    margin: 16px 0;
+    overflow: hidden;
+}
+
+.result-progress-value {
+    height: 100%;
+    background-color: #1a73e8;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.result-details {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 24px 0;
+}
+
+.result-detail-item {
+    text-align: center;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.detail-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #202124;
+    margin-bottom: 8px;
+}
+
+.detail-label {
+    color: #5f6368;
+    font-size: 0.875rem;
+}
+
+.retake-button {
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: #1a73e8;
+    color: #fff;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.retake-button:hover {
+    background-color: #1557b0;
+    color: #fff;
+}
+
+.stats-card {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    height: 100%;
+    transition: transform 0.2s;
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+}
+
+.stats-value h2 {
+    color: #1a73e8;
+    font-weight: 600;
+}
+
+.stats-value p {
+    font-size: 0.9rem;
+}
+
+.progress {
+    height: 8px !important;
+    background-color: #e8f0fe !important;
+    border-radius: 4px !important;
+    margin: 16px 0 !important;
+    overflow: hidden;
+}
+
+.progress .progress-bar {
+    height: 100%;
+    background-color: #1a73e8;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.result-details .card {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+}
+
+.result-details .card-title {
+    color: #202124;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.result-details .card-body {
+    padding: 1.5rem;
+}
+
+.btn-primary {
+    background-color: #1a73e8;
+    border-color: #1a73e8;
+    padding: 10px 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #1557b0;
+    border-color: #1557b0;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Progress bar trong kết quả bài làm */
+.result-progress .progress {
+    height: 10px !important;
+}
+
+.result-progress .progress-bar {
+    background-color: #28a745 !important;
+}
+
+/* Ẩn text trong progress bar */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }

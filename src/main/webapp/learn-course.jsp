@@ -9,510 +9,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="asset/css/learn-course.css">
-    <style>
-        /* Styles riêng cho Course Content */
-        .course-sidebar {
-            position: fixed;
-            left: 0;
-            top: 56px;
-            height: calc(100vh - 56px);
-            width: 320px;
-            background: #fff;
-            box-shadow: 2px 0 8px rgba(0,0,0,0.1);
-            z-index: 1000;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow-y: auto;
-            border-right: 1px solid #e0e0e0;
-        }
-
-        .sidebar-toggle-container {
-            position: fixed;
-            top: 56px;
-            left: 0;
-            height: 56px;
-            z-index: 1001;
-            background: #fff;
-            border-bottom: 1px solid #e0e0e0;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            width: 320px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .sidebar-toggle-container.collapsed {
-            width: auto;
-            border-right: 1px solid #e0e0e0;
-            box-shadow: 2px 0 4px rgba(0,0,0,0.08);
-        }
-
-        .sidebar-toggle {
-            background: none;
-            border: none;
-            color: #1a73e8;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 16px;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.2s ease;
-            border-radius: 4px;
-        }
-
-        .sidebar-toggle i {
-            margin-right: 8px;
-        }
-
-        .sidebar-toggle:hover {
-            background-color: rgba(26, 115, 232, 0.08);
-        }
-
-        .sidebar-hidden {
-            transform: translateX(-320px);
-        }
-
-        .course-content {
-            margin-left: 320px;
-            margin-top: 56px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            padding: 20px;
-        }
-
-        .course-content.full-width {
-            margin-left: 0;
-        }
-
-        .hide-menu-text {
-            font-weight: 500;
-            color: #1a73e8;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            transition: all 0.2s ease;
-        }
-
-        .sidebar-toggle:hover .hide-menu-text {
-            background-color: rgba(26, 115, 232, 0.12);
-        }
-
-        .section-title {
-            padding: 16px 20px;
-            font-weight: 600;
-            border-bottom: 1px solid #e0e0e0;
-            font-size: 1rem;
-            color: #202124;
-            background-color: #f8f9fa;
-        }
-
-        .lessons-list {
-            padding: 8px 0;
-        }
-
-        .lesson-item {
-            padding: 12px 20px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            border-left: 3px solid transparent;
-        }
-
-        .lesson-item:hover {
-            background-color: rgba(0,0,0,0.04);
-        }
-
-        .lesson-item.active {
-            background-color: rgba(26, 115, 232, 0.08);
-            border-left: 3px solid #1a73e8;
-        }
-
-        .lesson-item.completed {
-            color: #5f6368;
-        }
-
-        .lesson-icon {
-            margin-right: 12px;
-            color: #5f6368;
-            font-size: 1rem;
-            width: 20px;
-            text-align: center;
-        }
-
-        .lesson-item.active .lesson-icon {
-            color: #1a73e8;
-        }
-
-        .content-duration {
-            margin-left: auto;
-            font-size: 0.85rem;
-            color: #5f6368;
-        }
-
-        .progress-info {
-            padding: 16px 20px;
-            background-color: #f8f9fa;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .progress-bar {
-            height: 8px;
-            background-color: #e8f0fe;
-            border-radius: 4px;
-            margin: 16px 0;
-            overflow: hidden;
-        }
-
-        .progress-value {
-            height: 100%;
-            background-color: #1a73e8;
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
-
-        /* Video container styles */
-        .fixed-video-container {
-            position: sticky;
-            top: 76px;
-            z-index: 100;
-            margin-bottom: 24px;
-            max-width: 854px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* Nút điều khiển video container */
-        .video-controls-overlay {
-            position: absolute;
-            top: 0;
-            right: 0;
-            padding: 10px;
-            z-index: 20;
-            display: flex;
-            gap: 10px;
-        }
-
-        .video-control-btn {
-            background: rgba(0,0,0,0.5);
-            border: none;
-            color: white;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s ease;
-        }
-
-        .video-control-btn:hover {
-            background: rgba(0,0,0,0.7);
-            transform: scale(1.1);
-        }
-
-        /* Video Title */
-        .video-title-overlay {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            color: white;
-            font-size: 1.1rem;
-            font-weight: 500;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-            max-width: 80%;
-            z-index: 10;
-        }
-
-        /* Video container khi phát hiện fullscreen */
-        .fixed-video-container.expanded {
-            position: fixed;
-            top: 76px;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            width: auto;
-            height: calc(100vh - 76px);
-            z-index: 1100;
-            padding: 0;
-            border-radius: 0;
-            margin: 0;
-        }
-
-        .fixed-video-container.expanded .video-container {
-            height: 100%;
-            border-radius: 0;
-        }
-
-        .content-description {
-            max-width: 854px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        @media (max-width: 768px) {
-            .course-sidebar {
-                transform: translateX(-320px);
-            }
-            .course-content {
-                margin-left: 0;
-            }
-            .sidebar-visible {
-                transform: translateX(0);
-            }
-            .sidebar-toggle-container {
-                width: auto;
-            }
-        }
-
-        .assignment-container {
-            max-width: 854px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .assignment-header {
-            margin-bottom: 30px;
-        }
-
-        .assignment-header h2 {
-            color: #1a73e8;
-            margin-bottom: 10px;
-        }
-
-        .assignment-description {
-            color: #5f6368;
-            font-size: 1.1rem;
-            line-height: 1.6;
-        }
-
-        .assignment-overview {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-        }
-
-        .overview-card {
-            background: white;
-            border-radius: 8px;
-            padding: 25px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .overview-card h3 {
-            color: #202124;
-            margin-bottom: 20px;
-            font-size: 1.2rem;
-        }
-
-        .overview-content p {
-            color: #5f6368;
-            margin-bottom: 15px;
-            font-size: 1rem;
-        }
-
-        .start-assignment-btn {
-            width: 100%;
-            padding: 12px;
-            font-size: 1.1rem;
-            margin-top: 20px;
-            background: #1a73e8;
-            border: none;
-            transition: all 0.3s ease;
-        }
-
-        .start-assignment-btn:hover {
-            background: #1557b0;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Assignment Result Styles */
-        .assignment-result {
-            max-width: 854px;
-            margin: 24px auto;
-            padding: 24px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .result-header {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #202124;
-            margin-bottom: 20px;
-        }
-
-        .result-stats {
-            display: flex;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .result-percentage {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #1a73e8;
-            margin-right: 12px;
-        }
-
-        .result-fraction {
-            color: #5f6368;
-            font-size: 1rem;
-        }
-
-        .result-progress {
-            height: 8px;
-            background-color: #e8f0fe;
-            border-radius: 4px;
-            margin: 16px 0;
-            overflow: hidden;
-        }
-
-        .result-progress-value {
-            height: 100%;
-            background-color: #1a73e8;
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
-
-        .result-details {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            margin: 24px 0;
-        }
-
-        .result-detail-item {
-            text-align: center;
-            padding: 16px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-
-        .detail-value {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #202124;
-            margin-bottom: 8px;
-        }
-
-        .detail-label {
-            color: #5f6368;
-            font-size: 0.875rem;
-        }
-
-        .retake-button {
-            display: inline-block;
-            padding: 12px 24px;
-            background-color: #1a73e8;
-            color: #fff;
-            border-radius: 4px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: background-color 0.2s;
-        }
-
-        .retake-button:hover {
-            background-color: #1557b0;
-            color: #fff;
-        }
-
-        .stats-card {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            height: 100%;
-            transition: transform 0.2s;
-        }
-
-        .stats-card:hover {
-            transform: translateY(-2px);
-        }
-
-        .stats-value h2 {
-            color: #1a73e8;
-            font-weight: 600;
-        }
-
-        .stats-value p {
-            font-size: 0.9rem;
-        }
-
-        .progress {
-            height: 8px !important;
-            background-color: #e8f0fe !important;
-            border-radius: 4px !important;
-            margin: 16px 0 !important;
-            overflow: hidden;
-        }
-
-        .progress .progress-bar {
-            height: 100%;
-            background-color: #1a73e8;
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
-
-        .result-details .card {
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-        }
-
-        .result-details .card-title {
-            color: #202124;
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-
-        .result-details .card-body {
-            padding: 1.5rem;
-        }
-
-        .btn-primary {
-            background-color: #1a73e8;
-            border-color: #1a73e8;
-            padding: 10px 20px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            background-color: #1557b0;
-            border-color: #1557b0;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-
-        /* Progress bar trong kết quả bài làm */
-        .result-progress .progress {
-            height: 10px !important;
-        }
-
-        .result-progress .progress-bar {
-            background-color: #28a745 !important;
-        }
-
-        /* Ẩn text trong progress bar */
-        .visually-hidden {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
-        }
-    </style>
+    <link rel="stylesheet" href="asset/css/pdf-viewer.css">
+    <link rel="stylesheet" href="asset/css/video-player.css">
 </head>
 <body>
 <c:import url="header.jsp"/>
@@ -542,12 +40,12 @@
             <div class="lesson-item ${content.courseContentID == currentContent.courseContentID ? 'active' : ''} ${content.completed ? 'completed' : ''}"
                  data-content-id="${content.courseContentID}"
                  data-is-assignment="${not empty content.assignment}">
-                <i class="fas ${not empty content.assignment ? 'fa-file-alt' : (not empty content.media ? 'fa-play-circle' : 'fa-file-text')} lesson-icon"></i>
+                <i class="fas ${not empty content.assignment ? 'fa-file-alt' : (not empty content.media and content.media.endsWith('.pdf') ? 'fa-file-text' : (not empty content.media ? 'fa-play-circle' : 'fa-file-text'))} lesson-icon"></i>
                 <span class="lesson-title">${not empty content.assignment ? content.assignment.assignmentTitle : content.title}</span>
                 <c:if test="${content.completed}">
                     <i class="fas fa-check-circle ms-auto text-success"></i>
                 </c:if>
-                <c:if test="${not empty content.media && !content.completed}">
+                <c:if test="${not empty content.media && !content.media.endsWith('.pdf') && !content.completed}">
                     <span class="content-duration ms-auto">
                         <span class="video-duration" data-video-src="${content.media}">--:--</span>
                     </span>
@@ -583,7 +81,7 @@
                             <p><i class="fas fa-clock me-2"></i>Thời gian làm bài: Không giới hạn</p>
                             <p><i class="fas fa-check-circle me-2"></i>Yêu cầu: Trả lời đúng tất cả câu hỏi</p>
                             <p><i class="fas fa-exclamation-circle me-2"></i>Lưu ý: Bạn chỉ có thể nộp bài một lần</p>
-                            
+
                             <c:if test="${not empty currentContent.assignment.assignmentQuestions}">
                                 <div class="mt-4">
                                     <h4 class="mb-3">Danh sách câu hỏi:</h4>
@@ -611,7 +109,7 @@
                                 </div>
                             </c:if>
                         </div>
-                        
+
                         <div class="assignment-actions">
                             <c:choose>
                                 <c:when test="${currentContent.completed}">
@@ -622,11 +120,11 @@
                                                 Bài tập đã hoàn thành
                                             </h3>
                                             <p class="text-muted">
-                                                <i class="fas fa-clock me-2"></i>Lần làm gần nhất: 
+                                                <i class="fas fa-clock me-2"></i>Lần làm gần nhất:
                                                 <fmt:formatDate value="${latestTaken.dateCreated}" pattern="dd/MM/yyyy HH:mm"/>
                                             </p>
                                         </div>
-                                        
+
                                         <c:if test="${not empty assignmentResult}">
                                             <div class="result-stats">
                                                 <div class="row">
@@ -634,8 +132,9 @@
                                                         <div class="stats-card mb-3">
                                                             <div class="stats-value">
                                                                 <h2 class="display-4 mb-0 text-primary">
-                                                                    <fmt:formatNumber value="${(assignmentResult.correctCount / assignmentResult.totalQuestions) * 100}" 
-                                                                                    maxFractionDigits="1"/>%
+                                                                    <fmt:formatNumber
+                                                                            value="${(assignmentResult.correctCount / assignmentResult.totalQuestions) * 100}"
+                                                                            maxFractionDigits="1"/>%
                                                                 </h2>
                                                                 <p class="text-muted mb-0">Tỷ lệ trả lời đúng</p>
                                                             </div>
@@ -645,20 +144,20 @@
                                                         <div class="stats-card mb-3">
                                                             <div class="stats-value">
                                                                 <h2 class="display-4 mb-0">
-                                                                    ${assignmentResult.correctCount}/${assignmentResult.totalQuestions}
+                                                                        ${assignmentResult.correctCount}/${assignmentResult.totalQuestions}
                                                                 </h2>
                                                                 <p class="text-muted mb-0">Số câu trả lời đúng</p>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div class="progress mb-4" style="height: 10px;">
-                                                    <div class="progress-bar bg-success" 
-                                                         role="progressbar" 
-                                                         style="width: ${(assignmentResult.correctCount / assignmentResult.totalQuestions) * 100}%" 
-                                                         aria-valuenow="${(assignmentResult.correctCount / assignmentResult.totalQuestions) * 100}" 
-                                                         aria-valuemin="0" 
+                                                    <div class="progress-bar bg-success"
+                                                         role="progressbar"
+                                                         style="width: ${(assignmentResult.correctCount / assignmentResult.totalQuestions) * 100}%"
+                                                         aria-valuenow="${(assignmentResult.correctCount / assignmentResult.totalQuestions) * 100}"
+                                                         aria-valuemin="0"
                                                          aria-valuemax="100">
                                                         <span class="visually-hidden">
                                                             ${(assignmentResult.correctCount / assignmentResult.totalQuestions) * 100}% hoàn thành
@@ -687,7 +186,7 @@
                                                 </div>
 
                                                 <div class="mt-4 d-flex gap-3 justify-content-center">
-                                                    <a href="view-assignment-result?assignmentID=${currentContent.assignment.assignmentID}&courseID=${course.courseID}&courseContentID=${currentContent.courseContentID}" 
+                                                    <a href="view-assignment-result?assignmentID=${currentContent.assignment.assignmentID}&courseID=${course.courseID}&courseContentID=${currentContent.courseContentID}"
                                                        class="btn btn-primary">
                                                         <i class="fas fa-eye me-2"></i>Xem chi tiết bài làm
                                                     </a>
@@ -710,58 +209,166 @@
                 </div>
             </div>
         </c:when>
-        <c:when test="${not empty currentContent and not empty currentContent.media}">
-            <div class="fixed-video-container" id="videoContainer">
-                <div class="video-container">
-                    <div class="video-title-overlay">${currentContent.title}</div>
-                    <div class="video-controls-overlay">
-                        <button class="video-control-btn" id="expandVideo" title="Mở rộng"><i class="fas fa-expand"></i></button>
+        <c:when test="${not empty currentContent and not empty currentContent.media and !currentContent.media.endsWith('.pdf')}">
+            <div class="fixed-video-container">
+                <div class="video-container" id="videoContainer">
+                    <video id="videoPlayer" class="video-player" preload="metadata">
+                        <source src="${currentContent.media}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+
+                    <div class="center-play-pause">
+                        <i class="fas fa-play"></i>
                     </div>
-                    <div class="video-wrapper">
-                        <iframe src="${currentContent.media}?enablejsapi=1" frameborder="0" allowfullscreen></iframe>
+
+                    <div class="video-overlay">
+                        <div class="video-overlay-content">
+                            <button class="video-play-button">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <h3 class="video-title">${currentContent.title}</h3>
+                        </div>
+                    </div>
+
+                    <div class="video-controls-container">
+                        <div class="video-progress">
+                            <div class="video-progress-filled"></div>
+                            <div class="video-progress-buffer"></div>
+                        </div>
+
+                        <div class="video-controls">
+                            <div class="video-controls-left">
+                                <button class="video-control-btn play-pause">
+                                    <i class="fas fa-play"></i>
+                                </button>
+
+                                <button class="video-control-btn rewind-10s">
+                                    <i class="fas fa-history"></i>
+                                    <span>10</span>
+                                </button>
+
+                                <button class="video-control-btn forward-10s">
+                                    <i class="fas fa-history fa-flip-horizontal"></i>
+                                    <span>10</span>
+                                </button>
+
+                                <div class="video-time">
+                                    <span class="current-time">0:00</span>
+                                    <span class="time-separator">/</span>
+                                    <span class="duration">0:00</span>
+                                </div>
+                            </div>
+
+                            <div class="video-controls-right">
+                                <div class="volume-container">
+                                    <button class="video-control-btn volume">
+                                        <i class="fas fa-volume-up"></i>
+                                    </button>
+                                    <div class="volume-slider">
+                                        <div class="volume-slider-bar">
+                                            <div class="volume-slider-fill"></div>
+                                            <div class="volume-slider-handle"></div>
+                                            <div class="volume-tooltip">100%</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="speed-toggle">
+                                    <button class="video-control-btn">
+                                        <span class="speed-label">1x</span>
+                                    </button>
+                                    <div class="speed-menu">
+                                        <button class="speed-item" data-speed="0.25">0.25x</button>
+                                        <button class="speed-item" data-speed="0.5">0.5x</button>
+                                        <button class="speed-item" data-speed="0.75">0.75x</button>
+                                        <button class="speed-item active" data-speed="1">1x</button>
+                                        <button class="speed-item" data-speed="1.25">1.25x</button>
+                                        <button class="speed-item" data-speed="1.5">1.5x</button>
+                                        <button class="speed-item" data-speed="1.75">1.75x</button>
+                                        <button class="speed-item" data-speed="2">2x</button>
+                                    </div>
+                                </div>
+
+                                <button class="video-control-btn fullscreen">
+                                    <i class="fas fa-expand"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-
             <div class="content-description">
                 <h3>${currentContent.title}</h3>
                 <p>${currentContent.description}</p>
             </div>
         </c:when>
         <c:when test="${not empty currentContent}">
-            <div class="container mt-4">
-                <c:choose>
-                    <c:when test="${not empty currentContent}">
-                        <!-- Hiển thị nội dung khóa học -->
-                        <div class="row">
-                            <div class="col-md-8">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h5 class="card-title">${currentContent.contentTitle}</h5>
-                                        <div class="content-body">
-                                            ${currentContent.contentBody}
-                                        </div>
-                                        
-                                        <c:if test="${not empty currentContent.assignment}">
-                                            <!-- Hiển thị bài tập nếu có -->
-                                            <div class="assignment-section mt-4">
-                                                <h6>Bài tập</h6>
-                                                <p>${currentContent.assignment.description}</p>
-                                            </div>
-                                        </c:if>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </c:when>
-                    <c:otherwise>
-                        <!-- Hiển thị thông báo khi không có nội dung -->
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            Không có nội dung nào để hiển thị. Vui lòng chọn nội dung khác.
-                        </div>
-                    </c:otherwise>
-                </c:choose>
+            <div class="pdf-container" id="pdfViewer_${currentContent.courseContentID}"
+                 data-pdf-url="${currentContent.media}">
+                <div class="pdf-header">
+                    <h2 class="pdf-title">${currentContent.title}</h2>
+                    <div class="pdf-controls">
+                        <button class="pdf-control-btn zoom-in" title="Phóng to">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                        <button class="pdf-control-btn zoom-out" title="Thu nhỏ">
+                            <i class="fas fa-search-minus"></i>
+                        </button>
+                        <button class="pdf-control-btn prev-page" title="Trang trước">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="pdf-control-btn next-page" title="Trang sau">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <button class="pdf-control-btn highlight-btn" title="Đánh dấu">
+                            <i class="fas fa-highlighter"></i>
+                        </button>
+                        <button class="pdf-control-btn note-btn" title="Ghi chú">
+                            <i class="fas fa-sticky-note"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="pdf-viewer">
+                    <div class="pdf-loading">
+                        <div class="pdf-loading-spinner"></div>
+                    </div>
+                    <div class="pdf-search-container">
+                        <input type="text" class="pdf-search-input" placeholder="Tìm kiếm trong tài liệu...">
+                        <div class="pdf-search-results"></div>
+                    </div>
+                    <div class="pdf-annotation-toolbar">
+                        <button class="pdf-annotation-btn highlight-btn">
+                            <i class="fas fa-highlighter"></i> Đánh dấu
+                        </button>
+                        <button class="pdf-annotation-btn note-btn">
+                            <i class="fas fa-sticky-note"></i> Ghi chú
+                        </button>
+                    </div>
+                    <div class="pdf-page-controls">
+                        <span class="pdf-page-info"></span>
+                    </div>
+                </div>
+
+                <div class="pdf-metadata">
+                    <div class="pdf-metadata-item">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>PDF Document</span>
+                    </div>
+                    <div class="pdf-metadata-item">
+                        <i class="fas fa-clock"></i>
+                        <span>Thời gian đọc ước tính: 10 phút</span>
+                    </div>
+                    <div class="pdf-metadata-item">
+                        <i class="fas fa-download"></i>
+                        <a href="${currentContent.media}" download>Download PDF</a>
+                    </div>
+                </div>
+
+                <div class="pdf-description">
+                    <h3>Mô tả tài liệu</h3>
+                    <p>${currentContent.description}</p>
+                </div>
             </div>
         </c:when>
         <c:otherwise>
@@ -794,6 +401,9 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+<script src="asset/js/pdf-viewer.js"></script>
+<script src="asset/js/video-player.js"></script>
 <script>
     $(document).ready(function () {
         // Xử lý click vào lesson item
@@ -856,7 +466,6 @@
                 });
             }, 3000);
         }
-
         // Xử lý thời lượng video
         let totalDurationSeconds = 0;
         let videosToProcess = $('.video-duration').length;
@@ -981,19 +590,6 @@
             }
         });
 
-        // Xử lý expand video
-        $('#expandVideo').click(function () {
-            $('.fixed-video-container').toggleClass('expanded');
-
-            if ($('.fixed-video-container').hasClass('expanded')) {
-                $(this).html('<i class="fas fa-compress"></i>');
-                $(this).attr('title', 'Thu nhỏ');
-            } else {
-                $(this).html('<i class="fas fa-expand"></i>');
-                $(this).attr('title', 'Mở rộng');
-            }
-        });
-
         // Xử lý responsive
         function handleResize() {
             if (window.innerWidth < 768) {
@@ -1029,7 +625,7 @@
             success: function (response) {
                 console.log('=== DEBUG RESPONSE ===');
                 console.log('Response:', response);
-                
+
                 if (response.success) {
                     window.location.href = 'do-assignment?assignmentID=' + assignmentID + '&assignTakenID=' + response.assignTakenID;
                 } else {
@@ -1043,7 +639,7 @@
                 console.log('Error:', error);
                 console.log('Status:', status);
                 console.log('Response:', xhr.responseText);
-                
+
                 button.html(originalText);
                 button.prop('disabled', false);
                 alert('Có lỗi xảy ra khi kết nối đến máy chủ. Vui lòng thử lại.');
@@ -1054,6 +650,17 @@
     function viewAssignmentResult(assignmentID) {
         window.location.href = 'view-assignment-result?assignmentID=' + assignmentID;
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initialize video player
+        const videoContainer = document.getElementById('videoContainer');
+        if (videoContainer) {
+            const player = new VideoPlayer('videoContainer');
+            // Force show controls initially
+            player.showControls();
+            player.container.classList.remove('hide-controls');
+        }
+    });
 </script>
 </body>
 </html> 

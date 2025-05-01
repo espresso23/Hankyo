@@ -311,7 +311,8 @@ async function viewAssignmentResult(assignmentID) {
 
             // Hiển thị modal với nội dung
             $('#assignmentResultContent').html(resultHTML);
-            $('#assignmentResultModal').modal('show');
+            const modal = new bootstrap.Modal(document.getElementById('assignmentResultModal'));
+            modal.show();
         } else {
             Swal.fire({
                 icon: 'error',

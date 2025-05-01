@@ -1,4 +1,4 @@
-package controller.authentication;
+package controller.authenication;
 
 import dao.ExpertDAO;
 import dao.LearnerDAO;

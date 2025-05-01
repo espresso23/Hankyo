@@ -2,6 +2,7 @@ package controller.courseContentLearner;
 
 import dao.AssignmentResultDAO;
 import dao.CourseContentDAO;
+import dao.ProgressDAO;
 import dao.AssignmentDAO;
 import dao.AssignmentTakenDAO;
 import model.*;
@@ -57,7 +58,7 @@ public class CourseContentServlet extends HttpServlet {
 
             int courseID = Integer.parseInt(request.getParameter("courseID"));
             String courseContentIDStr = request.getParameter("courseContentID");
-            
+
             // Kiểm tra xem học viên có đăng ký khóa học này không
             if (!courseService.isEnrolled(learner.getLearnerID(), courseID)) {
                 response.sendRedirect("my-courses");
@@ -74,30 +75,83 @@ public class CourseContentServlet extends HttpServlet {
 
             // Lấy nội dung hiện tại
             CourseContent currentContent = null;
-            if (courseContentIDStr != null) {
-                int courseContentID = Integer.parseInt(courseContentIDStr);
-                currentContent = contents.stream()
-                    .filter(c -> c.getCourseContentID() == courseContentID)
-                    .findFirst()
-                    .orElse(null);
-            }
 
-            // Nếu không có nội dung nào, lấy nội dung đầu tiên
-            if (currentContent == null && !contents.isEmpty()) {
+            if (courseContentIDStr != null && !courseContentIDStr.isEmpty()) {
+                int courseContentID = Integer.parseInt(courseContentIDStr);
+                // Tìm currentContent từ danh sách contents đã load đầy đủ
+                for (CourseContent content : contents) {
+                    if (content.getCourseContentID() == courseContentID) {
+                        currentContent = content;
+                        break;
+                    }
+                }
+            } else if (!contents.isEmpty()) {
+                // Nếu không có courseContentID, lấy nội dung đầu tiên
                 currentContent = contents.get(0);
             }
 
-            // Xử lý bài tập nếu có
-            if (currentContent != null) {
-                Assignment assignment = currentContent.getAssignment();
+            if (currentContent == null && !contents.isEmpty()) {
+                // Nếu vẫn không có currentContent nhưng có nội dung trong khóa học
+                currentContent = contents.get(0);
+            }
+
+            // Gán currentContent vào request
+            request.setAttribute("currentContent", currentContent);
+
+            // Load thông tin AssignmentQuestion nếu là assignment
+            if (currentContent.getAssignment() != null && currentContent.getAssignment().getAssignmentID() > 0) {
+                Assignment assignment = assignmentDAO.getAssignmentWithQuestions(currentContent.getAssignment().getAssignmentID());
                 if (assignment != null) {
-                    // Lấy thông tin bài tập đã làm
+                    currentContent.setAssignment(assignment);
+
+                    // Lấy AssignmentTaken gần nhất của học viên
                     AssignmentTaken latestTaken = assignmentTakenDAO.getLatestAssignmentTaken(
-                        learner.getLearnerID(), 
-                        currentContent.getCourseContentID()
+                            learner.getLearnerID(),
+                            assignment.getAssignmentID()
                     );
+
                     if (latestTaken != null) {
-                        request.setAttribute("latestTaken", latestTaken);
+                        // Lấy kết quả bài làm từ AssignmentTaken gần nhất
+                        List<AssignmentResult> results = assignmentResultDAO.getResultsByTakenID(latestTaken.getAssignTakenID());
+
+                        if (!results.isEmpty()) {
+                            // Tính toán thống kê
+                            int totalQuestions = assignment.getAssignmentQuestions().size();
+                            int correctCount = 0;
+                            float totalMark = 0;
+                            float maxMark = 0;
+
+                            // Tính tổng điểm tối đa
+                            for (AssignmentQuestion question : assignment.getAssignmentQuestions()) {
+                                maxMark += question.getQuestionMark();
+                            }
+
+                            // Tính điểm thực tế
+                            for (AssignmentResult result : results) {
+                                if (result.isAnswerIsCorrect()) {
+                                    correctCount++;
+                                    totalMark += result.getMark();
+                                }
+                            }
+
+                            // Tạo đối tượng AssignmentResult tổng hợp
+                            AssignmentResult summary = new AssignmentResult();
+                            summary.setCorrectCount(correctCount);
+                            summary.setTotalQuestions(totalQuestions);
+                            summary.setTotalMark(totalMark);
+                            summary.setMaxMark(maxMark);
+
+                            // Tính điểm theo thang 10
+                            float score = (totalMark / maxMark) * 10;
+                            summary.setScore(score);
+
+                            // Đánh dấu bài tập đã hoàn thành
+                            currentContent.setCompleted(true);
+
+                            // Gán kết quả và AssignmentTaken vào request để hiển thị
+                            request.setAttribute("assignmentResult", summary);
+                            request.setAttribute("latestTaken", latestTaken);
+                        }
                     }
                 }
             }
@@ -105,12 +159,6 @@ public class CourseContentServlet extends HttpServlet {
             // Lấy tiến độ của học viên
             int courseProgress = progressService.calculateCourseProgress(learner.getLearnerID(), courseID);
             request.setAttribute("courseProgress", courseProgress);
-
-            // Đặt các thuộc tính vào request
-            request.setAttribute("course", course);
-            request.setAttribute("courseContents", contents);
-            request.setAttribute("currentContent", currentContent);
-            request.setAttribute("isEmpty", currentContent == null);
 
             // Chuyển hướng đến trang học
             request.getRequestDispatcher("/learn-course.jsp").forward(request, response);

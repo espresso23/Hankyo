@@ -1,4 +1,4 @@
-package controller.authentication;
+package controller.authenication;
 
 import dao.UserDAO;
 import model.User;
