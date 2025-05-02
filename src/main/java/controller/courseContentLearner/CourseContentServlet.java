@@ -82,6 +82,16 @@ public class CourseContentServlet extends HttpServlet {
                 }
             }
 
+            // Lấy danh sách contentID đã hoàn thành
+            List<Integer> completedContentIDs = progressService.getCompletedContentIDs(learner.getLearnerID(), courseID);
+            for (CourseContent content : contents) {
+                if (completedContentIDs.contains(content.getCourseContentID())) {
+                    content.setCompleted(true);
+                } else {
+                    content.setCompleted(false);
+                }
+            }
+
             request.setAttribute("courseContents", contents);
 
             // Lấy nội dung hiện tại

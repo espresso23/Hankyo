@@ -57,4 +57,8 @@ public class ProgressService {
         }
         return 0;
     }
+
+    public List<Integer> getCompletedContentIDs(int learnerID, int courseID) throws SQLException {
+        return progressDAO.getCompletedContentIDs(learnerID, courseID);
+    }
 } 

@@ -52,25 +52,29 @@
 
         <!-- Course Progress -->
         <div class="course-progress">
-            <div class="progress-text">
-                <span>Tiến độ hoàn thành</span>
-                <div class="progress-details">
-                    <span class="progress-percentage">${courseProgress}%</span>
-                    <span class="progress-fraction">
-                    <c:set var="completedCount" value="${0}"/>
-                    <c:forEach items="${courseContents}" var="content">
-                        <c:if test="${content.completed}">
-                            <c:set var="completedCount" value="${completedCount + 1}"/>
-                        </c:if>
-                    </c:forEach>
-                    ${completedCount}/${courseContents.size()} bài học
-                </span>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
+                <span style="color: #888; font-size: 1rem;">Tiến độ hoàn thành</span>
+                <div style="margin-left: auto; display: flex; align-items: baseline; gap: 8px;">
+                    <span id="progress-percentage" class="progress-percentage" style="color: #888; font-size: 1rem;">${courseProgress}%</span>
+                    <span id="progress-fraction" class="progress-fraction" style="color: #ff8fa3; font-weight: 600; font-size: 1rem;">
+                        <c:set var="completedCount" value="${0}"/>
+                        <c:forEach items="${courseContents}" var="content">
+                            <c:if test="${content.completed}">
+                                <c:set var="completedCount" value="${completedCount + 1}"/>
+                            </c:if>
+                        </c:forEach>
+                        ${completedCount}/${courseContents.size()} bài học
+                    </span>
                 </div>
             </div>
-            <div class="progress-track">
-                <div class="progress-bar" style="width: ${courseProgress}%">
-                    <div class="progress-glow"></div>
-                </div>
+            <div style="background: #eee; border-radius: 8px; height: 8px; width: 100%; margin-top: 8px; overflow: hidden;">
+                <div id="progress-bar" style="
+                    height: 8px;
+                    width: ${courseProgress}%;
+                    background: linear-gradient(90deg, #ff8fa3, #6cb4ff);
+                    border-radius: 8px;
+                    transition: width 0.6s cubic-bezier(.4,2,.6,1);
+                "></div>
             </div>
         </div>
 
@@ -793,7 +797,20 @@
         }, 2500);
     }
 
-    // --- Cập nhật tiến độ khi xem hết video ---
+    function updateProgressUI(newPercent, newCompleted, total) {
+        // Cập nhật thanh tiến độ
+        const bar = document.getElementById('progress-bar');
+        bar.style.width = newPercent + '%';
+        // Cập nhật số %
+        document.getElementById('progress-percentage').textContent = newPercent + '%';
+        // Cập nhật số bài học (luôn giữ đúng định dạng x/y bài học)
+        document.getElementById('progress-fraction').textContent = `${newCompleted}/${total} bài học`;
+    }
+
+    // Lấy tổng số bài học từ JSP
+    const totalLessons = ${courseContents.size()};
+
+    // --- Ví dụ cập nhật tiến độ cho video ---
     document.addEventListener('DOMContentLoaded', function() {
         const video = document.getElementById('videoPlayer');
         if (video) {
@@ -805,8 +822,10 @@
                     watchedAll: true
                 }, function(res) {
                     if (res.success) {
+                        // Luôn tính lại số bài học hoàn thành
+                        let completedLessons = Math.round(res.progress / 100 * totalLessons);
+                        updateProgressUI(res.progress, completedLessons, totalLessons);
                         showProgressToast(res.message, true);
-                        setTimeout(() => location.reload(), 1200);
                     } else {
                         showProgressToast(res.message, false);
                     }
@@ -828,8 +847,9 @@
                         readAll: true
                     }, function(res) {
                         if (res.success) {
+                            let completedLessons = Math.round(res.progress / 100 * totalLessons);
+                            updateProgressUI(res.progress, completedLessons, totalLessons);
                             showProgressToast(res.message, true);
-                            setTimeout(() => location.reload(), 1200);
                         } else {
                             showProgressToast(res.message, false);
                         }
@@ -848,8 +868,9 @@
             assignmentID: assignmentID
         }, function(res) {
             if (res.success) {
+                let completedLessons = Math.round(res.progress / 100 * totalLessons);
+                updateProgressUI(res.progress, completedLessons, totalLessons);
                 showProgressToast(res.message, true);
-                setTimeout(() => location.reload(), 1200);
             } else {
                 showProgressToast(res.message, false);
             }

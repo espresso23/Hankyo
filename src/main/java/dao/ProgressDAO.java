@@ -106,4 +106,19 @@ public class ProgressDAO {
         }
         return 0;
     }
+
+    public List<Integer> getCompletedContentIDs(int learnerID, int courseID) throws SQLException {
+        List<Integer> completedIDs = new ArrayList<>();
+        String sql = "SELECT contentID FROM Progress WHERE learnerID = ? AND courseID = ? AND status = 'COMPLETED'";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, learnerID);
+            pstmt.setInt(2, courseID);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                completedIDs.add(rs.getInt("contentID"));
+            }
+        }
+        return completedIDs;
+    }
 } 
