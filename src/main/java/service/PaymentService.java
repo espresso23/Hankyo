@@ -2,9 +2,7 @@ package service;
 
 import dao.OrderDAO;
 import dao.PaymentDAO;
-import model.Course;
 import model.CoursePaid;
-import model.Order;
 import model.Payment;
 import util.DBConnect;
 
@@ -30,7 +28,7 @@ public class PaymentService {
         String coursePaidSQL = "INSERT INTO Course_Paid (paymentID, courseID, learnerID, datePaid) VALUES (?, ?, ?, ?)";
         String expertSQL = "SELECT expertID, price FROM Course WHERE courseID = ?";
         String updateRevenueSQL = "INSERT INTO ExpertRevenue (expertID, totalRevenue, lastUpdated) VALUES (?, ?, ?)";
-        String insertPlatformRevenueSQL = "INSERT INTO Revenue (amount, date, description) VALUES (?, GETDATE(), ?)";
+        String insertPlatformRevenueSQL = "INSERT INTO Revenue (amount, date, description,paymentID) VALUES (?, GETDATE(), ?,?)";
         String orderSQL = "INSERT INTO Orders (orderID, paymentID, expertID, courseID, learnerID, orderDate, totalAmount, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try {
@@ -101,6 +99,7 @@ public class PaymentService {
                 try (PreparedStatement psPlatform = connection.prepareStatement(insertPlatformRevenueSQL)) {
                     psPlatform.setDouble(1, totalPlatformRevenue);
                     psPlatform.setString(2, payment.getDescription());
+                    psPlatform.setString(3, payment.getPaymentID());
                     psPlatform.executeUpdate();
                 }
             }

@@ -6,6 +6,8 @@ import util.DBConnect;
 
 import java.sql.*;
 import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ExpertDAO {
     private Connection connection;
@@ -137,5 +139,29 @@ public class ExpertDAO {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public List<Expert> getExpertsByQuery(String query) throws SQLException {
+        List<Expert> experts = new ArrayList<>();
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Expert expert = new Expert();
+                expert.setExpertID(rs.getInt("expertID"));
+                expert.setUserID(rs.getInt("userID"));
+                expert.setCertificate(rs.getString("certificate"));
+                expert.setStatus(rs.getString("status"));
+                
+                // Thông tin từ bảng User
+                expert.setFullName(rs.getString("fullName"));
+                expert.setGmail(rs.getString("gmail"));
+                expert.setAvatar(rs.getString("avatar"));
+                expert.setRole(rs.getString("role"));
+                
+                experts.add(expert);
+            }
+        }
+        return experts;
     }
 }

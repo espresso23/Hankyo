@@ -788,4 +788,24 @@ public class CourseDAO {
         }
         return courses;
     }
+
+    public List<Course> getCoursesByQuery(String query) throws SQLException {
+        List<Course> courses = new ArrayList<>();
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Course course = new Course();
+                course.setCourseID(rs.getInt("courseID"));
+                course.setCourseTitle(rs.getString("title"));
+                course.setCourseDescription(rs.getString("course_description"));
+                course.setCourseImg(rs.getString("course_img"));
+                course.setStatus(rs.getString("status"));
+                course.setPrice(rs.getBigDecimal("price"));
+                course.setDateCreated(rs.getDate("createdAt"));
+                courses.add(course);
+            }
+        }
+        return courses;
+    }
 }

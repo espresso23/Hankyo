@@ -1,4 +1,4 @@
-package controller.authenication;
+package controller.authentication;
 import dao.UserDAO;
 import model.User;
 import util.SmtpProtocol;
