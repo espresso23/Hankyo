@@ -17,7 +17,7 @@ import java.util.Enumeration;
 import org.json.JSONObject;
 
 @WebServlet("/ChatReportServlet")
-public class gChatReportServlet extends HttpServlet {
+public class ChatReportServlet extends HttpServlet {
     private ReportDAO reportDAO;
 
     @Override
