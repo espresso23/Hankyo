@@ -116,7 +116,7 @@
       border-radius: 50%;
       background: linear-gradient(317deg, #ffc676, #eb8be6);
       border: none;
-      cursor: pointer;
+      cursor: move;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
       display: flex;
       flex-direction: column;
@@ -125,6 +125,13 @@
       transition: all 0.3s ease;
       outline: none;
       z-index: 1000;
+      user-select: none;
+      touch-action: none; /* Ngăn chặn hành vi mặc định của touch */
+    }
+
+    .mobile-menu-btn.dragging {
+      cursor: grabbing;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
     }
 
     .mobile-menu-btn:hover {
@@ -172,6 +179,7 @@
       overflow: hidden;
       transform-origin: top right;
       animation: fadeIn 0.3s ease-out;
+      transition: all 0.3s ease;
     }
 
     @keyframes fadeIn {
@@ -327,10 +335,124 @@
   });
 </script>
 <script>
-  // Updated function name to match new class
+  // Thêm code để xử lý kéo thả
+  document.addEventListener('DOMContentLoaded', function() {
+    const mobileMenuBtn = document.getElementById('mobileMenuButton');
+    const mobileMenu = document.getElementById('mobileVerticalMenu');
+    let isDragging = false;
+    let currentX = 0;
+    let currentY = 0;
+    let initialX = 0;
+    let initialY = 0;
+    let xOffset = 0;
+    let yOffset = 0;
+
+    mobileMenuBtn.addEventListener('mousedown', dragStart);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', dragEnd);
+
+    function dragStart(e) {
+      initialX = e.clientX - xOffset;
+      initialY = e.clientY - yOffset;
+
+      if (e.target === mobileMenuBtn) {
+        isDragging = true;
+        mobileMenuBtn.classList.add('dragging');
+      }
+    }
+
+    function drag(e) {
+      if (isDragging) {
+        e.preventDefault();
+        
+        currentX = e.clientX - initialX;
+        currentY = e.clientY - initialY;
+
+        xOffset = currentX;
+        yOffset = currentY;
+
+        // Cập nhật vị trí nút
+        mobileMenuBtn.style.left = currentX + 'px';
+        mobileMenuBtn.style.top = currentY + 'px';
+
+        // Cập nhật vị trí menu
+        if (mobileMenu.style.display === 'block') {
+          mobileMenu.style.left = (currentX + 50) + 'px'; // 50px là chiều rộng của nút
+          mobileMenu.style.top = (currentY + 25) + 'px'; // 25px là một nửa chiều cao của nút
+        }
+      }
+    }
+
+    function dragEnd(e) {
+      initialX = currentX;
+      initialY = currentY;
+      isDragging = false;
+      mobileMenuBtn.classList.remove('dragging');
+    }
+  });
+
+  // Thêm xử lý cho touch events
+  document.addEventListener('DOMContentLoaded', function() {
+    const mobileMenuBtn = document.getElementById('mobileMenuButton');
+    const mobileMenu = document.getElementById('mobileVerticalMenu');
+    let isDragging = false;
+    let currentX = 0;
+    let currentY = 0;
+    let initialX = 0;
+    let initialY = 0;
+    let xOffset = 0;
+    let yOffset = 0;
+
+    mobileMenuBtn.addEventListener('touchstart', dragStart);
+    document.addEventListener('touchmove', drag);
+    document.addEventListener('touchend', dragEnd);
+
+    function dragStart(e) {
+      initialX = e.touches[0].clientX - xOffset;
+      initialY = e.touches[0].clientY - yOffset;
+
+      if (e.target === mobileMenuBtn) {
+        isDragging = true;
+        mobileMenuBtn.classList.add('dragging');
+      }
+    }
+
+    function drag(e) {
+      if (isDragging) {
+        e.preventDefault();
+        
+        currentX = e.touches[0].clientX - initialX;
+        currentY = e.touches[0].clientY - initialY;
+
+        xOffset = currentX;
+        yOffset = currentY;
+
+        // Cập nhật vị trí nút
+        mobileMenuBtn.style.left = currentX + 'px';
+        mobileMenuBtn.style.top = currentY + 'px';
+
+        // Cập nhật vị trí menu
+        if (mobileMenu.style.display === 'block') {
+          mobileMenu.style.left = (currentX + 50) + 'px';
+          mobileMenu.style.top = (currentY + 25) + 'px';
+        }
+      }
+    }
+
+    function dragEnd(e) {
+      initialX = currentX;
+      initialY = currentY;
+      isDragging = false;
+      mobileMenuBtn.classList.remove('dragging');
+    }
+  });
+
+  // Cập nhật hàm toggleMobileMenu
   function toggleMobileMenu() {
     const menu = document.getElementById('mobileVerticalMenu');
     const btn = document.getElementById('mobileMenuButton');
+    const btnRect = btn.getBoundingClientRect();
+    const windowWidth = window.innerWidth;
 
     if (menu.style.display === 'block') {
       menu.style.animation = 'fadeIn 0.3s ease-out reverse';
@@ -341,23 +463,86 @@
     } else {
       menu.style.display = 'block';
       menu.style.animation = 'fadeIn 0.3s ease-out';
+      
+      // Kiểm tra vị trí nút để quyết định hiển thị menu bên nào
+      if (btnRect.left > windowWidth / 2) {
+        // Nút ở bên phải, hiển thị menu bên trái
+        menu.style.left = (btnRect.left - 220) + 'px'; // 220px là chiều rộng của menu
+      } else {
+        // Nút ở bên trái, hiển thị menu bên phải
+        menu.style.left = (btnRect.left + 50) + 'px';
+      }
+      
+      menu.style.top = (btnRect.top + 25) + 'px';
       btn.classList.add('active');
     }
   }
 
-  // Updated click handler with new class names
-  document.addEventListener('click', function(event) {
-    const menu = document.getElementById('mobileVerticalMenu');
-    const menuBtn = document.getElementById('mobileMenuButton');
+  // Cập nhật hàm drag để xử lý vị trí menu khi kéo
+  function drag(e) {
+    if (isDragging) {
+      e.preventDefault();
+      
+      currentX = e.clientX - initialX;
+      currentY = e.clientY - initialY;
 
-    if (!menu.contains(event.target) && !menuBtn.contains(event.target)) {
-      menu.style.animation = 'fadeIn 0.3s ease-out reverse';
-      setTimeout(() => {
-        menu.style.display = 'none';
-      }, 250);
-      menuBtn.classList.remove('active');
+      xOffset = currentX;
+      yOffset = currentY;
+
+      // Cập nhật vị trí nút
+      mobileMenuBtn.style.left = currentX + 'px';
+      mobileMenuBtn.style.top = currentY + 'px';
+
+      // Cập nhật vị trí menu nếu đang hiển thị
+      if (mobileMenu.style.display === 'block') {
+        const windowWidth = window.innerWidth;
+        const btnRect = mobileMenuBtn.getBoundingClientRect();
+
+        if (btnRect.left > windowWidth / 2) {
+          // Nút ở bên phải, hiển thị menu bên trái
+          mobileMenu.style.left = (currentX - 220) + 'px';
+        } else {
+          // Nút ở bên trái, hiển thị menu bên phải
+          mobileMenu.style.left = (currentX + 50) + 'px';
+        }
+        
+        mobileMenu.style.top = (currentY + 25) + 'px';
+      }
     }
-  });
+  }
+
+  // Cập nhật hàm drag cho touch events
+  function drag(e) {
+    if (isDragging) {
+      e.preventDefault();
+      
+      currentX = e.touches[0].clientX - initialX;
+      currentY = e.touches[0].clientY - initialY;
+
+      xOffset = currentX;
+      yOffset = currentY;
+
+      // Cập nhật vị trí nút
+      mobileMenuBtn.style.left = currentX + 'px';
+      mobileMenuBtn.style.top = currentY + 'px';
+
+      // Cập nhật vị trí menu nếu đang hiển thị
+      if (mobileMenu.style.display === 'block') {
+        const windowWidth = window.innerWidth;
+        const btnRect = mobileMenuBtn.getBoundingClientRect();
+
+        if (btnRect.left > windowWidth / 2) {
+          // Nút ở bên phải, hiển thị menu bên trái
+          mobileMenu.style.left = (currentX - 220) + 'px';
+        } else {
+          // Nút ở bên trái, hiển thị menu bên phải
+          mobileMenu.style.left = (currentX + 50) + 'px';
+        }
+        
+        mobileMenu.style.top = (currentY + 25) + 'px';
+      }
+    }
+  }
 </script>
 </body>
 </html>

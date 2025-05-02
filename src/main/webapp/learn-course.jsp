@@ -116,7 +116,7 @@
                                 <c:if test="${not empty content.media && !content.media.endsWith('.pdf')}">
                                 <span class="video-duration">
                                     <i class="far fa-clock"></i>
-                                    <span data-video-src="${content.media}">--:--</span>
+                                    <span data-video-src="${content.media}" data-content-id="${content.courseContentID}">--:--</span>
                                 </span>
                                 </c:if>
                                 <c:if test="${not empty content.assignment}">
@@ -559,31 +559,64 @@
         }
 
         $('.video-duration').each(function () {
-            const videoSrc = $(this).data('video-src');
+            const videoSrc = $(this).find('span').data('video-src');
+            const contentId = $(this).find('span').data('content-id');
             const video = document.createElement('video');
+            const $durationElement = $(this).find('span');
+
+            console.log('Processing video for content ID:', contentId);
+            console.log('Video source:', videoSrc);
+
+            // Kiểm tra đường dẫn video
+            if (!videoSrc) {
+                console.error('Video source is empty for content ID:', contentId);
+                $durationElement.text("Không có video");
+                processedVideos++;
+                if (processedVideos === videosToProcess) {
+                    updateTotalDuration();
+                }
+                return;
+            }
+
+            // Kiểm tra URL có phải là Cloudinary không
+            if (!videoSrc.includes('cloudinary.com')) {
+                console.error('Invalid video source for content ID:', contentId, videoSrc);
+                $durationElement.text("Nguồn video không hợp lệ");
+                processedVideos++;
+                if (processedVideos === videosToProcess) {
+                    updateTotalDuration();
+                }
+                return;
+            }
 
             video.onloadedmetadata = function () {
-                const durationSeconds = video.duration;
-                const formattedDuration = formatTime(durationSeconds);
-                $(this).text(formattedDuration);
-
-                totalDurationSeconds += durationSeconds;
+                console.log('Video metadata loaded for content ID:', contentId);
+                if (video.duration && !isNaN(video.duration)) {
+                    const durationSeconds = video.duration;
+                    const formattedDuration = formatTime(durationSeconds);
+                    $durationElement.text(formattedDuration);
+                    totalDurationSeconds += durationSeconds;
+                } else {
+                    console.error('Invalid video duration for content ID:', contentId, video.duration);
+                    $durationElement.text("Không thể xác định");
+                }
                 processedVideos++;
-
                 if (processedVideos === videosToProcess) {
                     updateTotalDuration();
                 }
-            }.bind(this);
+            };
 
-            video.onerror = function () {
-                $(this).text("Không khả dụng");
+            video.onerror = function (e) {
+                console.error('Error loading video for content ID:', contentId, e);
+                $durationElement.text("Lỗi tải video");
                 processedVideos++;
-
                 if (processedVideos === videosToProcess) {
                     updateTotalDuration();
                 }
-            }.bind(this);
+            };
 
+            // Thêm crossOrigin để xử lý CORS
+            video.crossOrigin = 'anonymous';
             video.src = videoSrc;
             video.preload = 'metadata';
         });

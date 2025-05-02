@@ -71,6 +71,17 @@ public class CourseContentServlet extends HttpServlet {
 
             // Lấy danh sách nội dung khóa học
             List<CourseContent> contents = courseContentDAO.listCourseContentsByCourseID(courseID);
+
+            // Nạp luôn danh sách câu hỏi cho tất cả assignment (nếu có)
+            for (CourseContent content : contents) {
+                if (content.getAssignment() != null && content.getAssignment().getAssignmentID() > 0) {
+                    Assignment assignment = assignmentDAO.getAssignmentWithQuestions(content.getAssignment().getAssignmentID());
+                    if (assignment != null) {
+                        content.setAssignment(assignment);
+                    }
+                }
+            }
+
             request.setAttribute("courseContents", contents);
 
             // Lấy nội dung hiện tại
