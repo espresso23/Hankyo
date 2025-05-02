@@ -9,18 +9,14 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         .assignment-container {
-            max-width: 900px;
-            margin: 2rem auto;
-            padding: 2rem;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 100%;
+            margin: 40px auto;
+            padding: 80px;
         }
 
         .assignment-header {
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #e9ecef;
+            margin-bottom: 30px;
+            text-align: center;
         }
 
         .assignment-header h1 {
@@ -36,26 +32,31 @@
         }
 
         .question-container {
-            margin-bottom: 2rem;
-            padding: 1.5rem;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border: 1px solid #dee2e6;
+            background: #fff;
+            border-radius: 16px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 12px rgba(255, 143, 163, 0.08), 0 1.5px 8px rgba(108, 180, 255, 0.08);
+            padding: 0;
+            width: 100%;
         }
 
         .question-header {
+            background: #ffe0e0;
+            color: #2c3e50;
+            border-radius: 16px 16px 0 0;
+            padding: 18px 24px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border-bottom: none;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid #dee2e6;
         }
 
         .question-number {
             font-size: 1.1rem;
             font-weight: 600;
-            color: #1a73e8;
+            color: #2c3e50;
         }
 
         .question-mark {
@@ -65,6 +66,10 @@
             border-radius: 20px;
             font-size: 0.9rem;
             font-weight: 500;
+        }
+
+        .question-content {
+            padding: 24px 28px 20px 28px;
         }
 
         .question-text {
@@ -79,9 +84,29 @@
         }
 
         .question-image {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(90deg, #ff8fa3, #6cb4ff);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 8px rgba(108, 180, 255, 0.08);
+            min-height: 180px;
             max-width: 100%;
+        }
+
+        .question-image img {
+            max-width: 320px;
+            max-height: 180px;
+            width: auto;
+            height: auto;
             border-radius: 8px;
-            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(255, 143, 163, 0.12);
+            background: #fff;
+            padding: 4px;
+            display: block;
+            margin: 0 auto;
         }
 
         .audio-container {
@@ -159,11 +184,64 @@
             box-shadow: 0 4px 8px rgba(26, 115, 232, 0.3);
         }
 
+        .progress-info {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
         @media (max-width: 768px) {
             .assignment-container {
                 margin: 1rem;
                 padding: 1rem;
             }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            transform: translateX(120%);
+            transition: transform 0.3s ease-out;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left: 4px solid #28a745;
+        }
+
+        .notification.error {
+            border-left: 4px solid #dc3545;
+        }
+
+        .notification i {
+            font-size: 1.2rem;
+        }
+
+        .notification.success i {
+            color: #28a745;
+        }
+
+        .notification.error i {
+            color: #dc3545;
+        }
+
+        .notification .message {
+            font-size: 0.95rem;
+            color: #2c3e50;
         }
     </style>
 </head>
@@ -197,61 +275,65 @@
                         <span class="question-mark"><c:out value="${questionMark}"/> điểm</span>
                     </div>
 
-                    <div class="question-text">
-                        <c:out value="${question.questionText}"/>
-                    </div>
-
-                    <c:if test="${not empty question.questionImg || not empty question.audioFile}">
-                        <div class="question-media">
-                            <c:if test="${not empty question.questionImg}">
-                                <img src="<c:out value="${question.questionImg}"/>" alt="Question Image" class="question-image">
-                            </c:if>
-                            
-                            <c:if test="${not empty question.audioFile}">
-                                <div class="audio-container">
-                                    <audio controls class="audio-player">
-                                        <source src="<c:out value="${question.audioFile}"/>" type="audio/mpeg">
-                                        Trình duyệt của bạn không hỗ trợ phát audio.
-                                    </audio>
-                                </div>
-                            </c:if>
+                    <div class="question-content">
+                        <div class="question-text">
+                            <c:out value="${question.questionText}"/>
                         </div>
-                    </c:if>
 
-                    <div class="options-container">
-                        <c:choose>
-                            <c:when test="${question.questionType eq 'multiple_choice'}">
-                                <c:forEach items="${question.answers}" var="answer">
-                                    <c:set var="optionLabel" value="${answer.optionLabel}"/>
-                                    <c:set var="answerText" value="${answer.answerText}"/>
-                                    <c:set var="isCorrect" value="${answer.correct}"/>
-                                    
-                                    <div class="option-item">
-                                        <label class="option-label">
-                                            <input type="radio" 
-                                                   name="answer_<c:out value="${question.questionID}"/>" 
-                                                   value="<c:out value="${optionLabel}"/>"
-                                                   class="option-input"
-                                                   data-is-correct="<c:out value="${isCorrect}"/>"
-                                                   data-question-mark="<c:out value="${questionMark}"/>"
-                                                   >
-                                            <span class="option-text">
-                                                <c:out value="${optionLabel}"/>. <c:out value="${answerText}"/>
-                                            </span>
-                                        </label>
+                        <c:if test="${not empty question.questionImg || not empty question.audioFile}">
+                            <div class="question-media">
+                                <c:if test="${not empty question.questionImg}">
+                                    <div class="question-image">
+                                        <img src="<c:out value="${question.questionImg}"/>" alt="Question Image">
                                     </div>
-                                </c:forEach>
-                            </c:when>
-                            <c:otherwise>
-                                <div class="form-group">
-                                    <textarea name="answer_<c:out value="${question.questionID}"/>" 
-                                              class="form-control" 
-                                              rows="4" 
-                                              placeholder="Nhập câu trả lời của bạn"
-                                              ></textarea>
-                                </div>
-                            </c:otherwise>
-                        </c:choose>
+                                </c:if>
+                                
+                                <c:if test="${not empty question.audioFile}">
+                                    <div class="audio-container">
+                                        <audio controls class="audio-player">
+                                            <source src="<c:out value="${question.audioFile}"/>" type="audio/mpeg">
+                                            Trình duyệt của bạn không hỗ trợ phát audio.
+                                        </audio>
+                                    </div>
+                                </c:if>
+                            </div>
+                        </c:if>
+
+                        <div class="options-container">
+                            <c:choose>
+                                <c:when test="${question.questionType eq 'multiple_choice'}">
+                                    <c:forEach items="${question.answers}" var="answer">
+                                        <c:set var="optionLabel" value="${answer.optionLabel}"/>
+                                        <c:set var="answerText" value="${answer.answerText}"/>
+                                        <c:set var="isCorrect" value="${answer.correct}"/>
+                                        
+                                        <div class="option-item">
+                                            <label class="option-label">
+                                                <input type="radio" 
+                                                       name="answer_<c:out value="${question.questionID}"/>" 
+                                                       value="<c:out value="${optionLabel}"/>"
+                                                       class="option-input"
+                                                       data-is-correct="<c:out value="${isCorrect}"/>"
+                                                       data-question-mark="<c:out value="${questionMark}"/>"
+                                                       >
+                                                <span class="option-text">
+                                                    <c:out value="${optionLabel}"/>. <c:out value="${answerText}"/>
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </c:forEach>
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="form-group">
+                                        <textarea name="answer_<c:out value="${question.questionID}"/>" 
+                                                  class="form-control" 
+                                                  rows="4" 
+                                                  placeholder="Nhập câu trả lời của bạn"
+                                                  ></textarea>
+                                    </div>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
                     </div>
                 </div>
             </c:forEach>
@@ -261,18 +343,21 @@
                     <i class="fas fa-exclamation-triangle me-2"></i>
                     <span id="warningMessage">Bạn chưa trả lời bất kỳ câu hỏi nào. Bạn có chắc chắn muốn nộp bài không?</span>
                 </div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="progress-info">
-                        <span class="me-3">Đã trả lời: <span id="answeredCount">0</span>/<span id="totalQuestions"><c:out value="${assignment.assignmentQuestions.size()}"/></span></span>
-                        <span>Chưa trả lời: <span id="unansweredCount"><c:out value="${assignment.assignmentQuestions.size()}"/></span></span>
-                    </div>
-                    <button type="submit" class="submit-btn" id="submitBtn">
-                        <i class="fas fa-paper-plane"></i>
-                        Nộp bài
-                    </button>
+                <div class="progress-info">
+                    <span class="me-3">Đã trả lời: <span id="answeredCount">0</span>/<span id="totalQuestions"><c:out value="${assignment.assignmentQuestions.size()}"/></span></span>
+                    <span>Chưa trả lời: <span id="unansweredCount"><c:out value="${assignment.assignmentQuestions.size()}"/></span></span>
                 </div>
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <i class="fas fa-paper-plane"></i>
+                    Nộp bài
+                </button>
             </div>
         </form>
+    </div>
+
+    <div class="notification" id="notification">
+        <i class="fas"></i>
+        <span class="message"></span>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -476,6 +561,31 @@
                 $('#submitBtn').prop('disabled', true);
 
                 // Gửi request bằng AJAX
+                function showNotification(message, type) {
+                    const notification = $('#notification');
+                    const icon = notification.find('i');
+                    const messageSpan = notification.find('.message');
+
+                    // Set notification content
+                    messageSpan.text(message);
+                    notification.removeClass('success error').addClass(type);
+                    
+                    if (type === 'success') {
+                        icon.removeClass().addClass('fas fa-check-circle');
+                    } else {
+                        icon.removeClass().addClass('fas fa-exclamation-circle');
+                    }
+
+                    // Show notification
+                    notification.addClass('show');
+
+                    // Hide notification after 3 seconds
+                    setTimeout(() => {
+                        notification.removeClass('show');
+                    }, 3000);
+                }
+
+                // Update success handler
                 $.ajax({
                     url: 'submit-assignment',
                     method: 'POST',
@@ -487,14 +597,16 @@
 
                         try {
                             if (response.success) {
-                                alert('Nộp bài thành công!');
-                                window.location.href = 'view-assignment-result?assignmentID=' + formData.assignmentID;
+                                showNotification('Nộp bài thành công!', 'success');
+                                setTimeout(() => {
+                                    window.history.back();
+                                }, 1000);
                             } else {
-                                alert(response.message || 'Có lỗi xảy ra khi nộp bài. Vui lòng thử lại.');
+                                showNotification(response.message || 'Có lỗi xảy ra khi nộp bài. Vui lòng thử lại.', 'error');
                             }
                         } catch (e) {
                             console.error('Lỗi khi xử lý phản hồi:', e);
-                            alert('Có lỗi xảy ra khi xử lý phản hồi từ server');
+                            showNotification('Có lỗi xảy ra khi xử lý phản hồi từ server', 'error');
                         }
                     },
                     error: function(xhr, status, error) {
@@ -517,7 +629,7 @@
                             console.error('Lỗi khi parse JSON response:', e);
                         }
 
-                        alert(errorMessage);
+                        showNotification(errorMessage, 'error');
                     }
                 });
             });
