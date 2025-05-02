@@ -124,6 +124,9 @@ body {
     font-weight: 600;
 }
 
+.text-primary {
+    color: #f598a6 !important;
+}
 .progress-track {
     height: 6px;
     background: #f0f0f0;
@@ -1476,4 +1479,37 @@ body {
     .fixed-sidebar-toggle {
         left: 0;
     }
+}
+
+/* Progress Bar Styles */
+.progress-container {
+    background: #eee;
+    border-radius: 8px;
+    height: 8px;
+    width: 100%;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 8px;
+    background: linear-gradient(90deg, #ff8fa3, #6cb4ff);
+    border-radius: 8px;
+    transition: width 0.6s cubic-bezier(0.4, 2, 0.6, 1);
+}
+
+.progress-text {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.custom-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #ff8fa3, #6cb4ff);
+    border-radius: 8px;
+    transition: width 0.6s cubic-bezier(0.4, 2, 0.6, 1);
 }

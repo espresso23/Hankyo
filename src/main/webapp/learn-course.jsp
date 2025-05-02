@@ -8,17 +8,21 @@
     <title>${course.courseTitle} - Hankyo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary-pink: #ff9bb3; /* Soft pastel pink */
-            --light-pink: #ffd6e7; /* Very light pink */
-            --soft-pink: #fff0f6; /* Almost white pink */
-            --primary-blue: #89c4f4; /* Soft pastel blue */
-            --light-blue: #e1f5fe; /* Very light blue */
-            --dark-blue: #4b97e8; /* Slightly darker blue */
-            --text-dark: #333;
-            --text-medium: #555;
-            --text-light: #777;
+    <style type="text/css">
+        .progress-container {
+            background: #eee;
+            border-radius: 8px;
+            height: 8px;
+            width: 100%;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff8fa3, #6cb4ff);
+            border-radius: 8px;
+            transition: width 0.6s cubic-bezier(0.4, 2, 0.6, 1);
         }
     </style>
     <link rel="stylesheet" href="asset/css/learn-course.css">
@@ -52,29 +56,21 @@
 
         <!-- Course Progress -->
         <div class="course-progress">
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
+            <div class="progress-text" style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
                 <span style="color: #888; font-size: 1rem;">Tiến độ hoàn thành</span>
-                <div style="margin-left: auto; display: flex; align-items: baseline; gap: 8px;">
-                    <span id="progress-percentage" class="progress-percentage" style="color: #888; font-size: 1rem;">${courseProgress}%</span>
-                    <span id="progress-fraction" class="progress-fraction" style="color: #ff8fa3; font-weight: 600; font-size: 1rem;">
-                        <c:set var="completedCount" value="${0}"/>
-                        <c:forEach items="${courseContents}" var="content">
-                            <c:if test="${content.completed}">
-                                <c:set var="completedCount" value="${completedCount + 1}"/>
-                            </c:if>
-                        </c:forEach>
-                        ${completedCount}/${courseContents.size()} bài học
-                    </span>
-                </div>
+                <span class="progress-percent" style="color: #888; font-size: 1rem;">${courseProgress}%</span>
+                <span class="progress-fraction" style="color: #ff8fa3; font-weight: 600; font-size: 1rem; margin-left: 8px;">
+                    <c:set var="completedCount" value="${0}"/>
+                    <c:forEach items="${courseContents}" var="content">
+                        <c:if test="${content.completed}">
+                            <c:set var="completedCount" value="${completedCount + 1}"/>
+                        </c:if>
+                    </c:forEach>
+                    ${completedCount}/${courseContents.size()} bài học
+                </span>
             </div>
-            <div style="background: #eee; border-radius: 8px; height: 8px; width: 100%; margin-top: 8px; overflow: hidden;">
-                <div id="progress-bar" style="
-                    height: 8px;
-                    width: ${courseProgress}%;
-                    background: linear-gradient(90deg, #ff8fa3, #6cb4ff);
-                    border-radius: 8px;
-                    transition: width 0.6s cubic-bezier(.4,2,.6,1);
-                "></div>
+            <div class="progress-container">
+                <div id="progress-bar" class="custom-progress-bar" style="width: ${courseProgress}%"></div>
             </div>
         </div>
 
@@ -174,7 +170,7 @@
 
                                 <div class="assignment-actions">
                                     <c:choose>
-                                        <c:when test="${currentContent.completed && ((assignmentResult.correctCount / assignmentResult.totalQuestions) * 100) >= 80}">
+                                        <c:when test="${not empty assignmentResult && ((assignmentResult.correctCount / assignmentResult.totalQuestions) * 100) >= 80}">
                                             <div class="assignment-result">
                                                 <div class="result-header mb-4">
                                                     <div class="d-flex align-items-center gap-2 text-success">
@@ -219,7 +215,7 @@
                                                 </c:if>
                                             </div>
                                         </c:when>
-                                        <c:when test="${currentContent.completed && ((assignmentResult.correctCount / assignmentResult.totalQuestions) * 100) < 80}">
+                                        <c:when test="${not empty assignmentResult && ((assignmentResult.correctCount / assignmentResult.totalQuestions) * 100) < 80}">
                                             <div class="assignment-result">
                                                 <div class="result-header mb-4">
                                                     <div class="d-flex align-items-center gap-2 text-warning">
@@ -865,7 +861,8 @@
             courseID: '${course.courseID}',
             contentID: '${currentContent.courseContentID}',
             type: 'assignment',
-            assignmentID: assignmentID
+            assignmentID: assignmentID,
+            score: ${assignmentResult.correctCount / assignmentResult.totalQuestions * 100}
         }, function(res) {
             if (res.success) {
                 let completedLessons = Math.round(res.progress / 100 * totalLessons);
