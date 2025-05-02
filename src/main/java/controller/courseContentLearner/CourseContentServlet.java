@@ -188,7 +188,6 @@ public class CourseContentServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            // Kiểm tra đăng nhập
             HttpSession session = request.getSession();
             Learner learner = (Learner) session.getAttribute("learner");
             if (learner == null) {
@@ -198,22 +197,47 @@ public class CourseContentServlet extends HttpServlet {
 
             int courseID = Integer.parseInt(request.getParameter("courseID"));
             int contentID = Integer.parseInt(request.getParameter("contentID"));
+            String type = request.getParameter("type");
 
-            // Cập nhật tiến độ
-            progressService.markContentCompleted(learner.getLearnerID(), courseID, contentID);
+            boolean canMarkCompleted = false;
 
-            // Tính toán tiến độ mới
-            int progress = progressService.calculateCourseProgress(learner.getLearnerID(), courseID);
+            if ("video".equals(type)) {
+                boolean watchedAll = Boolean.parseBoolean(request.getParameter("watchedAll"));
+                if (watchedAll) canMarkCompleted = true;
+            } else if ("reading".equals(type)) {
+                boolean readAll = Boolean.parseBoolean(request.getParameter("readAll"));
+                if (readAll) canMarkCompleted = true;
+            } else if ("assignment".equals(type)) {
+                int assignmentID = Integer.parseInt(request.getParameter("assignmentID"));
+                // Lấy kết quả làm bài gần nhất
+                AssignmentTaken latestTaken = assignmentTakenDAO.getLatestAssignmentTaken(learner.getLearnerID(), assignmentID);
+                if (latestTaken != null) {
+                    List<AssignmentResult> results = assignmentResultDAO.getResultsByTakenID(latestTaken.getAssignTakenID());
+                    int totalQuestions = results.size();
+                    int correctCount = 0;
+                    for (AssignmentResult result : results) {
+                        if (result.isAnswerIsCorrect()) correctCount++;
+                    }
+                    double percent = (double) correctCount / totalQuestions * 100;
+                    if (percent >= 80) canMarkCompleted = true;
+                }
+            }
 
-            // Trả về kết quả dưới dạng JSON
-            response.setContentType("application/json");
-            response.getWriter().write("{\"success\": true, \"progress\": " + progress + "}");
+            if (canMarkCompleted) {
+                progressService.markContentCompleted(learner.getLearnerID(), courseID, contentID);
+                int progress = progressService.calculateCourseProgress(learner.getLearnerID(), courseID);
+                System.out.println("[PROGRESS] Học viên " + learner.getLearnerID() + " đã hoàn thành content " + contentID + " của khóa " + courseID + ". Tiến độ mới: " + progress + "%");
+                response.setContentType("application/json");
+                response.getWriter().write("{\"success\": true, \"progress\": " + progress + ", \"message\": \"Cập nhật tiến độ thành công!\"}");
+            } else {
+                System.out.println("[PROGRESS] Học viên " + learner.getLearnerID() + " chưa đủ điều kiện hoàn thành content " + contentID + " của khóa " + courseID);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"success\": false, \"message\": \"Bạn chưa hoàn thành đủ điều kiện!\"}");
+            }
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        } catch (NumberFormatException e) {
-            response.sendRedirect("my-courses");
         }
     }
 }

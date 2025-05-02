@@ -465,6 +465,24 @@
     </div>
 </div>
 
+<!-- Toast thông báo tiến độ -->
+<div id="progress-toast" style="
+    display:none;
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #323232;
+    color: #fff;
+    padding: 16px 32px;
+    border-radius: 8px;
+    font-size: 1rem;
+    z-index: 9999;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    opacity: 0;
+    transition: opacity 0.5s;
+"></div>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
@@ -762,6 +780,81 @@
             player.container.classList.remove('hide-controls');
         }
     });
+
+    function showProgressToast(message, isSuccess) {
+        const toast = document.getElementById('progress-toast');
+        toast.textContent = message;
+        toast.style.background = isSuccess ? '#28a745' : '#dc3545';
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.opacity = 1; }, 10);
+        setTimeout(() => {
+            toast.style.opacity = 0;
+            setTimeout(() => { toast.style.display = 'none'; }, 500);
+        }, 2500);
+    }
+
+    // --- Cập nhật tiến độ khi xem hết video ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const video = document.getElementById('videoPlayer');
+        if (video) {
+            video.addEventListener('ended', function() {
+                $.post('learn-course', {
+                    courseID: '${course.courseID}',
+                    contentID: '${currentContent.courseContentID}',
+                    type: 'video',
+                    watchedAll: true
+                }, function(res) {
+                    if (res.success) {
+                        showProgressToast(res.message, true);
+                        setTimeout(() => location.reload(), 1200);
+                    } else {
+                        showProgressToast(res.message, false);
+                    }
+                }, 'json');
+            });
+        }
+
+        // --- Cập nhật tiến độ khi đọc hết bài reading ---
+        const pdfContainer = document.querySelector('.pdf-content');
+        let sentReading = false;
+        if (pdfContainer) {
+            pdfContainer.addEventListener('scroll', function() {
+                if (!sentReading && pdfContainer.scrollTop + pdfContainer.clientHeight >= pdfContainer.scrollHeight - 10) {
+                    sentReading = true;
+                    $.post('learn-course', {
+                        courseID: '${course.courseID}',
+                        contentID: '${currentContent.courseContentID}',
+                        type: 'reading',
+                        readAll: true
+                    }, function(res) {
+                        if (res.success) {
+                            showProgressToast(res.message, true);
+                            setTimeout(() => location.reload(), 1200);
+                        } else {
+                            showProgressToast(res.message, false);
+                        }
+                    }, 'json');
+                }
+            });
+        }
+    });
+
+    // --- Hàm cập nhật tiến độ cho assignment (gọi khi đạt điểm >80%) ---
+    function updateProgressAssignment(assignmentID) {
+        $.post('learn-course', {
+            courseID: '${course.courseID}',
+            contentID: '${currentContent.courseContentID}',
+            type: 'assignment',
+            assignmentID: assignmentID
+        }, function(res) {
+            if (res.success) {
+                showProgressToast(res.message, true);
+                setTimeout(() => location.reload(), 1200);
+            } else {
+                showProgressToast(res.message, false);
+            }
+        }, 'json');
+    }
 </script>
 </body>
 </html> 
