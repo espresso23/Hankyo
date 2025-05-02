@@ -8,10 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SignificationDAO {
-    private Connection conn;
-
     public SignificationDAO() {
-        conn = DBConnect.getInstance().getConnection();
     }
 
     public List<Signification> getUnreadSignifications(int userID) {
@@ -22,7 +19,8 @@ public class SignificationDAO {
                 "WHERE s.userID = ? AND s.isRead = 0 " +
                 "ORDER BY s.dateGiven DESC";
 
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userID);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -44,7 +42,7 @@ public class SignificationDAO {
 
         // Now let's fetch the source titles separately for each notification
         for (Signification sig : significations) {
-            try {
+            try (Connection conn = DBConnect.getInstance().getConnection()) {
                 String titleSql = "";
                 switch (sig.getTypeName()) {
                     case "Forum":
@@ -80,7 +78,8 @@ public class SignificationDAO {
 
     public int getUnreadCount(int userID) {
         String sql = "SELECT COUNT(*) as count FROM Signification WHERE userID = ? AND isRead = 0";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userID);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -95,7 +94,8 @@ public class SignificationDAO {
 
     public void markAsRead(int significationID) {
         String sql = "UPDATE Signification SET isRead = 1 WHERE significationID = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, significationID);
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -105,7 +105,8 @@ public class SignificationDAO {
 
     public void markAllAsRead(int userID) {
         String sql = "UPDATE Signification SET isRead = 1 WHERE userID = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userID);
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -116,7 +117,8 @@ public class SignificationDAO {
     public void addSignification(Signification signification) {
         String sql = "INSERT INTO Signification (userID, typeID, sourceID, description, dateGiven, isRead) " +
                 "VALUES (?, ?, ?, ?, GETDATE(), 0)";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, signification.getUserID());
             ps.setInt(2, signification.getTypeID());
             ps.setInt(3, signification.getSourceID());
