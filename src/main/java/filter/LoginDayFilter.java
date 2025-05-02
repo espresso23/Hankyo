@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 
-@WebFilter("/*")
+@WebFilter(urlPatterns = {"/home.jsp", "/home"})
 public class LoginDayFilter implements Filter {
     private HonourDAO honourDAO;
     private HonourOwnedDAO honourOwnedDAO;
@@ -24,27 +24,24 @@ public class LoginDayFilter implements Filter {
     public void init(FilterConfig filterConfig) throws ServletException {
         honourDAO = new HonourDAO();
         honourOwnedDAO = new HonourOwnedDAO();
-        System.out.println("LoginDayFilter initialized");
     }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        System.out.println("LoginDayFilter doFilter called");
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         HttpSession session = httpRequest.getSession(false);
 
-        System.out.println("Session exists: " + (session != null));
         if (session != null) {
             Learner learner = (Learner) session.getAttribute("learner");
             Integer userID = (Integer) session.getAttribute("userID");
-            System.out.println("learner: " + learner);
-            System.out.println("userID: " + userID);
+            Boolean isNewLogin = (Boolean) session.getAttribute("isNewLogin");
 
-            if (userID != null && learner != null) {
-                System.out.println("Both learner and userID exist, checking login days");
+            if (userID != null && learner != null && Boolean.TRUE.equals(isNewLogin)) {
                 checkAndUpdateLoginDays(userID, learner.getLearnerID());
+                // Reset flag after processing
+                session.setAttribute("isNewLogin", false);
             }
         }
 
@@ -52,18 +49,12 @@ public class LoginDayFilter implements Filter {
     }
 
     private void checkAndUpdateLoginDays(int userID, int learnerID) {
-        System.out.println("Checking login days for userID: " + userID + ", learnerID: " + learnerID);
-        
         // Check or create Login record
         Login login = honourDAO.getLoginByUserID(userID);
         if (login == null) {
-            System.out.println("No login record found, creating new one");
             honourDAO.createLogin(userID);
             login = honourDAO.getLoginByUserID(userID);
-            if (login == null) {
-                System.out.println("Failed to create login record");
-                return;
-            }
+            if (login == null) return;
         }
 
         // Get dates
@@ -72,13 +63,8 @@ public class LoginDayFilter implements Filter {
         int loginDays = login.getLoginDays();
         Date dateCreate = honourDAO.getUserDateCreate(userID);
 
-        System.out.println("Current login days: " + loginDays);
-        System.out.println("Last date login: " + lastDateLogin);
-        System.out.println("Date create: " + dateCreate);
-
         if (dateCreate == null) {
             dateCreate = currentDate;
-            System.out.println("Using current date as date create");
         }
 
         // Truncate time for date-only comparison
@@ -97,7 +83,6 @@ public class LoginDayFilter implements Filter {
             lastLoginCal.setTime(lastDateLogin);
         } else {
             lastLoginCal.setTime(dateCreate);
-            System.out.println("Using date create as last login date");
         }
         truncateTime(lastLoginCal);
         Date lastLoginDateOnly = lastLoginCal.getTime();
@@ -106,16 +91,12 @@ public class LoginDayFilter implements Filter {
         boolean shouldIncrement = currentDateOnly.after(createDateOnly) &&
                 (lastDateLogin == null || currentDateOnly.after(lastLoginDateOnly));
 
-        System.out.println("Should increment login days: " + shouldIncrement);
-
         if (shouldIncrement) {
             loginDays++;
             honourDAO.updateLoginDays(userID, loginDays, currentDate);
-            System.out.println("Updated login days to: " + loginDays);
 
             // Check for 7-day login honour (ID 20)
-            if (loginDays >= 0) {
-                System.out.println("Attempting to award 7-day login honour");
+            if (loginDays >= 7) {
                 award7DayLoginHonour(learnerID);
             }
         }
@@ -131,27 +112,21 @@ public class LoginDayFilter implements Filter {
     private void award7DayLoginHonour(int learnerID) {
         int honourID = 20;
         if (!honourOwnedDAO.hasHonour(learnerID, honourID)) {
-            System.out.println("User doesn't have honour ID " + honourID + ", attempting to award");
             HonourOwned honourOwned = new HonourOwned();
             honourOwned.setHonour(honourDAO.getHonourById(honourID));
-            if (honourOwned.getHonour() == null) {
-                System.out.println("Failed to get honour with ID " + honourID);
-                return;
-            }
+            if (honourOwned.getHonour() == null) return;
+            
             Learner learner = new Learner();
             learner.setLearnerID(learnerID);
             honourOwned.setLearner(learner);
             honourOwned.setDateAdded(new Date());
             honourOwned.setEquipped(false);
             honourOwnedDAO.addHonour(honourOwned);
-            System.out.println("Successfully awarded honour ID " + honourID);
-        } else {
-            System.out.println("User already has honour ID " + honourID);
         }
     }
 
     @Override
     public void destroy() {
-        System.out.println("LoginDayFilter destroyed");
+        // Cleanup if needed
     }
 }

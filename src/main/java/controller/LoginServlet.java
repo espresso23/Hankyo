@@ -67,6 +67,7 @@ public class LoginServlet extends HttpServlet {
                     session.setAttribute("role", user.getRole());
                     session.setAttribute("fullName", user.getFullName());
                     session.setAttribute("gender", user.getGender());
+                    session.setAttribute("isNewLogin", true);
 
                     System.out.println("User role: " + user.getRole());
                     if ("expert".equalsIgnoreCase(user.getRole())) {

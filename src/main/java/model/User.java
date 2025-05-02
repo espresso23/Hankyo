@@ -1,8 +1,10 @@
 package model;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class User {
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int userID;
     private String username;
     private String password;
@@ -16,9 +18,8 @@ public class User {
     private String gender;
     private Date dateOfBirth;
     private String avatar;
-    private Integer equippedHonourID;
 
-    public User(int userID, String username, String password, String gmail, String phone, String role, String status, String fullName, String socialID, Date dateCreate, String gender, Date dateOfBirth, String avatar, Integer equippedHonourID) {
+    public User(int userID, String username, String password, String gmail, String phone, String role, String status, String fullName, String socialID, Date dateCreate, String gender, Date dateOfBirth, String avatar) {
         this.userID = userID;
         this.username = username;
         this.password = password;
@@ -32,10 +33,10 @@ public class User {
         this.gender = gender;
         this.dateOfBirth = dateOfBirth;
         this.avatar = avatar;
-        this.equippedHonourID = equippedHonourID;
     }
 
     public User() {
+
     }
 
     public String getAvatar() {
@@ -54,14 +55,7 @@ public class User {
         this.dateOfBirth = dateOfBirth;
     }
 
-    public Integer getEquippedHonourID() {
-        return equippedHonourID;
-    }
-
-    public void setEquippedHonourID(Integer equippedHonourID) {
-        this.equippedHonourID = equippedHonourID;
-    }
-
+    // Getters and Setters
     public int getUserID() {
         return userID;
     }
@@ -159,8 +153,6 @@ public class User {
                 "Full Name: " + fullName + "\n" +
                 "Social ID: " + socialID + "\n" +
                 "Date Created: " + dateCreate + "\n" +
-                "Gender: " + gender + "\n" +
-                "Date Of Birth: " + dateOfBirth + "\n" +
-                "Equipped Honour ID: " + equippedHonourID;
+                "Gender: " + gender + "\n" + "Date Of Birth: " + dateOfBirth + "\n";
     }
 }
