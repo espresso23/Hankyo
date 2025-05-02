@@ -30,7 +30,7 @@ public class LoginServlet extends HttpServlet {
             if ("expert".equalsIgnoreCase(user.getRole())) {
                 request.getRequestDispatcher("expert.jsp").forward(request, response);
             } else if ("admin".equalsIgnoreCase(user.getRole())) {
-                response.sendRedirect("adminPage");
+                response.sendRedirect("admin-dashboard");
             } else if ("examManager".equalsIgnoreCase(user.getRole())) {
                 response.sendRedirect("exam?action=getExamLibrary");
             } else {
@@ -86,7 +86,7 @@ public class LoginServlet extends HttpServlet {
                             response.sendRedirect("home.jsp");
                         }
                     } else if ("admin".equalsIgnoreCase(user.getRole())) {
-                        response.sendRedirect("adminPage");
+                        response.sendRedirect("admin-dashboard");
                     } else if ("learner".equalsIgnoreCase(user.getRole())) {
                         LearnerDAO learnerDAO = new LearnerDAO();
                         Learner learner = learnerDAO.getLearnerByUserId(user.getUserID());

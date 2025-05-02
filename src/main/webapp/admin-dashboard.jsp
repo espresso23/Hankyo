@@ -11,6 +11,10 @@
         body {
             background: #f8f9fa;
         }
+        .nav-item{
+            margin: 5px 0 5px 0px;
+
+        }
         .sidebar {
             min-height: 100vh;
             background: #fff;
@@ -157,52 +161,9 @@
 <body>
     <div class="container-fluid">
         <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 sidebar p-3">
-                <h3 class="mb-4">Hankyo Admin</h3>
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="admin-dashboard.jsp">
-                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="admin-users.jsp">
-                            <i class="bi bi-people me-2"></i>Quản lý người dùng
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="admin-courses">
-                            <i class="bi bi-book me-2"></i>Quản lý khóa học
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="admin-payments">
-                            <i class="bi bi-cash me-2"></i>Quản lý thanh toán
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="admin-posts">
-                            <i class="bi bi-file-text me-2"></i>Quản lý nội dung
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="admin-experts">
-                            <i class="bi bi-person-badge me-2"></i>Quản lý expert
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="admin-reports">
-                            <i class="bi bi-flag me-2"></i>Quản lý báo cáo
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="admin-categories">
-                            <i class="bi bi-tags me-2"></i>Quản lý danh mục
-                        </a>
-                    </li>
-                </ul>
-            </div>
+            <jsp:include page="admin-sidebar.jsp">
+                <jsp:param name="active" value="dashboard"/>
+            </jsp:include>
 
             <!-- Main content -->
             <div class="col-md-9 col-lg-10 main-content">

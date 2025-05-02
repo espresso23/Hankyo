@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @WebServlet({
-    "/adminPage",
+    "/admin-dashboard",
     "/admin-users",
     "/admin-courses",
     "/admin-payments",
