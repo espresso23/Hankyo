@@ -4,6 +4,7 @@ import model.Answer;
 import model.Exam;
 import model.ExamTaken;
 import model.Question;
+import model.Course;
 import util.DBConnect;
 
 import java.sql.*;
@@ -20,6 +21,10 @@ public class ExamDAO {
 
     public ExamDAO(Connection connection) {
         this.connection = connection;
+    }
+
+    public ExamDAO() {
+
     }
 
     public boolean addExam(Exam exam) {
@@ -421,5 +426,6 @@ public class ExamDAO {
         exam.setDateCreated(dateCreate);
         exam.setStatus(rs.getString("status"));
         return exam;
+
     }
 }

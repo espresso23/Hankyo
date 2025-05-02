@@ -1,5 +1,3 @@
-
-
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
@@ -258,6 +256,16 @@
         <c:forEach items="${questions}" var="q">
             <div>
                 Question ${q.questionID}: ${q.questionText}
+                <br>
+                <c:if test="${not empty q.questionImage}">
+                    <img src="${q.questionImage}" alt="Hình ảnh câu hỏi" class="img-fluid mb-3">
+                </c:if>
+                <c:if test="${not empty q.audioFile}">
+                    <audio controls class="mb-3">
+                        <source src="${q.audioFile}" type="audio/mpeg">
+                        Trình duyệt không hỗ trợ audio.
+                    </audio>
+                </c:if>
                 <br>Number of answers: ${q.answers.size()}
                 <br>Answers:
                 <c:forEach items="${q.answers}" var="a">
@@ -325,6 +333,15 @@
                             <div class="question-text">
                                 <span class="question-number">Câu ${status.index + 1}:</span>
                                     ${question.questionText}
+                                <c:if test="${not empty question.questionImage}">
+                                    <img src="${question.questionImage}" alt="Hình ảnh câu hỏi" class="img-fluid mb-3">
+                                </c:if>
+                                <c:if test="${not empty question.audioFile}">
+                                    <audio controls class="mb-3">
+                                        <source src="${question.audioFile}" type="audio/mpeg">
+                                        Trình duyệt không hỗ trợ audio.
+                                    </audio>
+                                </c:if>
                             </div>
                             <div class="answers">
                                 <c:forEach items="${question.answers}" var="answer" varStatus="answerStatus">

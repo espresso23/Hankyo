@@ -208,12 +208,12 @@
             <div class="test-card">
                 <h3>TOPIK I</h3>
                 <p>Phù hợp với người mới học tiếng Hàn, gồm các câu hỏi về từ vựng, ngữ pháp và nghe hiểu.</p>
-                <button class="test-btn" onclick="startExam(3)">Bắt đầu kiểm tra</button>
+                <button class="test-btn" onclick="window.location.href='exam?action=do&examID=1&eQuesType=Full&time=60'">Bắt đầu kiểm tra</button>
             </div>
             <div class="test-card">
                 <h3>TOPIK II</h3>
                 <p>Dành cho người có trình độ trung cấp và cao cấp, bao gồm đọc hiểu, viết luận và nghe hiểu.</p>
-                <button class="test-btn" onclick="startExam(4)">Bắt đầu kiểm tra</button>
+                <button class="test-btn" onclick="window.location.href='exam?action=do&examID=2&eQuesType=Full&time=60'">Bắt đầu kiểm tra</button>
             </div>
         </div>
     </div>
