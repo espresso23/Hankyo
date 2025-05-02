@@ -201,7 +201,7 @@
                                                             </div>
                                                         </div>
 
-                                                        <div class="d-flex gap-3 justify-content-center">
+                                                        <div class="d-flex gap-3 justify-content-center" style="width: 40%;">
                                                             <a href="view-assignment-result?assignmentID=${currentContent.assignment.assignmentID}&courseID=${course.courseID}&courseContentID=${currentContent.courseContentID}"
                                                                class="btn btn-primary">
                                                                 Xem bài làm
