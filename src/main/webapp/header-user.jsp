@@ -108,7 +108,7 @@
     /* Mobile Menu Button Styles - New Class Name */
     .mobile-menu-btn {
       position: fixed;
-      top: 15%;
+      top: 12%;
       right: 96%;
       z-index: 1000;
       width: 50px;
@@ -124,6 +124,7 @@
       align-items: center;
       transition: all 0.3s ease;
       outline: none;
+      z-index: 1000;
     }
 
     .mobile-menu-btn:hover {

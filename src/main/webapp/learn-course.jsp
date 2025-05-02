@@ -33,12 +33,7 @@
 <!-- Main Container -->
 <div class="main-content-wrapper">
     <!-- Sidebar Container -->
-    <div class="course-sidebar sidebar-enhanced" id="courseSidebar">
-        <!-- Sidebar Toggle Button -->
-        <button class="sidebar-toggle" id="sidebarToggle">
-            <i class="fas fa-chevron-right"></i>
-        </button>
-
+    <div class="course-sidebar" id="courseSidebar">
         <!-- Sidebar Header -->
         <div class="sidebar-header">
             <div class="d-flex align-items-center">
@@ -46,6 +41,14 @@
                 <span style="color: var(--primary-pink); font-weight: 600;">Nội dung khóa học</span>
             </div>
         </div>
+
+        <!-- Toggle Button -->
+        <button class="sidebar-toggle" id="sidebarToggle">
+            <div class="toggle-icon">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <span class="toggle-text d-none">Hide menu</span>
+        </button>
 
         <!-- Course Progress -->
         <div class="course-progress">
@@ -642,6 +645,14 @@
         $('#sidebarToggle').click(function () {
             $('#courseSidebar').toggleClass('sidebar-hidden');
             $('.course-content').toggleClass('full-width');
+            
+            // Đổi hướng icon khi sidebar ẩn/hiện
+            if ($('#courseSidebar').hasClass('sidebar-hidden')) {
+                $('.toggle-icon i').removeClass('fa-chevron-left').addClass('fa-chevron-right');
+                $('.mobile-menu-btn').removeClass('d-none');
+            } else {
+                $('.toggle-icon i').removeClass('fa-chevron-right').addClass('fa-chevron-left');
+            }
         });
 
         // Xử lý responsive

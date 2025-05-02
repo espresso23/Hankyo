@@ -48,6 +48,7 @@ body {
     min-height: 100vh;
     padding-top: var(--header-height);
     position: relative;
+    bottom: 12%;
 }
 
 /* Course Container */
@@ -71,6 +72,12 @@ body {
     display: flex;
     flex-direction: column;
     border-right: 1px solid var(--primary-pink);
+    transition: transform 0.3s ease;
+}
+
+/* Khi sidebar ẩn */
+.sidebar-hidden {
+    transform: translateX(-320px);
 }
 
 /* Sidebar Header và Progress */
@@ -279,16 +286,15 @@ body {
 
 /* Course Content */
 .course-content {
-    flex: 1;
     margin-left: 320px;
-    padding: 1.25rem;
-    min-height: calc(100vh - var(--header-height, 56px));
-    background-color: #f7f9fa;
     transition: margin-left 0.3s ease;
+    padding: 20px;
+    width: calc(100% - 320px);
 }
 
 .course-content.full-width {
     margin-left: 0;
+    width: 100%;
 }
 
 /* Animation */
@@ -466,10 +472,12 @@ body {
     background: #555;
 }
 
+/* Sidebar Toggle Button */
 .sidebar-toggle {
     position: fixed;
-    top: calc(var(--header-height) + 20px);
-    left: 320px; /* Vị trí mặc định khi có sidebar */
+    top: 50%;
+    left: 320px;
+    transform: translateY(-50%);
     width: 32px;
     height: 32px;
     background: var(--primary-pink);
@@ -480,58 +488,48 @@ body {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    z-index: 1002;
+    z-index: 1001;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.sidebar-toggle:hover {
-    background: var(--light-pink);
-    color: var(--primary-pink);
-    transform: scale(1.1);
-}
-
-.sidebar-toggle i {
+.sidebar-toggle .toggle-icon {
     font-size: 14px;
     transition: transform 0.3s ease;
 }
 
-/* Khi sidebar ẩn */
-.sidebar-hidden {
-    transform: translateX(-320px);
+.sidebar-toggle .toggle-text {
+    display: none;
 }
 
 .sidebar-hidden ~ .sidebar-toggle {
     left: 0;
 }
 
-.sidebar-hidden ~ .sidebar-toggle i {
+.sidebar-hidden ~ .sidebar-toggle .toggle-icon {
     transform: rotate(180deg);
 }
 
-/* Course Content */
-.course-content {
-    flex: 1;
-    margin-left: 320px;
-    padding: 1.25rem;
-    min-height: calc(100vh - var(--header-height));
-    background-color: #f7f9fa;
-    transition: margin-left 0.3s ease;
-}
-
-.course-content.full-width {
-    margin-left: 0;
+.sidebar-hidden ~ .sidebar-toggle .toggle-text {
+    display: none;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
     .sidebar-toggle {
         top: calc(var(--header-height) + 10px);
-        left: 0;
+        transform: translate(-50%, 0);
     }
     
     .sidebar-hidden ~ .sidebar-toggle {
-        left: 0;
+        transform: translate(16px, 0);
+    }
+    
+    .course-sidebar {
+        transform: translateX(-100%);
+    }
+    
+    .course-content {
+        margin-left: 0;
     }
 }
 
@@ -766,18 +764,20 @@ body {
 }
 /* Styles riêng cho Course Content */
 .course-sidebar {
+    margin-top: 44px;
     position: fixed;
     left: 0;
-    top: 50%;
-    height: calc(100vh - 56px);
+    top: 5%;
+    /* height: calc(100vh - 56px); */
     width: 320px;
     background: #fff;
     box-shadow: 2px 0 8px rgba(0,0,0,0.1);
     z-index: 1000;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow-y: auto;
+    /* overflow-y: auto; */
     border-right: 1px solid #e0e0e0;
 }
+
 
 .sidebar-toggle-container {
     position: fixed;
@@ -816,10 +816,6 @@ body {
 .sidebar-toggle:hover {
     background-color: rgba(255, 155, 179, 0.1);
     transform: scale(1.05);
-}
-
-.sidebar-hidden {
-    transform: translateX(-320px);
 }
 
 .course-content {
@@ -1379,12 +1375,11 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .sidebar-toggle:hover {
     background-color: rgba(255, 155, 179, 0.1);
-    transform: scale(1.05);
 }
 
 .hide-menu-text {
@@ -1392,11 +1387,6 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-/* Điều chỉnh khi sidebar ẩn */
-.sidebar-hidden {
-    transform: translateX(-320px);
 }
 
 .course-content {
@@ -1470,7 +1460,7 @@ body {
 
 /* Cập nhật CSS cho course-content */
 .course-content {
-    margin-left: 320px;
+    margin-left: 335px;
     transition: margin-left 0.3s ease;
     padding: 20px;
     width: calc(100% - 320px);
