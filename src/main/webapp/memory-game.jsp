@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Memory Game - ${topic}</title>
+    <title>Trò chơi trí nhớ - ${topic}</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/asset/css/memory-game.css">
     <link rel="icon" href="${pageContext.request.contextPath}/asset/png/icon/logo.jpg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -220,13 +220,13 @@
 <div class="game-wrapper">
     <div class="container">
         <div class="game-header">
-            <h1>Memory Game - ${topic}</h1>
-            <p>Match the Korean words with their Vietnamese meanings</p>
+            <h1>Trò chơi trí nhớ - ${topic}</h1>
+            <p>Ghép từ tiếng Hàn với nghĩa tiếng Việt tương ứng</p>
         </div>
 
         <div class="game-info">
-            <div class="score">Matches: <span id="matchCount">0</span>/10</div>
-            <div class="moves">Moves: <span id="moveCount">0</span></div>
+            <div class="score">Số cặp đã ghép: <span id="matchCount">0</span>/10</div>
+            <div class="moves">Số lượt chơi: <span id="moveCount">0</span></div>
         </div>
 
         <div class="game-container">
@@ -250,8 +250,8 @@
     </div>
 
     <div class="controls">
-        <button class="btn btn-secondary" onclick="location.href='quizlet'"><span style="font-size:1.2em;">&#8592;</span> Back to Topics</button>
-        <button class="btn btn-primary" onclick="resetGame()"><span style="font-size:1.2em;">&#8635;</span> Play Again</button>
+        <button class="btn btn-secondary" onclick="location.href='quizlet'"><span style="font-size:1.2em;">&#8592;</span> Quay lại chủ đề</button>
+        <button class="btn btn-primary" onclick="resetGame()"><span style="font-size:1.2em;">&#8635;</span> Chơi lại</button>
     </div>
 </div>
 
@@ -322,13 +322,102 @@
 
         if (matchedPairs === 10) {
             setTimeout(() => {
-                alert('Congratulations! You completed the game in ' + moveCount + ' moves!');
+                const victoryPopup = document.createElement('div');
+                victoryPopup.id = 'victory-popup';
+                victoryPopup.innerHTML = `
+                    <div style="
+                        background: linear-gradient(135deg, #FFB8E0 0%, #B4EBE6 100%);
+                        border-radius: 20px;
+                        padding: 30px;
+                        box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        z-index: 9999;
+                        text-align: center;
+                        max-width: 90vw;
+                        width: 400px;
+                        animation: popupAppear 0.5s ease-out;
+                    ">
+                        <h2 style="
+                            font-family: 'Noto Sans KR', 'Nanum Gothic', Arial, sans-serif;
+                            font-size: 1.8em;
+                            margin-bottom: 15px;
+                            color: #fff;
+                            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        ">Chúc mừng!</h2>
+                        <p style="
+                            font-size: 1.2em;
+                            margin-bottom: 20px;
+                            color: #fff;
+                        ">Bạn đã hoàn thành trò chơi với ${moveCount} lượt chơi!</p>
+                        <div style="display: flex; justify-content: center; gap: 15px;">
+                            <button onclick="resetGame()" style="
+                                padding: 10px 25px;
+                                border-radius: 20px;
+                                background: rgba(255,255,255,0.9);
+                                color: #2c3e50;
+                                font-size: 1.1em;
+                                border: none;
+                                cursor: pointer;
+                                transition: all 0.3s;
+                            ">Chơi lại</button>
+                            <button onclick="location.href='quizlet'" style="
+                                padding: 10px 25px;
+                                border-radius: 20px;
+                                background: rgba(255,255,255,0.9);
+                                color: #2c3e50;
+                                font-size: 1.1em;
+                                border: none;
+                                cursor: pointer;
+                                transition: all 0.3s;
+                            ">Quay lại chủ đề</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(victoryPopup);
+
+                // Thêm animation cho popup
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes popupAppear {
+                        0% {
+                            opacity: 0;
+                            transform: translate(-50%, -50%) scale(0.8);
+                        }
+                        100% {
+                            opacity: 1;
+                            transform: translate(-50%, -50%) scale(1);
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
             }, 500);
         }
     }
 
     function resetGame() {
-        location.reload();
+        const popup = document.getElementById('victory-popup');
+        if (popup) {
+            popup.remove();
+        }
+        
+        // Lật tất cả thẻ lên
+        const allCards = document.querySelectorAll('.card');
+        allCards.forEach(card => {
+            card.classList.add('flipped');
+        });
+
+        // Sau 3 giây, lật lại và reload trang
+        setTimeout(() => {
+            allCards.forEach(card => {
+                card.classList.remove('flipped');
+            });
+            setTimeout(() => {
+                location.reload();
+            }, 500); // Thêm delay nhỏ để animation hoàn thành
+        }, 3000);
     }
 
     // Lật tất cả card khi bấm 'Bắt đầu chơi', sau 3s lật lại
