@@ -46,7 +46,23 @@ public class CommentDAO {
             ps.setString(3, comment.getContent());
             ps.setTimestamp(4, new Timestamp(comment.getCreatedDate().getTime()));
             ps.setInt(5, comment.getParentCommentID());
-            return ps.executeUpdate() > 0;
+
+            boolean success = ps.executeUpdate() > 0;
+
+            if (success) {
+                // Get the parent comment owner's ID and create notification
+                int parentCommentOwnerID = getCommentOwnerID(comment.getParentCommentID());
+                if (parentCommentOwnerID != -1 && parentCommentOwnerID != comment.getUserID()) {
+                    NotificationDAO notificationDAO = new NotificationDAO();
+                    notificationDAO.addCommentReplyNotification(
+                        parentCommentOwnerID,
+                        comment.getCommentID(),
+                        comment.getUserFullName()
+                    );
+                }
+            }
+
+            return success;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -226,8 +242,15 @@ public class CommentDAO {
 
         try {
             conn = dbContext.getConnection();
-            conn.setAutoCommit(false); // Bắt đầu transaction
+            conn.setAutoCommit(false);
 
+            // Get comment owner's ID
+            int commentOwnerID = getCommentOwnerID(commentID);
+
+            // Get voter's full name
+            String voterFullName = getUserFullName(userID);
+
+            // Rest of the existing vote logic
             String checkSql = "SELECT VoteType FROM UserVotes WHERE UserID = ? AND CommentID = ?";
             ps = conn.prepareStatement(checkSql);
             ps.setInt(1, userID);
@@ -253,40 +276,45 @@ public class CommentDAO {
 
                 // Cập nhật điểm (bỏ vote cũ)
                 updateCommentScore(conn, commentID, -oldVoteType);
-            }
-            // 3. Nếu đã vote khác loại hoặc chưa vote
-            else {
+            } else {
                 if (existingVote) {
-                    // Cập nhật vote từ loại cũ sang loại mới
+                    // Update vote logic...
                     String updateSql = "UPDATE UserVotes SET VoteType = ?, VoteDate = CURRENT_TIMESTAMP WHERE UserID = ? AND CommentID = ?";
                     ps = conn.prepareStatement(updateSql);
                     ps.setInt(1, voteType);
                     ps.setInt(2, userID);
                     ps.setInt(3, commentID);
                     ps.executeUpdate();
-
-                    // Cập nhật điểm (bỏ vote cũ, thêm vote mới)
-                    updateCommentScore(conn, commentID, -oldVoteType); // Bỏ vote cũ
-                    updateCommentScore(conn, commentID, voteType);    // Thêm vote mới
+                    updateCommentScore(conn, commentID, -oldVoteType);
+                    updateCommentScore(conn, commentID, voteType);
                 } else {
-                    // Thêm vote mới
+                    // Insert new vote logic...
                     String insertSql = "INSERT INTO UserVotes (UserID, CommentID, VoteType) VALUES (?, ?, ?)";
                     ps = conn.prepareStatement(insertSql);
                     ps.setInt(1, userID);
                     ps.setInt(2, commentID);
                     ps.setInt(3, voteType);
                     ps.executeUpdate();
-
-                    // Cập nhật điểm (thêm vote mới)
                     updateCommentScore(conn, commentID, voteType);
+
+                    // Create notification for comment vote
+                    if (commentOwnerID != -1 && commentOwnerID != userID && voterFullName != null) {
+                        NotificationDAO notificationDAO = new NotificationDAO();
+                        notificationDAO.addCommentVoteNotification(
+                            commentOwnerID,
+                            commentID,
+                            voterFullName,
+                            voteType == 1
+                        );
+                    }
                 }
             }
 
-            conn.commit(); // Kết thúc transaction thành công
+            conn.commit();
             success = true;
         } catch (Exception e) {
             try {
-                if (conn != null) conn.rollback(); // Hoàn tác nếu lỗi
+                if (conn != null) conn.rollback();
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
@@ -488,6 +516,36 @@ public class CommentDAO {
         return replies;
     }
 
+
+    private int getCommentOwnerID(int commentID) throws SQLException {
+        String sql = "SELECT UserID FROM Comment WHERE CommentID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, commentID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("UserID");
+                }
+            }
+        }
+        return -1;
+    }
+
+    private String getUserFullName(int userID) {
+        String sql = "SELECT fullName FROM [User] WHERE UserID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("fullName");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
 }
 
