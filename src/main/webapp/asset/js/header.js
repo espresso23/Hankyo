@@ -87,7 +87,9 @@ function renderNotifications(notifications) {
     notifications.forEach(notification => {
         const notificationDiv = document.createElement('div');
         notificationDiv.className = `notification-item ${notification.isRead === 0 ? 'unread' : ''}`;
-        notificationDiv.onclick = () => markAsRead(notification.notificationID, notificationDiv);
+        
+        // Handle click based on notification type
+        notificationDiv.onclick = () => handleNotificationClick(notification);
 
         const contentDiv = document.createElement('div');
         contentDiv.className = 'notification-content';
@@ -103,6 +105,30 @@ function renderNotifications(notifications) {
     });
 }
 
+function handleNotificationClick(notification) {
+    // Mark as read first
+    markAsRead(notification.notificationID);
+
+    // Then redirect based on notification type
+    switch(notification.typeName) {
+        case 'Forum':
+        case 'Comment':
+            // Redirect to post details
+            window.location.href = `${window.location.origin}/Hankyo/post-details?id=${notification.sourceID}`;
+            break;
+        case 'Honour':
+            // Redirect to honor page
+            window.location.href = `${window.location.origin}/Hankyo/listHonour`;
+            break;
+        case 'Course':
+            // Redirect to course details
+            window.location.href = `${window.location.origin}/Hankyo/course-details-learner?id=${notification.sourceID}`;
+            break;
+        default:
+            console.log('Unknown notification type:', notification.typeName);
+    }
+}
+
 function formatTime(timestamp) {
     const date = new Date(timestamp);
     const options = { 
@@ -115,7 +141,7 @@ function formatTime(timestamp) {
     return date.toLocaleString('vi-VN', options);
 }
 
-function markAsRead(notificationID, element) {
+function markAsRead(notificationID) {
     fetch(window.location.origin + '/Hankyo/notifications', {
         method: 'POST',
         headers: {
@@ -130,7 +156,6 @@ function markAsRead(notificationID, element) {
             return response.json();
         })
         .then(() => {
-            element.classList.remove('unread');
             loadNotificationCount();
         })
         .catch(error => console.error('Error marking notification as read:', error));

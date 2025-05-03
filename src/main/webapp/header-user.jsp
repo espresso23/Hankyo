@@ -468,7 +468,7 @@
       <div class="notification-dropdown">
         <div class="notification-header">
           <span>Thông báo</span>
-          <button class="mark-all-read" onclick="markAllAsRead(event)">Đánh dấu đã đọc</button>
+          <button class="mark-all-read">Xóa tất cả thông báo</button>
         </div>
         <div id="notificationList">
           <!-- Notifications will be loaded here -->

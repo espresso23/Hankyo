@@ -171,6 +171,16 @@ public class NotificationDAO {
         addNotification(notification);
     }
 
+    public void addHonourNotification(int userID, int honourID, String honourName) {
+        String description = "You have received the " + honourName + " honor!";
+        Notification notification = new Notification();
+        notification.setUserID(userID);
+        notification.setTypeID(4); // Assuming 4 is for Honour type
+        notification.setSourceID(honourID);
+        notification.setDescription(description);
+        addNotification(notification);
+    }
+
     private Notification mapNotification(ResultSet rs) throws SQLException {
         Notification notification = new Notification();
         notification.setNotificationID(rs.getInt("notificationID"));
