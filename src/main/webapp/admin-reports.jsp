@@ -66,6 +66,12 @@
             <div class="header-bar mb-4 d-flex align-items-center justify-content-between">
                 <h2 class="mb-0">Quản lý báo cáo</h2>
             </div>
+            <div class="row mb-3" id="reportStatsRow">
+                <div class="col-auto"><span class="fw-bold">Tổng:</span> <span id="totalReports">0</span></div>
+                <div class="col-auto"><span class="text-warning fw-bold">Chờ xử lý:</span> <span id="pendingReports">0</span></div>
+                <div class="col-auto"><span class="text-success fw-bold">Đã duyệt:</span> <span id="approvedReports">0</span></div>
+                <div class="col-auto"><span class="text-secondary fw-bold">Từ chối:</span> <span id="rejectedReports">0</span></div>
+            </div>
             <div class="d-flex filter-bar flex-wrap align-items-center">
                 <select id="statusFilter" class="form-select form-select-sm" style="width: 150px;">
                     <option value="">Tất cả trạng thái</option>
@@ -130,11 +136,27 @@ let currentPage = 1;
 let pageSize = 10;
 let filteredReports = [];
 document.addEventListener('DOMContentLoaded', function() {
+    loadReportStats();
     loadReports();
     document.getElementById('statusFilter').addEventListener('change', applyFilters);
     document.getElementById('typeFilter').addEventListener('change', applyFilters);
     document.getElementById('searchInput').addEventListener('input', applyFilters);
 });
+function loadReportStats() {
+    fetch(contextPath + '/admin/reports/status-counts')
+        .then(res => res.json())
+        .then(data => {
+            let total = 0;
+            let pending = data['pending'] || 0;
+            let approved = data['approved'] || 0;
+            let rejected = data['rejected'] || 0;
+            total = pending + approved + rejected;
+            document.getElementById('totalReports').innerText = total;
+            document.getElementById('pendingReports').innerText = pending;
+            document.getElementById('approvedReports').innerText = approved;
+            document.getElementById('rejectedReports').innerText = rejected;
+        });
+}
 function loadReports() {
     showLoading();
     fetch(contextPath + '/admin/reports')

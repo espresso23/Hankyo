@@ -1622,4 +1622,19 @@ public class AdminService {
     public List<String> getAllCategoryNames() throws SQLException {
         return courseDAO.getAllCategoryNames();
     }
+
+    public Map<String, Integer> getReportStatusCounts() throws SQLException {
+        Map<String, Integer> counts = new HashMap<>();
+        String query = "SELECT status, COUNT(*) as count FROM Report GROUP BY status";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                String status = rs.getString("status");
+                int count = rs.getInt("count");
+                counts.put(status, count);
+            }
+        }
+        return counts;
+    }
 } 
