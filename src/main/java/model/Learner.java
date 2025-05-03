@@ -99,25 +99,4 @@ public Learner(int learnerID){
                 '}';
     }
 
-    public static void main(String[] args) {
-        Learner learner = new Learner();
-        learner.setGmail("tan@gmail.com");
-        learner.setFullName("Tan Pham");
-        learner.setHankyoPoint(100.30);
-        learner.setLearnerID(12345);
-        learner.setGender("Male");
-        learner.setPhone("0987654321");
-        learner.setRole("Learner");
-        learner.setStatus("Active");
-        learner.setSocialID("1234567890");
-        learner.setDateCreate(new Date());
-        Honour honour = new Honour(1, "IMG1", "SLIVER", "normal");
-        learner.setHonour(honour);
-        Vip vip = new Vip(new Date(), 3, "active", 123, "VIP");
-        learner.setVip(vip);
-        Reward reward = new Reward(3, "Hard-Working", "IMG", new Date());
-        learner.setReward(reward);
-        System.out.println(learner.displayInfo());
-
-    }
 }

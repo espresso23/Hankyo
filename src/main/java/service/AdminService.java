@@ -23,6 +23,7 @@ public class AdminService {
     private ExpertDAO expertDAO;
     private ReportDAO reportDAO;
     private TransactionDAO transactionDAO;
+    private VipDAO vipDAO;
 
     public AdminService() {
         this.userDAO = new UserDAO();
@@ -32,6 +33,7 @@ public class AdminService {
         this.expertDAO = new ExpertDAO();
         this.reportDAO = new ReportDAO();
         this.transactionDAO = new TransactionDAO();
+        this.vipDAO = new VipDAO();
     }
 
     // 1. Thống kê tổng quan
@@ -1945,5 +1947,42 @@ public class AdminService {
             }
         }
         return filtered;
+    }
+
+    // VIP Management
+    public List<Vip> getAllVips() throws SQLException {
+        return vipDAO.getAllVips();
+    }
+
+    public Vip getVipById(int vipId) throws SQLException {
+        return vipDAO.getVipById(vipId);
+    }
+
+    public boolean addVip(Vip vip) throws SQLException {
+        return vipDAO.addVip(vip);
+    }
+
+    public boolean updateVip(Vip vip) throws SQLException {
+        return vipDAO.updateVip(vip);
+    }
+
+    public boolean deleteVip(int vipId) throws SQLException {
+        return vipDAO.deleteVip(vipId);
+    }
+
+    public Map<String, Object> getVipStats() throws SQLException {
+        return vipDAO.getVipStats();
+    }
+
+    public List<Vip> getActiveVips() throws SQLException {
+        return vipDAO.getActiveVips();
+    }
+
+    public Vip getVipByType(String vipType) throws SQLException {
+        return vipDAO.getVipByType(vipType);
+    }
+
+    public Vip getUserActiveVip(int learnerId) throws SQLException {
+        return vipDAO.getUserActiveVip(learnerId);
     }
 } 

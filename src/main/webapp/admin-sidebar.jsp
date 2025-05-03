@@ -52,5 +52,10 @@
                 <i class="bi bi-tags me-2"></i>Quản lý danh mục
             </a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link ${param.active == 'vip' ? 'active' : ''}" href="admin-vip">
+                <i class="bi bi-star me-2"></i>Quản lý VIP
+            </a>
+        </li>
     </ul>
 </div> 

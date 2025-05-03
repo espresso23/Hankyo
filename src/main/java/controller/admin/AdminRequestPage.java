@@ -15,7 +15,8 @@ import java.io.IOException;
     "/admin-posts",
     "/admin-experts",
     "/admin-reports",
-    "/admin-categories"
+    "/admin-categories",
+    "/admin-vip"
 })
 public class AdminRequestPage extends HttpServlet {
     @Override
@@ -42,6 +43,9 @@ public class AdminRequestPage extends HttpServlet {
                 break;
             case "/admin-categories":
                 request.getRequestDispatcher("admin-categories.jsp").forward(request, response);
+                break;
+            case "/admin-vip":
+                request.getRequestDispatcher("admin-vip.jsp").forward(request, response);
                 break;
             default:
                 request.getRequestDispatcher("admin-dashboard.jsp").forward(request, response);

@@ -4,16 +4,20 @@ import model.Course;
 import model.Expert;
 import model.Post;
 import model.User;
+import model.Vip;
 import service.AdminService;
+import cloud.CloudinaryConfig;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -27,12 +31,19 @@ import dao.CourseFeedbackDAO;
 import dao.CoursePaidDAO;
 
 @WebServlet("/admin/*")
+@MultipartConfig(
+    fileSizeThreshold = 1024 * 1024, // 1 MB
+    maxFileSize = 1024 * 1024 * 10,  // 10 MB
+    maxRequestSize = 1024 * 1024 * 15 // 15 MB
+)
 public class AdminController extends HttpServlet {
     private final AdminService adminService;
     private final Gson gson;
+    private final CloudinaryConfig cloudinaryConfig;
 
     public AdminController() {
         this.adminService = new AdminService();
+        this.cloudinaryConfig = new CloudinaryConfig();
         // Đăng ký TypeAdapter cho LocalDateTime
         this.gson = new GsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new JsonSerializer<LocalDateTime>() {
@@ -226,6 +237,43 @@ public class AdminController extends HttpServlet {
                 // Get all payments (type course or vip)
                 List<model.Payment> payments = adminService.getAllPayments();
                 response.getWriter().write(gson.toJson(payments));
+            } else if (pathInfo.equals("/vips")) {
+                // Get all VIP packages
+                List<Vip> vips = adminService.getAllVips();
+                response.getWriter().write(gson.toJson(vips));
+            } else if (pathInfo.equals("/vips/stats")) {
+                // Get VIP statistics
+                Map<String, Object> stats = adminService.getVipStats();
+                response.getWriter().write(gson.toJson(stats));
+            } else if (pathInfo.startsWith("/vips/") && pathInfo.length() > "/vips/".length()) {
+                // Handle individual VIP operations
+                String subPath = pathInfo.substring("/vips/".length());
+                if (subPath.matches("\\d+")) {
+                    int vipId = Integer.parseInt(subPath);
+                    if (request.getMethod().equals("GET")) {
+                        // Get VIP by ID
+                        Vip vip = adminService.getVipById(vipId);
+                        if (vip == null) {
+                            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                            response.getWriter().write(gson.toJson(Map.of("error", "VIP package not found")));
+                            return;
+                        }
+                        response.getWriter().write(gson.toJson(vip));
+                    } else if (request.getMethod().equals("PUT")) {
+                        // Update VIP
+                        Vip vip = gson.fromJson(request.getReader(), Vip.class);
+                        vip.setVipID(vipId);
+                        boolean success = adminService.updateVip(vip);
+                        response.getWriter().write(gson.toJson(Map.of("success", success)));
+                    } else if (request.getMethod().equals("DELETE")) {
+                        // Delete VIP
+                        boolean success = adminService.deleteVip(vipId);
+                        response.getWriter().write(gson.toJson(Map.of("success", success)));
+                    }
+                } else {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().write(gson.toJson(Map.of("error", "Invalid VIP ID")));
+                }
             } else {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 response.getWriter().write(gson.toJson(Map.of("error", "Not Found")));
@@ -250,7 +298,28 @@ public class AdminController extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         try {
-            if (pathInfo.equals("/categories")) {
+            if (pathInfo.equals("/vips")) {
+                // Add new VIP
+                Vip vip = new Vip();
+                vip.setVipName(request.getParameter("vipName"));
+                vip.setDescription(request.getParameter("description"));
+                vip.setVipType(request.getParameter("vipType"));
+                vip.setPrice(Double.parseDouble(request.getParameter("price")));
+                vip.setYearlyPrice(Double.parseDouble(request.getParameter("yearlyPrice")));
+                vip.setDuration(Integer.parseInt(request.getParameter("duration")));
+                vip.setFeatures(request.getParameter("features"));
+                vip.setStatus(request.getParameter("status"));
+
+                // Handle image upload
+                Part filePart = request.getPart("vip_img");
+                if (filePart != null && filePart.getSize() > 0) {
+                    String imageUrl = cloudinaryConfig.convertMediaToUrl(filePart);
+                    vip.setVip_img(imageUrl);
+                }
+
+                boolean success = adminService.addVip(vip);
+                response.getWriter().write(gson.toJson(Map.of("success", success)));
+            } else if (pathInfo.equals("/categories")) {
                 // Add category
                 Map<String, String> data = gson.fromJson(request.getReader(), Map.class);
                 String categoryName = data.get("categoryName");
@@ -285,7 +354,33 @@ public class AdminController extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         try {
-            if (pathInfo.startsWith("/categories/")) {
+            if (pathInfo.startsWith("/vips/")) {
+                // Update VIP
+                int vipId = Integer.parseInt(pathInfo.substring("/vips/".length()));
+                Vip vip = new Vip();
+                vip.setVipID(vipId);
+                vip.setVipName(request.getParameter("vipName"));
+                vip.setDescription(request.getParameter("description"));
+                vip.setVipType(request.getParameter("vipType"));
+                vip.setPrice(Double.parseDouble(request.getParameter("price")));
+                vip.setYearlyPrice(Double.parseDouble(request.getParameter("yearlyPrice")));
+                vip.setDuration(Integer.parseInt(request.getParameter("duration")));
+                vip.setFeatures(request.getParameter("features"));
+                vip.setStatus(request.getParameter("status"));
+
+                // Handle image upload
+                Part filePart = request.getPart("vip_img");
+                if (filePart != null && filePart.getSize() > 0) {
+                    String imageUrl = cloudinaryConfig.convertMediaToUrl(filePart);
+                    vip.setVip_img(imageUrl);
+                } else {
+                    // Keep existing image if no new image uploaded
+                    vip.setVip_img(request.getParameter("currentVip_img"));
+                }
+
+                boolean success = adminService.updateVip(vip);
+                response.getWriter().write(gson.toJson(Map.of("success", success)));
+            } else if (pathInfo.startsWith("/categories/")) {
                 // Update category
                 int categoryId = Integer.parseInt(pathInfo.substring("/categories/".length()));
                 Map<String, String> data = gson.fromJson(request.getReader(), Map.class);

@@ -279,4 +279,20 @@ public class PaymentDAO {
         }
     }
 
+    // Thêm mới payment cho VIP
+    public boolean addPayment(model.Payment payment) throws SQLException {
+        String sql = "INSERT INTO Payment (paymentID, learnerID, amount, description, paymentDate, status, type) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = util.DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, payment.getPaymentID());
+            ps.setInt(2, payment.getLearnerID());
+            ps.setBigDecimal(3, payment.getTotalAmount());
+            ps.setString(4, payment.getDescription());
+            ps.setTimestamp(5, java.sql.Timestamp.valueOf(payment.getPayDate()));
+            ps.setString(6, payment.getStatus());
+            ps.setString(7, payment.getType());
+            return ps.executeUpdate() > 0;
+        }
+    }
+
 }

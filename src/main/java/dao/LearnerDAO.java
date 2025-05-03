@@ -97,22 +97,6 @@ public class LearnerDAO {
     }
 
 
-    public boolean updateVipByLearnerId(int learnerId, Vip vip) throws SQLException {
-        String query = "UPDATE Vip_User SET dateCreated = ?, endDate = ?, vipStatus = ? WHERE learnerID = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setDate(1, new java.sql.Date(vip.getDateCreated().getTime()));
-            stmt.setDate(2, new java.sql.Date(vip.getEndDate().getTime()));
-            stmt.setString(3, vip.getVipLearnerStatus());//expired || ongoing
-            stmt.setInt(4, learnerId);
-            stmt.executeUpdate();
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            connection.close();
-        }
-        return false;
-    }
     public boolean deleteLearner(int learnerId) throws SQLException {
         String query = "UPDATE Learner SET  status = 'deleted' WHERE learnerID = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {

@@ -33,7 +33,17 @@ public class HonourFilter implements Filter {
         HttpSession session = httpRequest.getSession(false);
 
         if (session != null) {
-            Integer userID = (Integer) session.getAttribute("userID");
+            Object userIDObj = session.getAttribute("userID");
+            Integer userID = null;
+            if (userIDObj instanceof String) {
+                try {
+                    userID = Integer.parseInt((String) userIDObj);
+                } catch (NumberFormatException e) {
+                    userID = null;
+                }
+            } else if (userIDObj instanceof Integer) {
+                userID = (Integer) userIDObj;
+            }
             User user = (User) session.getAttribute("user");
             if (userID != null) {
                 // Fetch equipped honour details using userID
@@ -65,7 +75,17 @@ public class HonourFilter implements Filter {
             }
 
             // Award honours using learnerID and userID from session
-            Integer learnerID = (Integer) session.getAttribute("learnerID");
+            Object learnerIDObj = session.getAttribute("learnerID");
+            Integer learnerID = null;
+            if (learnerIDObj instanceof String) {
+                try {
+                    learnerID = Integer.parseInt((String) learnerIDObj);
+                } catch (NumberFormatException e) {
+                    learnerID = null;
+                }
+            } else if (learnerIDObj instanceof Integer) {
+                learnerID = (Integer) learnerIDObj;
+            }
             if (learnerID != null && userID != null) {
                 checkAndAwardHonours(learnerID, userID, session);
             }
