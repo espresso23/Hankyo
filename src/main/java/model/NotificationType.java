@@ -1,13 +1,13 @@
 package model;
 
-public class SignificationType {
+public class NotificationType {
     private int typeID;
     private String typeName;
 
-    public SignificationType() {
+    public NotificationType() {
     }
 
-    public SignificationType(int typeID, String typeName) {
+    public NotificationType(int typeID, String typeName) {
         this.typeID = typeID;
         this.typeName = typeName;
     }

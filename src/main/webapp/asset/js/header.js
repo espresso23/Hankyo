@@ -87,7 +87,7 @@ function renderNotifications(notifications) {
     notifications.forEach(notification => {
         const notificationDiv = document.createElement('div');
         notificationDiv.className = `notification-item ${notification.isRead === 0 ? 'unread' : ''}`;
-        notificationDiv.onclick = () => markAsRead(notification.significationID, notificationDiv);
+        notificationDiv.onclick = () => markAsRead(notification.notificationID, notificationDiv);
 
         const contentDiv = document.createElement('div');
         contentDiv.className = 'notification-content';
@@ -115,13 +115,13 @@ function formatTime(timestamp) {
     return date.toLocaleString('vi-VN', options);
 }
 
-function markAsRead(significationID, element) {
+function markAsRead(notificationID, element) {
     fetch(window.location.origin + '/Hankyo/notifications', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: `action=markRead&significationID=${significationID}`
+        body: `action=markRead&notificationID=${notificationID}`
     })
         .then(response => {
             if (!response.ok) {

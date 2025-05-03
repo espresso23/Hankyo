@@ -52,10 +52,10 @@ public class CommentDAO {
                 // Get the parent comment owner's ID and create notification
                 int parentCommentOwnerID = getCommentOwnerID(comment.getParentCommentID());
                 if (parentCommentOwnerID != -1 && parentCommentOwnerID != comment.getUserID()) {
-                    SignificationDAO significationDAO = new SignificationDAO();
-                    significationDAO.addCommentReplyNotification(
+                    NotificationDAO notificationDAO = new NotificationDAO();
+                    notificationDAO.addCommentReplyNotification(
                         parentCommentOwnerID,
-                        comment.getParentCommentID(),
+                        comment.getCommentID(),
                         comment.getUserFullName()
                     );
                 }
@@ -260,10 +260,10 @@ public class CommentDAO {
                     ps.executeUpdate();
                     updateCommentScore(conn, commentID, voteType);
                     
-                    // Create notification for new votes only
+                    // Create notification for comment vote
                     if (commentOwnerID != -1 && commentOwnerID != userID && voterFullName != null) {
-                        SignificationDAO significationDAO = new SignificationDAO();
-                        significationDAO.addCommentVoteNotification(
+                        NotificationDAO notificationDAO = new NotificationDAO();
+                        notificationDAO.addCommentVoteNotification(
                             commentOwnerID,
                             commentID,
                             voterFullName,

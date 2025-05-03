@@ -2,8 +2,8 @@ package model;
 
 import java.util.Date;
 
-public class Signification {
-    private int significationID;
+public class Notification {
+    private int notificationID;
     private int userID;
     private int typeID;
     private Integer sourceID;
@@ -12,12 +12,12 @@ public class Signification {
     private String typeName; // For display purposes
     private String sourceTitle; // For display purposes (e.g., post title, comment content)
 
-    public Signification() {
+    public Notification() {
     }
 
-    public Signification(int significationID, int userID, int typeID, Integer sourceID, 
+    public Notification(int notificationID, int userID, int typeID, Integer sourceID, 
                         String description, Date dateGiven) {
-        this.significationID = significationID;
+        this.notificationID = notificationID;
         this.userID = userID;
         this.typeID = typeID;
         this.sourceID = sourceID;
@@ -26,12 +26,12 @@ public class Signification {
     }
 
     // Getters and Setters
-    public int getSignificationID() {
-        return significationID;
+    public int getNotificationID() {
+        return notificationID;
     }
 
-    public void setSignificationID(int significationID) {
-        this.significationID = significationID;
+    public void setNotificationID(int notificationID) {
+        this.notificationID = notificationID;
     }
 
     public int getUserID() {

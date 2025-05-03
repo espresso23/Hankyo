@@ -696,8 +696,8 @@ public class PostDAO {
 
                     // Create notification for new votes only
                     if (postOwnerID != -1 && postOwnerID != userID && voterFullName != null) {
-                        SignificationDAO significationDAO = new SignificationDAO();
-                        significationDAO.addPostVoteNotification(
+                        NotificationDAO notificationDAO = new NotificationDAO();
+                        notificationDAO.addPostVoteNotification(
                             postOwnerID,
                             postID,
                             voterFullName,
@@ -854,8 +854,8 @@ public class PostDAO {
                 // Get post owner's ID and create notification
                 int postOwnerID = getPostOwnerID(comment.getPostID());
                 if (postOwnerID != -1 && postOwnerID != comment.getUserID()) {
-                    SignificationDAO significationDAO = new SignificationDAO();
-                    significationDAO.addPostCommentNotification(
+                    NotificationDAO notificationDAO = new NotificationDAO();
+                    notificationDAO.addPostCommentNotification(
                         postOwnerID,
                         comment.getPostID(),
                         comment.getUserFullName()

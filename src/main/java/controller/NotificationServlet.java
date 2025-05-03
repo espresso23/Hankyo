@@ -1,8 +1,8 @@
 package controller;
 
 import com.google.gson.Gson;
-import dao.SignificationDAO;
-import model.Signification;
+import dao.NotificationDAO;
+import model.Notification;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -15,12 +15,12 @@ import java.util.List;
 
 @WebServlet("/notifications")
 public class NotificationServlet extends HttpServlet {
-    private SignificationDAO significationDAO;
+    private NotificationDAO notificationDAO;
     private Gson gson;
 
     @Override
     public void init() throws ServletException {
-        significationDAO = new SignificationDAO();
+        notificationDAO = new NotificationDAO();
         gson = new Gson();
     }
 
@@ -39,13 +39,13 @@ public class NotificationServlet extends HttpServlet {
 
         try {
             if ("count".equals(action)) {
-                int count = significationDAO.getUnreadCount(userID);
+                int count = notificationDAO.getUnreadCount(userID);
                 sendJsonResponse(response, count);
             } else if ("markAllRead".equals(action)) {
-                significationDAO.markAllAsRead(userID);
+                notificationDAO.markAllAsRead(userID);
                 sendJsonResponse(response, "success");
             } else {
-                List<Signification> notifications = significationDAO.getUnreadSignifications(userID);
+                List<Notification> notifications = notificationDAO.getUnreadNotifications(userID);
                 sendJsonResponse(response, notifications);
             }
         } catch (Exception e) {
@@ -69,17 +69,17 @@ public class NotificationServlet extends HttpServlet {
 
         try {
             if ("markRead".equals(action)) {
-                int significationID = Integer.parseInt(request.getParameter("significationID"));
-                significationDAO.markAsRead(significationID);
+                int notificationID = Integer.parseInt(request.getParameter("notificationID"));
+                notificationDAO.markAsRead(notificationID);
                 sendJsonResponse(response, "success");
             } else if ("markAllRead".equals(action)) {
-                significationDAO.markAllAsRead(userID);
+                notificationDAO.markAllAsRead(userID);
                 sendJsonResponse(response, "success");
             } else {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid action");
             }
         } catch (NumberFormatException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid significationID");
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid notificationID");
         } catch (Exception e) {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error processing request");
             e.printStackTrace();

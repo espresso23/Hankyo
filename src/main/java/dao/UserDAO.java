@@ -173,6 +173,7 @@ public class UserDAO {
                         throw new SQLException("Creating user failed, no ID obtained.");
                     }
                     userID = generatedKeys.getInt(1);
+                    user.setUserID(userID);
                 }
             }
 
@@ -205,7 +206,10 @@ public class UserDAO {
                 user.setFullName(rs.getString("fullName"));
                 user.setGmail(rs.getString("gmail"));
                 user.setRole(rs.getString("role"));
-                // Add other fields if necessary
+                user.setStatus(rs.getString("status"));
+                user.setDateCreate(rs.getDate("dateCreate"));
+                user.setGender(rs.getString("gender"));
+                user.setAvatar(rs.getString("avatar"));
                 return user;
             }
             return null;
