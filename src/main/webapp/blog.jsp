@@ -43,62 +43,93 @@
     textarea {
         display: block; /* Đảm bảo textarea không bị ẩn */
     }
+    /* Top Rated Posts Section */
+    /* Top Rated Posts Section - Soft Pastel Version */
     .top-rated-section {
-        margin-bottom: 30px;
-        padding: 20px;
-        background-color: #f8f9fa;
-        border-radius: 8px;
+        margin: 30px auto;
+        max-width: 1200px;
+        padding: 0 20px;
     }
 
     .top-rated-section h3 {
-        color: #343a40;
-        margin-bottom: 20px;
-        font-weight: bold;
+        color: #a8c1d1; /* Soft blue-gray */
+        font-size: 22px;
+        font-weight: 600;
+        margin-bottom: 25px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #e0e9f0;
+        text-align: center;
     }
 
     .top-rated-posts {
         display: flex;
-        gap: 20px;
-        overflow-x: auto;
-        padding-bottom: 10px;
+        justify-content: space-between;
+        gap: 25px;
     }
 
     .top-rated-card {
-        min-width: 300px;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        padding: 15px;
-        transition: transform 0.3s;
+        flex: 1;
+        min-width: 0;
+        background-color: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        transition: all 0.25s ease;
+        border: 1px solid #f0f5f9;
     }
 
     .top-rated-card:hover {
-        transform: translateY(-5px);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .top-rated-card a {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        height: 100%;
     }
 
     .top-rated-author {
         display: flex;
         align-items: center;
-        margin-bottom: 10px;
+        padding: 18px;
+        background-color: #f8fbfd;
+        border-bottom: 1px solid #eef5fb;
     }
 
-    .top-rated-author img {
-        width: 40px;
-        height: 40px;
+    .author-post-avatar {
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
-        margin-right: 10px;
+        object-fit: cover;
+        margin-right: 12px;
+        border: 1px solid #d6e4f0;
+    }
+
+    .author-post-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: #7a9cc6; /* Soft blue */
+    }
+
+    .top-rated-content {
+        padding: 18px;
     }
 
     .top-rated-content h5 {
-        font-size: 1.1rem;
-        margin-bottom: 8px;
-        color: #212529;
+        color: #4a5c6c;
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        line-height: 1.4;
     }
 
     .top-rated-content p {
-        font-size: 0.9rem;
-        color: #6c757d;
-        margin-bottom: 10px;
+        color: #7a8a99;
+        font-size: 14px;
+        line-height: 1.5;
+        margin-bottom: 16px;
         display: -webkit-box;
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
@@ -106,9 +137,35 @@
     }
 
     .top-rated-score {
-        color: #ffc107;
-        font-weight: bold;
-        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 0;
+        background-color: #f5f9fd;
+        border-top: 1px solid #eef5fb;
+    }
+
+    .top-rated-score span {
+        font-size: 14px;
+        font-weight: 500;
+        color: #7a9cc6;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 992px) {
+        .top-rated-posts {
+            flex-wrap: wrap;
+        }
+
+        .top-rated-card {
+            flex: 0 0 calc(50% - 13px);
+        }
+    }
+
+    @media (max-width: 576px) {
+        .top-rated-card {
+            flex: 0 0 100%;
+        }
     }
 
     .modal {
@@ -174,6 +231,49 @@
         background-color: #294c75;
     }
 
+    .create-post-card {
+        display: flex;
+        align-items: center;
+        padding: 20px 24px;
+        background-color: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        max-width: 2000px;
+        margin: 40px auto;
+        transition: box-shadow 0.3s, transform 0.2s;
+    }
+
+    .create-post-card:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+    }
+
+
+    .create-post-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .create-post-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 12px;
+    }
+
+    .create-post-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        background-color: #f0f2f5;
+        padding: 14px 20px;
+        border-radius: 24px;
+        font-size: 17px;
+        color: #444;
+        font-weight: 500;
+    }
+
 
 </style>
 <body data-user-logged-in="${user != null}">
@@ -183,21 +283,20 @@
 <!-- PAGE INFO -->
 
 <!-- Search Form -->
-<div class="search-container" style="margin: 20px auto; max-width: 800px;">
-    <form class="app-search" action="blog" method="GET">
-        <div class="input-group mb-3">
-            <input type="text" class="form-control" name="searchQuery" placeholder="Search posts..."
-                   value="${param.searchQuery}" aria-label="Search posts" aria-describedby="button-search">
-            <button class="btn btn-primary" type="submit" id="button-search">
-                <i class="fas fa-search"></i> Search
-            </button>
-        </div>
-    </form>
-</div>
+
+<form class="app-search" action="blog" method="GET">
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" name="searchQuery" placeholder="Search posts..."
+               value="${param.searchQuery}" aria-label="Search posts">
+        <button class="btn btn-primary" type="submit" id="button-search">
+            <i class="fas fa-search"></i> Search
+        </button>
+    </div>
+</form>
 
 <!-- Search Results Header -->
 <c:if test="${not empty param.searchQuery}">
-    <div class="search-results-header" style="margin: 20px 0; padding: 0 20px;">
+    <div class="search-results-header">
         <h4>Search Results for: "${param.searchQuery}"</h4>
         <c:if test="${empty searchResults}">
             <p>No posts found matching your search.</p>
@@ -205,16 +304,13 @@
     </div>
 </c:if>
 
-
 <!-- Display Search Results -->
 <c:if test="${not empty searchResults}">
     <div class="search-results-container">
         <c:forEach var="post" items="${searchResults}">
-            <!-- Reuse your existing post card structure -->
-            <div class="card card-post content" style="width: 100%">
-                <div class="post-container" style="display: flex;">
-                    <a href="postDetails?postID=${post.getPostID()}" class="post-content-link"
-                       style="flex: 1; text-decoration: none; color: inherit;">
+            <div class="card card-post content">
+                <div class="post-container">
+                    <a href="postDetails?postID=${post.getPostID()}" class="post-content-link">
                         <div class="card-post-author">
                             <img src="${post.getAvtUserImg() != null ? post.getAvtUserImg() : userDAO.getAvatarByUserId(post.getUserID())}"
                                  onerror="this.onerror=null;this.src='https://i.pinimg.com/564x/09/a9/2c/09a92c1cbe440f31d1818e4fe0bcf23a.jpg';"
@@ -223,53 +319,51 @@
                         </div>
                         <div class="card-body">
                             <h5 class="card-title card-title-post">${post.getHeading()}</h5>
-                            <p class="">${post.getContent()}</p>
+                            <p class="card-text">${post.getContent()}</p>
                         </div>
                     </a>
                 </div>
-                <div class="card-footer"
-                     style="display: flex; justify-content: flex-end; background: none; border-top: 1px solid #eee; padding-top: 8px;">
-                    <!-- Include your vote and comment buttons here -->
-                    <div class="card-footer"
-                         style="display: flex; justify-content: flex-end; background: none; border-top: 1px solid #eee; padding-top: 8px;">
-                        <div class="vote-controls" data-post-id="${post.getPostID()}">
-                            <button type="button" class="vote-btn upvote-btn" data-post-id="${post.getPostID()}">
-                                <i class="fas fa-arrow-up"></i>
-                            </button>
-                            <span class="vote-score" data-post-id="${post.getPostID()}">${post.getScore()}</span>
-                            <button type="button" class="vote-btn downvote-btn" data-post-id="${post.getPostID()}">
-                                <i class="fas fa-arrow-down"></i>
-                            </button>
-                        </div>
-                        <button type="button" class="btn btn-primary btn-comment"
-                                onclick="location.href='postDetails?postID=${post.getPostID()}'">
-                            <i class="fas fa-comment"></i> Comment (${post.getCommentCount()})
+                <div class="card-footer">
+                    <div class="vote-controls" data-post-id="${post.getPostID()}">
+                        <button type="button" class="vote-btn upvote-btn" data-post-id="${post.getPostID()}">
+                            <i class="fas fa-arrow-up"></i>
                         </button>
-
-                        <!-- Nút Report -->
-                        <button
-                                type="button"
-                                class="btn-report"
-                                data-bs-toggle="modal"
-                                data-bs-target="#avatarModal"
-                                data-postid="${post.getPostID()}">
-                            <i class="fas fa-flag"></i> Report
+                        <span class="vote-score" data-post-id="${post.getPostID()}">${post.getScore()}</span>
+                        <button type="button" class="vote-btn downvote-btn" data-post-id="${post.getPostID()}">
+                            <i class="fas fa-arrow-down"></i>
                         </button>
                     </div>
+                    <button type="button" class="btn btn-primary btn-comment"
+                            onclick="location.href='postDetails?postID=${post.getPostID()}'">
+                        <i class="fas fa-comment"></i> (${post.getCommentCount()})
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-report"
+                            data-bs-toggle="modal"
+                            data-bs-target="#avatarModal"
+                            data-postid="${post.getPostID()}">
+                        <i class="fas fa-flag"></i>
+                    </button>
                 </div>
             </div>
         </c:forEach>
     </div>
 </c:if>
 
+
 <div id="page-info">
     <div class="page-info-more">
         <c:choose>
             <c:when test="${user != null}">
-                <button id="openModalBtn" class="submit-button">Create post</button>
+                <div class="create-post-card" onclick="document.getElementById('myModal').style.display = 'block'">
+                    <img src="${user.getAvatar() != null ? user.getAvatar() : 'https://i.pinimg.com/564x/09/a9/2c/09a92c1cbe440f31d1818e4fe0bcf23a.jpg'}"
+                         alt="User Avatar" class="create-post-avatar"/>
+                    <input type="text" placeholder="${user.getFullName()} ơi, bạn đang nghĩ gì thế?" class="create-post-input" readonly/>
+                </div>
             </c:when>
             <c:otherwise>
-                <button class="openModalBtn" onclick="alert('Please log in to create a post.');">Create post</button>
+                <button class="openModalBtn" onclick="alert('Vui lòng đăng nhập để tạo bài viết.');">
+                    Tạo bài viết mới
+                </button>
             </c:otherwise>
         </c:choose>
     </div>
@@ -360,14 +454,16 @@
                             </button>
 
                             <!-- Nút Report -->
-                            <button
-                                    type="button"
-                                    class="btn-report"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#avatarModal"
-                                    data-postid="${post.getPostID()}">
-                                <i class="fas fa-flag"></i> Report
-                            </button>
+                            <c:if test="${user == null || user.getUserID() != post.getUserID()}">
+                                <button
+                                        type="button"
+                                        class="btn-report"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#avatarModal"
+                                        data-postid="${post.getPostID()}">
+                                    <i class="fas fa-flag"></i> Report
+                                </button>
+                            </c:if>
                         </div>
                     </div>
 
@@ -424,8 +520,7 @@
         <span class="close">&times;</span>
         <form action="postDetails" method="POST" enctype="multipart/form-data">
             <h2>Add Blog Post</h2>
-            <label for="imgPost">Picture Cover:</label>
-            <input id="imgPost" name="imgPost" type="file" class="input-field" required/><br>
+            <input type="hidden" id="imgPost" name="imgPost" value="" />
             <label for="title">Heading:</label>
             <input name="title" id="title" type="text" required class="input-field"/><br>
             <label for="description">Description:</label>
@@ -439,6 +534,13 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        function openPostModal() {
+            const modal = document.getElementById("myModal");
+            if (modal) {
+                modal.style.display = "block";
+            }
+        }
+
         let loadMoreButton = document.getElementById("loadMore");
         if (loadMoreButton) {
             let posts = document.querySelectorAll(".post-row .content");
@@ -470,14 +572,14 @@
     });
 
     var modal = document.getElementById("myModal");
-    var btn = document.getElementById("openModalBtn");
+    // var btn = document.getElementById("openModalBtn");
     var span = document.getElementsByClassName("close")[0];
 
-    if (btn) {
-        btn.onclick = function () {
-            modal.style.display = "block";
-        }
-    }
+    // if (btn) {
+    //     btn.onclick = function () {
+    //         modal.style.display = "block";
+    //     }
+    // }
 
     if (span) {
         span.onclick = function () {
@@ -713,170 +815,17 @@
         });
     }
 </script>
-<%--<script>--%>
-<%--    // Global variables--%>
-<%--    // Global variables--%>
-<%--    let userPostVotes = {};--%>
 
-<%--    document.addEventListener('DOMContentLoaded', function() {--%>
-<%--        // Check if user is logged in by using data attribute on body tag--%>
-<%--        const isUserLoggedIn = document.body.getAttribute('data-user-logged-in') === 'true';--%>
-
-<%--        // Add click listeners to all vote buttons--%>
-<%--        document.querySelectorAll('.upvote-btn').forEach(button => {--%>
-<%--            button.addEventListener('click', function() {--%>
-<%--                handlePostVote(this, 1);--%>
-<%--            });--%>
-<%--        });--%>
-
-<%--        document.querySelectorAll('.downvote-btn').forEach(button => {--%>
-<%--            button.addEventListener('click', function() {--%>
-<%--                handlePostVote(this, -1);--%>
-<%--            });--%>
-<%--        });--%>
-
-<%--        // Load user's votes if logged in--%>
-<%--        if (isUserLoggedIn) {--%>
-<%--            loadUserVotes();--%>
-<%--        }--%>
-<%--    });--%>
-
-<%--    function handlePostVote(button, voteType) {--%>
-<%--        const postId = button.getAttribute('data-post-id');--%>
-<%--        const scoreElement = document.querySelector(`.vote-score[data-post-id="${postId}"]`);--%>
-
-<%--        // Check if user is logged in using data attribute--%>
-<%--        const isUserLoggedIn = document.body.getAttribute('data-user-logged-in') === 'true';--%>
-
-<%--        if (!isUserLoggedIn) {--%>
-<%--            alert("Please login to vote!");--%>
-<%--            return;--%>
-<%--        }--%>
-
-<%--        // Show loading indicator--%>
-<%--        const originalScore = scoreElement.textContent;--%>
-<%--        scoreElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';--%>
-
-<%--        // Send AJAX request--%>
-<%--        $.ajax({--%>
-<%--            url: 'blog',--%>
-<%--            type: 'POST',--%>
-<%--            data: {--%>
-<%--                action: "updatePostVote",--%>
-<%--                postID: postId,--%>
-<%--                voteType: voteType--%>
-<%--            },--%>
-<%--            dataType: "json",--%>
-<%--            success: function(response) {--%>
-<%--                if (response.success) {--%>
-<%--                    // Update displayed score--%>
-<%--                    scoreElement.textContent = response.score;--%>
-
-<%--                    // Update UI--%>
-<%--                    const upvoteBtn = document.querySelector(`.upvote-btn[data-post-id="${postId}"]`);--%>
-<%--                    const downvoteBtn = document.querySelector(`.downvote-btn[data-post-id="${postId}"]`);--%>
-
-<%--                    // Remove active class from both buttons--%>
-<%--                    upvoteBtn.classList.remove('active');--%>
-<%--                    downvoteBtn.classList.remove('active');--%>
-
-<%--                    // Add active class to selected button if there's a vote--%>
-<%--                    if (response.voteType === 1) {--%>
-<%--                        upvoteBtn.classList.add('active');--%>
-<%--                    } else if (response.voteType === -1) {--%>
-<%--                        downvoteBtn.classList.add('active');--%>
-<%--                    }--%>
-
-<%--                    // Update vote state--%>
-<%--                    userPostVotes[postId] = response.voteType;--%>
-<%--                } else {--%>
-<%--                    // Restore original score on error--%>
-<%--                    scoreElement.textContent = originalScore;--%>
-<%--                    console.error("Vote update failed on server side");--%>
-<%--                    alert(response.error || "Vote update failed");--%>
-<%--                }--%>
-<%--            },--%>
-<%--            error: function(xhr, status, error) {--%>
-<%--                // Restore original score on error--%>
-<%--                scoreElement.textContent = originalScore;--%>
-
-<%--                console.error("Vote update failed:", status, error);--%>
-<%--                if (xhr.status === 401) {--%>
-<%--                    alert("Please login to vote!");--%>
-<%--                } else {--%>
-<%--                    alert("An error occurred while processing your vote");--%>
-<%--                }--%>
-<%--            }--%>
-<%--        });--%>
-<%--    }--%>
-
-<%--    function loadUserVotes() {--%>
-<%--        // Get all post IDs on the page from vote-score elements--%>
-<%--        const scoreElements = document.querySelectorAll('.vote-score[data-post-id]');--%>
-<%--        const postIDs = Array.from(scoreElements).map(el => el.getAttribute('data-post-id'));--%>
-
-<%--        if (postIDs.length === 0) return;--%>
-
-<%--        // Create form data to send post IDs as array--%>
-<%--        const formData = new FormData();--%>
-<%--        formData.append('action', 'loadUserPostVotes');--%>
-
-<%--        // Add each post ID to the formData--%>
-<%--        postIDs.forEach(id => {--%>
-<%--            formData.append('postIDs[]', id);--%>
-<%--        });--%>
-
-<%--        // Send AJAX request--%>
-<%--        $.ajax({--%>
-<%--            url: 'blog',--%>
-<%--            type: 'POST',--%>
-<%--            data: formData,--%>
-<%--            processData: false,--%>
-<%--            contentType: false,--%>
-<%--            dataType: "json",--%>
-<%--            success: function(userVoteData) {--%>
-<%--                // Save vote state--%>
-<%--                userPostVotes = userVoteData;--%>
-
-<%--                // Update UI for each post--%>
-<%--                Object.keys(userVoteData).forEach(postId => {--%>
-<%--                    const voteType = userVoteData[postId];--%>
-<%--                    const upvoteBtn = document.querySelector(`.upvote-btn[data-post-id="${postId}"]`);--%>
-<%--                    const downvoteBtn = document.querySelector(`.downvote-btn[data-post-id="${postId}"]`);--%>
-
-<%--                    if (upvoteBtn && downvoteBtn) {--%>
-<%--                        // Reset previous state--%>
-<%--                        upvoteBtn.classList.remove('active');--%>
-<%--                        downvoteBtn.classList.remove('active');--%>
-
-<%--                        // Set new state--%>
-<%--                        if (voteType === 1) {--%>
-<%--                            upvoteBtn.classList.add('active');--%>
-<%--                        } else if (voteType === -1) {--%>
-<%--                            downvoteBtn.classList.add('active');--%>
-<%--                        }--%>
-<%--                    }--%>
-<%--                });--%>
-<%--            },--%>
-<%--            error: function(xhr, status, error) {--%>
-<%--                console.error("Failed to load vote data:", status, error);--%>
-<%--            }--%>
-<%--        });--%>
-<%--    }--%>
-<%--</script>--%>
-<%--search--%>
 <script>
-    $(document).ready(function () {
-        // Live search functionality
-        $('input[name="searchQuery"]').on('input', function () {
-            const query = $(this).val().trim();
+    $('form.app-search').on('submit', function (e) {
+        e.preventDefault(); // không submit mặc định
+        const query = $('input[name="searchQuery"]').val().trim();
+        if (query.length < 1) return;
 
-            if (query.length >= 2) { // Only search when at least 2 characters are entered
-                $.get('blog', {searchQuery: query}, function (data) {
-                });
-            }
-        });
+        // Gửi request AJAX hoặc redirect
+        window.location.href = 'blog?searchQuery=' + encodeURIComponent(query);
     });
+
 </script>
 </body>
 </html>

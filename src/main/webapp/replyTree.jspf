@@ -1,0 +1,6 @@
+<c:if test="${not empty replyMap[comment.commentID]}">
+    <ul class="comment-thread">
+        <c:set var="commentVar" value="${comment}" scope="request" />
+        <jsp:include page="replyTree.jspf" />
+    </ul>
+</c:if>

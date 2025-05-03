@@ -444,6 +444,10 @@ public class PostDAO {
                 post.setScore(rs.getInt("ScorePost"));
                 String fullName = userDAO.getFullNameByUserId(post.getUserID());
                 post.setUserFullName(fullName != null ? fullName : "Unknown");
+
+                String avatarURL = userDAO.getAvatarByUserId(post.getUserID());
+                post.setAvtUserImg(avatarURL != null ? avatarURL : "default-avatar.png");
+
                 posts.add(post);
             }
         } catch (SQLException e) {
@@ -788,6 +792,99 @@ public class PostDAO {
             throw new Exception("Error retrieving oldest posts: " + e.getMessage());
         }
         return posts;
+    }
+    public List<Post> getUpvotedPostsByUserID(int userID) throws Exception {
+        List<Post> upvotedPosts = new ArrayList<>();
+        String sql = "SELECT p.*,u.username, u.fullName, u.avatar " +
+                "FROM PostVotes v " +
+                "JOIN Post p ON v.PostID = p.PostID " +
+                "JOIN [User] u ON p.UserID = u.UserID " +
+                "WHERE v.UserID = ? AND v.VoteType = 1 AND p.status = 1 " +
+                "ORDER BY p.CreatedDate DESC";
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, userID);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Post post = new Post(
+                        rs.getInt("PostID"),
+                        rs.getInt("UserID"),
+                        rs.getString("ImgURL"),
+                        rs.getString("Heading"),
+                        rs.getString("Content"),
+                        rs.getTimestamp("CreatedDate"),
+                        rs.getBoolean("status")
+                );
+                post.setUserName(rs.getString("username"));
+                post.setScore(rs.getInt("ScorePost"));
+                post.setUserFullName(rs.getString("fullName"));
+                post.setAvtUserImg(rs.getString("avatar"));
+
+                upvotedPosts.add(post);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new Exception("Error retrieving upvoted posts: " + e.getMessage());
+        }
+
+        return upvotedPosts;
+    }
+    public List<Post> getDownvotedPostsByUserID(int userID) throws Exception {
+        List<Post> downvotedPosts = new ArrayList<>();
+        String sql = "SELECT p.*,u.username, u.fullName, u.avatar " +
+                "FROM PostVotes v " +
+                "JOIN Post p ON v.PostID = p.PostID " +
+                "JOIN [User] u ON p.UserID = u.UserID " +
+                "WHERE v.UserID = ? AND v.VoteType = -1 AND p.status = 1 " +
+                "ORDER BY p.CreatedDate DESC";
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, userID);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Post post = new Post(
+                        rs.getInt("PostID"),
+                        rs.getInt("UserID"),
+                        rs.getString("ImgURL"),
+                        rs.getString("Heading"),
+                        rs.getString("Content"),
+                        rs.getTimestamp("CreatedDate"),
+                        rs.getBoolean("status")
+                );
+                post.setUserName(rs.getString("username"));
+                post.setScore(rs.getInt("ScorePost"));
+                post.setUserFullName(rs.getString("fullName"));
+                post.setAvtUserImg(rs.getString("avatar"));
+
+                downvotedPosts.add(post);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new Exception("Error retrieving downvoted posts: " + e.getMessage());
+        }
+
+        return downvotedPosts;
+    }
+
+    public int getPostCountByUserID(int userID) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM Post WHERE userID = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, userID);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
     }
 
 

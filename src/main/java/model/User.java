@@ -16,6 +16,15 @@ public class User {
     private String gender;
     private Date dateOfBirth;
     private String avatar;
+    private String coverPhoto;
+
+    public String getCoverPhoto() {
+        return coverPhoto;
+    }
+
+    public void setCoverPhoto(String coverPhoto) {
+        this.coverPhoto = coverPhoto;
+    }
 
     public User(int userID, String username, String password, String gmail, String phone, String role, String status, String fullName, String socialID, Date dateCreate, String gender, Date dateOfBirth, String avatar) {
         this.userID = userID;

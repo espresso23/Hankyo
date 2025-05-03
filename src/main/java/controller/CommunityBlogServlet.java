@@ -5,7 +5,6 @@ import dao.ReportDAO;
 import dao.UserDAO;
 import dao.PostDAO;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -41,10 +40,10 @@ public class CommunityBlogServlet extends HttpServlet {
         try {
             String filter = request.getParameter("filter");
             String searchQuery = request.getParameter("searchQuery");
-
+            String id = request.getParameter("id");
             List<Post> postList;
 
-            // Lọc nếu có filter
+            // Lọc bài viết theo filter nếu có
             if (filter != null) {
                 switch (filter) {
                     case "newest":
@@ -64,30 +63,44 @@ public class CommunityBlogServlet extends HttpServlet {
                 postList = postDAO.getAllPostsHaveFullNameAndAvtImg();
             }
 
-            // Đếm comment
+            // Đếm comment cho từng bài viết
             for (Post post : postList) {
                 int commentCount = postDAO.getCommentCount(post.getPostID());
                 post.setCommentCount(commentCount);
             }
 
-            // Top rated
+            // Lấy bài viết mới nhất
+//            User user = userDAO.getUserByID(id);
             Post newPost = postDAO.getLatestPost();
-            String fullNameNewPost = (newPost != null) ? userDAO.getFullNameByUserId(newPost.getUserID()) : "";
-            String avatarURLNewPost = (newPost != null) ? userDAO.getAvatarByUserId(newPost.getUserID()) : "";
+            String fullNameNewPost = "";
+            String avatarURLNewPost = "";
+
+            if (newPost != null && newPost.getUserID() > 0) {
+                User postUser = userDAO.getUserByID(newPost.getUserID());
+                if (postUser != null) {
+                    fullNameNewPost = postUser.getFullName() != null ? postUser.getFullName() : "";
+                    avatarURLNewPost = postUser.getAvatar() != null ? postUser.getAvatar() : "";
+                }
+            }
+
+            // Top rated posts
             List<Post> topRatedPosts = postDAO.getPostsOrderedByScore();
 
-            // Tìm kiếm nếu có
+            // Xử lý tìm kiếm nếu có
             if (searchQuery != null && !searchQuery.trim().isEmpty()) {
                 List<Post> searchResults = postDAO.searchPosts(searchQuery);
                 request.setAttribute("searchResults", searchResults);
             }
 
-            // Gửi lên JSP
+            // Set dữ liệu lên request để chuyển sang JSP
             request.setAttribute("postList", postList);
             request.setAttribute("newPost", newPost);
             request.setAttribute("fullNameNewPost", fullNameNewPost);
             request.setAttribute("avatarURLNewPost", avatarURLNewPost);
             request.setAttribute("topRatedPosts", topRatedPosts);
+
+            // Forward tới blog.jsp
+
             request.getRequestDispatcher("blog.jsp").forward(request, response);
 
         } catch (Exception e) {
@@ -96,210 +109,211 @@ public class CommunityBlogServlet extends HttpServlet {
         }
     }
 
+
     @Override
-        protected void doPost (HttpServletRequest request, HttpServletResponse response) throws
-        ServletException, IOException {
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
-            String action = request.getParameter("action");
+    protected void doPost (HttpServletRequest request, HttpServletResponse response) throws
+            ServletException, IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        String action = request.getParameter("action");
 
-            if (action == null) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("{\"error\": \"Action parameter is missing\"}");
-                return;
-            }
-
-            try {
-                switch (action) {
-                    case "vote":
-                        handleVote(request, response);
-                        break;
-                    case "getUserVotes":
-                        handleGetUserVotes(request, response);
-                        break;
-                    case "reportPost":
-                        handleReport(request, response);
-                        break;
-                    default:
-                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                        response.getWriter().write("{\"error\": \"Invalid action\"}");
-                }
-            } catch (Exception e) {
-                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                response.getWriter().write("{\"error\": \"Server error: " + e.getMessage() + "\"}");
-            }
-        }
-        private void handleVote (HttpServletRequest request, HttpServletResponse response) throws IOException {
-            HttpSession session = request.getSession();
-            User user = (User) session.getAttribute("user");
-
-            if (user == null) {
-                sendJsonResponse(response, false, "Please login to vote", 401);
-                return;
-            }
-
-            try {
-                int postId = Integer.parseInt(request.getParameter("postID"));
-                String voteAction = request.getParameter("voteAction");
-
-                int voteType = 0;
-                if ("upvote".equals(voteAction)) {
-                    voteType = 1;
-                } else if ("downvote".equals(voteAction)) {
-                    voteType = -1;
-                } else {
-                    sendJsonResponse(response, false, "Invalid vote action", 400);
-                    return;
-                }
-
-                boolean success = postDAO.addOrUpdateVote(user.getUserID(), postId, voteType);
-                if (success) {
-                    int newScore = postDAO.getPostScore(postId);
-                    int currentUserVote = postDAO.getUserVote(user.getUserID(), postId);
-
-                    Map<String, Object> responseData = new HashMap<>();
-                    responseData.put("success", true);
-                    responseData.put("newScore", newScore);
-                    responseData.put("currentUserVote", currentUserVote);
-
-                    response.getWriter().write(new Gson().toJson(responseData));
-                } else {
-                    sendJsonResponse(response, false, "Failed to process vote", 500);
-                }
-            } catch (NumberFormatException e) {
-                sendJsonResponse(response, false, "Invalid post ID", 400);
-            }
+        if (action == null) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\": \"Action parameter is missing\"}");
+            return;
         }
 
-        private void sendJsonResponse (HttpServletResponse response,boolean success, String message,int status) throws
-        IOException {
-            response.setStatus(status);
-            response.setContentType("application/json");
-            Map<String, Object> responseData = new HashMap<>();
-            responseData.put("success", success);
-            responseData.put("message", message);
-            response.getWriter().write(new Gson().toJson(responseData));
-        }
-        private void handleGetUserVotes (HttpServletRequest request, HttpServletResponse response) throws IOException {
-            HttpSession session = request.getSession();
-            User user = (User) session.getAttribute("user");
-
-            if (user == null) {
-                response.getWriter().write("{}");
-                return;
-            }
-
-            String[] postIds = request.getParameterValues("postIDs[]");
-            if (postIds == null || postIds.length == 0) {
-                response.getWriter().write("{}");
-                return;
-            }
-
-            Map<Integer, Integer> votes = new HashMap<>();
-            for (String postIdStr : postIds) {
-                try {
-                    int postId = Integer.parseInt(postIdStr);
-                    int voteType = postDAO.getUserVote(user.getUserID(), postId);
-                    votes.put(postId, voteType);
-                } catch (NumberFormatException e) {
-                    // Skip invalid post IDs
-                }
-            }
-
-            response.getWriter().write(new Gson().toJson(votes));
-        }
-        private void handlePostVote (HttpServletRequest request, HttpServletResponse response) throws IOException {
-            HttpSession session = request.getSession();
-            User user = (User) session.getAttribute("user");
-            if (user == null) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("{\"error\": \"User not logged in\"}");
-                return;
-            }
-
-            try {
-                int postId = Integer.parseInt(request.getParameter("postID"));
-                int voteType = Integer.parseInt(request.getParameter("voteType"));
-                if (voteType != 1 && voteType != -1) {
+        try {
+            switch (action) {
+                case "vote":
+                    handleVote(request, response);
+                    break;
+                case "getUserVotes":
+                    handleGetUserVotes(request, response);
+                    break;
+                case "reportPost":
+                    handleReport(request, response);
+                    break;
+                default:
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    response.getWriter().write("{\"error\": \"Invalid vote type\"}");
-                    return;
-                }
+                    response.getWriter().write("{\"error\": \"Invalid action\"}");
+            }
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"error\": \"Server error: " + e.getMessage() + "\"}");
+        }
+    }
+    private void handleVote (HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
 
-                boolean success = postDAO.updateUserVote(user.getUserID(), postId, voteType);
+        if (user == null) {
+            sendJsonResponse(response, false, "Please login to vote", 401);
+            return;
+        }
+
+        try {
+            int postId = Integer.parseInt(request.getParameter("postID"));
+            String voteAction = request.getParameter("voteAction");
+
+            int voteType = 0;
+            if ("upvote".equals(voteAction)) {
+                voteType = 1;
+            } else if ("downvote".equals(voteAction)) {
+                voteType = -1;
+            } else {
+                sendJsonResponse(response, false, "Invalid vote action", 400);
+                return;
+            }
+
+            boolean success = postDAO.addOrUpdateVote(user.getUserID(), postId, voteType);
+            if (success) {
                 int newScore = postDAO.getPostScore(postId);
+                int currentUserVote = postDAO.getUserVote(user.getUserID(), postId);
 
-                response.getWriter().write(
-                        "{\"success\": " + success + ", \"score\": " + newScore + ", \"voteType\": " + (success ? voteType : 0) + "}"
-                );
-            } catch (NumberFormatException e) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("{\"error\": \"Invalid parameters\"}");
+                Map<String, Object> responseData = new HashMap<>();
+                responseData.put("success", true);
+                responseData.put("newScore", newScore);
+                responseData.put("currentUserVote", currentUserVote);
+
+                response.getWriter().write(new Gson().toJson(responseData));
+            } else {
+                sendJsonResponse(response, false, "Failed to process vote", 500);
             }
+        } catch (NumberFormatException e) {
+            sendJsonResponse(response, false, "Invalid post ID", 400);
+        }
+    }
+
+    private void sendJsonResponse (HttpServletResponse response,boolean success, String message,int status) throws
+            IOException {
+        response.setStatus(status);
+        response.setContentType("application/json");
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("success", success);
+        responseData.put("message", message);
+        response.getWriter().write(new Gson().toJson(responseData));
+    }
+    private void handleGetUserVotes (HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+
+        if (user == null) {
+            response.getWriter().write("{}");
+            return;
         }
 
-        private void loadUserPostVotes (HttpServletRequest request, HttpServletResponse response) throws IOException {
-            HttpSession session = request.getSession();
-            User user = (User) session.getAttribute("user");
-
-            if (user == null) {
-                response.getWriter().write("{}");
-                return;
-            }
-
-            String[] postIDs = request.getParameterValues("postIDs[]");
-            List<Integer> postList = new ArrayList<>();
-            if (postIDs != null) {
-                for (String id : postIDs) {
-                    try {
-                        postList.add(Integer.parseInt(id));
-                    } catch (NumberFormatException ignored) {
-                    }
-                }
-            }
-
-            Map<Integer, Integer> voteMap = postDAO.getUserVotes(user.getUserID(), postList);
-            String json = new Gson().toJson(voteMap);
-            response.getWriter().write(json);
+        String[] postIds = request.getParameterValues("postIDs[]");
+        if (postIds == null || postIds.length == 0) {
+            response.getWriter().write("{}");
+            return;
         }
 
-        private void handleReport (HttpServletRequest request, HttpServletResponse response) throws IOException {
-            HttpSession session = request.getSession();
-            User user = (User) session.getAttribute("user");
-
-            if (user == null) {
-                response.getWriter().write("{\"success\": false, \"error\": \"User not logged in\"}");
-                return;
-            }
-
+        Map<Integer, Integer> votes = new HashMap<>();
+        for (String postIdStr : postIds) {
             try {
-                int postId = Integer.parseInt(request.getParameter("postID"));
-                String reason = request.getParameter("reason");
-                boolean isConfirmed = Boolean.parseBoolean(request.getParameter("confirmed"));
-
-                int postOwnerId = postDAO.getUserIDByPostId(postId);
-                if (postOwnerId == user.getUserID() && !isConfirmed) {
-                    response.getWriter().write("{\"success\": false, \"warning\": true, \"message\": \"Đây là bài viết của bạn. Bạn có thực sự muốn báo cáo không?\"}");
-                    return;
-                }
-
-                Report report = new Report();
-                report.setPostID(postId);
-                report.setReason(reason);
-                report.setReportTypeID(3);
-                report.setReporterID(user.getUserID());
-
-                ReportDAO reportDAO = new ReportDAO();
-                boolean success = reportDAO.createPostReport(report);
-                response.getWriter().write("{\"success\": " + success + "}");
-
-            } catch (Exception e) {
-                response.getWriter().write("{\"success\": false, \"error\": \"" + e.getMessage() + "\"}");
+                int postId = Integer.parseInt(postIdStr);
+                int voteType = postDAO.getUserVote(user.getUserID(), postId);
+                votes.put(postId, voteType);
+            } catch (NumberFormatException e) {
+                // Skip invalid post IDs
             }
         }
 
-        @Override
-        public String getServletInfo () {
-            return "CommunityBlogServlet handles blog features including post voting, reporting, and filtering.";
+        response.getWriter().write(new Gson().toJson(votes));
+    }
+    private void handlePostVote (HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"error\": \"User not logged in\"}");
+            return;
         }
+
+        try {
+            int postId = Integer.parseInt(request.getParameter("postID"));
+            int voteType = Integer.parseInt(request.getParameter("voteType"));
+            if (voteType != 1 && voteType != -1) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"error\": \"Invalid vote type\"}");
+                return;
+            }
+
+            boolean success = postDAO.updateUserVote(user.getUserID(), postId, voteType);
+            int newScore = postDAO.getPostScore(postId);
+
+            response.getWriter().write(
+                    "{\"success\": " + success + ", \"score\": " + newScore + ", \"voteType\": " + (success ? voteType : 0) + "}"
+            );
+        } catch (NumberFormatException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\": \"Invalid parameters\"}");
+        }
+    }
+
+    private void loadUserPostVotes (HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+
+        if (user == null) {
+            response.getWriter().write("{}");
+            return;
+        }
+
+        String[] postIDs = request.getParameterValues("postIDs[]");
+        List<Integer> postList = new ArrayList<>();
+        if (postIDs != null) {
+            for (String id : postIDs) {
+                try {
+                    postList.add(Integer.parseInt(id));
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+
+        Map<Integer, Integer> voteMap = postDAO.getUserVotes(user.getUserID(), postList);
+        String json = new Gson().toJson(voteMap);
+        response.getWriter().write(json);
+    }
+
+    private void handleReport (HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+
+        if (user == null) {
+            response.getWriter().write("{\"success\": false, \"error\": \"User not logged in\"}");
+            return;
+        }
+
+        try {
+            int postId = Integer.parseInt(request.getParameter("postID"));
+            String reason = request.getParameter("reason");
+            boolean isConfirmed = Boolean.parseBoolean(request.getParameter("confirmed"));
+
+            int postOwnerId = postDAO.getUserIDByPostId(postId);
+            if (postOwnerId == user.getUserID() && !isConfirmed) {
+                response.getWriter().write("{\"success\": false, \"warning\": true, \"message\": \"Đây là bài viết của bạn. Bạn có thực sự muốn báo cáo không?\"}");
+                return;
+            }
+
+            Report report = new Report();
+            report.setPostID(postId);
+            report.setReason(reason);
+            report.setReportTypeID(3);
+            report.setReporterID(user.getUserID());
+            report.setStatus("Pending");
+            ReportDAO reportDAO = new ReportDAO();
+            boolean success = reportDAO.createPostReport(report);
+            response.getWriter().write("{\"success\": " + success + "}");
+
+        } catch (Exception e) {
+            response.getWriter().write("{\"success\": false, \"error\": \"" + e.getMessage() + "\"}");
+        }
+    }
+
+    @Override
+    public String getServletInfo () {
+        return "CommunityBlogServlet handles blog features including post voting, reporting, and filtering.";
+    }
 }

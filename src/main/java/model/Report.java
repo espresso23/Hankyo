@@ -12,6 +12,24 @@ public class Report {
     private Timestamp reportDate;
     private String status;
     private int commentID;
+    private String commentContent;
+    private String postTitle;
+
+    public String getCommentContent() {
+        return commentContent;
+    }
+
+    public void setCommentContent(String commentContent) {
+        this.commentContent = commentContent;
+    }
+
+    public String getPostTitle() {
+        return postTitle;
+    }
+
+    public void setPostTitle(String postTitle) {
+        this.postTitle = postTitle;
+    }
 
     // Default constructor
     public Report() {

@@ -265,6 +265,7 @@ public class UserDAO {
                 u.setFullName(rs.getString("fullName"));
                 u.setDateCreate(rs.getDate("dateCreate"));
                 u.setGender(rs.getString("gender"));
+                u.setAvatar(rs.getString("avatar"));
                 return u;
             }
 
@@ -469,6 +470,41 @@ public class UserDAO {
             e.printStackTrace();
         }
         return avatarImg;
+    }
+    public String getCoverPhotoByUserId(int userId) {
+        String query = "SELECT coverPhoto FROM User WHERE UserID = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("coverPhoto");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null; // Trả về null nếu không tìm thấy cover photo
+    }
+    public boolean updateAvatar(int userId, String avatarUrl) throws SQLException {
+        String sql = "UPDATE [User] SET avatar = ? WHERE UserID = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, avatarUrl);
+            stmt.setInt(2, userId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    public boolean updateCoverPhoto(int userId, String coverUrl) throws SQLException {
+        String sql = "UPDATE [User] SET cover_photo = ? WHERE UserID = ? ";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, coverUrl);
+            stmt.setInt(2, userId);
+            return stmt.executeUpdate() > 0;
+        }
     }
 
 }

@@ -43,7 +43,6 @@ public class LoginServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String username = request.getParameter("Username");
         String password = request.getParameter("Password");
-
         if (username == null || password == null || username.trim().isEmpty() || password.trim().isEmpty()) {
             request.setAttribute("errorMsg", "Vui lòng nhập cả tên đăng nhập và mật khẩu.");
             request.getRequestDispatcher("login.jsp").forward(request, response);
@@ -67,8 +66,11 @@ public class LoginServlet extends HttpServlet {
                     session.setAttribute("role", user.getRole());
                     session.setAttribute("fullName", user.getFullName());
                     session.setAttribute("gender", user.getGender());
-
+                    session.setAttribute("avatar", user.getAvatar());
+                    user.setCoverPhoto(userDao.getCoverPhotoByUserId(user.getUserID()));
+                    session.setAttribute("coverPhoto", user.getCoverPhoto());
                     System.out.println("User role: " + user.getRole());
+
                     if ("expert".equalsIgnoreCase(user.getRole())) {
                         ExpertDAO expertDAO = new ExpertDAO();
                         Expert expert = expertDAO.getExpertByUserID(user.getUserID());
@@ -104,6 +106,8 @@ public class LoginServlet extends HttpServlet {
             } catch (SQLException e) {
                 request.setAttribute("errorMsg", "Đã xảy ra lỗi trong quá trình đăng nhập.");
                 request.getRequestDispatcher("login.jsp").forward(request, response);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
         } else {
             request.setAttribute("errorMsg", "Tên đăng nhập hoặc mật khẩu không đúng.");
