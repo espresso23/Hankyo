@@ -214,6 +214,7 @@
     </style>
 </head>
 <body>
+<jsp:include page="header.jsp"></jsp:include>
 <div class="container">
     <header class="page-header">
         <h1 class="page-title">Lịch sử làm bài</h1>
@@ -272,5 +273,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+<jsp:include page="header.jsp"></jsp:include>
 </body>
 </html>
