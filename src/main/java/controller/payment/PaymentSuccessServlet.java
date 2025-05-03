@@ -72,7 +72,7 @@ public class PaymentSuccessServlet extends HttpServlet {
             payment.setLearnerID(learnerID);
             payment.setDescription(transactionDescription);
             payment.setPayDate(Timestamp.valueOf(LocalDateTime.now()).toLocalDateTime());
-            payment.setStatus("Completed");
+            payment.setStatus("completed");
 
             // Process courses
             List<CoursePaid> coursePaids = new ArrayList<>();
