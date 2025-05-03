@@ -1,4 +1,14 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<style>
+      .nav-item{
+            margin: 5px 0 5px 0px;
+        }
+.sidebar { min-height: 100vh; background: #fff; color: #5f72bd; border-right: 1px solid #e3e3e3; border-radius: 20px; }
+.sidebar .nav-link { color: #5f72bd; font-weight: 500; border-radius: 8px; }
+.sidebar .nav-link.active, .sidebar .nav-link:hover { background: linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%); color: #fff; }
+.main-content { padding: 20px; background: #f8f9fa; border-radius: 20px; }
+.header-gradient { background: linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%); color: #fff; border-radius: 12px; padding: 24px 32px; margin-bottom: 32px; box-shadow: 0 4px 24px rgba(106,130,251,0.08); }
+</style>
 <div class="col-md-3 col-lg-2 sidebar p-3">
     <h3 class="mb-4">Hankyo Admin</h3>
     <ul class="nav flex-column">

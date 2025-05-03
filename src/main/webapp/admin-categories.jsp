@@ -57,7 +57,7 @@ fetch('/Hankyo/admin/categories')
         data.forEach(function(c) {
             tb.innerHTML += '<tr>'
                 + '<td>' + c.categoryID + '</td>'
-                + '<td>' + c.name + '</td>'
+                + '<td>' + c.categoryName + '</td>'
                 + '<td>' + (c.description || '') + '</td>'
                 + '</tr>';
         });

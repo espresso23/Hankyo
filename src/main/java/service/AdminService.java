@@ -155,7 +155,7 @@ public class AdminService {
 
     // 2. Quản lý người dùng
     public List<User> getAllUsers() throws SQLException {
-        String query = "SELECT * FROM [User] ORDER BY userID DESC";
+        String query = "SELECT u.*, CASE WHEN EXISTS (SELECT 1 FROM Report r WHERE r.reportedUserID = u.userID) THEN 1 ELSE 0 END AS isReported FROM [User] u ORDER BY u.userID DESC";
         List<User> users = new ArrayList<>();
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(query);
@@ -166,6 +166,9 @@ public class AdminService {
                 user.setFullName(rs.getString("fullName"));
                 user.setGmail(rs.getString("gmail"));
                 user.setStatus(rs.getString("status"));
+                user.setRole(rs.getString("role"));
+                user.setDateCreate(rs.getDate("dateCreate"));
+                user.setIsReported(rs.getInt("isReported") == 1);
                 users.add(user);
             }
         }
@@ -181,15 +184,129 @@ public class AdminService {
         }
     }
 
+    public boolean unblockUser(int userId) throws SQLException {
+        String query = "UPDATE [User] SET status = 'active' WHERE userID = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, userId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    public List<User> searchUsers(String searchTerm) throws SQLException {
+        String query = "SELECT * FROM [User] WHERE fullName LIKE ? OR gmail LIKE ? ORDER BY userID DESC";
+        List<User> users = new ArrayList<>();
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, "%" + searchTerm + "%");
+            ps.setString(2, "%" + searchTerm + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    User user = new User();
+                    user.setUserID(rs.getInt("userID"));
+                    user.setFullName(rs.getString("fullName"));
+                    user.setGmail(rs.getString("gmail"));
+                    user.setStatus(rs.getString("status"));
+                    user.setRole(rs.getString("role"));
+                    user.setDateCreate(rs.getDate("dateCreate"));
+                    users.add(user);
+                }
+            }
+        }
+        return users;
+    }
+
+    public List<User> filterUsersByRole(String role) throws SQLException {
+        String query = "SELECT * FROM [User] WHERE role = ? ORDER BY userID DESC";
+        List<User> users = new ArrayList<>();
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, role);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    User user = new User();
+                    user.setUserID(rs.getInt("userID"));
+                    user.setFullName(rs.getString("fullName"));
+                    user.setGmail(rs.getString("gmail"));
+                    user.setStatus(rs.getString("status"));
+                    user.setRole(rs.getString("role"));
+                    user.setDateCreate(rs.getDate("dateCreate"));
+                    users.add(user);
+                }
+            }
+        }
+        return users;
+    }
+
+    public Map<String, Object> getUserDetails(int userId) throws SQLException {
+        Map<String, Object> userDetails = new HashMap<>();
+        
+        // Get basic user info
+        String userQuery = "SELECT * FROM [User] WHERE userID = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(userQuery)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    userDetails.put("userID", rs.getInt("userID"));
+                    userDetails.put("username", rs.getString("username"));
+                    userDetails.put("fullName", rs.getString("fullName"));
+                    userDetails.put("gmail", rs.getString("gmail"));
+                    userDetails.put("phone", rs.getString("phone"));
+                    userDetails.put("role", rs.getString("role"));
+                    userDetails.put("status", rs.getString("status"));
+                    userDetails.put("dateCreate", rs.getDate("dateCreate"));
+                    userDetails.put("gender", rs.getString("gender"));
+                    userDetails.put("dateOfBirth", rs.getDate("dateOfBirth"));
+                    userDetails.put("avatar", rs.getString("avatar"));
+                }
+            }
+        }
+
+        // Get additional info based on role
+        String role = (String) userDetails.get("role");
+        if ("learner".equals(role)) {
+            String learnerQuery = "SELECT * FROM Learner WHERE userID = ?";
+            try (Connection conn = DBConnect.getInstance().getConnection();
+                 PreparedStatement ps = conn.prepareStatement(learnerQuery)) {
+                ps.setInt(1, userId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        userDetails.put("learnerID", rs.getInt("learnerID"));
+                        userDetails.put("level", rs.getString("level"));
+                        userDetails.put("learningProgress", rs.getInt("learningProgress"));
+                    }
+                }
+            }
+        } else if ("expert".equals(role)) {
+            String expertQuery = "SELECT * FROM Expert WHERE userID = ?";
+            try (Connection conn = DBConnect.getInstance().getConnection();
+                 PreparedStatement ps = conn.prepareStatement(expertQuery)) {
+                ps.setInt(1, userId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        userDetails.put("expertID", rs.getInt("expertID"));
+                        userDetails.put("expertise", rs.getString("expertise"));
+                        userDetails.put("rating", rs.getDouble("rating"));
+                    }
+                }
+            }
+        }
+
+        return userDetails;
+    }
+
     // 3. Quản lý khóa học
-    public List<Course> getUnactiveCourses() throws SQLException {
-        String query = "SELECT c.*, u.fullName as expertName " +
-                "FROM Course c " +
-                "JOIN Expert e ON c.expertID = e.expertID " +
-                "JOIN [User] u ON e.userID = u.userID " +
-                "WHERE c.status = 'unactive' " +
-                "ORDER BY c.createdAt DESC";
-        return courseDAO.getCoursesByQuery(query);
+    public List<Course> getAllCourses() throws SQLException {
+        return courseDAO.getAllCourses();
+    }
+
+    public List<Course> searchCourses(String keyword) throws SQLException {
+        return courseDAO.searchCoursesForAdmin(keyword);
+    }
+
+    public List<Course> filterCourses(String status, String expert, String category) throws SQLException {
+        return courseDAO.filterCourses(status, expert, category);
     }
 
     // 4. Quản lý thanh toán
@@ -787,12 +904,12 @@ public class AdminService {
         String query = "SELECT " +
                       "r.reportID, rt.typeName, " +
                       "u.fullName AS ReporterName, u2.fullName AS ReportedUserName, " +
-                      "r.reason, r.messageID, r.postID, r.reportDate, r.status " +
+                      "r.reason, r.messageID, r.postID, r.reportDate, r.status, r.courseID " +
                       "FROM Report AS r " +
                       "JOIN ReportType AS rt ON r.reportTypeID = rt.reportTypeID " +
                       "JOIN [User] AS u ON r.reporterID = u.userID " +
                       "JOIN [User] AS u2 ON r.reportedUserID = u2.userID " +
-                      "ORDER BY r.reportDate DESC";
+                      "ORDER BY r.reportDate ASC";
         
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(query);
@@ -809,7 +926,7 @@ public class AdminService {
                 reportDetail.put("postID", rs.getInt("postID"));
                 reportDetail.put("reportDate", rs.getTimestamp("reportDate"));
                 reportDetail.put("status", rs.getString("status"));
-                
+                reportDetail.put("courseID", rs.getObject("courseID") != null ? rs.getInt("courseID") : null);
                 // Thông tin người báo cáo và bị báo cáo
                 reportDetail.put("reporterName", rs.getString("ReporterName"));
                 reportDetail.put("reportedUserName", rs.getString("ReportedUserName"));
@@ -823,18 +940,16 @@ public class AdminService {
 
     public List<Map<String, Object>> getReportsByStatus(String status) throws SQLException {
         List<Map<String, Object>> reportDetails = new ArrayList<>();
-        
         String query = "SELECT " +
                       "r.reportID, rt.typeName, " +
                       "u.fullName AS ReporterName, u2.fullName AS ReportedUserName, " +
-                      "r.reason, r.messageID, r.postID, r.reportDate, r.status " +
+                      "r.reason, r.messageID, r.postID, r.reportDate, r.status, r.courseID " +
                       "FROM Report AS r " +
                       "JOIN ReportType AS rt ON r.reportTypeID = rt.reportTypeID " +
                       "JOIN [User] AS u ON r.reporterID = u.userID " +
                       "JOIN [User] AS u2 ON r.reportedUserID = u2.userID " +
                       "WHERE r.status = ? " +
                       "ORDER BY r.reportDate DESC";
-        
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setString(1, status);
@@ -850,28 +965,26 @@ public class AdminService {
                     reportDetail.put("postID", rs.getInt("postID"));
                     reportDetail.put("reportDate", rs.getTimestamp("reportDate"));
                     reportDetail.put("status", rs.getString("status"));
+                    reportDetail.put("courseID", rs.getObject("courseID") != null ? rs.getInt("courseID") : null);
                     reportDetails.add(reportDetail);
                 }
             }
         }
-        
         return reportDetails;
     }
 
     public List<Map<String, Object>> getReportsByReporter(int reporterID) throws SQLException {
         List<Map<String, Object>> reportDetails = new ArrayList<>();
-        
         String query = "SELECT " +
                       "r.reportID, rt.typeName, " +
                       "u.fullName AS ReporterName, u2.fullName AS ReportedUserName, " +
-                      "r.reason, r.messageID, r.postID, r.reportDate, r.status " +
+                      "r.reason, r.messageID, r.postID, r.reportDate, r.status, r.courseID " +
                       "FROM Report AS r " +
                       "JOIN ReportType AS rt ON r.reportTypeID = rt.reportTypeID " +
                       "JOIN [User] AS u ON r.reporterID = u.userID " +
                       "JOIN [User] AS u2 ON r.reportedUserID = u2.userID " +
                       "WHERE r.reporterID = ? " +
                       "ORDER BY r.reportDate DESC";
-        
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, reporterID);
@@ -887,28 +1000,26 @@ public class AdminService {
                     reportDetail.put("postID", rs.getInt("postID"));
                     reportDetail.put("reportDate", rs.getTimestamp("reportDate"));
                     reportDetail.put("status", rs.getString("status"));
+                    reportDetail.put("courseID", rs.getObject("courseID") != null ? rs.getInt("courseID") : null);
                     reportDetails.add(reportDetail);
                 }
             }
         }
-        
         return reportDetails;
     }
 
     public List<Map<String, Object>> getReportsByReportedUser(int reportedUserID) throws SQLException {
         List<Map<String, Object>> reportDetails = new ArrayList<>();
-        
         String query = "SELECT " +
                       "r.reportID, rt.typeName, " +
                       "u.fullName AS ReporterName, u2.fullName AS ReportedUserName, " +
-                      "r.reason, r.messageID, r.postID, r.reportDate, r.status " +
+                      "r.reason, r.messageID, r.postID, r.reportDate, r.status, r.courseID " +
                       "FROM Report AS r " +
                       "JOIN ReportType AS rt ON r.reportTypeID = rt.reportTypeID " +
                       "JOIN [User] AS u ON r.reporterID = u.userID " +
                       "JOIN [User] AS u2 ON r.reportedUserID = u2.userID " +
                       "WHERE r.reportedUserID = ? " +
                       "ORDER BY r.reportDate DESC";
-        
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, reportedUserID);
@@ -924,28 +1035,26 @@ public class AdminService {
                     reportDetail.put("postID", rs.getInt("postID"));
                     reportDetail.put("reportDate", rs.getTimestamp("reportDate"));
                     reportDetail.put("status", rs.getString("status"));
+                    reportDetail.put("courseID", rs.getObject("courseID") != null ? rs.getInt("courseID") : null);
                     reportDetails.add(reportDetail);
                 }
             }
         }
-        
         return reportDetails;
     }
 
     public List<Map<String, Object>> getReportsByDateRange(String startDate, String endDate) throws SQLException {
         List<Map<String, Object>> reportDetails = new ArrayList<>();
-        
         String query = "SELECT " +
                       "r.reportID, rt.typeName, " +
                       "u.fullName AS ReporterName, u2.fullName AS ReportedUserName, " +
-                      "r.reason, r.messageID, r.postID, r.reportDate, r.status " +
+                      "r.reason, r.messageID, r.postID, r.reportDate, r.status, r.courseID " +
                       "FROM Report AS r " +
                       "JOIN ReportType AS rt ON r.reportTypeID = rt.reportTypeID " +
                       "JOIN [User] AS u ON r.reporterID = u.userID " +
                       "JOIN [User] AS u2 ON r.reportedUserID = u2.userID " +
                       "WHERE r.reportDate BETWEEN ? AND ? " +
                       "ORDER BY r.reportDate DESC";
-        
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setString(1, startDate);
@@ -962,11 +1071,11 @@ public class AdminService {
                     reportDetail.put("postID", rs.getInt("postID"));
                     reportDetail.put("reportDate", rs.getTimestamp("reportDate"));
                     reportDetail.put("status", rs.getString("status"));
+                    reportDetail.put("courseID", rs.getObject("courseID") != null ? rs.getInt("courseID") : null);
                     reportDetails.add(reportDetail);
                 }
             }
         }
-        
         return reportDetails;
     }
 
@@ -1357,13 +1466,64 @@ public class AdminService {
 
     // Duyệt report
     public boolean approveReport(int reportID, String status) throws SQLException {
-        String query = "UPDATE Report SET status = ? WHERE reportID = ?";
+        // Chỉ cho phép 3 trạng thái
+        if (!"pending".equalsIgnoreCase(status) && !"approved".equalsIgnoreCase(status) && !"rejected".equalsIgnoreCase(status)) {
+            return false;
+        }
+        // Lấy thông tin report
+        String getReportQuery = "SELECT reportTypeID, postID, courseID, reportedUserID FROM Report WHERE reportID = ?";
+        int reportTypeID = 0;
+        Integer postID = null;
+        Integer courseID = null;
+        Integer reportedUserID = null;
         try (Connection conn = DBConnect.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+             PreparedStatement ps = conn.prepareStatement(getReportQuery)) {
+            ps.setInt(1, reportID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    reportTypeID = rs.getInt("reportTypeID");
+                    postID = rs.getObject("postID") != null ? rs.getInt("postID") : null;
+                    courseID = rs.getObject("courseID") != null ? rs.getInt("courseID") : null;
+                    reportedUserID = rs.getObject("reportedUserID") != null ? rs.getInt("reportedUserID") : null;
+                }
+            }
+        }
+
+        // Cập nhật trạng thái report
+        String updateReportQuery = "UPDATE Report SET status = ? WHERE reportID = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(updateReportQuery)) {
             ps.setString(1, status);
             ps.setInt(2, reportID);
-            return ps.executeUpdate() > 0;
+            ps.executeUpdate();
         }
+
+        // Xử lý theo loại report khi approved
+        if ("approved".equalsIgnoreCase(status)) {
+            if (reportTypeID == 1 && courseID != null) { // course
+                String updateCourseQuery = "UPDATE Course SET status = 'blocked' WHERE courseID = ?";
+                try (Connection conn = DBConnect.getInstance().getConnection();
+                     PreparedStatement ps = conn.prepareStatement(updateCourseQuery)) {
+                    ps.setInt(1, courseID);
+                    ps.executeUpdate();
+                }
+            } else if ((reportTypeID == 2 || reportTypeID == 4) && reportedUserID != null) { // chat hoặc comment
+                String updateUserQuery = "UPDATE [User] SET status = 'warning' WHERE userID = ?";
+                try (Connection conn = DBConnect.getInstance().getConnection();
+                     PreparedStatement ps = conn.prepareStatement(updateUserQuery)) {
+                    ps.setInt(1, reportedUserID);
+                    ps.executeUpdate();
+                }
+            } else if (reportTypeID == 3 && postID != null) { // post
+                String updatePostQuery = "UPDATE Post SET status = 0 WHERE postID = ?";
+                try (Connection conn = DBConnect.getInstance().getConnection();
+                     PreparedStatement ps = conn.prepareStatement(updatePostQuery)) {
+                    ps.setInt(1, postID);
+                    ps.executeUpdate();
+                }
+            }
+        }
+        return true;
     }
 
     // Khóa nội dung bị báo cáo
@@ -1421,8 +1581,45 @@ public class AdminService {
         return topCourses;
     }
 
+    // Lấy chi tiết khóa học cho admin
+    public Map<String, Object> getCourseDetailForAdmin(int courseId) throws SQLException {
+        CourseDAO courseDAO = new CourseDAO();
+        CourseFeedbackDAO feedbackDAO = new CourseFeedbackDAO();
+        CoursePaidDAO paidDAO = new CoursePaidDAO();
+        Course course = courseDAO.getCourseById(courseId);
+        if (course == null) return null;
+        var feedbacks = feedbackDAO.getFeedbacksByCourseID(courseId);
+        java.math.BigDecimal totalRevenue = paidDAO.getTotalRevenue(courseId);
+        int purchaseCount = paidDAO.getPurchaseCount(courseId);
+        Map<String, Object> detail = new java.util.HashMap<>();
+        detail.put("course", course);
+        detail.put("feedbacks", feedbacks);
+        detail.put("totalRevenue", totalRevenue);
+        detail.put("purchaseCount", purchaseCount);
+        return detail;
+    }
+
+    // Lấy doanh thu theo khóa học
+    public Map<String, Object> getCourseRevenue(int courseId) throws SQLException {
+        CoursePaidDAO paidDAO = new CoursePaidDAO();
+        java.math.BigDecimal totalRevenue = paidDAO.getTotalRevenue(courseId);
+        int purchaseCount = paidDAO.getPurchaseCount(courseId);
+        Map<String, Object> revenue = new java.util.HashMap<>();
+        revenue.put("totalRevenue", totalRevenue);
+        revenue.put("purchaseCount", purchaseCount);
+        return revenue;
+    }
+
     // Thêm phương thức để đóng kết nối
     public void close() {
         DBConnect.getInstance().shutdown();
+    }
+
+    public List<String> getAllExpertNames() throws SQLException {
+        return courseDAO.getAllExpertNames();
+    }
+
+    public List<String> getAllCategoryNames() throws SQLException {
+        return courseDAO.getAllCategoryNames();
     }
 } 

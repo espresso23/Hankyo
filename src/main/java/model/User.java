@@ -18,6 +18,7 @@ public class User implements Serializable {
     private String gender;
     private Date dateOfBirth;
     private String avatar;
+    private boolean isReported;
 
     public User(int userID, String username, String password, String gmail, String phone, String role, String status, String fullName, String socialID, Date dateCreate, String gender, Date dateOfBirth, String avatar) {
         this.userID = userID;
@@ -142,6 +143,14 @@ public class User implements Serializable {
 
     public void setGender(String gender) {
         this.gender = gender;
+    }
+
+    public boolean isReported() {
+        return isReported;
+    }
+
+    public void setIsReported(boolean isReported) {
+        this.isReported = isReported;
     }
 
     public String displayInfo() {

@@ -53,7 +53,9 @@ public class CourseContentServlet extends HttpServlet {
             // Kiểm tra đăng nhập
             HttpSession session = request.getSession();
             Learner learner = (Learner) session.getAttribute("learner");
-            if (learner == null) {
+            model.User user = (model.User) session.getAttribute("user");
+            boolean isAdmin = user != null && "admin".equalsIgnoreCase(user.getRole());
+            if (learner == null && !isAdmin) {
                 response.sendRedirect("login");
                 return;
             }
@@ -61,8 +63,8 @@ public class CourseContentServlet extends HttpServlet {
             int courseID = Integer.parseInt(request.getParameter("courseID"));
             String courseContentIDStr = request.getParameter("courseContentID");
 
-            // Kiểm tra xem học viên có đăng ký khóa học này không
-            if (!courseService.isEnrolled(learner.getLearnerID(), courseID)) {
+            // Kiểm tra xem học viên có đăng ký khóa học này không (admin thì bỏ qua)
+            if (!isAdmin && !courseService.isEnrolled(learner.getLearnerID(), courseID)) {
                 response.sendRedirect("my-courses");
                 return;
             }
@@ -84,10 +86,10 @@ public class CourseContentServlet extends HttpServlet {
                 }
             }
 
-            // Lấy danh sách contentID đã hoàn thành
-            List<Integer> completedContentIDs = progressService.getCompletedContentIDs(learner.getLearnerID(), courseID);
+            // Lấy danh sách contentID đã hoàn thành (chỉ learner mới có)
+            List<Integer> completedContentIDs = isAdmin ? java.util.Collections.emptyList() : progressService.getCompletedContentIDs(learner.getLearnerID(), courseID);
             for (CourseContent content : contents) {
-                if (completedContentIDs.contains(content.getCourseContentID())) {
+                if (!isAdmin && completedContentIDs.contains(content.getCourseContentID())) {
                     content.setCompleted(true);
                 } else {
                     content.setCompleted(false);
@@ -127,11 +129,14 @@ public class CourseContentServlet extends HttpServlet {
                 if (assignment != null) {
                     currentContent.setAssignment(assignment);
 
-                    // Lấy AssignmentTaken gần nhất của học viên
-                    AssignmentTaken latestTaken = assignmentTakenDAO.getLatestAssignmentTaken(
-                            learner.getLearnerID(),
-                            assignment.getAssignmentID()
-                    );
+                    // Lấy AssignmentTaken gần nhất của học viên (admin thì bỏ qua)
+                    AssignmentTaken latestTaken = null;
+                    if (!isAdmin) {
+                        latestTaken = assignmentTakenDAO.getLatestAssignmentTaken(
+                                learner.getLearnerID(),
+                                assignment.getAssignmentID()
+                        );
+                    }
 
                     if (latestTaken != null) {
                         // Lấy kết quả bài làm từ AssignmentTaken gần nhất
@@ -174,7 +179,6 @@ public class CourseContentServlet extends HttpServlet {
                             } else {
                                 currentContent.setCompleted(false);
                             }
-                            
                             // Gắn assignmentResult vào assignment
                             currentContent.getAssignment().setAssignmentResult(summary);
 
@@ -188,8 +192,8 @@ public class CourseContentServlet extends HttpServlet {
                 }
             }
 
-            // Lấy tiến độ của học viên
-            int courseProgress = progressService.calculateCourseProgress(learner.getLearnerID(), courseID);
+            // Lấy tiến độ của học viên (admin thì bỏ qua)
+            int courseProgress = isAdmin ? 0 : progressService.calculateCourseProgress(learner.getLearnerID(), courseID);
             request.setAttribute("courseProgress", courseProgress);
 
             // Chuyển hướng đến trang học
