@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @WebServlet("/flashCard")
 public class ChooseQuizletServlet extends HttpServlet {
@@ -68,27 +69,39 @@ public class ChooseQuizletServlet extends HttpServlet {
                 request.setAttribute("topic", topic);
                 request.setAttribute("type", "favorite");
             }
+            request.setAttribute("sessionLearnerID", learnerID);
             request.getRequestDispatcher("selectTopic.jsp").forward(request, response);
         } else if ("custom".equals(type)) {
-            if (learnerID == null) {
-                response.sendRedirect("login.jsp");
-                return;
+            // Lấy learnerID từ request nếu có, nếu không thì lấy từ session
+            String learnerIDParam = request.getParameter("learnerID");
+            int targetLearnerID = learnerID;
+            if (learnerIDParam != null && !learnerIDParam.isEmpty()) {
+                try {
+                    targetLearnerID = Integer.parseInt(learnerIDParam);
+                } catch (NumberFormatException e) {
+                    // fallback giữ nguyên learnerID session
+                }
             }
-            System.out.println("Fetching custom flashcards for learnerID: " + learnerID + ", topic: " + topic);
 
-            List<CustomFlashCard> flashCards = quizletDAO.getAllCustomFlashCardByTopicAndLeanerID(learnerID, topic);
-            System.out.println("Custom flashCards: " + flashCards);
-
-            if (flashCards == null || flashCards.isEmpty()) {
-                request.setAttribute("error", "No custom flashcards found for topic: " + topic);
-            } else {
-                String flashCardsJson = gson.toJson(flashCards);
-                System.out.println("Custom flashCardsJson: " + flashCardsJson);
-                request.setAttribute("flashCardsJson", flashCardsJson);
-                request.setAttribute("flashCards", flashCards);
-                request.setAttribute("topic", topic);
-                request.setAttribute("type", "custom");
+            // Lấy danh sách flashcards và xử lý quyền edit
+            List<CustomFlashCard> flashCards = quizletDAO.getAllCustomFlashCardByTopicAndLeanerID(targetLearnerID, topic);
+            for (CustomFlashCard flashcard : flashCards) {
+                // Set canEdit = true nếu flashcard thuộc về người dùng hiện tại
+                if (flashcard.getLearnerID() != null && flashcard.getLearnerID().equals(learnerID)) {
+                    flashcard.setCanEdit(true);
+                }
             }
+
+            // Lấy tên của các learner
+            Map<Integer, String> learnerNames = quizletDAO.getLearnerFullNameMap(flashCards);
+            
+            request.setAttribute("learnerNames", learnerNames);
+            String flashCardsJson = gson.toJson(flashCards);
+            request.setAttribute("flashCardsJson", flashCardsJson);
+            request.setAttribute("flashCards", flashCards);
+            request.setAttribute("topic", topic);
+            request.setAttribute("type", "custom");
+            request.setAttribute("sessionLearnerID", learnerID);
             request.getRequestDispatcher("customQuizlet.jsp").forward(request, response);
         } else {
             System.out.println("Fetching system flashcards for topic: " + topic);
@@ -105,6 +118,7 @@ public class ChooseQuizletServlet extends HttpServlet {
                 request.setAttribute("topic", topic);
                 request.setAttribute("type", "system");
             }
+            request.setAttribute("sessionLearnerID", learnerID);
             request.getRequestDispatcher("selectTopic.jsp").forward(request, response);
         }
     }
@@ -121,6 +135,7 @@ public class ChooseQuizletServlet extends HttpServlet {
         HttpSession session = request.getSession();
         Learner learner = (Learner) session.getAttribute("learner");
         Integer learnerID = learner.getLearnerID();
+        String cfcidStr, word, mean, topic;
 
         if (learnerID == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -131,7 +146,7 @@ public class ChooseQuizletServlet extends HttpServlet {
         if (action != null) {
             switch (action) {
                 case "delete":
-                    String cfcidStr = request.getParameter("cfcid");
+                    cfcidStr = request.getParameter("cfcid");
                     try {
                         int cfcid = Integer.parseInt(cfcidStr);
                         boolean success = dao.deleteCustomFlashCard(cfcid);
@@ -150,8 +165,8 @@ public class ChooseQuizletServlet extends HttpServlet {
 
                 case "update":
                     cfcidStr = request.getParameter("cfcid");
-                    String word = request.getParameter("word");
-                    String mean = request.getParameter("mean");
+                    word = request.getParameter("word");
+                    mean = request.getParameter("mean");
                     try {
                         int cfcid = Integer.parseInt(cfcidStr);
                         if (word != null && !word.trim().isEmpty() && mean != null && !mean.trim().isEmpty()) {
@@ -173,9 +188,37 @@ public class ChooseQuizletServlet extends HttpServlet {
                     }
                     break;
 
+                case "togglePublic":
+                    cfcidStr = request.getParameter("cfcid");
+                    String isPublicStr = request.getParameter("isPublic");
+                    try {
+                        int cfcid = Integer.parseInt(cfcidStr);
+                        boolean isPublic = Boolean.parseBoolean(isPublicStr);
+                        
+                        // Verify ownership
+                        CustomFlashCard flashcard = dao.getCustomFlashCardById(cfcid);
+                        if (flashcard != null && flashcard.getLearnerID().equals(learnerID)) {
+                            boolean success = dao.updateCustomFlashCardPublic(cfcid, !isPublic); // Toggle the current state
+                            if (success) {
+                                response.setStatus(HttpServletResponse.SC_OK);
+                                response.getWriter().write("{\"success\": true, \"message\": \"Visibility updated successfully\"}");
+                            } else {
+                                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                                response.getWriter().write("{\"success\": false, \"error\": \"Failed to update visibility\"}");
+                            }
+                        } else {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.getWriter().write("{\"success\": false, \"error\": \"You don't have permission to modify this flashcard\"}");
+                        }
+                    } catch (NumberFormatException e) {
+                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        response.getWriter().write("{\"success\": false, \"error\": \"Invalid flashcard ID\"}");
+                    }
+                    break;
+
                 case "add":
                     String mode = request.getParameter("mode");
-                    String topic = request.getParameter("topic");
+                    topic = request.getParameter("topic");
                     List<CustomFlashCard> newFlashcards = new ArrayList<>();
 
                     if (topic == null || topic.trim().isEmpty()) {

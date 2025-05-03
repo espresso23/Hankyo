@@ -54,8 +54,12 @@ public class QuizletServlet extends HttpServlet {
             try {
                 customTopics = quizletDAO.getAllTopicsCustomFlashCardByLearnerID(learnerID);
                 for (String topic : customTopics) {
-                    int count = quizletDAO.getAllCustomFlashCardByTopicAndLeanerID(learnerID, topic).size();
-                    customTopicCounts.put(topic, count);
+                    List<CustomFlashCard> allCards = quizletDAO.getAllCustomFlashCardByTopicAndLeanerID(learnerID, topic);
+                    Map<String, List<CustomFlashCard>> separatedCards = quizletDAO.separateCustomFlashCards(allCards, learnerID);
+                    
+                    // Đếm số lượng card của user
+                    int userCardCount = separatedCards.get("userCards").size();
+                    customTopicCounts.put(topic, userCardCount);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -73,6 +77,19 @@ public class QuizletServlet extends HttpServlet {
                 request.setAttribute("favoriteError", "Không thể tải danh sách topic favorite: " + e.getMessage());
             }
             request.setAttribute("favoriteTopics", favoriteTopics);
+
+            // Public Flashcards
+            List<CustomFlashCard> publicFlashCards = new ArrayList<>();
+            Map<Integer, String> publicLearnerNames = new HashMap<>();
+            try {
+                publicFlashCards = quizletDAO.getAllPublicCustomFlashCardsExcludeCurrentUser(learnerID);
+                publicLearnerNames = quizletDAO.getLearnerFullNameMap(publicFlashCards);
+            } catch (Exception e) {
+                e.printStackTrace();
+                request.setAttribute("publicError", "Không thể tải danh sách public flashcards: " + e.getMessage());
+            }
+            request.setAttribute("publicFlashCards", publicFlashCards);
+            request.setAttribute("publicLearnerNames", publicLearnerNames);
 
             request.setAttribute("learnerID", learnerID);
             request.getRequestDispatcher("quizlet.jsp").forward(request, response);
@@ -119,6 +136,46 @@ public class QuizletServlet extends HttpServlet {
             } catch (Exception e) {
                 e.printStackTrace();
                 response.getWriter().write("{\"count\": 0}");
+            }
+        } else if ("addFlashcard".equals(action)) {
+            String topic = request.getParameter("topic");
+            String word = request.getParameter("word");
+            String mean = request.getParameter("mean");
+            boolean isPublic = "true".equals(request.getParameter("isPublic"));
+
+            QuizletDAO quizletDAO = new QuizletDAO();
+            List<String> successMessages = new ArrayList<>();
+            List<String> errorMessages = new ArrayList<>();
+
+            try {
+                CustomFlashCard flashCard = new CustomFlashCard(learnerID, word, mean, topic);
+                flashCard.setPublic(isPublic);
+                if (quizletDAO.addCustomFlashCard(flashCard)) {
+                    successMessages.add("Thêm flashcard thành công: " + word);
+                } else {
+                    errorMessages.add("Không thể thêm flashcard: " + word);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                errorMessages.add("Lỗi khi thêm flashcard: " + e.getMessage());
+            }
+
+            request.setAttribute("successMessages", successMessages);
+            request.setAttribute("errorMessages", errorMessages);
+            request.getRequestDispatcher("quizlet.jsp").forward(request, response);
+        } else if ("togglePublic".equals(action)) {
+            String cfcidStr = request.getParameter("cfcid");
+            String isPublicStr = request.getParameter("isPublic");
+            QuizletDAO quizletDAO = new QuizletDAO();
+            try {
+                int cfcid = Integer.parseInt(cfcidStr);
+                boolean isPublic = Boolean.parseBoolean(isPublicStr);
+                boolean success = quizletDAO.updateCustomFlashCardPublic(cfcid, isPublic);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"success\": " + success + "}");
+            } catch (Exception e) {
+                response.setContentType("application/json");
+                response.getWriter().write("{\"success\": false}");
             }
         } else {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);

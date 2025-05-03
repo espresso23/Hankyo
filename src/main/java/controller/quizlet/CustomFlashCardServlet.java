@@ -49,7 +49,7 @@ public class CustomFlashCardServlet extends HttpServlet {
 
         HttpSession session = request.getSession();
         Learner learner = (Learner) session.getAttribute("learner");
-        
+        System.out.println("da goi ham pót");
         if (learner == null) {
             response.sendRedirect("login.jsp");
             return;
@@ -57,8 +57,8 @@ public class CustomFlashCardServlet extends HttpServlet {
 
         Integer learnerID = learner.getLearnerID();
         String mode = request.getParameter("mode");
-        String topic = request.getParameter("topic");
-        String flashCardInput = request.getParameter("flashCards");
+        String manualTopic = request.getParameter("manualTopic");
+        String manualFlashCards = request.getParameter("manualFlashCards");
         String individualTopic = request.getParameter("individualTopic");
         String word = request.getParameter("word");
         String mean = request.getParameter("mean");
@@ -67,11 +67,11 @@ public class CustomFlashCardServlet extends HttpServlet {
         List<String> errorMessages = new ArrayList<>();
 
         if ("manual".equals(mode)) {
-            if (topic == null || topic.trim().isEmpty() || flashCardInput == null || flashCardInput.trim().isEmpty()) {
+            if (manualTopic == null || manualTopic.trim().isEmpty() || manualFlashCards == null || manualFlashCards.trim().isEmpty()) {
                 errorMessages.add("Vui lòng nhập đầy đủ topic và flashcard.");
             } else {
                 try {
-                    String[] flashCardPairs = flashCardInput.split(";");
+                    String[] flashCardPairs = manualFlashCards.split(";");
                     for (String pair : flashCardPairs) {
                         String trimmedPair = pair.trim();
                         if (trimmedPair.isEmpty()) continue;
@@ -86,7 +86,7 @@ public class CustomFlashCardServlet extends HttpServlet {
                             errorMessages.add("Từ hoặc nghĩa trống cho: " + trimmedPair);
                             continue;
                         }
-                        CustomFlashCard customFlashCard = new CustomFlashCard(learnerID, w, m, topic);
+                        CustomFlashCard customFlashCard = new CustomFlashCard(learnerID, w, m, manualTopic);
                         boolean success = quizletDAO.addCustomFlashCard(customFlashCard);
                         if (success) {
                             successMessages.add("Từ vựng: " + w + " - Nghĩa: " + m);
@@ -100,7 +100,6 @@ public class CustomFlashCardServlet extends HttpServlet {
                 }
             }
         } else if ("individual".equals(mode)) {
-            System.out.println("[DEBUG] individualTopic=" + individualTopic + ", word=" + word + ", mean=" + mean);
             if (individualTopic == null || individualTopic.trim().isEmpty() || word == null || word.trim().isEmpty() || mean == null || mean.trim().isEmpty()) {
                 errorMessages.add("Vui lòng nhập đầy đủ topic, từ và nghĩa.");
             } else {

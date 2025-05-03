@@ -11,7 +11,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class QuizletDAO {
 
@@ -87,7 +89,7 @@ public class QuizletDAO {
     }
 
     public boolean addCustomFlashCard(CustomFlashCard cf) {
-        String insertQuery = "INSERT INTO CustomFlashCard (learnerID, word, mean, topic) VALUES (?, ?, ?, ?)";
+        String insertQuery = "INSERT INTO CustomFlashCard (learnerID, word, mean, topic, isPublic) VALUES (?, ?, ?, ?, ?)";
         try (Connection connection = DBConnect.getInstance().getConnection();
              PreparedStatement insertStmt = connection.prepareStatement(insertQuery)) {
             if (connection.isClosed()) {
@@ -97,6 +99,7 @@ public class QuizletDAO {
             insertStmt.setString(2, cf.getWord());
             insertStmt.setString(3, cf.getMean());
             insertStmt.setString(4, cf.getTopic());
+            insertStmt.setBoolean(5, cf.isPublic());
             int rowsAffected = insertStmt.executeUpdate();
             return rowsAffected > 0;
         } catch (SQLException e) {
@@ -141,25 +144,31 @@ public class QuizletDAO {
 
     public List<CustomFlashCard> getAllCustomFlashCardByTopicAndLeanerID(int learnerID, String topic) {
         List<CustomFlashCard> list = new ArrayList<>();
-        String query = "SELECT CFCID, word, mean, topic, learnerID FROM CustomFlashCard WHERE topic = ? AND learnerID = ?";
+        String query = "SELECT CFCID, word, mean, topic, learnerID, isPublic FROM CustomFlashCard WHERE learnerID = ?";
+        if (topic != null) {
+            query += " AND topic = ?";
+        }
 
         try (Connection connection = DBConnect.getInstance().getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
             if (connection.isClosed()) {
                 throw new SQLException("Connection is closed before use");
             }
-            statement.setString(1, topic);
-            statement.setInt(2, learnerID);
+            statement.setInt(1, learnerID);
+            if (topic != null) {
+                statement.setString(2, topic);
+            }
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     CustomFlashCard customFlashCard = new CustomFlashCard(
+                            resultSet.getInt("CFCID"),
                             resultSet.getInt("learnerID"),
                             resultSet.getString("word") != null ? resultSet.getString("word").trim() : "",
                             resultSet.getString("mean") != null ? resultSet.getString("mean").trim() : "",
-                            resultSet.getString("topic") != null ? resultSet.getString("topic").trim() : ""
+                            resultSet.getString("topic") != null ? resultSet.getString("topic").trim() : "",
+                            resultSet.getBoolean("isPublic")
                     );
-                    customFlashCard.setCFCID(resultSet.getInt("CFCID"));
                     list.add(customFlashCard);
                 }
             }
@@ -223,26 +232,23 @@ public class QuizletDAO {
 
     public List<CustomFlashCard> getRandomFlashCards(int limit) throws SQLException {
         List<CustomFlashCard> flashCards = new ArrayList<>();
-        String sql = "SELECT TOP (?) CFCID, learnerID, word, mean, topic FROM CustomFlashCard ORDER BY NEWID()";
-        
+        String sql = "SELECT TOP (?) CFCID, learnerID, word, mean, topic, isPublic FROM CustomFlashCard ORDER BY NEWID()";
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            
             ps.setInt(1, limit);
             ResultSet rs = ps.executeQuery();
-            
             while (rs.next()) {
                 CustomFlashCard card = new CustomFlashCard(
+                    rs.getInt("CFCID"),
                     rs.getInt("learnerID"),
                     rs.getString("word"),
                     rs.getString("mean"),
-                    rs.getString("topic")
+                    rs.getString("topic"),
+                    rs.getBoolean("isPublic")
                 );
-                card.setCFCID(rs.getInt("CFCID"));
                 flashCards.add(card);
             }
         }
-        
         return flashCards;
     }
 
@@ -345,6 +351,162 @@ public class QuizletDAO {
             }
         }
         return list;
+    }
+
+    public List<CustomFlashCard> getAllPublicCustomFlashCards(int excludeLearnerID) {
+        List<CustomFlashCard> list = new ArrayList<>();
+        String sql = "SELECT CFCID, learnerID, word, mean, topic, isPublic FROM CustomFlashCard WHERE isPublic = 1 AND learnerID <> ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, excludeLearnerID);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                CustomFlashCard card = new CustomFlashCard(
+                    rs.getInt("CFCID"),
+                    rs.getInt("learnerID"),
+                    rs.getString("word"),
+                    rs.getString("mean"),
+                    rs.getString("topic"),
+                    rs.getBoolean("isPublic")
+                );
+                list.add(card);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public boolean updateCustomFlashCardPublic(int cfcid, boolean isPublic) {
+        String sql = "UPDATE CustomFlashCard SET isPublic = ? WHERE CFCID = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setBoolean(1, isPublic);
+            ps.setInt(2, cfcid);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public Map<Integer, String> getLearnerFullNameMap(List<CustomFlashCard> flashCards) {
+        Map<Integer, String> learnerNames = new HashMap<>();
+        if (flashCards == null || flashCards.isEmpty()) {
+            return learnerNames;
+        }
+
+        String sql = "SELECT learnerID, fullName FROM Learner WHERE learnerID IN (";
+        StringBuilder placeholders = new StringBuilder();
+        for (int i = 0; i < flashCards.size(); i++) {
+            if (i > 0) placeholders.append(",");
+            placeholders.append("?");
+        }
+        sql += placeholders.toString() + ")";
+
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            int paramIndex = 1;
+            for (CustomFlashCard card : flashCards) {
+                ps.setInt(paramIndex++, card.getLearnerID());
+            }
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                learnerNames.put(rs.getInt("learnerID"), rs.getString("fullName"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return learnerNames;
+    }
+
+    public List<CustomFlashCard> getAllPublicCustomFlashCardsByTopic(String topic) {
+        List<CustomFlashCard> list = new ArrayList<>();
+        String sql = "SELECT CFCID, learnerID, word, mean, topic, isPublic FROM CustomFlashCard WHERE isPublic = 1 AND topic = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, topic);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                CustomFlashCard card = new CustomFlashCard(
+                    rs.getInt("CFCID"),
+                    rs.getInt("learnerID"),
+                    rs.getString("word"),
+                    rs.getString("mean"),
+                    rs.getString("topic"),
+                    rs.getBoolean("isPublic")
+                );
+                list.add(card);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public Map<String, List<CustomFlashCard>> separateCustomFlashCards(List<CustomFlashCard> allCards, int currentLearnerID) {
+        Map<String, List<CustomFlashCard>> separatedCards = new HashMap<>();
+        List<CustomFlashCard> userCards = new ArrayList<>();
+        List<CustomFlashCard> publicCards = new ArrayList<>();
+
+        for (CustomFlashCard card : allCards) {
+            if (card.getLearnerID() == currentLearnerID) {
+                userCards.add(card);
+            } else {
+                publicCards.add(card);
+            }
+        }
+
+        separatedCards.put("userCards", userCards);
+        separatedCards.put("publicCards", publicCards);
+        return separatedCards;
+    }
+
+    public List<CustomFlashCard> getAllPublicCustomFlashCardsExcludeCurrentUser(int currentLearnerID) {
+        List<CustomFlashCard> list = new ArrayList<>();
+        String sql = "SELECT CFCID, learnerID, word, mean, topic, isPublic FROM CustomFlashCard WHERE isPublic = 1 AND learnerID <> ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, currentLearnerID);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                CustomFlashCard card = new CustomFlashCard(
+                    rs.getInt("CFCID"),
+                    rs.getInt("learnerID"),
+                    rs.getString("word"),
+                    rs.getString("mean"),
+                    rs.getString("topic"),
+                    rs.getBoolean("isPublic")
+                );
+                list.add(card);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public CustomFlashCard getCustomFlashCardById(int cfcid) {
+        String query = "SELECT CFCID, learnerID, word, mean, topic, isPublic FROM CustomFlashCard WHERE CFCID = ?";
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, cfcid);
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    return new CustomFlashCard(
+                        rs.getInt("CFCID"),
+                        rs.getInt("learnerID"),
+                        rs.getString("word"),
+                        rs.getString("mean"),
+                        rs.getString("topic"),
+                        rs.getBoolean("isPublic")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static void main(String[] args) {
