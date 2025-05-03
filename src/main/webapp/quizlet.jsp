@@ -438,10 +438,10 @@
                     </div>
                 </c:if>
                 <button class="toggle-btn" onclick="toggleInputMode()">Chuyển sang nhập từng ô</button>
-                <form id="flashcardForm"  method="post">
+                <form id="flashcardForm" method="post">
                     <div class="manual-input active">
-                        <input type="text" id="manualTopic" name="topic" placeholder="Nhập Topic" required />
-                        <input type="text" id="manualFlashCards" name="flashCards"
+                        <input type="text" id="manualTopic" name="manualTopic" placeholder="Nhập Topic" required />
+                        <input type="text" id="manualFlashCards" name="manualFlashCards"
                                placeholder="Nhập từ:nghĩa (VD: hello:xin chào;good:tốt)" required />
                     </div>
                     <div class="individual-input">
@@ -461,6 +461,7 @@
     window.contextPath = '${pageContext.request.contextPath}';
 </script>
 <script src="${pageContext.request.contextPath}/asset/js/quizlet.js"></script>
+<script src="${pageContext.request.contextPath}/asset/js/quizlet-add.js"></script>
 <jsp:include page="footer.jsp"></jsp:include>
 </body>
 </html>
