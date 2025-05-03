@@ -174,4 +174,3 @@ public class User implements Serializable {
                 "Gender: " + gender + "\n" + "Date Of Birth: " + dateOfBirth + "\n";
     }
 }
-

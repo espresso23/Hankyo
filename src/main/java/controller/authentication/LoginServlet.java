@@ -72,6 +72,8 @@ public class LoginServlet extends HttpServlet {
                     session.setAttribute("avatar", user.getAvatar());
                     user.setCoverPhoto(userDao.getCoverPhotoByUserId(user.getUserID()));
                     session.setAttribute("coverPhoto", user.getCoverPhoto());
+                    session.setAttribute("isNewLogin", true);
+
                     System.out.println("User role: " + user.getRole());
 
                     if ("expert".equalsIgnoreCase(user.getRole())) {
@@ -94,6 +96,7 @@ public class LoginServlet extends HttpServlet {
                         Learner learner = learnerDAO.getLearnerByUserId(user.getUserID());
                         if (learner != null) {
                             session.setAttribute("learner", learner);
+                            session.setAttribute("learnerID", learner.getLearnerID());
                             System.out.println(learner.toString());
                             response.sendRedirect("home.jsp");
                         } else {

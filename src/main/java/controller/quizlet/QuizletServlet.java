@@ -15,7 +15,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @WebServlet("/quizlet")
 public class QuizletServlet extends HttpServlet {
@@ -48,13 +50,19 @@ public class QuizletServlet extends HttpServlet {
 
             // Custom Flashcard Topics
             List<String> customTopics = new ArrayList<>();
+            Map<String, Integer> customTopicCounts = new HashMap<>();
             try {
                 customTopics = quizletDAO.getAllTopicsCustomFlashCardByLearnerID(learnerID);
+                for (String topic : customTopics) {
+                    int count = quizletDAO.getAllCustomFlashCardByTopicAndLeanerID(learnerID, topic).size();
+                    customTopicCounts.put(topic, count);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 request.setAttribute("customError", "Không thể tải danh sách topic custom: " + e.getMessage());
             }
             request.setAttribute("customTopics", customTopics);
+            request.setAttribute("customTopicCounts", customTopicCounts);
 
             // Favorite Flashcard Topics
             List<String> favoriteTopics = new ArrayList<>();

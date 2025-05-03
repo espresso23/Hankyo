@@ -79,6 +79,7 @@
       transition: 0.4s;
       transform: translateX(-56px);
     }
+
     .back-btn .button-box {
       display: flex;
       align-items: center;
@@ -86,15 +87,15 @@
     .back-btn .button-elem svg {
       width: 24px;
       height: 24px;
-      fill: #333;
+      fill: #333; /* Màu mặc định */
       transition: transform 0.3s ease, fill 0.3s ease;
     }
     .back-btn:hover .button-elem svg {
-      transform: translateX(-5px);
-      fill: #007BFF;
+      transform: translateX(-5px); /* Di chuyển sang trái khi hover */
+      fill: #007BFF; /* Đổi màu khi hover */
     }
     .logo {
-      grid-column: 2 / 3;
+      grid-column: 2 / 3; /* Đẩy logo sang cột tiếp theo */
       justify-self: start;
       width: 50px;
     }
@@ -356,7 +357,63 @@
     .mobile-menu-item:hover a:before {
       transform: scale(1.5);
     }
-  </style>
+
+  .navbarContainer {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+  }
+
+  .user-info-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .username {
+    font-weight: bold;
+  <% if (request.getAttribute("equippedGradientStart") != null && request.getAttribute("equippedGradientEnd") != null) { %>
+    color: transparent;
+    background: linear-gradient(45deg, <%= request.getAttribute("equippedGradientStart") %>, <%= request.getAttribute("equippedGradientEnd") %>);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  <% } else { %>
+    color: #333;
+  <% } %>
+  }
+
+  .honour-name {
+    font-size: 0.8em;
+    color: #666;
+    margin-top: 2px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.8), 0 0 10px rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .honour-image {
+    width: 60px !important;
+    height: 60px !important;
+    margin: 0 5px !important;
+    vertical-align: middle !important;
+    object-fit: contain !important;
+  }
+
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+</style>
 
 </head>
 <body>
@@ -366,12 +423,16 @@
     <div class="button-box">
       <span class="button-elem">
         <svg viewBox="0 0 46 40" xmlns="http://www.w3.org/2000/svg">
-          <path d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"></path>
+          <path
+                  d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"
+          ></path>
         </svg>
       </span>
       <span class="button-elem">
         <svg viewBox="0 0 46 40">
-          <path d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"></path>
+          <path
+                  d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"
+          ></path>
         </svg>
       </span>
     </div>
@@ -384,6 +445,9 @@
     <div class="navbarContent"><a href="quizlet">Cộng Đồng</a></div>
     <div class="navbarContent"><a href="library">Đề thi</a></div>
     <div class="navbarContent"><a href="entranceTest">Test Level</a></div>
+    <div class="navbarContent"><a href="listHonour">Cộng Đồng</a></div>
+    <div class="navbarContent"><a href="addFlashCard">Tài Liệu</a></div>
+    <div class="navbarContent"><a href="dictionary">Thi Thử</a></div>
     <div class="navbarContent"><a href="/about-us.html">Về Chúng Tôi</a></div>
     <div class="navbarContent"><a href="${pageContext.request.contextPath}/chat/<%= session.getAttribute("userID") %>">Phòng Chat</a></div>
     <!-- Thêm icon giỏ hàng vào đây -->
@@ -413,12 +477,23 @@
     </div>
 
     <span>Xin chào, <%= session.getAttribute("username") %>!</span>
-    <%
-      String avatar = (String) session.getAttribute("avatar");
-    %>
-    <img src="${pageContext.request.contextPath}/<%= avatar != null ? avatar : "asset/png/avatar/monkey.jpg" %>"
-         onclick="togglePopup()"
-         onerror="this.src='${pageContext.request.contextPath}/asset/png/avatar/monkey.jpg'">
+    <div class="user-info">
+      <div class="user-info-text">
+        <span class="username">Xin chào, <%= session.getAttribute("username") %>!</span>
+        <% if (request.getAttribute("equippedHonourName") != null && request.getAttribute("equippedHonourImage") != null) { %>
+        <span class="honour-name"><%= request.getAttribute("equippedHonourName") %></span>
+        <% } %>
+      </div>
+      <% if (request.getAttribute("equippedHonourName") != null && request.getAttribute("equippedHonourImage") != null) { %>
+      <img class="honour-image" src="${pageContext.request.contextPath}/<%= request.getAttribute("equippedHonourImage") %>" alt="Honour Image">
+      <% } %>
+      <%
+        String avatar = (String) session.getAttribute("avatar");
+      %>
+      <img class="avatar" src="${pageContext.request.contextPath}/<%= avatar != null ? avatar : "asset/png/avatar/monkey.jpg" %>"
+           onclick="togglePopup()"
+           onerror="this.src='${pageContext.request.contextPath}/asset/png/avatar/monkey.jpg'">
+    </div>
   </div>
 </header>
 
@@ -434,7 +509,6 @@
     </div>
   </div>
 </div>
-
 
 <!-- Menu Button and Vertical Menu -->
 <button class="mobile-menu-btn" id="mobileMenuButton">
@@ -472,7 +546,7 @@
     } else {
       menu.style.display = 'block';
       menu.style.animation = 'fadeIn 0.3s ease-out';
-      
+
       // Kiểm tra vị trí của button
       if (btnRect.left < 200) {
         // Nếu button gần rìa trái, hiển thị menu bên phải
@@ -482,7 +556,7 @@
         menu.style.left = (btnRect.left - 180) + 'px';
       }
       menu.style.top = (btnRect.top + 25) + 'px';
-      
+
       btn.classList.add('active');
     }
   }
@@ -541,7 +615,7 @@
     function drag(e) {
       if (isDragging) {
         e.preventDefault();
-        
+
         currentX = e.clientX - initialX;
         currentY = e.clientY - initialY;
 
@@ -605,7 +679,7 @@
     function drag(e) {
       if (isDragging) {
         e.preventDefault();
-        
+
         currentX = e.touches[0].clientX - initialX;
         currentY = e.touches[0].clientY - initialY;
 
@@ -639,6 +713,12 @@
       mobileMenuBtn.classList.remove('dragging');
     }
   });
+
+  // Debug request attributes
+  console.log("equippedGradientStart: <%= request.getAttribute("equippedGradientStart") %>");
+  console.log("equippedGradientEnd: <%= request.getAttribute("equippedGradientEnd") %>");
+  console.log("equippedHonourName: <%= request.getAttribute("equippedHonourName") %>");
+  console.log("equippedHonourImage: <%= request.getAttribute("equippedHonourImage") %>");
 </script>
 </body>
 </html>

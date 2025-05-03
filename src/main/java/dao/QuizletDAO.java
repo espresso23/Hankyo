@@ -153,12 +153,6 @@ public class QuizletDAO {
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    System.out.println("Raw CFCID: " + resultSet.getInt("CFCID"));
-                    System.out.println("Raw word: " + resultSet.getString("word"));
-                    System.out.println("Raw mean: " + resultSet.getString("mean"));
-                    System.out.println("Raw topic: " + resultSet.getString("topic"));
-                    System.out.println("Raw learnerID: " + resultSet.getInt("learnerID"));
-
                     CustomFlashCard customFlashCard = new CustomFlashCard(
                             resultSet.getInt("learnerID"),
                             resultSet.getString("word") != null ? resultSet.getString("word").trim() : "",
@@ -172,7 +166,6 @@ public class QuizletDAO {
         } catch (SQLException e) {
             throw new RuntimeException("Error fetching custom flashcards: " + e.getMessage(), e);
         }
-        System.out.println("CustomFlashCard list: " + list); // Debug
         return list;
     }
 
@@ -228,11 +221,136 @@ public class QuizletDAO {
         return list;
     }
 
+    public List<CustomFlashCard> getRandomFlashCards(int limit) throws SQLException {
+        List<CustomFlashCard> flashCards = new ArrayList<>();
+        String sql = "SELECT TOP (?) CFCID, learnerID, word, mean, topic FROM CustomFlashCard ORDER BY NEWID()";
+        
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setInt(1, limit);
+            ResultSet rs = ps.executeQuery();
+            
+            while (rs.next()) {
+                CustomFlashCard card = new CustomFlashCard(
+                    rs.getInt("learnerID"),
+                    rs.getString("word"),
+                    rs.getString("mean"),
+                    rs.getString("topic")
+                );
+                card.setCFCID(rs.getInt("CFCID"));
+                flashCards.add(card);
+            }
+        }
+        
+        return flashCards;
+    }
+
+    public List<SystemFlashCard> getRandomSystemFlashCards(String topic, int limit) throws SQLException {
+        List<SystemFlashCard> list = new ArrayList<>();
+        String query = "SELECT TOP (?) s.SFCID, s.wordID, s.topic, d.word, d.definition, d.type, d.mean " +
+                "FROM SystemFlashCard s " +
+                "JOIN Dictionary d ON s.wordID = d.wordID " +
+                "WHERE s.topic = ? " +
+                "ORDER BY NEWID()";
+
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, limit);
+            statement.setString(2, topic);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Dictionary dictionary = new Dictionary(
+                            resultSet.getInt("wordID"),
+                            resultSet.getString("word").trim(),
+                            resultSet.getString("definition").trim(),
+                            resultSet.getString("type").trim(),
+                            resultSet.getString("mean").trim()
+                    );
+
+                    SystemFlashCard systemFlashCard = new SystemFlashCard(
+                            resultSet.getInt("SFCID"),
+                            resultSet.getInt("wordID"),
+                            resultSet.getString("topic").trim()
+                    );
+                    systemFlashCard.setDictionary(dictionary);
+                    list.add(systemFlashCard);
+                }
+            }
+        }
+        return list;
+    }
+
+    public List<CustomFlashCard> getRandomCustomFlashCards(String topic, int learnerID, int limit) throws SQLException {
+        List<CustomFlashCard> list = new ArrayList<>();
+        String query = "SELECT TOP (?) CFCID, learnerID, word, mean, topic " +
+                "FROM CustomFlashCard " +
+                "WHERE topic = ? AND learnerID = ? " +
+                "ORDER BY NEWID()";
+
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, limit);
+            statement.setString(2, topic);
+            statement.setInt(3, learnerID);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    CustomFlashCard customFlashCard = new CustomFlashCard(
+                            resultSet.getInt("learnerID"),
+                            resultSet.getString("word").trim(),
+                            resultSet.getString("mean").trim(),
+                            resultSet.getString("topic").trim()
+                    );
+                    customFlashCard.setCFCID(resultSet.getInt("CFCID"));
+                    list.add(customFlashCard);
+                }
+            }
+        }
+        return list;
+    }
+
+    public List<FavoriteFlashCard> getRandomFavoriteFlashCards(String topic, int learnerID, int limit) throws SQLException {
+        List<FavoriteFlashCard> list = new ArrayList<>();
+        String query = "SELECT TOP (?) f.FCID, f.learnerID, f.nameOfList, d.wordID, d.word, d.definition, d.type, d.mean " +
+                "FROM FavoriteFlashCard f " +
+                "JOIN Dictionary d ON f.wordID = d.wordID " +
+                "WHERE f.nameOfList = ? AND f.learnerID = ? " +
+                "ORDER BY NEWID()";
+
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, limit);
+            statement.setString(2, topic);
+            statement.setInt(3, learnerID);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Dictionary dictionary = new Dictionary(
+                            resultSet.getInt("wordID"),
+                            resultSet.getString("word").trim(),
+                            resultSet.getString("definition").trim(),
+                            resultSet.getString("type").trim(),
+                            resultSet.getString("mean").trim()
+                    );
+
+                    FavoriteFlashCard favoriteFlashCard = new FavoriteFlashCard(
+                            resultSet.getInt("FCID"),
+                            dictionary,
+                            resultSet.getString("nameOfList").trim()
+                    );
+                    list.add(favoriteFlashCard);
+                }
+            }
+        }
+        return list;
+    }
+
     public static void main(String[] args) {
         QuizletDAO dao = new QuizletDAO();
         int learnerID = 1;
         String topic = "1";
-        System.out.println("Fetching custom flashcards for learnerID: " + learnerID + ", topic: " + topic);
         List<CustomFlashCard> cards = dao.getAllCustomFlashCardByTopicAndLeanerID(learnerID, topic);
         if (cards.isEmpty()) {
             System.out.println("No custom flashcards found.");

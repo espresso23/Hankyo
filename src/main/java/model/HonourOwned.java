@@ -10,21 +10,24 @@ public class HonourOwned implements Serializable {
     Expert expert;
     Learner learner;
     private Date dateAdded;
+    private boolean isEquipped;
 
     public HonourOwned() {
     }
 
-    public HonourOwned(int honour_ownedID, Honour honour, Learner learner, Date dateAdded) {
+    public HonourOwned(int honour_ownedID, Honour honour, Learner learner, Date dateAdded, boolean isEquipped) {
         this.honour_ownedID = honour_ownedID;
         this.honour = honour;
         this.learner = learner;
         this.dateAdded = dateAdded;
+        this.isEquipped = isEquipped;
     }
 
-    public HonourOwned(Honour honour, Learner learner, Date dateAdded) {
+    public HonourOwned(Honour honour, Learner learner, Date dateAdded, boolean isEquipped) {
         this.honour = honour;
         this.learner = learner;
         this.dateAdded = dateAdded;
+        this.isEquipped = isEquipped;
     }
 
     public int getHonour_ownedID() {
@@ -67,6 +70,14 @@ public class HonourOwned implements Serializable {
         this.dateAdded = dateAdded;
     }
 
+    public boolean isEquipped() {
+        return isEquipped;
+    }
+
+    public void setEquipped(boolean isEquipped) {
+        this.isEquipped = isEquipped;
+    }
+
     @Override
     public String toString() {
         return "HonourOwned{" +
@@ -75,6 +86,7 @@ public class HonourOwned implements Serializable {
                 ", expert=" + expert +
                 ", learner=" + learner +
                 ", dateAdded=" + dateAdded +
+                ", isEquipped=" + isEquipped +
                 '}';
     }
 }

@@ -119,7 +119,8 @@ public class ChooseQuizletServlet extends HttpServlet {
         String action = request.getParameter("action");
         QuizletDAO dao = new QuizletDAO();
         HttpSession session = request.getSession();
-        Integer learnerID = (Integer) session.getAttribute("learnerID");
+        Learner learner = (Learner) session.getAttribute("learner");
+        Integer learnerID = learner.getLearnerID();
 
         if (learnerID == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

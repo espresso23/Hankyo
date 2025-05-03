@@ -46,7 +46,7 @@ public class GoogleLoginServlet extends HttpServlet {
             }
 
             createUserSession(request, user);
-            response.sendRedirect("courseHeader.jsp");
+            response.sendRedirect("index.jsp");
 
         } catch (Exception e) {
             e.printStackTrace(); // Log lỗi đầy đủ trong console
@@ -73,7 +73,7 @@ public class GoogleLoginServlet extends HttpServlet {
             throws ServletException, IOException {
         System.out.println("Login Error: " + message); // Log lỗi login
         request.setAttribute("msg", message);
-        request.getRequestDispatcher("welcome.jsp").forward(request, response);
+        request.getRequestDispatcher("login.jsp").forward(request, response);
     }
 
     @Override

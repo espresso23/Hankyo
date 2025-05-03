@@ -3,7 +3,6 @@
   User: bearx
   Date: 4/17/2025
   Time: 8:46 PM
-  To change this template use File | Settings | File Templates.
 --%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isELIgnored="false"%>
@@ -61,6 +60,23 @@
       color: #333;
     }
 
+    .message {
+      text-align: center;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+    }
+
+    .message.success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .message.error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
     .filter-list {
       display: flex;
       justify-content: center;
@@ -75,11 +91,12 @@
       background-color: #007bff;
       color: white;
       cursor: pointer;
-      transition: background-color 0.3s;
+      transition: all 0.3s;
     }
 
     .filter-list button:hover {
       background-color: #0056b3;
+      transform: translateY(-2px);
     }
 
     .filter-list button.active {
@@ -88,55 +105,114 @@
 
     .honour-container {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 20px;
       padding: 20px;
+      position: relative;
     }
 
     .honour-card {
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      padding: 15px;
+      background: linear-gradient(135deg, #ffffff, #f8f9fa);
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      padding: 20px;
       text-align: center;
-      transition: transform 0.2s;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      border: 2px solid transparent;
     }
 
     .honour-card:hover {
       transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .honour-card.equipped {
+      border-color: gold;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+      background: linear-gradient(135deg, #fff9e6, #fff0b3);
     }
 
     .honour-card img {
-      width: 200px;
-      height: 200px;
+      width: 120px;
+      height: 120px;
       object-fit: cover;
-      border-radius: 5px;
+      transition: all 0.3s ease;
+      margin-bottom: 15px;
       filter: grayscale(100%);
-      transition: filter 0.3s;
     }
 
-    .honour-card img:hover {
+    .honour-card img.owned {
       filter: grayscale(0%);
+    }
+
+    .honour-card.equipped img {
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
     }
 
     .honour-card h3 {
       font-size: 1.2em;
       margin: 10px 0;
-      background: linear-gradient(45deg, #007bff, #28a745);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      transition: background 0.3s;
+      font-weight: 600;
+      color: #333;
+      transition: all 0.3s;
     }
 
-    .honour-card:hover h3 {
-      background: linear-gradient(45deg, #6f42c1, #e83e8c);
+    /* Gradient khi đã sở hữu */
+    <c:forEach var="honour" items="${listHonour}">
+    .honour-card[data-honour-id="${honour.honourID}"].owned h3 {
+      color: transparent;
+      background: linear-gradient(45deg, ${honour.gradientStart != null ? honour.gradientStart : '#28a745'}, ${honour.gradientEnd != null ? honour.gradientEnd : '#20c997'});
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
+    </c:forEach>
 
     .honour-card p {
       font-size: 0.9em;
       color: #666;
+      margin-bottom: 15px;
+    }
+
+    .owned-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #28a745;
+      color: white;
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-size: 0.8em;
+      font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .equip-btn {
+      display: inline-block;
+      padding: 8px 15px;
+      margin-top: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 0.9em;
+      font-weight: 500;
+    }
+
+    .equip-btn:hover {
+      background-color: #3e8e41;
+      transform: translateY(-2px);
+    }
+
+    .equip-btn.equipped {
+      background-color: #f44336;
+    }
+
+    .equip-btn.equipped:hover {
+      background-color: #d32f2f;
     }
 
     .hidden {
@@ -147,6 +223,8 @@
       text-align: center;
       color: #666;
       grid-column: 1 / -1;
+      padding: 20px;
+      font-size: 1.1em;
     }
 
     .pagination {
@@ -154,6 +232,7 @@
       justify-content: center;
       gap: 10px;
       margin-top: 20px;
+      flex-wrap: wrap;
     }
 
     .pagination button {
@@ -163,11 +242,12 @@
       background-color: white;
       color: #333;
       cursor: pointer;
-      transition: background-color 0.3s;
+      transition: all 0.3s;
     }
 
     .pagination button:hover:not(.disabled) {
       background-color: #f0f0f0;
+      transform: translateY(-2px);
     }
 
     .pagination button.active {
@@ -179,6 +259,18 @@
     .pagination button.disabled {
       color: #ccc;
       cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* Animation for equip/unequip */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .honour-card.equip-animation {
+      animation: pulse 0.5s ease;
     }
   </style>
 </head>
@@ -187,6 +279,13 @@
 <div class="page-container">
   <div class="main-container">
     <h1>Danh sách thành tựu</h1>
+    <!-- Hiển thị thông báo -->
+    <c:if test="${not empty successMessage}">
+      <div class="message success">${successMessage}</div>
+    </c:if>
+    <c:if test="${not empty errorMessage}">
+      <div class="message error">${errorMessage}</div>
+    </c:if>
     <div class="filter-list">
       <button class="filter-btn active" data-type="all">Tất cả</button>
       <c:forEach var="type" items="${uniqueTypes}">
@@ -200,10 +299,23 @@
         </c:when>
         <c:otherwise>
           <c:forEach var="honour" items="${listHonour}" varStatus="status">
-            <div class="honour-card hidden" data-type="${honour.honourType}" data-index="${status.index}">
-              <img src="${honour.honourImg}" alt="${honour.honourName}" loading="lazy" />
+            <div class="honour-card hidden ${honourOwnedMap[honour.honourID] ? 'owned' : ''} ${equippedHonourID == honour.honourID ? 'equipped' : ''}"
+                 data-type="${honour.honourType}" data-index="${status.index}"
+                 data-honour-id="${honour.honourID}">
+              <img src="${honour.honourImg}" alt="${honour.honourName}" loading="lazy"
+                   class="${honourOwnedMap[honour.honourID] ? 'owned' : ''}" />
               <h3>${honour.honourName}</h3>
               <p>Loại: ${honour.honourType}</p>
+              <c:if test="${honourOwnedMap[honour.honourID]}">
+                <p class="owned-badge">Đã đạt được</p>
+                <form action="${pageContext.request.contextPath}/equipHonour" method="post" style="display: inline;">
+                  <input type="hidden" name="honourID" value="${honour.honourID}">
+                  <input type="hidden" name="action" value="${equippedHonourID == honour.honourID ? 'unequip' : 'equip'}">
+                  <button type="submit" class="equip-btn ${equippedHonourID == honour.honourID ? 'equipped' : ''}">
+                      ${equippedHonourID == honour.honourID ? 'Bỏ trang bị' : 'Trang bị'}
+                  </button>
+                </form>
+              </c:if>
             </div>
           </c:forEach>
         </c:otherwise>
@@ -221,14 +333,12 @@
   let currentFilter = 'all';
 
   function updatePagination() {
-    console.log('Updating pagination, filter:', currentFilter, 'currentPage:', currentPage);
     const visibleCards = Array.from(cards).filter(card => {
       const type = card.getAttribute('data-type');
       return currentFilter === 'all' || type === currentFilter;
     });
     const totalItems = visibleCards.length;
     const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-    console.log('Total items:', totalItems, 'Total pages:', totalPages);
 
     // Clear pagination
     pagination.innerHTML = '';
@@ -257,7 +367,6 @@
     const end = Math.min(start + ITEMS_PER_PAGE, totalItems);
     visibleCards.slice(start, end).forEach(card => {
       card.classList.remove('hidden');
-      console.log('Showing card index:', card.getAttribute('data-index'));
     });
 
     // Generate pagination buttons
@@ -308,13 +417,12 @@
       document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
       button.classList.add('active');
       currentFilter = button.getAttribute('data-type');
-      currentPage = 1; // Reset to first page when filter changes
+      currentPage = 1;
       updatePagination();
     });
   });
 
   // Initial pagination
-  console.log('Initial card count:', cards.length);
   updatePagination();
 </script>
 </body>

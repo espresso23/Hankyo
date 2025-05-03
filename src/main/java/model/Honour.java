@@ -5,10 +5,16 @@ import java.io.Serializable;
 public class Honour implements Serializable {
     private static final long serialVersionUID = 1L;
     private int honourID;
-    private String honourImg;
     private String honourName;
+    private String honourImg;
     private String honourType;
-    private int honour_ownedID;
+    private String titleColor;
+    private String gradientStart;
+    private String gradientEnd;
+
+    // Constructor
+    public Honour() {
+    }
 
     public Honour(int honourID, String honourName, String honourImg, String honourType) {
         this.honourID = honourID;
@@ -17,9 +23,6 @@ public class Honour implements Serializable {
         this.honourType = honourType;
     }
 
-    public Honour() {
-
-    }
     // Getters and Setters
     public int getHonourID() {
         return honourID;
@@ -27,14 +30,6 @@ public class Honour implements Serializable {
 
     public void setHonourID(int honourID) {
         this.honourID = honourID;
-    }
-
-    public String getHonourImg() {
-        return honourImg;
-    }
-
-    public void setHonourImg(String honourImg) {
-        this.honourImg = honourImg;
     }
 
     public String getHonourName() {
@@ -45,11 +40,43 @@ public class Honour implements Serializable {
         this.honourName = honourName;
     }
 
+    public String getHonourImg() {
+        return honourImg;
+    }
+
+    public void setHonourImg(String honourImg) {
+        this.honourImg = honourImg;
+    }
+
     public String getHonourType() {
         return honourType;
     }
 
     public void setHonourType(String honourType) {
         this.honourType = honourType;
+    }
+
+    public String getTitleColor() {
+        return titleColor;
+    }
+
+    public void setTitleColor(String titleColor) {
+        this.titleColor = titleColor;
+    }
+
+    public String getGradientStart() {
+        return gradientStart;
+    }
+
+    public void setGradientStart(String gradientStart) {
+        this.gradientStart = gradientStart;
+    }
+
+    public String getGradientEnd() {
+        return gradientEnd;
+    }
+
+    public void setGradientEnd(String gradientEnd) {
+        this.gradientEnd = gradientEnd;
     }
 }
