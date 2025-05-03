@@ -1,4 +1,4 @@
-package controller;
+package controller.forum_post;
 
 import com.google.gson.Gson;
 import dao.ReportDAO;
