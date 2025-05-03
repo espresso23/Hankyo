@@ -31,7 +31,23 @@ public class CommentDAO {
             ps.setInt(2, comment.getPostID());
             ps.setString(3, comment.getContent());
             ps.setTimestamp(4, new Timestamp(comment.getCreatedDate().getTime()));
-            return ps.executeUpdate() > 0;
+
+            boolean success = ps.executeUpdate() > 0;
+
+            if (success) {
+                // Get post owner's ID and create notification
+                int postOwnerID = getPostOwnerID(comment.getPostID());
+                if (postOwnerID != -1 && postOwnerID != comment.getUserID()) {
+                    NotificationDAO notificationDAO = new NotificationDAO();
+                    notificationDAO.addPostCommentNotification(
+                        postOwnerID,
+                        comment.getPostID(),
+                        comment.getUserFullName()
+                    );
+                }
+            }
+
+            return success;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -545,6 +561,20 @@ public class CommentDAO {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private int getPostOwnerID(int postID) throws SQLException {
+        String sql = "SELECT UserID FROM Post WHERE PostID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, postID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("UserID");
+                }
+            }
+        }
+        return -1;
     }
 
 }

@@ -474,7 +474,7 @@ public class UserDAO {
         return avatarImg;
     }
     public String getCoverPhotoByUserId(int userId) {
-        String query = "SELECT cover-photo FROM User WHERE UserID = ?";
+        String query = "SELECT [cover-photo] FROM [User] WHERE UserID = ?";
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
 
@@ -500,7 +500,7 @@ public class UserDAO {
     }
 
     public boolean updateCoverPhoto(int userId, String coverUrl) throws SQLException {
-        String sql = "UPDATE [User] SET cover-photo = ? WHERE UserID = ? ";
+        String sql = "UPDATE [User] SET [cover-photo] = ? WHERE UserID = ? ";
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, coverUrl);

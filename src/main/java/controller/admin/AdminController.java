@@ -173,9 +173,6 @@ public class AdminController extends HttpServlet {
                     List<Course> courses = adminService.getAllCourses();
                     response.getWriter().write(gson.toJson(courses));
                 }
-            } else if (pathInfo.equals("/reports/status-counts")) {
-                Map<String, Integer> counts = adminService.getReportStatusCounts();
-                response.getWriter().write(gson.toJson(counts));
             } else {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 response.getWriter().write(gson.toJson(Map.of("error", "Not Found")));

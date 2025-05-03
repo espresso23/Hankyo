@@ -116,12 +116,12 @@
     </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row">
+<div class="container-fluid">
+    <div class="row">
             <!-- Sidebar -->
             <jsp:include page="admin-sidebar.jsp" />
 
-            <!-- Main content -->
+        <!-- Main content -->
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
                 <h2 class="mb-4">Quản lý người dùng</h2>
 
@@ -146,7 +146,7 @@
                             </select>
                         </div>
                     </div>
-                </div>
+            </div>
 
                 <!-- Users Grid -->
                 <div class="row" id="usersGrid">
@@ -163,16 +163,16 @@
                             </div>
                             <div class="modal-body" id="userDetailsContent">
                                 <!-- User details will be loaded here -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            </div>
+        </div>
+    </div>
+</div>
             </main>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+<script>
         // Load all users on page load
         document.addEventListener('DOMContentLoaded', function() {
             loadUsers();
@@ -330,6 +330,6 @@
                     .catch(error => console.error('Error:', error));
             }
         }
-    </script>
+</script>
 </body>
 </html> 
