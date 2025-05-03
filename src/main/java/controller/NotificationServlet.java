@@ -41,11 +41,11 @@ public class NotificationServlet extends HttpServlet {
             if ("count".equals(action)) {
                 int count = notificationDAO.getUnreadCount(userID);
                 sendJsonResponse(response, count);
-            } else if ("markAllRead".equals(action)) {
-                notificationDAO.markAllAsRead(userID);
+            } else if ("deleteAll".equals(action)) {
+                notificationDAO.deleteAllNotifications(userID);
                 sendJsonResponse(response, "success");
             } else {
-                List<Notification> notifications = notificationDAO.getUnreadNotifications(userID);
+                List<Notification> notifications = notificationDAO.getAllNotifications(userID);
                 sendJsonResponse(response, notifications);
             }
         } catch (Exception e) {
@@ -72,8 +72,8 @@ public class NotificationServlet extends HttpServlet {
                 int notificationID = Integer.parseInt(request.getParameter("notificationID"));
                 notificationDAO.markAsRead(notificationID);
                 sendJsonResponse(response, "success");
-            } else if ("markAllRead".equals(action)) {
-                notificationDAO.markAllAsRead(userID);
+            } else if ("deleteAll".equals(action)) {
+                notificationDAO.deleteAllNotifications(userID);
                 sendJsonResponse(response, "success");
             } else {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid action");

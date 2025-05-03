@@ -11,6 +11,7 @@ public class Notification {
     private Date dateGiven;
     private String typeName; // For display purposes
     private String sourceTitle; // For display purposes (e.g., post title, comment content)
+    private boolean isRead; // Track if notification has been read
 
     public Notification() {
     }
@@ -23,6 +24,7 @@ public class Notification {
         this.sourceID = sourceID;
         this.description = description;
         this.dateGiven = dateGiven;
+        this.isRead = false; // Default to unread
     }
 
     // Getters and Setters
@@ -88,5 +90,13 @@ public class Notification {
 
     public void setSourceTitle(String sourceTitle) {
         this.sourceTitle = sourceTitle;
+    }
+
+    public boolean isRead() {
+        return isRead;
+    }
+
+    public void setRead(boolean isRead) {
+        this.isRead = isRead;
     }
 } 

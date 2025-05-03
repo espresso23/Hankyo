@@ -32,8 +32,6 @@ function loadNotifications() {
             return response.json();
         })
         .then(data => {
-            console.log('Received notifications:', data); // Debug log
-            updateNotificationCount(data.length);
             renderNotifications(data);
         })
         .catch(error => console.error('Error loading notifications:', error));
@@ -48,16 +46,13 @@ function loadNotificationCount() {
             return response.json();
         })
         .then(count => {
-            console.log('Notification count:', count); // Debug log
-            updateNotificationCount(count);
+            const countElement = document.getElementById('notificationCount');
+            if (countElement) {
+                countElement.textContent = count;
+                countElement.style.display = count > 0 ? 'block' : 'none';
+            }
         })
         .catch(error => console.error('Error loading notification count:', error));
-}
-
-function updateNotificationCount(count) {
-    const countElement = document.getElementById('notificationCount');
-    countElement.textContent = count;
-    countElement.style.display = count > 0 ? 'block' : 'none';
 }
 
 function renderNotifications(notifications) {
@@ -69,7 +64,6 @@ function renderNotifications(notifications) {
         return;
     }
 
-    // Clear existing content
     const header = notificationList.querySelector('.notification-header');
     notificationList.innerHTML = '';
     if (header) {
@@ -87,7 +81,7 @@ function renderNotifications(notifications) {
     notifications.forEach(notification => {
         const notificationDiv = document.createElement('div');
         notificationDiv.className = `notification-item ${notification.isRead === 0 ? 'unread' : ''}`;
-        notificationDiv.onclick = () => markAsRead(notification.notificationID, notificationDiv);
+        notificationDiv.onclick = () => handleNotificationClick(notification);
 
         const contentDiv = document.createElement('div');
         contentDiv.className = 'notification-content';
@@ -103,41 +97,66 @@ function renderNotifications(notifications) {
     });
 }
 
+function handleNotificationClick(notification) {
+    markAsRead(notification.notificationID, () => {
+        loadNotificationCount();
+        switch (notification.typeID) {
+            case 1:
+                window.location.href = `${window.location.origin}/Hankyo/postDetails?postID=${notification.sourceID}`;
+                break;
+            case 2:
+                fetch(`${window.location.origin}/Hankyo/postDetails?action=getPostID&commentID=${notification.sourceID}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data && data.postID) {
+                            window.location.href = `${window.location.origin}/Hankyo/postDetails?postID=${data.postID}#comment-${notification.sourceID}`;
+                        }
+                    })
+                    .catch(error => console.error('Error getting post for comment:', error));
+                break;
+            case 3:
+                window.location.href = `${window.location.origin}/Hankyo/course-details-learner?postID=${notification.sourceID}`;
+                break;
+            case 4:
+                window.location.href = `${window.location.origin}/Hankyo/listHonour`;
+                break;
+            default:
+                console.log('Unknown notification type:', notification.typeID);
+        }
+    });
+}
+
 function formatTime(timestamp) {
     const date = new Date(timestamp);
-    const options = { 
-        year: 'numeric', 
-        month: '2-digit', 
+    const options = {
+        year: 'numeric',
+        month: '2-digit',
         day: '2-digit',
-        hour: '2-digit', 
+        hour: '2-digit',
         minute: '2-digit'
     };
     return date.toLocaleString('vi-VN', options);
 }
 
-function markAsRead(notificationID, element) {
+function markAsRead(notificationID, callback) {
     fetch(window.location.origin + '/Hankyo/notifications', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: `action=markRead&notificationID=${notificationID}`
     })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(() => {
-            element.classList.remove('unread');
-            loadNotificationCount();
-        })
-        .catch(error => console.error('Error marking notification as read:', error));
+    .then(response => {
+        if (response.ok && typeof callback === 'function') callback();
+    })
+    .catch(error => console.error('Error marking notification as read:', error));
 }
 
-function markAllAsRead() {
-    fetch(window.location.origin + '/Hankyo/notifications?action=markAllRead', {
+function deleteAllNotifications() {
+    fetch(window.location.origin + '/Hankyo/notifications?action=deleteAll', {
         method: 'POST'
     })
         .then(response => {
@@ -147,10 +166,10 @@ function markAllAsRead() {
             return response.json();
         })
         .then(() => {
-            loadNotifications();
             loadNotificationCount();
+            loadNotifications();
         })
-        .catch(error => console.error('Error marking all notifications as read:', error));
+        .catch(error => console.error('Error deleting all notifications:', error));
 }
 
 function toggleNotifications(event) {
@@ -165,35 +184,31 @@ function toggleNotifications(event) {
 
 // Event listeners
 document.addEventListener('DOMContentLoaded', () => {
-    // Mobile menu
     const mobileMenuBtn = document.getElementById('mobileMenuButton');
     if (mobileMenuBtn) {
         mobileMenuBtn.addEventListener('click', toggleMobileMenu);
     }
 
-    // Notifications
     const notificationBell = document.querySelector('.notification-bell');
     if (notificationBell) {
         notificationBell.addEventListener('click', toggleNotifications);
     }
 
-    const markAllReadBtn = document.querySelector('.mark-all-read');
-    if (markAllReadBtn) {
-        markAllReadBtn.addEventListener('click', (e) => {
+    const deleteAllBtn = document.querySelector('.mark-all-read');
+    if (deleteAllBtn) {
+        deleteAllBtn.textContent = 'Xóa tất cả Thông báo';
+        deleteAllBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            markAllAsRead();
+            deleteAllNotifications();
         });
     }
 
-    // Load initial notification count
     loadNotificationCount();
-
-    // Refresh notification count every 30 seconds
     setInterval(loadNotificationCount, 30000);
 });
 
 // Close popups when clicking outside
-document.addEventListener('click', function(event) {
+document.addEventListener('click', function (event) {
     const popup = document.getElementById('popupContainer');
     const avatar = document.querySelector('header img[onclick="togglePopup()"]');
     const menu = document.getElementById('mobileVerticalMenu');

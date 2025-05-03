@@ -577,5 +577,27 @@ public class CommentDAO {
         return -1;
     }
 
+    public Comment getCommentById(int commentID) {
+        String sql = "SELECT * FROM Comment WHERE CommentID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, commentID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Comment comment = new Comment();
+                    comment.setCommentID(rs.getInt("CommentID"));
+                    comment.setUserID(rs.getInt("UserID"));
+                    comment.setPostID(rs.getInt("PostID"));
+                    comment.setContent(rs.getString("Content"));
+                    comment.setCreatedDate(rs.getTimestamp("CreatedDate"));
+                    return comment;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }
 

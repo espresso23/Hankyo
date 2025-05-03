@@ -131,7 +131,7 @@
                     type: 'POST',
                     data: {
                         action: "loadUserVotes",
-                        commentIDs: commentIDs,
+                        'commentIDs[]': commentIDs,
                         postID: document.querySelector('input[name="postID"]').value
                     },
                     dataType: "json",
