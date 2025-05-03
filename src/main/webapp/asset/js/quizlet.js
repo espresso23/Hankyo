@@ -171,19 +171,19 @@ document.addEventListener('DOMContentLoaded', function() {
             flashcardCount = flashCards.split(';').filter(pair => pair.trim()).length;
             body = `action=add&mode=manual&topic=${encodeURIComponent(topic)}&flashCards=${encodeURIComponent(flashCards)}`;
         } else {
-            const topic = document.getElementById('individualTopic').value.trim();
+            const individualTopic = document.getElementById('individualTopic').value.trim();
             const word = document.getElementById('word').value.trim();
             const mean = document.getElementById('mean').value.trim();
-            if (!topic || !word || !mean) {
+            if (!individualTopic || !word || !mean) {
                 resultContainer.innerHTML = `<div class="error-list"><p>Lỗi: Topic, từ và nghĩa không được để trống.</p></div>`;
                 return;
             }
             flashcardCount = 1;
-            body = `action=add&mode=individual&topic=${encodeURIComponent(topic)}&word=${encodeURIComponent(word)}&mean=${encodeURIComponent(mean)}`;
+            body = `action=add&mode=individual&individualTopic=${encodeURIComponent(individualTopic)}&word=${encodeURIComponent(word)}&mean=${encodeURIComponent(mean)}`;
         }
 
         console.log('Sending add request:', body);
-        fetch(`addFlashCard`,    {
+        fetch(`${window.contextPath}/addFlashCard`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
@@ -218,6 +218,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         ? document.getElementById('manualTopic').value.trim()
                         : document.getElementById('individualTopic').value.trim();
                     updateCustomTopics(topic, flashcardCount);
+
+                    // Cập nhật số lượng trên DOM cho topic-box tương ứng
+                    const topicBox = document.querySelector(`.topic-box[data-topic="${topic}"] .topic-count`);
+                    if (topicBox) {
+                        const current = parseInt(topicBox.textContent) || 0;
+                        topicBox.textContent = (current + flashcardCount) + ' từ';
+                    }
 
                     // Reset form
                     form.reset();

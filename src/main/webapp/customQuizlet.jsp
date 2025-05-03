@@ -15,6 +15,18 @@
     <p class="debug">Type: custom</p>
     <p class="debug">FlashCards size: <c:out value="${flashCards != null ? flashCards.size() : 'null'}" /></p>
 
+    <!-- Play Memory Game button -->
+    <c:if test="${not empty flashCards && flashCards.size() >= 10}">
+      <form action="memory-game" method="GET" style="margin-bottom: 18px;">
+        <input type="hidden" name="topic" value="${topic}">
+        <input type="hidden" name="type" value="custom">
+        <button type="submit" class="play-game-btn">Play Memory Game</button>
+      </form>
+    </c:if>
+    <c:if test="${empty flashCards || flashCards.size() < 10}">
+      <button class="play-game-btn" disabled>Need at least 10 cards to play</button>
+    </c:if>
+
     <div class="tab-container">
       <div class="tab-buttons">
         <button class="tab-button active" data-tab="flashcard">Flashcard</button>

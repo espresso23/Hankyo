@@ -1,4 +1,3 @@
-
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" isELIgnored="false" %>
 <html>
@@ -32,6 +31,27 @@
             color: #888;
             font-size: 1.2rem;
         }
+        .play-game-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 20px auto;
+            display: block;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .play-game-btn:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+        .play-game-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
     </style>
 </head>
 <jsp:include page="header.jsp"></jsp:include>
@@ -41,6 +61,19 @@
         <h1>Flashcards - ${topic}</h1>
         <p class="debug">Type: ${type}</p>
         <p class="debug">FlashCards size: <c:out value="${flashCards != null ? flashCards.size() : 'null'}" /></p>
+        
+        <!-- Add Play Game button -->
+        <c:if test="${not empty flashCards && flashCards.size() >= 10}">
+            <form action="memory-game" method="GET">
+                <input type="hidden" name="topic" value="${topic}">
+                <input type="hidden" name="type" value="${type}">
+                <button type="submit" class="play-game-btn">Play Memory Game</button>
+            </form>
+        </c:if>
+        <c:if test="${empty flashCards || flashCards.size() < 10}">
+            <button class="play-game-btn" disabled>Need at least 10 cards to play</button>
+        </c:if>
+
         <div class="flashcard-container">
             <c:choose>
                 <c:when test="${empty flashCardsJson}">
