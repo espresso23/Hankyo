@@ -3,6 +3,7 @@ package controller.forum_post;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.google.gson.Gson;
+import dao.ReportDAO;
 import dao.UserDAO;
 import dao.CommentDAO;
 import dao.PostDAO;
@@ -18,10 +19,12 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Timestamp;
 import java.util.*;
 
 import model.Comment;
 import model.Post;
+import model.Report;
 import model.User;
 
 
@@ -60,20 +63,13 @@ public class PostDetailsServlet extends HttpServlet {
                     String avtURL = postDAO.getAvatarByPostId(postId);
 
                     int commentID = 0;
-//                    try{
-//                        commentID = Integer.parseInt(request.getParameter("commentID"));
-//                    }catch(NumberFormatException e){
-//                        System.out.println("Invalid comment ID");
-//                    }
                     List<Comment> comments = commentDAO.getCommentsByPostID(postId);
                     Map<Integer, List<Comment>> replyMap = new HashMap<>();
                     for (Comment comment: comments ) {
                         commentID = comment.getCommentID();
                         if(commentID != 0){
-                            List<Comment> replyList = commentDAO.getRepliesByCommentID(commentID);
-
+                            List<Comment> replyList = commentDAO.getAllRepliesRecursive(commentID);
                             replyMap.put(commentID, replyList);
-
                         }
 
                     }
@@ -140,8 +136,64 @@ public class PostDetailsServlet extends HttpServlet {
             case "loadUserVotes":
                 loadUserVotes(request, response);
                 break;
+            case "reportComment":
+                handleReportComment(request, response);
+                break;
             default:
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid action");
+        }
+    }
+    private void handleReportComment(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        try {
+            HttpSession session = request.getSession();
+            User user = (User) session.getAttribute("user");
+
+            if (user == null) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("{\"error\": \"User not logged in\"}");
+                return;
+            }
+
+            int commentID = Integer.parseInt(request.getParameter("commentID"));
+            String reason = request.getParameter("reason");
+            int postID = Integer.parseInt(request.getParameter("postID"));
+
+            CommentDAO commentDAO = new CommentDAO();
+            Comment comment = commentDAO.getCommentByID(commentID);
+
+            if (comment == null) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.getWriter().write("{\"error\": \"Comment not found\"}");
+                return;
+            }
+            // Create and populate report object
+            Report report = new Report();
+            report.setReporterID(user.getUserID());
+            report.setReportTypeID(4); // 4 for comment reports
+            report.setReason(reason);
+            report.setCommentID(commentID);
+            report.setPostID(postID);
+            report.setStatus("Pending");
+
+            ReportDAO reportDAO = new ReportDAO();
+            boolean success = reportDAO.createCommentReport(report); // Using the new method
+
+            response.setContentType("application/json");
+            if (success) {
+                response.getWriter().write("{\"success\": true}");
+            } else {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.getWriter().write("{\"error\": \"Failed to create report\"}");
+            }
+
+        } catch (NumberFormatException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\": \"Invalid parameters\"}");
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"error\": \"Server error: " + e.getMessage().replace("\"", "'") + "\"}");
         }
     }
     private void handleVote(HttpServletRequest request, HttpServletResponse response)
@@ -292,12 +344,10 @@ public class PostDetailsServlet extends HttpServlet {
             }
             boolean isAdded;
             if(parentID != 0){
-
                 isAdded = commentDAO.addReplyComment(comment);
             }else{
                 isAdded = commentDAO.addComment(comment);
             }
-
 
             if (isAdded) {
                 response.sendRedirect("postDetails?postID=" + postId);
@@ -388,7 +438,6 @@ public class PostDetailsServlet extends HttpServlet {
     private void handleAddPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            // Check if user is logged in
             HttpSession session = request.getSession();
             User loggedUser = (User) session.getAttribute("user");
             if (loggedUser == null) {
@@ -398,40 +447,27 @@ public class PostDetailsServlet extends HttpServlet {
 
             String title = request.getParameter("title");
             String description = request.getParameter("description");
-            Part filePart = request.getPart("imgPost");
 
-            if (title == null || description == null || filePart == null) {
+            if (title == null || description == null) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing required fields");
                 return;
             }
 
             int userID = loggedUser.getUserID();
 
-            if (filePart != null && filePart.getSize() > 0) {
-                InputStream fileStream = filePart.getInputStream();
-                byte[] fileBytes = fileStream.readAllBytes();
+            Post newPost = new Post();
+            newPost.setUserID(userID);
+            newPost.setHeading(title);
+            newPost.setContent(description);
+            newPost.setCreatedDate(new Date());
 
-                Map uploadResult = cloudinary.uploader().upload(fileBytes, ObjectUtils.emptyMap());
+            boolean isAdded = postDAO.createPost(newPost);
 
-                String imageUrl = (String) uploadResult.get("url");
-
-                Post newPost = new Post();
-                newPost.setUserID(userID);
-                newPost.setImgURL(imageUrl); // Use the Cloudinary URL
-                newPost.setHeading(title);
-                newPost.setContent(description);
-                newPost.setCreatedDate(new Date());
-
-                boolean isAdded = postDAO.createPost(newPost);
-
-                if (isAdded) {
-                    response.sendRedirect("blog.jsp");
-                } else {
-                    request.setAttribute("error", "Failed to add post. Please try again.");
-                    request.getRequestDispatcher("blog.jsp").forward(request, response);
-                }
+            if (isAdded) {
+                response.sendRedirect("blog.jsp");
             } else {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Image file is required.");
+                request.setAttribute("error", "Failed to add post. Please try again.");
+                request.getRequestDispatcher("blog.jsp").forward(request, response);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -439,6 +475,7 @@ public class PostDetailsServlet extends HttpServlet {
             request.getRequestDispatcher("blog.jsp").forward(request, response);
         }
     }
+
 
     private void handleDeletePost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

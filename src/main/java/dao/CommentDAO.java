@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import model.Comment;
+import model.Post;
 import util.DBConnect;
 
 
@@ -128,6 +129,39 @@ public class CommentDAO {
         }
         return comments;
     }
+    public List<Comment> getCommentsByUserID(int userID) throws Exception {
+        List<Comment> comments = new ArrayList<>();
+        String sql = "SELECT c.*, p.Heading AS PostHeading, u.fullName, u.avatar FROM Comment c JOIN [User] u \n" +
+                "ON c.UserID = u.UserID JOIN Post p ON c.PostID = p.PostID WHERE c.UserID = ?\n" +
+                "ORDER BY c.CreatedDate DESC";
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, userID);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Comment comment = new Comment(
+                            rs.getInt("CommentID"),
+                            rs.getInt("UserID"),
+                            rs.getString("fullName"),
+                            rs.getString("avatar"),
+                            rs.getInt("PostID"),
+                            rs.getString("Content"),
+                            rs.getTimestamp("CreatedDate")
+                    );
+                    comment.setScore(rs.getInt("Score"));
+                    comment.setPostHeading(rs.getString("PostHeading"));
+                    comments.add(comment);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new Exception("Lỗi truy xuất bình luận theo userID", e);
+        }
+        return comments;
+    }
 
     public List<Comment> getRepliesByCommentID(int commentID) throws Exception {
         List<Comment> comments = new ArrayList<>();
@@ -194,7 +228,6 @@ public class CommentDAO {
             conn = dbContext.getConnection();
             conn.setAutoCommit(false); // Bắt đầu transaction
 
-            // 1. Kiểm tra xem người dùng đã vote chưa
             String checkSql = "SELECT VoteType FROM UserVotes WHERE UserID = ? AND CommentID = ?";
             ps = conn.prepareStatement(checkSql);
             ps.setInt(1, userID);
@@ -338,6 +371,123 @@ public class CommentDAO {
 
         return score; // Return the score of the comment
     }
+    public List<Comment> getAllRepliesTree(int parentID) {
+        List<Comment> replies = new ArrayList<>();
+        try (Connection conn = dbContext.getConnection()) {
+            buildReplyTree(parentID, replies, conn);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return replies;
+    }
+
+    private void buildReplyTree(int parentID, List<Comment> list, Connection conn) throws SQLException {
+        String sql = "SELECT c.*, u.fullName, u.avatar FROM Comment c JOIN [User] u ON c.UserID = u.UserID WHERE c.ParentCommentID = ? ORDER BY c.CreatedDate ASC";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, parentID);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Comment reply = new Comment(
+                        rs.getInt("CommentID"),
+                        rs.getInt("UserID"),
+                        rs.getString("fullName"),
+                        rs.getString("avatar"),
+                        rs.getInt("PostID"),
+                        rs.getString("Content"),
+                        rs.getTimestamp("CreatedDate")
+                );
+                reply.setScore(rs.getInt("Score"));
+
+                // Đệ quy cho các reply con
+                List<Comment> childReplies = new ArrayList<>();
+                buildReplyTree(reply.getCommentID(), childReplies, conn);
+                reply.setReplies(childReplies);
+
+                list.add(reply);
+            }
+        }
+    }
+
+    public List<Comment> getAllRepliesRecursive(int parentID) {
+        List<Comment> allReplies = new ArrayList<>();
+        try (Connection conn = dbContext.getConnection()) {
+            getRepliesRecursiveHelper(parentID, allReplies, conn);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return allReplies;
+    }
+
+    private void getRepliesRecursiveHelper(int parentID, List<Comment> list, Connection conn) throws SQLException {
+        String sql = "SELECT c.*, u.fullName, u.avatar FROM Comment c JOIN [User] u ON c.UserID = u.UserID WHERE c.ParentCommentID = ? ORDER BY c.CreatedDate ASC";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, parentID);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Comment reply = new Comment(
+                        rs.getInt("CommentID"),
+                        rs.getInt("UserID"),
+                        rs.getString("fullName"),
+                        rs.getString("avatar"),
+                        rs.getInt("PostID"),
+                        rs.getString("Content"),
+                        rs.getTimestamp("CreatedDate")
+                );
+                reply.setScore(rs.getInt("Score"));
+                list.add(reply);
+                // Đệ quy lấy tiếp các reply con
+                getRepliesRecursiveHelper(reply.getCommentID(), list, conn);
+            }
+        }
+    }
+    public int getCommentCountByUserID(int userID) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM Comment WHERE userID = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, userID);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+
+    public List<Comment> getRepliesByParentId(int parentID) {
+        List<Comment> replies = new ArrayList<>();
+        String sql = "SELECT c.*, u.fullName, u.avatar " +
+                "FROM Comment c " +
+                "JOIN [User] u ON c.UserID = u.UserID " +
+                "WHERE c.ParentCommentID = ? " +
+                "ORDER BY c.CreatedDate ASC";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, parentID);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Comment reply = new Comment(
+                            rs.getInt("CommentID"),
+                            rs.getInt("UserID"),
+                            rs.getString("fullName"),
+                            rs.getString("avatar"),
+                            rs.getInt("PostID"),
+                            rs.getString("Content"),
+                            rs.getTimestamp("CreatedDate")
+                    );
+                    reply.setScore(rs.getInt("Score"));
+
+                    replies.add(reply); // Chỉ 1 cấp
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return replies;
+    }
+
 
 }
 

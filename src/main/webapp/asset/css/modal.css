@@ -10,15 +10,15 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
 /* Modal styles */
 .modal {
     display: none;
-    position: fixed; 
+    position: fixed;
     z-index: 1;
     left: 0;
     top: 0;
-    width: 100%; 
+    width: 100%;
     height: 100%;
-    overflow: auto; 
+    overflow: auto;
     background-color: rgb(0,0,0);
-    background-color: rgba(0,0,0,0.4); 
+    background-color: rgba(0,0,0,0.4);
 }
 
 .modal-content {
@@ -26,8 +26,8 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
     margin: 15% auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 80%; 
-    border-radius: 10px; 
+    width: 80%;
+    border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -46,16 +46,16 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
 }
 
 .input-field, .textarea-field {
-    width: 100%; 
-    padding: 10px; 
+    width: 100%;
+    padding: 10px;
     margin-top: 5px;
-    border: 1px solid #ccc; 
-    border-radius: 5px; 
+    border: 1px solid #ccc;
+    border-radius: 5px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .submit-button {
-    background-color: #007bff; 
+    background-color: #007bff;
     color: white;
     padding: 10px 15px;
     border: none;
@@ -64,7 +64,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
 }
 
 .submit-button:hover {
-    background-color: #0056b3; 
+    background-color: #0056b3;
 }
 
 button#openModalBtn {

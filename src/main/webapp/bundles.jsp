@@ -73,10 +73,6 @@
                     <a href="#">Thử ngay</a>
                 </div>
             </div>
-            <!-- </div> -->
-            <!-- / End Single Pricing -->
-            <!-- Start Single Pricing -->
-            <!-- <div class="col-sm-6 col-md-4 col-lg-3"> -->
             <div class="single-pricing popular">
                 <div class="header text-center">
                     <h3 class="title">Phổ biến</h3>
@@ -98,10 +94,6 @@
                     <a href="#">Bắt đầu học</a>
                 </div>
             </div>
-            <!-- </div> -->
-            <!-- / End Single Pricing -->
-            <!-- Start Single Pricing -->
-            <!-- <div class="col-sm-6 col-md-4 col-lg-3"> -->
             <div class="single-pricing premium">
                 <div class="header text-center">
                     <h3 class="title">Premium</h3>

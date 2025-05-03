@@ -15,6 +15,7 @@ import util.DBConnect;
 
 public class ReportDAO {
 
+
     public boolean createReport(Report report) throws SQLException {
         String sql = "INSERT INTO Report (reporterID, reportedUserID, reportTypeID, reason, chatID, reportDate) VALUES (?, ?, ?, ?, ?, GETDATE())";
         try (Connection conn = DBConnect.getInstance().getConnection();
@@ -29,8 +30,8 @@ public class ReportDAO {
     }
     // Create a new report
     public boolean createPostReport(Report report) {
-        String sql = "INSERT INTO Report (PostID, ReporterID, ReportTypeID, Reason, ReportDate) " +
-                "VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)";
+        String sql = "INSERT INTO Report (PostID, ReporterID, ReportTypeID, Reason, Status, ReportDate) " +
+                "VALUES (?, ?, ?, ?,?, CURRENT_TIMESTAMP)";
 
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -39,6 +40,7 @@ public class ReportDAO {
             ps.setInt(2, report.getReporterID());
             ps.setInt(3, report.getReportTypeID());
             ps.setString(4, report.getReason());
+            ps.setString(5, report.getStatus());
 
             int result = ps.executeUpdate();
             return result > 0;
@@ -48,7 +50,83 @@ public class ReportDAO {
         }
     }
 
+    public boolean createCommentReport(Report report) {
+        String sql = "INSERT INTO Report (CommentID, PostID, ReporterID, ReportTypeID, Reason, Status, ReportDate) " +
+                "VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
 
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, report.getCommentID());
+            ps.setInt(2, report.getPostID());
+            ps.setInt(3, report.getReporterID());
+            ps.setInt(4, report.getReportTypeID());
+            ps.setString(5, report.getReason());
+            ps.setString(6, report.getStatus());
+
+            int result = ps.executeUpdate();
+            return result > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public List<Report> getReportedPostsByUserID(int userID) throws SQLException {
+        List<Report> reports = new ArrayList<>();
+        String sql = "SELECT r.*, p.Heading FROM Report r JOIN Post p ON r.PostID = p.PostID " +
+                "WHERE r.ReporterID = ? AND r.CommentID IS NULL";
+
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, userID);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Report report = new Report();
+                report.setReportID(rs.getInt("ReportID"));
+                report.setPostID(rs.getInt("PostID"));
+                report.setReporterID(rs.getInt("ReporterID"));
+                report.setReportTypeID(rs.getInt("ReportTypeID"));
+                report.setReason(rs.getString("Reason"));
+                report.setStatus(rs.getString("Status"));
+                report.setReportDate(rs.getTimestamp("ReportDate"));
+                report.setPostTitle(rs.getString("Heading"));
+                reports.add(report);
+            }
+        }
+
+        return reports;
+    }
+
+    public List<Report> getReportedCommentsByUserID(int userID) throws SQLException {
+        List<Report> reports = new ArrayList<>();
+        String sql = "SELECT r.*, c.Content FROM Report r JOIN Comment c ON r.CommentID = c.CommentID " +
+                "WHERE r.ReporterID = ? AND r.CommentID IS NOT NULL";
+
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, userID);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Report report = new Report();
+                report.setReportID(rs.getInt("ReportID"));
+                report.setCommentID(rs.getInt("CommentID"));
+                report.setPostID(rs.getInt("PostID"));
+                report.setReporterID(rs.getInt("ReporterID"));
+                report.setReportTypeID(rs.getInt("ReportTypeID"));
+                report.setReason(rs.getString("Reason"));
+                report.setStatus(rs.getString("Status"));
+                report.setReportDate(rs.getTimestamp("ReportDate"));
+                report.setCommentContent(rs.getString("Content"));
+                reports.add(report);
+            }
+        }
+
+        return reports;
+    }
 
     // Get all report types
     public List<ReportType> getAllReportTypes() throws SQLException {
@@ -149,4 +227,19 @@ public class ReportDAO {
             return result > 0;
         }
     }
+    // Delete a report by ID
+    public boolean deleteReportByID(int reportID) {
+        String sql = "DELETE FROM Report WHERE ReportID = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, reportID);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
 }

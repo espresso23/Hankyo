@@ -5,7 +5,9 @@
 package model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 
 public class Comment implements Serializable {
@@ -20,6 +22,24 @@ public class Comment implements Serializable {
     public Date createdDate;
     public int ParentCommentID;
     public int score;
+    public String postHeading;
+    private List<Comment> replies = new ArrayList<>();
+
+    public List<Comment> getReplies() {
+        return replies;
+    }
+
+    public void setReplies(List<Comment> replies) {
+        this.replies = replies;
+    }
+
+    public String getPostHeading() {
+        return postHeading;
+    }
+
+    public void setPostHeading(String postHeading) {
+        this.postHeading = postHeading;
+    }
 
     public int getScore() {
         return score;
