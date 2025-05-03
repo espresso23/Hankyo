@@ -47,7 +47,11 @@ public class CourseController extends HttpServlet {
                 listCourses(request, response, expert);
                 break;
             case "addForm":
-                showAddForm(request, response);
+                try {
+                    showAddForm(request, response);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
                 break;
             case "detail": // THÊM ACTION DETAIL
                 try {
@@ -162,7 +166,7 @@ public class CourseController extends HttpServlet {
         }
     }
 
-    private void showAddForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    private void showAddForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException {
         CategoryDAO categoryDAO = new CategoryDAO();
         List<Category> categories = categoryDAO.getAllCategories();
         System.out.println("Number of categories: " + categories.size()); // Debug log
@@ -170,7 +174,7 @@ public class CourseController extends HttpServlet {
         request.getRequestDispatcher("addCourse.jsp").forward(request, response);
     }
 
-    private void addCourse(HttpServletRequest request, HttpServletResponse response, Expert expert) throws ServletException, IOException {
+    private void addCourse(HttpServletRequest request, HttpServletResponse response, Expert expert) throws ServletException, IOException, SQLException {
         try {
             // Kiểm tra các trường bắt buộc
             String title = request.getParameter("title");

@@ -70,4 +70,42 @@ public class SmtpProtocol {
         }
         return userOtp;
     }
+    public void sendMailApproved(String userEmail) {
+        try {
+            Message message = new MimeMessage(setupProtocol());
+            message.setFrom(new InternetAddress(from));
+            message.setRecipient(Message.RecipientType.TO, new InternetAddress(userEmail));
+            message.setSubject("Đăng ký expert trên Hankyo được chấp nhận");
+            message.setText("Bạn đủ điều kiện để trở thành expert trên Hankyo.");
+            message.setText("Hãy dùng tài khoản và mật khẩu của bạn để đăng nhập vào Hankyo để bắt đầu đăng tải những khóa học của mình");
+            Transport.send(message);
+        } catch (Exception e) {
+            System.out.println("Gửi mail chấp nhận thất bại");
+        }
+    }
+    public void sendMailReject(String userEmail) {
+        try {
+            Message message = new MimeMessage(setupProtocol());
+            message.setFrom(new InternetAddress(from));
+            message.setRecipient(Message.RecipientType.TO, new InternetAddress(userEmail));
+            message.setSubject("Đăng ký expert trên Hankyo bị từ chối");
+            message.setText("Bạn không đủ điều kiện để trở thành expert trên Hankyo.");
+            Transport.send(message);
+        } catch (Exception e) {
+            System.out.println("Gửi mail từ chối thất bại");
+        }
+    }
+    // Gửi mail với subject và nội dung tuỳ ý
+    public void sendMailCustom(String userEmail, String subject, String content) {
+        try {
+            Message message = new MimeMessage(setupProtocol());
+            message.setFrom(new InternetAddress(from));
+            message.setRecipient(Message.RecipientType.TO, new InternetAddress(userEmail));
+            message.setSubject(subject);
+            message.setText(content);
+            Transport.send(message);
+        } catch (Exception e) {
+            System.out.println("Gửi mail thất bại: " + e.getMessage());
+        }
+    }
 }

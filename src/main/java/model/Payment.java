@@ -9,11 +9,30 @@ public class Payment implements Serializable {
     private String paymentID;
     private String description;
     private LocalDateTime payDate;
+    
     private BigDecimal totalAmount;
     private int learnerID;
     private String status;
+    private String type;
+    private String learnerName;
+
+    public String getLearnerName() {
+        return learnerName;
+    }
+
+    public void setLearnerName(String learnerName) {
+        this.learnerName = learnerName;
+    }
 
     public Payment() {
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getDescription() {
@@ -62,5 +81,19 @@ public class Payment implements Serializable {
 
     public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;
+    }
+
+    @Override
+    public String toString() {
+        return "Payment{" +
+                "description='" + description + '\'' +
+                ", paymentID='" + paymentID + '\'' +
+                ", payDate=" + payDate +
+                ", totalAmount=" + totalAmount +
+                ", learnerID=" + learnerID +
+                ", status='" + status + '\'' +
+                ", type='" + type + '\'' +
+                ", learnerName='" + learnerName + '\'' +
+                '}';
     }
 }

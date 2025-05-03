@@ -15,6 +15,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import dao.CourseDAO;
 import dao.CourseFeedbackDAO;
 import dao.CoursePaidDAO;
@@ -26,7 +33,15 @@ public class AdminController extends HttpServlet {
 
     public AdminController() {
         this.adminService = new AdminService();
-        this.gson = new Gson();
+        // Đăng ký TypeAdapter cho LocalDateTime
+        this.gson = new GsonBuilder()
+            .registerTypeAdapter(LocalDateTime.class, new JsonSerializer<LocalDateTime>() {
+                @Override
+                public JsonElement serialize(LocalDateTime src, java.lang.reflect.Type typeOfSrc, JsonSerializationContext context) {
+                    return new JsonPrimitive(src.format(DateTimeFormatter.ISO_DATE_TIME));
+                }
+            })
+            .create();
     }
 
     @Override
@@ -88,10 +103,36 @@ public class AdminController extends HttpServlet {
                 String keyword = request.getParameter("keyword");
                 List<Course> courses = adminService.searchCourses(keyword);
                 response.getWriter().write(gson.toJson(courses));
+            } else if (pathInfo.equals("/payments/stats")) {
+                // Get payment statistics
+                Map<String, Object> stats = adminService.getPaymentStats();
+                response.getWriter().write(gson.toJson(stats));
+            } else if (pathInfo.equals("/payments/chart-data")) {
+                String mode = request.getParameter("mode");
+                Map<String, Object> chartData = adminService.getPaymentChartData(mode);
+                response.getWriter().write(gson.toJson(chartData));
             } else if (pathInfo.equals("/payments/recent")) {
-                // Get recent payments
-                List<Map<String, Object>> payments = adminService.getRecentPayments();
+                // Get recent payments with filters
+                String searchTerm = request.getParameter("search");
+                String status = request.getParameter("status");
+                String startDate = request.getParameter("startDate");
+                String endDate = request.getParameter("endDate");
+                
+                List<Map<String, Object>> payments = adminService.getFilteredPayments(searchTerm, status, startDate, endDate);
                 response.getWriter().write(gson.toJson(payments));
+            } else if (pathInfo.equals("/withdraw-requests")) {
+                // Get all withdraw requests
+                List<Map<String, Object>> requests = adminService.getAllWithdrawRequests();
+                response.getWriter().write(gson.toJson(requests));
+            } else if (pathInfo.equals("/payments/export")) {
+                // Export payments to Excel
+                String startDate = request.getParameter("startDate");
+                String endDate = request.getParameter("endDate");
+                
+                response.setContentType("application/vnd.ms-excel");
+                response.setHeader("Content-Disposition", "attachment; filename=payments.xlsx");
+                
+                adminService.exportPaymentsToExcel(response.getOutputStream(), startDate, endDate);
             } else if (pathInfo.equals("/posts/reported")) {
                 // Get reported posts
                 List<Post> posts = adminService.getReportedPosts();
@@ -173,16 +214,31 @@ public class AdminController extends HttpServlet {
                     List<Course> courses = adminService.getAllCourses();
                     response.getWriter().write(gson.toJson(courses));
                 }
+            } else if (pathInfo.startsWith("/withdraw-requests/") && pathInfo.endsWith("/process")) {
+                // Process withdraw request
+                int requestId = Integer.parseInt(pathInfo.substring("/withdraw-requests/".length(), pathInfo.length() - "/process".length()));
+                Map<String, String> data = gson.fromJson(request.getReader(), Map.class);
+                boolean approve = Boolean.parseBoolean(data.get("approve"));
+                
+                boolean success = adminService.processWithdrawRequest(requestId, approve);
+                response.getWriter().write(gson.toJson(Map.of("success", success)));
+            } else if (pathInfo.equals("/payments/all")) {
+                // Get all payments (type course or vip)
+                List<model.Payment> payments = adminService.getAllPayments();
+                response.getWriter().write(gson.toJson(payments));
             } else {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 response.getWriter().write(gson.toJson(Map.of("error", "Not Found")));
             }
         } catch (SQLException e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write(gson.toJson(Map.of("error", "Database Error")));
+            response.getWriter().write(gson.toJson(Map.of("error", "Database Error: " + e.getMessage())));
         } catch (NumberFormatException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write(gson.toJson(Map.of("error", "Invalid ID format")));
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write(gson.toJson(Map.of("error", "Server Error: " + e.getMessage())));
         }
     }
 
@@ -194,36 +250,18 @@ public class AdminController extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         try {
-            if (pathInfo.startsWith("/users/") && pathInfo.endsWith("/block")) {
-                // Block user
-                int userId = Integer.parseInt(pathInfo.substring("/users/".length(), pathInfo.length() - "/block".length()));
-                boolean success = adminService.blockUser(userId);
-                response.getWriter().write(gson.toJson(Map.of("success", success)));
-            } else if (pathInfo.startsWith("/users/") && pathInfo.endsWith("/unblock")) {
-                // Unblock user
-                int userId = Integer.parseInt(pathInfo.substring("/users/".length(), pathInfo.length() - "/unblock".length()));
-                boolean success = adminService.unblockUser(userId);
-                response.getWriter().write(gson.toJson(Map.of("success", success)));
-            } else if (pathInfo.startsWith("/reports/") && pathInfo.endsWith("/approve")) {
-                // Duyệt report
-                int reportId = Integer.parseInt(pathInfo.substring("/reports/".length(), pathInfo.length() - "/approve".length()));
-                String status = request.getParameter("status");
-                boolean success = adminService.approveReport(reportId, status);
-                response.getWriter().write(gson.toJson(Map.of("success", success)));
-            } else if (pathInfo.startsWith("/reports/") && pathInfo.endsWith("/block")) {
-                // Khóa nội dung bị báo cáo
-                int reportId = Integer.parseInt(pathInfo.substring("/reports/".length(), pathInfo.length() - "/block".length()));
-                boolean success = adminService.blockReportedContent(reportId);
-                response.getWriter().write(gson.toJson(Map.of("success", success)));
-            } else if (pathInfo.startsWith("/withdraw-requests/") && pathInfo.endsWith("/process")) {
-                // Process withdraw request
-                int requestId = Integer.parseInt(pathInfo.substring("/withdraw-requests/".length(), pathInfo.length() - "/process".length()));
-                boolean success = adminService.processDrawRequest(requestId);
-                response.getWriter().write(gson.toJson(Map.of("success", success)));
-            } else if (pathInfo.equals("/categories")) {
+            if (pathInfo.equals("/categories")) {
                 // Add category
-                String categoryName = request.getParameter("categoryName");
-                String description = request.getParameter("description");
+                Map<String, String> data = gson.fromJson(request.getReader(), Map.class);
+                String categoryName = data.get("categoryName");
+                String description = data.get("description");
+                
+                if (categoryName == null || categoryName.trim().isEmpty()) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().write(gson.toJson(Map.of("error", "Category name is required")));
+                    return;
+                }
+                
                 boolean success = adminService.addCategory(categoryName, description);
                 response.getWriter().write(gson.toJson(Map.of("success", success)));
             } else {
@@ -232,10 +270,10 @@ public class AdminController extends HttpServlet {
             }
         } catch (SQLException e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write(gson.toJson(Map.of("error", "Database Error")));
-        } catch (NumberFormatException e) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write(gson.toJson(Map.of("error", "Invalid ID format")));
+            response.getWriter().write(gson.toJson(Map.of("error", "Database Error: " + e.getMessage())));
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write(gson.toJson(Map.of("error", "Server Error: " + e.getMessage())));
         }
     }
 
@@ -250,8 +288,16 @@ public class AdminController extends HttpServlet {
             if (pathInfo.startsWith("/categories/")) {
                 // Update category
                 int categoryId = Integer.parseInt(pathInfo.substring("/categories/".length()));
-                String categoryName = request.getParameter("categoryName");
-                String description = request.getParameter("description");
+                Map<String, String> data = gson.fromJson(request.getReader(), Map.class);
+                String categoryName = data.get("categoryName");
+                String description = data.get("description");
+                
+                if (categoryName == null || categoryName.trim().isEmpty()) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().write(gson.toJson(Map.of("error", "Category name is required")));
+                    return;
+                }
+                
                 boolean success = adminService.updateCategory(categoryId, categoryName, description);
                 response.getWriter().write(gson.toJson(Map.of("success", success)));
             } else {
@@ -260,10 +306,13 @@ public class AdminController extends HttpServlet {
             }
         } catch (SQLException e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write(gson.toJson(Map.of("error", "Database Error")));
+            response.getWriter().write(gson.toJson(Map.of("error", "Database Error: " + e.getMessage())));
         } catch (NumberFormatException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write(gson.toJson(Map.of("error", "Invalid ID format")));
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write(gson.toJson(Map.of("error", "Server Error: " + e.getMessage())));
         }
     }
 

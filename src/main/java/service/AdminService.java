@@ -3,16 +3,17 @@ package service;
 import dao.*;
 import model.*;
 import util.DBConnect;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
 import java.math.BigDecimal;
+import java.io.IOException;
+import javax.servlet.ServletOutputStream;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 
 public class AdminService {
     private UserDAO userDAO;
@@ -1636,5 +1637,313 @@ public class AdminService {
             }
         }
         return counts;
+    }
+
+    public Map<String, Object> getPaymentStats() throws SQLException {
+        Map<String, Object> stats = new HashMap<>();
+        
+        // Get today's transactions
+        String todaySql = "SELECT COUNT(*) as count, ISNULL(SUM(amount), 0) as total " +
+                         "FROM Payment " +
+                         "WHERE CAST(paymentDate AS DATE) = CAST(GETDATE() AS DATE)";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(todaySql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                stats.put("todayTransactions", rs.getInt("count"));
+                stats.put("todayRevenue", rs.getDouble("total"));
+            }
+        }
+        
+        // Get pending withdrawals
+        String withdrawSql = "SELECT COUNT(*) as count FROM WithdrawRequest WHERE status = 'PENDING'";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(withdrawSql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                stats.put("pendingWithdrawals", rs.getInt("count"));
+            }
+        }
+        
+        // Get total revenue
+        String totalSql = "SELECT ISNULL(SUM(amount), 0) as total FROM Payment WHERE status = 'completed'";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(totalSql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                stats.put("totalRevenue", rs.getDouble("total"));
+            }
+        }
+        
+        // Calculate trends
+        String yesterdaySql = "SELECT COUNT(*) as count, ISNULL(SUM(amount), 0) as total " +
+                            "FROM Payment " +
+                            "WHERE CAST(paymentDate AS DATE) = CAST(DATEADD(day, -1, GETDATE()) AS DATE)";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(yesterdaySql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                int yesterdayCount = rs.getInt("count");
+                double yesterdayTotal = rs.getDouble("total");
+                
+                // Calculate transaction trend
+                int todayCount = (int) stats.get("todayTransactions");
+                double transactionTrend = yesterdayCount == 0 ? 100 : 
+                    ((todayCount - yesterdayCount) * 100.0 / yesterdayCount);
+                stats.put("todayTransactionsTrend", Math.round(transactionTrend * 100.0) / 100.0);
+                
+                // Calculate revenue trend
+                double todayRevenue = (double) stats.get("todayRevenue");
+                double revenueTrend = yesterdayTotal == 0 ? 100 :
+                    ((todayRevenue - yesterdayTotal) * 100.0 / yesterdayTotal);
+                stats.put("todayRevenueTrend", Math.round(revenueTrend * 100.0) / 100.0);
+            }
+        }
+        
+        return stats;
+    }
+    
+    public Map<String, Object> getPaymentChartData(String mode) throws SQLException {
+        Map<String, Object> chartData = new HashMap<>();
+        String revenueSql;
+        if ("week".equalsIgnoreCase(mode)) {
+            revenueSql = "SELECT YEAR(paymentDate) as y, DATEPART(week, paymentDate) as w, ISNULL(SUM(amount), 0) as total " +
+                         "FROM Payment WHERE status = 'completed' " +
+                         "GROUP BY YEAR(paymentDate), DATEPART(week, paymentDate) " +
+                         "ORDER BY y, w";
+        } else if ("month".equalsIgnoreCase(mode)) {
+            revenueSql = "SELECT YEAR(paymentDate) as y, MONTH(paymentDate) as m, ISNULL(SUM(amount), 0) as total " +
+                         "FROM Payment WHERE status = 'completed' " +
+                         "GROUP BY YEAR(paymentDate), MONTH(paymentDate) " +
+                         "ORDER BY y, m";
+        } else if ("year".equalsIgnoreCase(mode)) {
+            revenueSql = "SELECT YEAR(paymentDate) as y, ISNULL(SUM(amount), 0) as total " +
+                         "FROM Payment WHERE status = 'completed' " +
+                         "GROUP BY YEAR(paymentDate) " +
+                         "ORDER BY y";
+        } else { // default: day
+            revenueSql = "SELECT CAST(paymentDate AS DATE) as d, ISNULL(SUM(amount), 0) as total " +
+                         "FROM Payment WHERE status = 'completed' " +
+                         "GROUP BY CAST(paymentDate AS DATE) " +
+                         "ORDER BY d";
+        }
+
+        List<String> labels = new ArrayList<>();
+        List<Double> data = new ArrayList<>();
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(revenueSql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                if ("week".equalsIgnoreCase(mode)) {
+                    labels.add(rs.getInt("y") + "-Tuần " + rs.getInt("w"));
+                } else if ("month".equalsIgnoreCase(mode)) {
+                    labels.add(rs.getInt("y") + "-" + String.format("%02d", rs.getInt("m")));
+                } else if ("year".equalsIgnoreCase(mode)) {
+                    labels.add(String.valueOf(rs.getInt("y")));
+                } else {
+                    labels.add(rs.getDate(1).toString());
+                }
+                data.add(rs.getDouble("total"));
+            }
+        }
+        Map<String, Object> revenueData = new HashMap<>();
+        revenueData.put("labels", labels);
+        revenueData.put("data", data);
+        chartData.put("revenue", revenueData);
+
+        // Giữ nguyên phần typeRevenue, typeCount
+        String typeRevenueSql = "SELECT type, ISNULL(SUM(amount), 0) as total, COUNT(*) as count " +
+                "FROM Payment " +
+                "WHERE status = 'completed' AND paymentDate >= DATEADD(day, -30, GETDATE()) " +
+                "AND (type = 'course' OR type = 'vip') " +
+                "GROUP BY type";
+
+        double courseRevenue = 0, vipRevenue = 0;
+        int courseCount = 0, vipCount = 0;
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(typeRevenueSql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                String type = rs.getString("type");
+                double total = rs.getDouble("total");
+                int count = rs.getInt("count");
+                if ("course".equalsIgnoreCase(type)) {
+                    courseRevenue = total;
+                    courseCount = count;
+                }
+                if ("vip".equalsIgnoreCase(type)) {
+                    vipRevenue = total;
+                    vipCount = count;
+                }
+            }
+        }
+        Map<String, Double> typeRevenue = new HashMap<>();
+        typeRevenue.put("course", courseRevenue);
+        typeRevenue.put("vip", vipRevenue);
+        chartData.put("typeRevenue", typeRevenue);
+        Map<String, Integer> typeCount = new HashMap<>();
+        typeCount.put("course", courseCount);
+        typeCount.put("vip", vipCount);
+        chartData.put("typeCount", typeCount);
+
+        return chartData;
+    }
+    
+    public List<Map<String, Object>> getFilteredPayments(String searchTerm, String status, 
+            String startDate, String endDate) throws SQLException {
+        StringBuilder sql = new StringBuilder(
+            "SELECT p.*, p.learnerID as userName, c.title as courseTitle " +
+            "FROM Payment p " +
+            "LEFT JOIN Course_Paid cp1 ON p.paymentID = cp1.paymentID " +
+            "LEFT JOIN Course c ON cp1.courseID = c.courseID " +
+            "JOIN Learner l on l.learnerID = p.learnerID " +
+            "JOIN [USER] u on u.userID = l.userID " +
+            "WHERE 1=1"
+        );
+        
+        List<Object> params = new ArrayList<>();
+        
+        if (searchTerm != null && !searchTerm.isEmpty()) {
+            sql.append(" AND (u.fullName LIKE ? OR c.title LIKE ? OR p.paymentID LIKE ?)");
+            String searchPattern = "%" + searchTerm + "%";
+            params.add(searchPattern);
+            params.add(searchPattern);
+            params.add(searchPattern);
+        }
+        
+        if (status != null && !status.isEmpty()) {
+            sql.append(" AND p.status = ?");
+            params.add(status);
+        }
+        
+        if (startDate != null && !startDate.isEmpty()) {
+            sql.append(" AND CAST(p.paymentDate AS DATE) >= ?");
+            params.add(startDate);
+        }
+        
+        if (endDate != null && !endDate.isEmpty()) {
+            sql.append(" AND CAST(p.paymentDate AS DATE) <= ?");
+            params.add(endDate);
+        }
+        
+        sql.append(" AND (p.type = 'course' OR p.type = 'vip')");
+        
+        sql.append(" ORDER BY p.paymentDate DESC");
+        
+        List<Map<String, Object>> payments = new ArrayList<>();
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> payment = new HashMap<>();
+                    payment.put("paymentID", rs.getString("paymentID"));
+                    payment.put("userName", rs.getString("userName"));
+                    payment.put("amount", rs.getBigDecimal("amount"));
+                    payment.put("status", rs.getString("status"));
+                    payment.put("date", rs.getTimestamp("paymentDate"));
+                    payment.put("courseTitle", rs.getString("courseTitle"));
+                    payments.add(payment);
+                }
+            }
+        }
+        
+        return payments;
+    }
+    
+    public List<Map<String, Object>> getAllWithdrawRequests() throws SQLException {
+        String sql = "SELECT wr.*, u.fullName as expertName, eb.bankName, eb.bankAccount " +
+                    "FROM WithdrawRequest wr " +
+                    "JOIN Expert e ON wr.expertID = e.expertID " +
+                    "JOIN ExpertBank eb ON wr.eBankID = eb.eBankID " +
+                    "JOIN [USER] u on u.userID = e.userID " +
+                    "ORDER BY wr.requestDate DESC";
+        
+        List<Map<String, Object>> requests = new ArrayList<>();
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            
+            while (rs.next()) {
+                Map<String, Object> request = new HashMap<>();
+                request.put("requestID", rs.getInt("requestID"));
+                request.put("expertName", rs.getString("expertName"));
+                request.put("amount", rs.getBigDecimal("amount"));
+                request.put("bankName", rs.getString("bankName"));
+                request.put("bankAccount", rs.getString("bankAccount"));
+                request.put("requestDate", rs.getTimestamp("requestDate"));
+                request.put("status", rs.getString("status"));
+                request.put("note", rs.getString("note"));
+                requests.add(request);
+            }
+        }
+        
+        return requests;
+    }
+    
+    public void exportPaymentsToExcel(ServletOutputStream outputStream, String startDate, String endDate) 
+            throws SQLException, IOException {
+        List<Map<String, Object>> payments = getFilteredPayments(null, null, startDate, endDate);
+        
+        // Create Excel workbook
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet("Payments");
+        
+        // Create header row
+        Row headerRow = sheet.createRow(0);
+        String[] columns = {"ID", "Người dùng", "Loại", "Số tiền", "Ngày giao dịch", "Trạng thái", "Khóa học"};
+        for (int i = 0; i < columns.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columns[i]);
+        }
+        
+        // Add data rows
+        int rowNum = 1;
+        for (Map<String, Object> payment : payments) {
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue((Integer) payment.get("paymentID"));
+            row.createCell(1).setCellValue((String) payment.get("userName"));
+            row.createCell(2).setCellValue((String) payment.get("type"));
+            row.createCell(3).setCellValue((Double) payment.get("amount"));
+            row.createCell(4).setCellValue(((Timestamp) payment.get("date")).toString());
+            row.createCell(5).setCellValue((String) payment.get("status"));
+            row.createCell(6).setCellValue((String) payment.get("courseTitle"));
+        }
+        
+        // Auto-size columns
+        for (int i = 0; i < columns.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+        
+        // Write to output stream
+        workbook.write(outputStream);
+        workbook.close();
+    }
+    
+    public boolean processWithdrawRequest(int requestId, boolean approve) throws SQLException {
+        String status = approve ? "APPROVED" : "REJECTED";
+        String sql = "UPDATE WithdrawRequest SET status = ? WHERE requestID = ?";
+        
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setInt(2, requestId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    public List<Payment> getAllPayments() throws SQLException {
+        List<Payment> all = paymentDAO.getAllPayments();
+        List<Payment> filtered = new ArrayList<>();
+        for (Payment p : all) {
+            if ("course".equalsIgnoreCase(p.getType()) || "vip".equalsIgnoreCase(p.getType())) {
+                filtered.add(p);
+            }
+        }
+        return filtered;
     }
 } 

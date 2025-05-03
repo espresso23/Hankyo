@@ -183,4 +183,51 @@ public class ExpertRegisterDAO {
         }
         return false;
     }
+
+    // Lấy danh sách đơn chờ duyệt (approveStatus = 'waiting')
+    public List<ExpertRegister> getPendingRegisters() throws SQLException {
+        List<ExpertRegister> registrations = new ArrayList<>();
+        String sql = "SELECT * FROM ExpertRegister WHERE approveStatus = 'waiting' ORDER BY dateCreate DESC";
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                ExpertRegister register = new ExpertRegister();
+                register.setRegisterID(rs.getInt("registerID"));
+                register.setUsername(rs.getString("username"));
+                register.setPassword(rs.getString("password"));
+                register.setGmail(rs.getString("gmail"));
+                register.setPhone(rs.getString("phone"));
+                register.setRole(rs.getString("role"));
+                register.setStatus(rs.getString("status"));
+                register.setFullName(rs.getString("fullName"));
+                register.setDateCreate(rs.getDate("dateCreate"));
+                register.setGender(rs.getString("gender"));
+                register.setAvatar(rs.getString("avatar"));
+                register.setCertificate(rs.getString("certificate"));
+                register.setCccd(rs.getString("cccd"));
+                register.setCccdFront(rs.getString("cccdFront"));
+                register.setCccdBack(rs.getString("cccdBack"));
+                register.setApproveStatus(rs.getString("approveStatus"));
+                registrations.add(register);
+            }
+        }
+        return registrations;
+    }
+
+    // Cập nhật trạng thái duyệt đơn (approveStatus)
+    public boolean updateApproveStatus(int registerID, String approveStatus) throws SQLException {
+        String sql = "UPDATE ExpertRegister SET approveStatus = ? WHERE registerID = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, approveStatus);
+            stmt.setInt(2, registerID);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Đổi tên hàm getRegistrationByID thành getById cho rõ nghĩa
+    public ExpertRegister getById(int registerID) throws SQLException {
+        return getRegistrationByID(registerID);
+    }
 } 

@@ -1,10 +1,11 @@
-package controller.forum_post;
+package controller;
 
 import com.google.gson.Gson;
 import dao.ReportDAO;
 import dao.UserDAO;
 import dao.PostDAO;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -12,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,10 +41,10 @@ public class CommunityBlogServlet extends HttpServlet {
         try {
             String filter = request.getParameter("filter");
             String searchQuery = request.getParameter("searchQuery");
-            String id = request.getParameter("id");
+
             List<Post> postList;
 
-            // Lọc bài viết theo filter nếu có
+            // Lọc nếu có filter
             if (filter != null) {
                 switch (filter) {
                     case "newest":
@@ -62,44 +64,30 @@ public class CommunityBlogServlet extends HttpServlet {
                 postList = postDAO.getAllPostsHaveFullNameAndAvtImg();
             }
 
-            // Đếm comment cho từng bài viết
+            // Đếm comment
             for (Post post : postList) {
                 int commentCount = postDAO.getCommentCount(post.getPostID());
                 post.setCommentCount(commentCount);
             }
 
-            // Lấy bài viết mới nhất
-//            User user = userDAO.getUserByID(id);
+            // Top rated
             Post newPost = postDAO.getLatestPost();
-            String fullNameNewPost = "";
-            String avatarURLNewPost = "";
-
-            if (newPost != null && newPost.getUserID() > 0) {
-                User postUser = userDAO.getUserByID(newPost.getUserID());
-                if (postUser != null) {
-                    fullNameNewPost = postUser.getFullName() != null ? postUser.getFullName() : "";
-                    avatarURLNewPost = postUser.getAvatar() != null ? postUser.getAvatar() : "";
-                }
-            }
-
-            // Top rated posts
+            String fullNameNewPost = (newPost != null) ? userDAO.getFullNameByUserId(newPost.getUserID()) : "";
+            String avatarURLNewPost = (newPost != null) ? userDAO.getAvatarByUserId(newPost.getUserID()) : "";
             List<Post> topRatedPosts = postDAO.getPostsOrderedByScore();
 
-            // Xử lý tìm kiếm nếu có
+            // Tìm kiếm nếu có
             if (searchQuery != null && !searchQuery.trim().isEmpty()) {
                 List<Post> searchResults = postDAO.searchPosts(searchQuery);
                 request.setAttribute("searchResults", searchResults);
             }
 
-            // Set dữ liệu lên request để chuyển sang JSP
+            // Gửi lên JSP
             request.setAttribute("postList", postList);
             request.setAttribute("newPost", newPost);
             request.setAttribute("fullNameNewPost", fullNameNewPost);
             request.setAttribute("avatarURLNewPost", avatarURLNewPost);
             request.setAttribute("topRatedPosts", topRatedPosts);
-
-            // Forward tới blog.jsp
-
             request.getRequestDispatcher("blog.jsp").forward(request, response);
 
         } catch (Exception e) {
@@ -107,7 +95,6 @@ public class CommunityBlogServlet extends HttpServlet {
             throw new ServletException("Error loading blog data", e);
         }
     }
-
 
     @Override
     protected void doPost (HttpServletRequest request, HttpServletResponse response) throws
@@ -301,7 +288,7 @@ public class CommunityBlogServlet extends HttpServlet {
             report.setReason(reason);
             report.setReportTypeID(3);
             report.setReporterID(user.getUserID());
-            report.setStatus("Pending");
+
             ReportDAO reportDAO = new ReportDAO();
             boolean success = reportDAO.createPostReport(report);
             response.getWriter().write("{\"success\": " + success + "}");

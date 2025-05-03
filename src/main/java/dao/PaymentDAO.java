@@ -90,6 +90,54 @@ public class PaymentDAO {
         return list;
     }
 
+    public List<Payment> getAllPayments() throws SQLException {
+        List<Payment> payments = new ArrayList<>();
+        String sql = "SELECT p.*, u.fullName as learnerName FROM Payment p JOIN Learner l on p.learnerID = l.learnerID JOIN [User] u on u.userID = l.userID ORDER BY paymentDate DESC";
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Payment payment = new Payment();
+                payment.setPaymentID(rs.getString("paymentID"));
+                payment.setLearnerID(rs.getInt("learnerID"));
+                payment.setLearnerName(rs.getString("learnerName"));
+                payment.setTotalAmount(rs.getBigDecimal("amount"));
+                payment.setDescription(rs.getString("description"));
+                Timestamp ts = rs.getTimestamp("paymentDate");
+                payment.setPayDate(ts != null ? ts.toLocalDateTime() : null);
+                payment.setStatus(rs.getString("status"));
+                payment.setType(rs.getString("type"));
+                payments.add(payment);
+            }
+        }
+        return payments;
+    }
+
+    public List<Payment> getPaymentsByLearner(int learnerId) throws SQLException {
+        List<Payment> payments = new ArrayList<>();
+        String sql = "SELECT * FROM Payment p WHERE learnerID = ? ORDER BY paymentDate DESC";
+
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, learnerId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Payment payment = new Payment();
+                payment.setPaymentID(rs.getString("paymentID"));
+                payment.setLearnerID(rs.getInt("learnerID"));
+                payment.setTotalAmount(rs.getBigDecimal("amount"));
+                payment.setDescription(rs.getString("description"));
+                payment.setPayDate(rs.getTimestamp("paymentDate").toLocalDateTime() != null ? rs.getTimestamp("paymentDate").toLocalDateTime() : null);
+                payment.setStatus(rs.getString("status"));
+                payment.setType(rs.getString("type"));
+                payments.add(payment);
+            }
+        }
+        return payments;
+
+
+    }
     public boolean addPaymentWithCourses(Payment payment, List<CoursePaid> coursePaidList) {
         String paymentSQL = "INSERT INTO Payment (paymentID,amount, paymentDate,description,learnerID,status) VALUES (?,?, ?, ?, ?,?)";
         String coursePaidSQL = "INSERT INTO Course_Paid (paymentID, courseID, learnerID, datePaid) VALUES (?, ?, ?, ?)";
@@ -229,30 +277,6 @@ public class PaymentDAO {
             e.printStackTrace();
             return false;
         }
-    }
-
-    public List<Payment> getPaymentsByLearner(int learnerId) {
-        List<Payment> payments = new ArrayList<>();
-        String sql = "SELECT * FROM Payment WHERE learnerID = ? ORDER BY paymentDate DESC";
-        
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, learnerId);
-            ResultSet rs = stmt.executeQuery();
-            
-            while (rs.next()) {
-                Payment payment = new Payment();
-                payment.setPaymentID(rs.getString("paymentID"));
-                payment.setLearnerID(rs.getInt("learnerID"));
-                payment.setTotalAmount(rs.getBigDecimal("amount"));
-                payment.setDescription(rs.getString("description"));
-                payment.setPayDate(rs.getTimestamp("paymentDate").toLocalDateTime());
-                payment.setStatus(rs.getString("status"));
-                payments.add(payment);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return payments;
     }
 
 }

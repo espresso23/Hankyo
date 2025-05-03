@@ -24,7 +24,7 @@ public class PaymentService {
     }
 
     public boolean addPaymentWithCourse(Payment payment, List<CoursePaid> coursePaidList, Connection connection) {
-        String paymentSQL = "INSERT INTO Payment (paymentID, amount, paymentDate, description, learnerID, status) VALUES (?, ?, ?, ?, ?, ?)";
+        String paymentSQL = "INSERT INTO Payment (paymentID, amount, paymentDate, description, learnerID, status,type) VALUES (?, ?, ?, ?, ?, ?,'course')";
         String coursePaidSQL = "INSERT INTO Course_Paid (paymentID, courseID, learnerID, datePaid) VALUES (?, ?, ?, ?)";
         String expertSQL = "SELECT expertID, price FROM Course WHERE courseID = ?";
         String updateRevenueSQL = "INSERT INTO ExpertRevenue (expertID, totalRevenue, lastUpdated) VALUES (?, ?, ?)";

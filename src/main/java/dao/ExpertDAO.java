@@ -20,7 +20,7 @@ public class ExpertDAO {
 
     public boolean createExpert(Expert expert) throws SQLException {
         String insertUserQuery = "INSERT INTO [User] (username, password, gmail, phone, role, status, fullName, socialID, dateCreate, gender, avatar) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        String insertLearnerQuery = "INSERT INTO Expert (userID, certificate, honour_ownedID, CCCD) VALUES (?, ?, ?, ?)";
+        String insertLearnerQuery = "INSERT INTO Expert (userID, certificate, CCCD) VALUES (?, ?, ?)";
 
         try {
             connection.setAutoCommit(false);
@@ -53,8 +53,7 @@ public class ExpertDAO {
             try (PreparedStatement expertStmt = connection.prepareStatement(insertLearnerQuery)) {
                 expertStmt.setInt(1, expert.getUserID());
                 expertStmt.setString(2, expert.getCertificate());
-                expertStmt.setInt(3, Types.NULL);
-                expertStmt.setString(4, expert.getCCCD());
+                expertStmt.setString(3, expert.getCCCD());
                 expertStmt.executeUpdate();
             }
 
@@ -307,5 +306,26 @@ public class ExpertDAO {
             }
         }
         return experts;
+    }
+
+    /**
+     * Chuyển đổi từ ExpertRegister sang Expert để phục vụ duyệt đơn đăng ký expert
+     */
+    public static model.Expert convertFromExpertRegister(model.ExpertRegister reg) {
+        model.Expert expert = new model.Expert();
+        expert.setUsername(reg.getUsername());
+        expert.setPassword(reg.getPassword());
+        expert.setGmail(reg.getGmail());
+        expert.setPhone(reg.getPhone());
+        expert.setRole(reg.getRole());
+        expert.setStatus("active"); // hoặc "pending" tùy logic
+        expert.setFullName(reg.getFullName());
+        expert.setDateCreate(reg.getDateCreate());
+        expert.setGender(reg.getGender());
+        expert.setAvatar(reg.getAvatar());
+        expert.setCertificate(reg.getCertificate());
+        expert.setCCCD(reg.getCccd());
+        // Nếu có các trường khác cần chuyển, bổ sung tại đây
+        return expert;
     }
 }
