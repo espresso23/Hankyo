@@ -326,6 +326,21 @@
         <% } else { %>
         <% for (Documentary doc : pageDocs) { %>
         <div class="doc-card">
+            <%-- Label VIP / Free --%>
+            <div style="position: absolute; top: 0; left: 0;">
+                <% if ("VIP Documents".equalsIgnoreCase(doc.getType())) { %>
+                <div style="background: orange; color: white; padding: 5px 10px;
+                        font-size: 12px; font-weight: bold; border-radius: 0 0 8px 0;">
+                    VIP
+                </div>
+                <% } else { %>
+                <div style="background: #00c897; color: white; padding: 5px 10px;
+                        font-size: 12px; font-weight: bold; border-radius: 0 0 8px 0;">
+                    Free
+                </div>
+                <% } %>
+            </div>
+
             <a href="documents?docID=<%= doc.getDocID() %>" style="text-decoration: none; color: inherit;">
                 <img src="<%= doc.getThumbnail() %>" alt="<%= doc.getTitle() %>" class="doc-thumbnail">
                 <div class="doc-card-content">

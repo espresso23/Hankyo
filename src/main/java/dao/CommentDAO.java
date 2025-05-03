@@ -138,7 +138,7 @@ public class CommentDAO {
     // Method to retrieve all comments for a specific post with user details
     public List<Comment> getCommentsByPostID(int postID) throws Exception {
         List<Comment> comments = new ArrayList<>();
-        String sql = "SELECT c.*, u.fullName, u.avatar FROM Comment c JOIN [User] u ON c.UserID = u.UserID WHERE c.PostID = ? AND ParentCommentID IS NULL ORDER BY c.CreatedDate DESC";
+        String sql = "SELECT c.*, u.username, u.fullName, u.avatar FROM Comment c JOIN [User] u ON c.UserID = u.UserID WHERE c.PostID = ? AND ParentCommentID IS NULL ORDER BY c.CreatedDate DESC";
         try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, postID);
             try (ResultSet rs = ps.executeQuery()) {
@@ -152,6 +152,7 @@ public class CommentDAO {
                             rs.getString("Content"),
                             rs.getTimestamp("CreatedDate")
                     );
+                    comment.setUsername(rs.getString("username"));
                     comment.setScore(rs.getInt("Score"));
                     comments.add(comment);
                 }
@@ -197,7 +198,7 @@ public class CommentDAO {
 
     public List<Comment> getRepliesByCommentID(int commentID) throws Exception {
         List<Comment> comments = new ArrayList<>();
-        String sql = "SELECT c.*, u.fullName, u.avatar FROM Comment c JOIN [User] u ON c.UserID = u.UserID WHERE ParentCommentID = ? ORDER BY c.CreatedDate DESC";
+        String sql = "SELECT c.*, u.username, u.fullName, u.avatar FROM Comment c JOIN [User] u ON c.UserID = u.UserID WHERE ParentCommentID = ? ORDER BY c.CreatedDate DESC";
         try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, commentID);
             try (ResultSet rs = ps.executeQuery()) {
@@ -211,6 +212,7 @@ public class CommentDAO {
                             rs.getString("Content"),
                             rs.getTimestamp("CreatedDate")
                     );
+                    comment.setUsername(rs.getString("username"));
                     comment.setScore(rs.getInt("Score"));
                     comments.add(comment);
                 }
@@ -426,7 +428,7 @@ public class CommentDAO {
     }
 
     private void buildReplyTree(int parentID, List<Comment> list, Connection conn) throws SQLException {
-        String sql = "SELECT c.*, u.fullName, u.avatar FROM Comment c JOIN [User] u ON c.UserID = u.UserID WHERE c.ParentCommentID = ? ORDER BY c.CreatedDate ASC";
+        String sql = "SELECT c.*, u.username, u.fullName, u.avatar FROM Comment c JOIN [User] u ON c.UserID = u.UserID WHERE c.ParentCommentID = ? ORDER BY c.CreatedDate ASC";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, parentID);
             ResultSet rs = ps.executeQuery();
@@ -440,6 +442,7 @@ public class CommentDAO {
                         rs.getString("Content"),
                         rs.getTimestamp("CreatedDate")
                 );
+                reply.setUsername(rs.getString("username"));
                 reply.setScore(rs.getInt("Score"));
 
                 // Đệ quy cho các reply con
@@ -463,7 +466,7 @@ public class CommentDAO {
     }
 
     private void getRepliesRecursiveHelper(int parentID, List<Comment> list, Connection conn) throws SQLException {
-        String sql = "SELECT c.*, u.fullName, u.avatar FROM Comment c JOIN [User] u ON c.UserID = u.UserID WHERE c.ParentCommentID = ? ORDER BY c.CreatedDate ASC";
+        String sql = "SELECT c.*, u.username, u.fullName, u.avatar FROM Comment c JOIN [User] u ON c.UserID = u.UserID WHERE c.ParentCommentID = ? ORDER BY c.CreatedDate ASC";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, parentID);
             ResultSet rs = ps.executeQuery();
@@ -477,9 +480,9 @@ public class CommentDAO {
                         rs.getString("Content"),
                         rs.getTimestamp("CreatedDate")
                 );
+                reply.setUsername(rs.getString("username"));
                 reply.setScore(rs.getInt("Score"));
                 list.add(reply);
-                // Đệ quy lấy tiếp các reply con
                 getRepliesRecursiveHelper(reply.getCommentID(), list, conn);
             }
         }
@@ -501,7 +504,7 @@ public class CommentDAO {
 
     public List<Comment> getRepliesByParentId(int parentID) {
         List<Comment> replies = new ArrayList<>();
-        String sql = "SELECT c.*, u.fullName, u.avatar " +
+        String sql = "SELECT c.*, u.username, u.fullName, u.avatar " +
                 "FROM Comment c " +
                 "JOIN [User] u ON c.UserID = u.UserID " +
                 "WHERE c.ParentCommentID = ? " +
@@ -521,15 +524,37 @@ public class CommentDAO {
                             rs.getString("Content"),
                             rs.getTimestamp("CreatedDate")
                     );
+                    reply.setUsername(rs.getString("username"));
                     reply.setScore(rs.getInt("Score"));
 
-                    replies.add(reply); // Chỉ 1 cấp
+                    replies.add(reply);
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return replies;
+    }
+    public boolean deleteCommentAndReplies(int commentId) {
+        String deleteRepliesSql = "DELETE FROM Comment WHERE ParentCommentID = ?";
+        String deleteMainSql = "DELETE FROM Comment WHERE commentID = ?";
+
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement deleteRepliesStmt = conn.prepareStatement(deleteRepliesSql);
+             PreparedStatement deleteMainStmt = conn.prepareStatement(deleteMainSql)) {
+
+            deleteRepliesStmt.setInt(1, commentId);
+            deleteRepliesStmt.executeUpdate(); // delete replies
+
+            deleteMainStmt.setInt(1, commentId);
+            int rowsAffected = deleteMainStmt.executeUpdate(); // delete main comment
+
+            return rowsAffected > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
 

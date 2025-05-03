@@ -421,7 +421,7 @@ public class PostDetailsServlet extends HttpServlet {
                 return;
             }
 
-            boolean success = commentDAO.deleteComment(commentId);
+            boolean success = commentDAO.deleteCommentAndReplies(commentId);
 
             if (success) {
                 response.sendRedirect("postDetails?postID=" + postID);
@@ -464,7 +464,7 @@ public class PostDetailsServlet extends HttpServlet {
             boolean isAdded = postDAO.createPost(newPost);
 
             if (isAdded) {
-                response.sendRedirect("blog.jsp");
+                response.sendRedirect("blog");
             } else {
                 request.setAttribute("error", "Failed to add post. Please try again.");
                 request.getRequestDispatcher("blog.jsp").forward(request, response);

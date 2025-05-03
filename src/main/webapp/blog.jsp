@@ -33,18 +33,384 @@
 
 </head>
 <style>
+    /* Base Styles */
+    html {
+        scroll-behavior: smooth;
+        color: #777;
+        line-height: 1.8;
+    }
+
     body {
         margin: 0;
-        font-family: Arial, sans-serif;
+        font-family: 'Quicksand', 'Segoe UI', Arial, sans-serif;
         background-image: url('asset/png/background/background-2.png');
         background-size: cover;
         background-position: left;
+        background-repeat: no-repeat;
+        color: #4a5c6c;
     }
-    textarea {
-        display: block; /* Đảm bảo textarea không bị ẩn */
+
+    /* Layout Structure */
+    #page-info {
+        padding: 30px 0;
+        margin: 0 auto;
+        max-width: 1200px;
     }
-    /* Top Rated Posts Section */
-    /* Top Rated Posts Section - Soft Pastel Version */
+
+    #content {
+        padding: 60px 12%;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .post-row {
+        display: flex;
+        gap: 2rem;
+        justify-content: center;
+        padding-bottom: 30px;
+    }
+
+    /* Create Post Card */
+    .create-post-card {
+        display: flex;
+        align-items: center;
+        background: linear-gradient(135deg, #e3f2fd 60%, #fce4ec 100%);
+        border-radius: 20px;
+        padding: 22px 28px;
+        box-shadow: 0 4px 18px rgba(160, 180, 200, 0.10);
+        cursor: pointer;
+        max-width: 1200px;
+        margin: 40px auto;
+        transition: all 0.3s ease;
+        border: 1px solid #e0e9f0;
+    }
+
+    .create-post-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 32px rgba(160, 180, 200, 0.18);
+        border-color: #b2dfdb;
+    }
+
+    .create-post-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 16px;
+        border: 2px solid #b2dfdb;
+        background: #fff;
+    }
+
+    .create-post-input {
+        flex: 1;
+        border: none;
+        background: #f8fbfd;
+        font-size: 18px;
+        padding: 16px 24px;
+        border-radius: 24px;
+        color: #444;
+        font-weight: 600;
+        box-shadow: 0 2px 8px #e1bee7;
+        transition: all 0.3s ease;
+    }
+
+    .create-post-input:focus {
+        outline: none;
+        background: #fff;
+        box-shadow: 0 0 0 2px #b2dfdb;
+    }
+
+    .create-post-input::placeholder {
+        color: #a8a8a8;
+    }
+
+    /* For logged out users */
+    .openModalBtn {
+        width: 100%;
+        padding: 16px;
+        border: none;
+        border-radius: 16px;
+        background-color: #ff9ff3;
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(255, 159, 243, 0.2);
+    }
+
+    .openModalBtn:hover {
+        background-color: #ff7eb9;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(255, 126, 185, 0.3);
+    }
+
+    /* Post Cards */
+    /* Cập nhật phần card post */
+    .card-post {
+        border-radius: 12px;
+        margin-bottom: 18px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        padding: 0;
+        border: 1px solid #e4e6eb;
+        overflow: hidden; /* Quan trọng: ngăn nội dung tràn ra ngoài */
+        width: 100%;
+    }
+
+    /* Header card */
+    .card-post-author {
+        display: flex;
+        align-items: center;
+        padding: 14px 18px;
+        border-bottom: 1px solid #f0f2f5;
+        background: none;
+    }
+
+    .author-post-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 12px;
+        border: 1.5px solid #e4e6eb;
+    }
+
+    .author-post-info {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        min-width: 0; /* Quan trọng: ngăn text tràn */
+    }
+
+    .author-post-name {
+        font-size: 15px;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .author-post-time {
+        font-size: 13px;
+        color: #888;
+        margin: 2px 0 0 0;
+    }
+
+    /* Body card */
+    .card-body {
+        padding: 12px 18px;
+        margin: 0;
+        word-wrap: break-word; /* Đảm bảo text dài tự xuống dòng */
+        overflow-wrap: break-word;
+    }
+
+    .card-title-post {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1877f2;
+        margin-bottom: 8px;
+        margin-top: 0;
+        line-height: 1.4;
+    }
+
+    .card-text {
+        font-size: 15px;
+        color: #050505;
+        margin-bottom: 12px;
+        line-height: 1.6;
+        white-space: pre-line; /* Giữ nguyên định dạng xuống dòng */
+    }
+
+    /* Footer card */
+    .card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: none;
+        border-top: 1px solid #f0f2f5;
+        padding: 10px 18px;
+    }
+
+    .vote-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-comment {
+        font-size: 14px;
+        border-radius: 8px;
+        padding: 6px 12px;
+        background: #f0f2f5;
+        color: #65676b;
+        border: none;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-comment:hover {
+        background: #e4e6eb;
+    }
+
+    .card-title-post,
+    .card-text,
+    .comment-text,
+    .author-post-name,
+    .author-post-time {
+        color: #000 !important;
+    }
+
+    /* Thu nhỏ ảnh trong bài post */
+    .card-body img {
+        max-width: 320px;       /* Giới hạn chiều rộng */
+        max-height: 220px;      /* Giới hạn chiều cao */
+        width: auto;            /* Tự động điều chỉnh */
+        height: auto;           /* Tự động điều chỉnh */
+        border-radius: 10px;    /* Bo góc */
+        margin: 8px 0;          /* Khoảng cách */
+        object-fit: contain;    /* Giữ tỷ lệ ảnh */
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* Đổ bóng nhẹ */
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 10px 15px;
+        }
+
+        .card-footer {
+            padding: 8px 15px;
+        }
+
+        .card-title-post {
+            font-size: 16px;
+        }
+
+        .card-text {
+            font-size: 14px;
+        }
+    }
+
+    /* Card Footer */
+    .card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        background: none;
+        border-top: 1px solid #f0f2f5;
+        padding: 8px 18px 10px 70px;
+        gap: 12px;
+    }
+
+    .btn-comment, .btn-report {
+        font-size: 14px;
+        border-radius: 8px;
+        padding: 6px 14px;
+        background: #f0f2f5;
+        color: #65676b;
+        border: none;
+        margin-right: 8px;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .btn-comment {
+        background: linear-gradient(90deg, #b2dfdb 60%, #fce4ec 100%);
+        color: #4a5c6c;
+        font-weight: 600;
+    }
+
+    .btn-comment:hover, .btn-report:hover {
+        background: #e4e6eb;
+        color: #1877f2;
+    }
+
+    .btn-report {
+        background: linear-gradient(90deg, #fce4ec 60%, #e3f2fd 100%);
+        color: #f06292;
+    }
+
+    .btn-report:hover {
+        background: #f8bbd0;
+        color: #fff;
+    }
+
+    /* Vote Controls */
+    .vote-controls {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-right: auto;
+    }
+
+    .vote-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #65676b;
+        font-size: 16px;
+        padding: 0 2px;
+        transition: color 0.2s;
+    }
+
+    .vote-btn.active {
+        color: #1877f2;
+    }
+
+    .vote-btn.upvote-btn.active {
+        color: #4CAF50;
+    }
+
+    .vote-btn.downvote-btn.active {
+        color: #F44336;
+    }
+
+    .vote-score {
+        font-weight: 600;
+        min-width: 20px;
+        text-align: center;
+    }
+
+    /* Load More Button */
+    #loadMore {
+        width: 200px;
+        color: #CCB2B0;
+        display: block;
+        text-align: center;
+        margin: 20px auto;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid #CCB2B0;
+        background-color: white;
+        transition: all 0.3s;
+        text-decoration: none;
+    }
+
+    #loadMore:hover {
+        color: #DF808F;
+        border: 1px solid #DF808F;
+        transform: scale(1.05);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .noContent {
+        color: #000;
+        background-color: transparent;
+        pointer-events: none;
+        border: 1px solid #97989f;
+    }
+
+    /* Top Rated Posts */
     .top-rated-section {
         margin: 30px auto;
         max-width: 1200px;
@@ -52,13 +418,14 @@
     }
 
     .top-rated-section h3 {
-        color: #a8c1d1; /* Soft blue-gray */
-        font-size: 22px;
-        font-weight: 600;
+        color: #a8c1d1;
+        font-size: 24px;
+        font-weight: 700;
         margin-bottom: 25px;
         padding-bottom: 8px;
-        border-bottom: 1px solid #e0e9f0;
+        border-bottom: 1.5px dashed #e0e9f0;
         text-align: center;
+        letter-spacing: 1px;
     }
 
     .top-rated-posts {
@@ -70,17 +437,18 @@
     .top-rated-card {
         flex: 1;
         min-width: 0;
-        background-color: #ffffff;
-        border-radius: 12px;
+        background: linear-gradient(135deg, #f8fbfd 60%, #fce4ec 100%);
+        border-radius: 18px;
         overflow: hidden;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-        transition: all 0.25s ease;
-        border: 1px solid #f0f5f9;
+        box-shadow: 0 4px 18px rgba(160, 180, 200, 0.10);
+        transition: all 0.25s;
+        border: 1.5px solid #e0e9f0;
     }
 
     .top-rated-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 8px 32px rgba(160, 180, 200, 0.18);
+        border-color: #b2dfdb;
     }
 
     .top-rated-card a {
@@ -94,23 +462,8 @@
         display: flex;
         align-items: center;
         padding: 18px;
-        background-color: #f8fbfd;
+        background: linear-gradient(90deg, #e3f2fd 60%, #fce4ec 100%);
         border-bottom: 1px solid #eef5fb;
-    }
-
-    .author-post-avatar {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin-right: 12px;
-        border: 1px solid #d6e4f0;
-    }
-
-    .author-post-name {
-        font-size: 14px;
-        font-weight: 500;
-        color: #7a9cc6; /* Soft blue */
     }
 
     .top-rated-content {
@@ -119,16 +472,16 @@
 
     .top-rated-content h5 {
         color: #4a5c6c;
-        font-size: 16px;
-        font-weight: 600;
+        font-size: 18px;
+        font-weight: 700;
         margin-bottom: 12px;
         line-height: 1.4;
     }
 
     .top-rated-content p {
         color: #7a8a99;
-        font-size: 14px;
-        line-height: 1.5;
+        font-size: 15px;
+        line-height: 1.6;
         margin-bottom: 16px;
         display: -webkit-box;
         -webkit-line-clamp: 3;
@@ -140,18 +493,166 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 6px 0;
-        background-color: #f5f9fd;
+        padding: 8px 0;
+        background: #e3f2fd;
         border-top: 1px solid #eef5fb;
+        border-radius: 0 0 18px 18px;
     }
 
     .top-rated-score span {
-        font-size: 14px;
-        font-weight: 500;
+        font-size: 15px;
+        font-weight: 600;
         color: #7a9cc6;
     }
 
-    /* Responsive adjustments */
+    /* Search Styles */
+    .app-search {
+        margin: 20px auto;
+        max-width: 700px;
+        padding: 0 20px;
+    }
+
+    .app-search .input-group {
+        box-shadow: 0 2px 8px rgba(255, 105, 180, 0.15);
+        border-radius: 24px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .app-search .input-group:hover {
+        box-shadow: 0 4px 12px rgba(255, 105, 180, 0.2);
+    }
+
+    .app-search .form-control {
+        border: 1px solid #ffc0cb;
+        border-right: none;
+        padding: 10px 18px;
+        font-size: 15px;
+        color: #555;
+        background-color: #fff;
+        border-radius: 24px 0 0 24px;
+    }
+
+    .app-search .form-control:focus {
+        border-color: #e1becf;
+        box-shadow: none;
+        background-color: white;
+    }
+
+    .app-search .btn-primary {
+        background-color: #e472ad;
+        border-color: #806271;
+        border-radius: 0 24px 24px 0;
+        padding: 0 16px;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+
+    .app-search .btn-primary:hover {
+        background-color: #cc527b;
+        border-color: #ff4785;
+    }
+
+    .search-results-header {
+        background-color: #fff5f7;
+        padding: 12px 20px;
+        border-radius: 12px;
+        margin: 15px auto 20px;
+        max-width: 700px;
+        border-left: 4px solid #ff69b4;
+    }
+
+    .search-results-header h4 {
+        color: #ff4785;
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 18px;
+    }
+
+    .search-results-header p {
+        color: #666;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .search-results-container {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    /* Filter Section */
+    .filter-section {
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .dropdown-menu {
+        min-width: 150px;
+    }
+
+    /* No Posts Message */
+    .no-posts-message {
+        background: #fce4ec;
+        color: #7a8a99;
+        border-radius: 18px;
+        padding: 32px 0;
+        text-align: center;
+        margin: 32px 0;
+        font-size: 20px;
+        font-weight: 600;
+        box-shadow: 0 2px 8px #e1bee7;
+    }
+
+    /* Modal Styles */
+    .modal {
+        z-index: 1050;
+        border-radius: 18px;
+    }
+
+    .modal-backdrop {
+        z-index: 1040;
+    }
+
+    #reportForm {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    #reportForm label {
+        font-weight: bold;
+    }
+
+    #reportForm textarea {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid #e0e9f0;
+        padding: 10px;
+        background: #f8fbfd;
+        font-family: inherit;
+    }
+
+    #reportForm button {
+        align-self: flex-end;
+        background-color: #4169e1;
+        color: white;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 4px;
+        font-weight: bold;
+        transition: background-color 0.2s ease;
+    }
+
+    #reportForm button:hover {
+        background-color: #2c4db1;
+    }
+
+    /* Responsive Adjustments */
     @media (max-width: 992px) {
         .top-rated-posts {
             flex-wrap: wrap;
@@ -160,121 +661,74 @@
         .top-rated-card {
             flex: 0 0 calc(50% - 13px);
         }
+
+        #content {
+            padding: 60px 8%;
+        }
+    }
+
+    @media (max-width: 768px) {
+        #page-info {
+            padding: 20px 15px;
+        }
+
+        .create-post-card {
+            padding: 12px 16px;
+        }
+
+        .create-post-avatar {
+            width: 44px;
+            height: 44px;
+            margin-right: 12px;
+        }
+
+        .create-post-input {
+            font-size: 15px;
+            padding: 10px 14px;
+        }
+
+        .card-body, .card-footer {
+            padding-left: 60px;
+            padding-right: 8px;
+        }
+
+        .card-post-author {
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+
+        #content {
+            padding: 60px 5%;
+        }
     }
 
     @media (max-width: 576px) {
         .top-rated-card {
             flex: 0 0 100%;
         }
+
+        .post-row {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .card-body {
+            padding-left: 50px;
+        }
+
+        .card-footer {
+            padding-left: 50px;
+        }
+
+        .vote-controls {
+            margin-right: 8px;
+        }
+
+        .btn-comment, .btn-report {
+            font-size: 13px;
+            padding: 5px 10px;
+        }
     }
-
-    .modal {
-        z-index: 1050 !important; /* đảm bảo cao hơn overlay khác */
-    }
-
-    .modal-backdrop {
-        z-index: 1040 !important;
-    }
-
-    .post-container {
-        display: flex;
-        align-items: flex-start;
-    }
-
-    .post-content-link {
-        flex: 1;
-        padding-left: 12px;
-    }
-
-    .btn-report {
-        background: none;
-        border: none;
-        color: #878A8C;
-        padding: 4px 8px;
-        font-size: 14px;
-        border-radius: 4px;
-    }
-
-    .btn-report:hover {
-        background-color: #f6f7f8;
-        color: #ff4500;
-    }
-
-    .card-footer {
-        display: flex;
-        justify-content: flex-end; /* Căn phải cho các nút */
-        background: none;
-        border-top: 1px solid #eee;
-        padding-top: 8px;
-    }
-
-    .card-footer button {
-        margin-left: 8px; /* Đảm bảo khoảng cách giữa các nút */
-    }
-
-    .btn-comment {
-        background-color: #728ca8;
-        border: none;
-        color: white;
-        padding: 6px 12px;
-        font-size: 14px;
-        border-radius: 4px;
-        display: flex;
-        margin-right: auto;
-    }
-
-    .btn-comment i {
-        margin-right: 5px;
-    }
-
-    .btn-comment:hover {
-        background-color: #294c75;
-    }
-
-    .create-post-card {
-        display: flex;
-        align-items: center;
-        padding: 20px 24px;
-        background-color: #ffffff;
-        border-radius: 16px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        cursor: pointer;
-        max-width: 2000px;
-        margin: 40px auto;
-        transition: box-shadow 0.3s, transform 0.2s;
-    }
-
-    .create-post-card:hover {
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-        transform: translateY(-2px);
-    }
-
-
-    .create-post-card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    .create-post-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin-right: 12px;
-    }
-
-    .create-post-input {
-        flex: 1;
-        border: none;
-        outline: none;
-        background-color: #f0f2f5;
-        padding: 14px 20px;
-        border-radius: 24px;
-        font-size: 17px;
-        color: #444;
-        font-weight: 500;
-    }
-
-
 </style>
 <body data-user-logged-in="${user != null}">
 <!-- HEADER -->
@@ -310,12 +764,15 @@
         <c:forEach var="post" items="${searchResults}">
             <div class="card card-post content">
                 <div class="post-container">
-                    <a href="postDetails?postID=${post.getPostID()}" class="post-content-link">
+                    <a href="postDetails?postID=${post.getPostID()}" class="post-content-link" style="text-decoration: none;">
                         <div class="card-post-author">
+                            <a href="profile?user=${post.getUserName()}">
                             <img src="${post.getAvtUserImg() != null ? post.getAvtUserImg() : userDAO.getAvatarByUserId(post.getUserID())}"
                                  onerror="this.onerror=null;this.src='https://i.pinimg.com/564x/09/a9/2c/09a92c1cbe440f31d1818e4fe0bcf23a.jpg';"
                                  alt="Author Avatar" class="author-post-avatar"/>
-                            <p class="author_name author-post-name">${post.getUserFullName()}</p>
+                            <div class="author-post-info">
+                                <span class="author-post-name">${post.getUserFullName()}</span>
+                            </div>
                         </div>
                         <div class="card-body">
                             <h5 class="card-title card-title-post">${post.getHeading()}</h5>
@@ -333,11 +790,11 @@
                             <i class="fas fa-arrow-down"></i>
                         </button>
                     </div>
-                    <button type="button" class="btn btn-primary btn-comment"
+                    <button type="button" class="btn-comment"
                             onclick="location.href='postDetails?postID=${post.getPostID()}'">
-                        <i class="fas fa-comment"></i> (${post.getCommentCount()})
+                        <i class="fas fa-comment"></i> Comment (${post.getCommentCount()})
                     </button>
-                    <button type="button" class="btn btn-outline-secondary btn-report"
+                    <button type="button" class="btn-outline-secondary btn-report"
                             data-bs-toggle="modal"
                             data-bs-target="#avatarModal"
                             data-postid="${post.getPostID()}">
@@ -418,27 +875,23 @@
             <div class="post-row content-load">
                 <c:forEach var="post" items="${postList}">
                     <div class="card card-post content" style="width: 100%">
-                        <!-- Post flex container to hold vote controls + content -->
-                        <div class="post-container" style="display: flex;">
-                            <!-- Main content as a clickable area -->
-                            <a href="postDetails?postID=${post.getPostID()}" class="post-content-link"
-                               style="flex: 1; text-decoration: none; color: inherit;">
-                                <div class="card-post-author">
-                                    <img src="${post.getAvtUserImg() != null ? post.getAvtUserImg() : userDAO.getAvatarByUserId(post.getUserID())}"
-                                         onerror="this.onerror=null;this.src='https://i.pinimg.com/564x/09/a9/2c/09a92c1cbe440f31d1818e4fe0bcf23a.jpg';"
-                                         alt="Author Avatar" class="author-post-avatar"/>
-                                    <p class="author_name author-post-name">${post.getUserFullName()}</p>
+                        <div class="post-container">
+                            <div class="card-post-author">
+                                <img src="${post.getAvtUserImg() != null ? post.getAvtUserImg() : userDAO.getAvatarByUserId(post.getUserID())}"
+                                     onerror="this.onerror=null;this.src='https://i.pinimg.com/564x/09/a9/2c/09a92c1cbe440f31d1818e4fe0bcf23a.jpg';"
+                                     alt="Author Avatar" class="author-post-avatar"/>
+                                <div class="author-post-info">
+                                    <span class="author-post-name">${post.getUserFullName()}</span>
                                 </div>
+                            </div>
+                            <a href="postDetails?postID=${post.getPostID()}" class="post-content-link" style="text-decoration: none;">
                                 <div class="card-body">
                                     <h5 class="card-title card-title-post">${post.getHeading()}</h5>
-                                    <p class="">${post.getContent()}</p>
+                                    <p class="card-text">${post.getContent()}</p>
                                 </div>
                             </a>
                         </div>
-
-                        <!-- Footer with report button -->
-                        <div class="card-footer"
-                             style="display: flex; justify-content: flex-end; background: none; border-top: 1px solid #eee; padding-top: 8px;">
+                        <div class="card-footer">
                             <div class="vote-controls" data-post-id="${post.getPostID()}">
                                 <button type="button" class="vote-btn upvote-btn" data-post-id="${post.getPostID()}">
                                     <i class="fas fa-arrow-up"></i>
@@ -448,16 +901,12 @@
                                     <i class="fas fa-arrow-down"></i>
                                 </button>
                             </div>
-                            <button type="button" class="btn btn-primary btn-comment"
+                            <button type="button" class="btn-comment"
                                     onclick="location.href='postDetails?postID=${post.getPostID()}'">
                                 <i class="fas fa-comment"></i> Comment (${post.getCommentCount()})
                             </button>
-
-                            <!-- Nút Report -->
                             <c:if test="${user == null || user.getUserID() != post.getUserID()}">
-                                <button
-                                        type="button"
-                                        class="btn-report"
+                                <button type="button" class="btn-report"
                                         data-bs-toggle="modal"
                                         data-bs-target="#avatarModal"
                                         data-postid="${post.getPostID()}">
@@ -466,9 +915,6 @@
                             </c:if>
                         </div>
                     </div>
-
-                    <!-- Modal stays outside the card -->
-
                 </c:forEach>
             </div>
             <a href="#" id="loadMore">Load More</a>

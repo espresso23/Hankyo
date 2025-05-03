@@ -229,6 +229,37 @@
     </a>
   </div>
 </div>
+<c:if test="${vipOnly}">
+  <div style="
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;">
+    <div style="
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 500px;">
+      <h2 style="color: #f06595;"><i class="fas fa-lock"></i> Nội dung VIP</h2>
+      <p>Bạn cần nâng cấp tài khoản để xem nội dung này.</p>
+      <a href="bundles.jsp" style="
+                display: inline-block;
+                margin-top: 20px;
+                background-color: #48dbfb;
+                color: white;
+                padding: 10px 20px;
+                border-radius: 6px;
+                text-decoration: none;
+                font-weight: bold;
+            ">Nâng cấp ngay</a>
+    </div>
+  </div>
+</c:if>
 
 <c:import url="footer.jsp"/>
 </body>
