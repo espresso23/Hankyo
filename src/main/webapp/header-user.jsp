@@ -254,18 +254,18 @@
       }
     }
 
-    /* Mobile Menu Styles */
+    /* Mobile Menu Button Styles */
     .mobile-menu-btn {
       position: fixed;
       top: 12%;
-      right: 96%;
+      right: 5%;
       z-index: 1000;
       width: 50px;
       height: 50px;
       border-radius: 50%;
       background: linear-gradient(317deg, #ffc676, #eb8be6);
       border: none;
-      cursor: move;
+      cursor: pointer;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
       display: flex;
       flex-direction: column;
@@ -273,14 +273,7 @@
       align-items: center;
       transition: all 0.3s ease;
       outline: none;
-      z-index: 1000;
       user-select: none;
-      touch-action: none; /* Ngăn chặn hành vi mặc định của touch */
-    }
-
-    .mobile-menu-btn.dragging {
-      cursor: grabbing;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
     }
 
     .mobile-menu-btn:hover {
@@ -313,33 +306,22 @@
       transform: translateY(-8px) rotate(-45deg);
     }
 
-    /* Vertical Menu Styles - Also renamed to avoid conflict */
+    /* Vertical Menu Styles */
     .mobile-vertical-menu {
       position: fixed;
       top: 15%;
-      right: 80%;
+      right: 10%;
       background: white;
       border-radius: 12px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
       padding: 15px 0;
       z-index: 999;
-      display: none;
       width: 220px;
-      overflow: hidden;
-      transform-origin: top right;
-      animation: fadeIn 0.3s ease-out;
-      transition: all 0.3s ease;
+      display: none;
     }
 
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: scale(0.9) translateY(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-      }
+    .mobile-vertical-menu.show {
+      display: block;
     }
 
     .mobile-menu-item {
@@ -433,7 +415,6 @@
     <span>Xin chào, <%= session.getAttribute("username") %>!</span>
     <%
       String avatar = (String) session.getAttribute("avatar");
-      System.out.println("Debug - Avatar from session: " + avatar);
     %>
     <img src="${pageContext.request.contextPath}/<%= avatar != null ? avatar : "asset/png/avatar/monkey.jpg" %>"
          onclick="togglePopup()"
@@ -456,8 +437,7 @@
 
 
 <!-- Menu Button and Vertical Menu -->
-<!-- Menu Button and Vertical Menu -->
-<button class="mobile-menu-btn" id="mobileMenuButton" onclick="toggleMobileMenu()">
+<button class="mobile-menu-btn" id="mobileMenuButton">
   <span class="mobile-menu-line"></span>
   <span class="mobile-menu-line"></span>
   <span class="mobile-menu-line"></span>
@@ -476,26 +456,62 @@
     popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
   }
 
-  // // Toggle Vertical Menu
-  // function toggleMenu() {
-  //   const menu = document.getElementById('verticalMenu');
-  //   menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-  // }
+  // Toggle mobile menu
+  function toggleMobileMenu() {
+    const menu = document.getElementById('mobileVerticalMenu');
+    const btn = document.getElementById('mobileMenuButton');
+    const btnRect = btn.getBoundingClientRect();
+    const windowWidth = window.innerWidth;
+
+    if (menu.style.display === 'block') {
+      menu.style.animation = 'fadeIn 0.3s ease-out reverse';
+      setTimeout(() => {
+        menu.style.display = 'none';
+      }, 250);
+      btn.classList.remove('active');
+    } else {
+      menu.style.display = 'block';
+      menu.style.animation = 'fadeIn 0.3s ease-out';
+      
+      // Kiểm tra vị trí của button
+      if (btnRect.left < 200) {
+        // Nếu button gần rìa trái, hiển thị menu bên phải
+        menu.style.left = (btnRect.left + 50) + 'px';
+      } else {
+        // Nếu không, hiển thị menu bên trái
+        menu.style.left = (btnRect.left - 180) + 'px';
+      }
+      menu.style.top = (btnRect.top + 25) + 'px';
+      
+      btn.classList.add('active');
+    }
+  }
 
   // Close popup and menu when clicking outside
   document.addEventListener('click', function(event) {
     const popup = document.getElementById('popupContainer');
-    const menu = document.getElementById('verticalMenu');
+    const menu = document.getElementById('mobileVerticalMenu');
     const avatar = document.querySelector('header img[onclick="togglePopup()"]');
-    const menuBtn = document.querySelector('.menu-btn');
+    const menuBtn = document.getElementById('mobileMenuButton');
 
-    if (!popup.contains(event.target) && !avatar.contains(event.target)) {
+    // Kiểm tra xem click có phải từ menu hoặc nút menu không
+    const isClickInsideMenu = menu.contains(event.target);
+    const isClickOnMenuButton = menuBtn.contains(event.target);
+    const isClickInsidePopup = popup.contains(event.target);
+    const isClickOnAvatar = avatar.contains(event.target);
+
+    // Chỉ đóng popup khi click bên ngoài popup và avatar
+    if (!isClickInsidePopup && !isClickOnAvatar) {
       popup.style.display = 'none';
     }
 
+    // Chỉ đóng menu khi click bên ngoài menu và nút menu
+    if (!isClickInsideMenu && !isClickOnMenuButton) {
+      menu.style.display = 'none';
+      menuBtn.classList.remove('active');
+    }
   });
-</script>
-<script>
+
   // Thêm code để xử lý kéo thả
   document.addEventListener('DOMContentLoaded', function() {
     const mobileMenuBtn = document.getElementById('mobileMenuButton');
@@ -525,21 +541,29 @@
     function drag(e) {
       if (isDragging) {
         e.preventDefault();
-
+        
         currentX = e.clientX - initialX;
         currentY = e.clientY - initialY;
 
         xOffset = currentX;
         yOffset = currentY;
 
-        // Cập nhật vị trí nút
         mobileMenuBtn.style.left = currentX + 'px';
         mobileMenuBtn.style.top = currentY + 'px';
 
-        // Cập nhật vị trí menu
         if (mobileMenu.style.display === 'block') {
-          mobileMenu.style.left = (currentX + 50) + 'px'; // 50px là chiều rộng của nút
-          mobileMenu.style.top = (currentY + 25) + 'px'; // 25px là một nửa chiều cao của nút
+          const btnRect = mobileMenuBtn.getBoundingClientRect();
+          const windowWidth = window.innerWidth;
+
+          // Kiểm tra vị trí của button
+          if (btnRect.left < 200) {
+            // Nếu button gần rìa trái, hiển thị menu bên phải
+            mobileMenu.style.left = (btnRect.left + 50) + 'px';
+          } else {
+            // Nếu không, hiển thị menu bên trái
+            mobileMenu.style.left = (btnRect.left - 180) + 'px';
+          }
+          mobileMenu.style.top = (btnRect.top + 25) + 'px';
         }
       }
     }
@@ -581,21 +605,29 @@
     function drag(e) {
       if (isDragging) {
         e.preventDefault();
-
+        
         currentX = e.touches[0].clientX - initialX;
         currentY = e.touches[0].clientY - initialY;
 
         xOffset = currentX;
         yOffset = currentY;
 
-        // Cập nhật vị trí nút
         mobileMenuBtn.style.left = currentX + 'px';
         mobileMenuBtn.style.top = currentY + 'px';
 
-        // Cập nhật vị trí menu
         if (mobileMenu.style.display === 'block') {
-          mobileMenu.style.left = (currentX + 50) + 'px';
-          mobileMenu.style.top = (currentY + 25) + 'px';
+          const btnRect = mobileMenuBtn.getBoundingClientRect();
+          const windowWidth = window.innerWidth;
+
+          // Kiểm tra vị trí của button
+          if (btnRect.left < 200) {
+            // Nếu button gần rìa trái, hiển thị menu bên phải
+            mobileMenu.style.left = (btnRect.left + 50) + 'px';
+          } else {
+            // Nếu không, hiển thị menu bên trái
+            mobileMenu.style.left = (btnRect.left - 180) + 'px';
+          }
+          mobileMenu.style.top = (btnRect.top + 25) + 'px';
         }
       }
     }
@@ -607,103 +639,6 @@
       mobileMenuBtn.classList.remove('dragging');
     }
   });
-
-  // Cập nhật hàm toggleMobileMenu
-  function toggleMobileMenu() {
-    const menu = document.getElementById('mobileVerticalMenu');
-    const btn = document.getElementById('mobileMenuButton');
-    const btnRect = btn.getBoundingClientRect();
-    const windowWidth = window.innerWidth;
-
-    if (menu.style.display === 'block') {
-      menu.style.animation = 'fadeIn 0.3s ease-out reverse';
-      setTimeout(() => {
-        menu.style.display = 'none';
-      }, 250);
-      btn.classList.remove('active');
-    } else {
-      menu.style.display = 'block';
-      menu.style.animation = 'fadeIn 0.3s ease-out';
-
-      // Kiểm tra vị trí nút để quyết định hiển thị menu bên nào
-      if (btnRect.left > windowWidth / 2) {
-        // Nút ở bên phải, hiển thị menu bên trái
-        menu.style.left = (btnRect.left - 220) + 'px'; // 220px là chiều rộng của menu
-      } else {
-        // Nút ở bên trái, hiển thị menu bên phải
-        menu.style.left = (btnRect.left + 50) + 'px';
-      }
-
-      menu.style.top = (btnRect.top + 25) + 'px';
-      btn.classList.add('active');
-    }
-  }
-
-  // Cập nhật hàm drag để xử lý vị trí menu khi kéo
-  function drag(e) {
-    if (isDragging) {
-      e.preventDefault();
-
-      currentX = e.clientX - initialX;
-      currentY = e.clientY - initialY;
-
-      xOffset = currentX;
-      yOffset = currentY;
-
-      // Cập nhật vị trí nút
-      mobileMenuBtn.style.left = currentX + 'px';
-      mobileMenuBtn.style.top = currentY + 'px';
-
-      // Cập nhật vị trí menu nếu đang hiển thị
-      if (mobileMenu.style.display === 'block') {
-        const windowWidth = window.innerWidth;
-        const btnRect = mobileMenuBtn.getBoundingClientRect();
-
-        if (btnRect.left > windowWidth / 2) {
-          // Nút ở bên phải, hiển thị menu bên trái
-          mobileMenu.style.left = (currentX - 220) + 'px';
-        } else {
-          // Nút ở bên trái, hiển thị menu bên phải
-          mobileMenu.style.left = (currentX + 50) + 'px';
-        }
-
-        mobileMenu.style.top = (currentY + 25) + 'px';
-      }
-    }
-  }
-
-  // Cập nhật hàm drag cho touch events
-  function drag(e) {
-    if (isDragging) {
-      e.preventDefault();
-
-      currentX = e.touches[0].clientX - initialX;
-      currentY = e.touches[0].clientY - initialY;
-
-      xOffset = currentX;
-      yOffset = currentY;
-
-      // Cập nhật vị trí nút
-      mobileMenuBtn.style.left = currentX + 'px';
-      mobileMenuBtn.style.top = currentY + 'px';
-
-      // Cập nhật vị trí menu nếu đang hiển thị
-      if (mobileMenu.style.display === 'block') {
-        const windowWidth = window.innerWidth;
-        const btnRect = mobileMenuBtn.getBoundingClientRect();
-
-        if (btnRect.left > windowWidth / 2) {
-          // Nút ở bên phải, hiển thị menu bên trái
-          mobileMenu.style.left = (currentX - 220) + 'px';
-        } else {
-          // Nút ở bên trái, hiển thị menu bên phải
-          mobileMenu.style.left = (currentX + 50) + 'px';
-        }
-
-        mobileMenu.style.top = (currentY + 25) + 'px';
-      }
-    }
-  }
 </script>
 </body>
 </html>
