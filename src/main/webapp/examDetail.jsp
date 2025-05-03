@@ -418,6 +418,7 @@
   </style>
 </head>
 <body>
+<jsp:include page="header.jsp"></jsp:include>
 <div class="container">
   <h1 class="title">Chọn kỹ năng và thời gian làm bài</h1>
 
@@ -790,5 +791,6 @@
     }
   }
 </script>
+<jsp:include page="header.jsp"></jsp:include>
 </body>
 </html>

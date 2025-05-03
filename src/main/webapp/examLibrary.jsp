@@ -283,6 +283,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
+<jsp:include page="header.jsp"></jsp:include>
 <div class="container">
     <h1>Thư viện đề thi</h1>
 
@@ -363,5 +364,6 @@
         }
     });
 </script>
+<jsp:include page="header.jsp"></jsp:include>
 </body>
 </html>

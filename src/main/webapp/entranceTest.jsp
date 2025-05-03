@@ -190,6 +190,7 @@
     </script>
 </head>
 <body>
+<jsp:include page="header.jsp"></jsp:include>
 <div class="container">
     <div class="title">Level Test</div>
     <div class="image-container">
@@ -219,5 +220,6 @@
     </div>
 </div>
 </div>
+<jsp:include page="header.jsp"></jsp:include>
 </body>
 </html>

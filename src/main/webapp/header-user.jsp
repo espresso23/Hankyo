@@ -245,8 +245,8 @@
     <div class="navbarContent"><a href="courses">Khóa Học</a></div>
     <div class="navbarContent"><a href="/about.html">Giảng Viên</a></div>
     <div class="navbarContent"><a href="quizlet">Cộng Đồng</a></div>
-    <div class="navbarContent"><a href="addFlashCard">Tài Liệu</a></div>
-    <div class="navbarContent"><a href="dictionary">Thi Thử</a></div>
+    <div class="navbarContent"><a href="library">Đề thi</a></div>
+    <div class="navbarContent"><a href="entranceTest">Test Level</a></div>
     <div class="navbarContent"><a href="/about-us.html">Về Chúng Tôi</a></div>
     <div class="navbarContent"><a href="${pageContext.request.contextPath}/chat/<%= session.getAttribute("userID") %>">Phòng Chat</a></div>
     <!-- Thêm icon giỏ hàng vào đây -->

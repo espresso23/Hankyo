@@ -189,6 +189,7 @@
     </style>
 </head>
 <body>
+<jsp:include page="header.jsp"></jsp:include>
 <div class="container py-4">
     <c:if test="${empty exam || empty questions || empty examResults}">
         <div class="alert alert-warning">
@@ -302,5 +303,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+<jsp:include page="footer.jsp"></jsp:include>
 </body>
 </html>
