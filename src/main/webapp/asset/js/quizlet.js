@@ -163,57 +163,61 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load số lượng cho tab mặc định (system)
     loadFlashcardCounts('system');
 
-    // Xử lý thêm flashcard qua AJAX (mới)
-    const flashcardForm = document.getElementById('flashcardForm');
-    if (flashcardForm) {
-        flashcardForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-            // Xóa thông báo cũ
-            let resultContainer = flashcardForm.parentNode.querySelector('.result-container');
-            if (!resultContainer) {
-                resultContainer = document.createElement('div');
-                resultContainer.className = 'result-container';
-                flashcardForm.parentNode.insertBefore(resultContainer, flashcardForm);
-            }
-            resultContainer.innerHTML = '';
+    // Xử lý thêm flashcard qua AJAX
+    document.getElementById('flashcardForm').addEventListener('submit', function(event) {
+        event.preventDefault();
 
-            // Xác định mode
-            const isManual = window.isManualMode;
-            let body = '';
-            if (isManual) {
-                const topic = document.getElementById('manualTopic').value.trim();
-                const flashCards = document.getElementById('manualFlashCards').value.trim();
-                if (!topic || !flashCards) {
-                    resultContainer.innerHTML = `<div class="error-list"><p>Vui lòng nhập đầy đủ topic và flashcard.</p></div>`;
-                    return;
-                }
-                body = `mode=manual&manualTopic=${encodeURIComponent(topic)}&manualFlashCards=${encodeURIComponent(flashCards)}`;
-            } else {
-                const topic = document.getElementById('individualTopic').value.trim();
-                const word = document.getElementById('word').value.trim();
-                const mean = document.getElementById('mean').value.trim();
-                if (!topic || !word || !mean) {
-                    resultContainer.innerHTML = `<div class="error-list"><p>Vui lòng nhập đầy đủ topic, từ và nghĩa.</p></div>`;
-                    return;
-                }
-                body = `mode=individual&individualTopic=${encodeURIComponent(topic)}&word=${encodeURIComponent(word)}&mean=${encodeURIComponent(mean)}`;
-            }
+        const form = event.target;
+        const resultContainer = document.createElement('div');
+        resultContainer.className = 'result-container';
+        const existingResult = form.parentNode.querySelector('.result-container');
+        if (existingResult) {
+            existingResult.remove();
+        }
+        form.parentNode.insertBefore(resultContainer, form);
 
-            fetch(`${window.contextPath}/ajaxAddFlashCard`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-                },
-                body: body
+        let body;
+        let flashcardCount = 0;
+        if (window.isManualMode) {
+            const topic = document.getElementById('manualTopic').value.trim();
+            const flashCards = document.getElementById('manualFlashCards').value.trim();
+            if (!topic || !flashCards) {
+                resultContainer.innerHTML = `<div class="error-list"><p>Lỗi: Topic và flashcard không được để trống.</p></div>`;
+                return;
+            }
+            flashcardCount = flashCards.split(';').filter(pair => pair.trim()).length;
+            body = `action=add&mode=manual&manualTopic=${encodeURIComponent(topic)}&manualFlashCards=${encodeURIComponent(flashCards)}`;
+        } else {
+            const individualTopic = document.getElementById('individualTopic').value.trim();
+            const word = document.getElementById('word').value.trim();
+            const mean = document.getElementById('mean').value.trim();
+            if (!individualTopic || !word || !mean) {
+                resultContainer.innerHTML = `<div class="error-list"><p>Lỗi: Topic, từ và nghĩa không được để trống.</p></div>`;
+                return;
+            }
+            flashcardCount = 1;
+            body = `action=add&mode=individual&individualTopic=${encodeURIComponent(individualTopic)}&word=${encodeURIComponent(word)}&mean=${encodeURIComponent(mean)}`;
+        }
+
+        console.log('Sending add request:', body);
+        fetch(`${window.contextPath}/addFlashCard`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+            },
+            body: body
+        })
+            .then(response => {
+                console.log('Add response:', response.status, response.statusText);
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error(text || 'Thêm thất bại');
+                    });
+                }
+                return response.json();
             })
-            .then(response => response.json())
             .then(data => {
                 resultContainer.innerHTML = '';
-                // Kiểm tra dữ liệu trả về có đúng format không
-                if (typeof data.success === 'undefined') {
-                    resultContainer.innerHTML = `<div class="error-list"><p>Lỗi: Dữ liệu trả về không hợp lệ hoặc server trả về sai endpoint.</p></div>`;
-                    return;
-                }
                 if (data.success) {
                     const successDiv = document.createElement('div');
                     successDiv.className = 'success';
@@ -221,17 +225,44 @@ document.addEventListener('DOMContentLoaded', function() {
                     const ul = successDiv.querySelector('ul');
                     data.flashcards.forEach(card => {
                         const li = document.createElement('li');
-                        li.textContent = `${card.word}: ${card.mean}`;
+                        li.textContent = `${card.word}:${card.mean}`;
                         ul.appendChild(li);
                     });
                     resultContainer.appendChild(successDiv);
-                    flashcardForm.reset();
+
+                    // Cập nhật tab Custom
+                    const topic = window.isManualMode
+                        ? document.getElementById('manualTopic').value.trim()
+                        : document.getElementById('individualTopic').value.trim();
+                    updateCustomTopics(topic, flashcardCount);
+
+                    // Cập nhật số lượng trên DOM cho topic-box tương ứng
+                    const topicBox = document.querySelector(`.topic-box[data-topic="${topic}"] .topic-count`);
+                    if (topicBox) {
+                        const current = parseInt(topicBox.textContent) || 0;
+                        topicBox.textContent = (current + flashcardCount) + ' từ';
+                    }
+
+                    // Reset form
+                    form.reset();
+                    if (!window.isManualMode) {
+                        document.getElementById('individualTopic').value = '';
+                        document.getElementById('word').value = '';
+                        document.getElementById('mean').value = '';
+                    }
+                    alert('Thêm thành công');
+
+                    // Cập nhật số lượng cho tab Custom nếu đang active
+                    if (document.querySelector('.tab.active').dataset.tab === 'custom') {
+                        const customScroll = document.querySelector('#custom .topics-scroll');
+                        loadVisibleFlashcardCounts(customScroll);
+                    }
                 } else {
                     const errorDiv = document.createElement('div');
                     errorDiv.className = 'error-list';
                     errorDiv.innerHTML = '<p>Lỗi:</p><ul></ul>';
                     const ul = errorDiv.querySelector('ul');
-                    (data.errorMessages || []).forEach(msg => {
+                    data.errorMessages.forEach(msg => {
                         const li = document.createElement('li');
                         li.textContent = msg;
                         ul.appendChild(li);
@@ -240,10 +271,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(error => {
+                console.error('Error adding flashcard:', error);
                 resultContainer.innerHTML = `<div class="error-list"><p>Lỗi: ${error.message}</p></div>`;
             });
-        });
-    }
+    });
 
     // Cập nhật danh sách topic trong tab Custom
     async function updateCustomTopics(newTopic, flashcardCount) {
@@ -273,4 +304,55 @@ document.addEventListener('DOMContentLoaded', function() {
             countElement.textContent = `${currentCount + flashcardCount} từ`;
         }
     }
+
+    // Function to handle toggle public button
+    function handleTogglePublic(flashcardId, isPublic) {
+        const url = `/Quizlet/toggle-public?flashcardId=${flashcardId}&isPublic=${!isPublic}`;
+        
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Update the button state
+                const button = document.querySelector(`.toggle-public-btn[data-flashcard-id="${flashcardId}"]`);
+                if (button) {
+                    button.setAttribute('data-public', !isPublic);
+                    const label = button.querySelector('.toggle-label');
+                    if (label) {
+                        label.textContent = !isPublic ? 'Public' : 'Private';
+                    }
+                }
+                // Show success message
+                showToast('Successfully updated flashcard visibility');
+            } else {
+                showToast('Failed to update flashcard visibility', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('An error occurred while updating flashcard visibility', 'error');
+        });
+    }
+
+    // Initialize toggle buttons
+    const toggleButtons = document.querySelectorAll('.toggle-public-btn');
+    toggleButtons.forEach(button => {
+        const flashcardId = button.getAttribute('data-flashcard-id');
+        const isPublic = button.getAttribute('data-public') === 'true';
+        
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            handleTogglePublic(flashcardId, isPublic);
+        });
+    });
 });

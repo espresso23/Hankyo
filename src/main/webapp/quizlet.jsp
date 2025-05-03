@@ -352,6 +352,7 @@
         <div class="tab" data-tab="custom"><span class="tab-label">Custom Flashcards</span></div>
         <div class="tab" data-tab="favorite"><span class="tab-label">Favorite Flashcards</span></div>
         <div class="tab" data-tab="add"><span class="tab-label">Add Flashcard</span></div>
+        <div class="tab" data-tab="public"><span class="tab-label">Public Flashcards</span></div>
     </div>
     <div class="container">
         <!-- System Flashcards Tab -->
@@ -410,6 +411,26 @@
             </div>
             <c:if test="${not empty favoriteError}">
                 <p class="error">${favoriteError}</p>
+            </c:if>
+        </div>
+
+        <!-- Public Flashcards Tab -->
+        <div class="tab-content" id="public">
+            <h2>Public Flashcards</h2>
+            <div class="topics-scroll-container">
+                <div class="topics-scroll">
+                    <c:forEach var="card" items="${publicFlashCards}">
+                        <div class="topic-box" data-topic="${card.topic}" data-type="public">
+                            <span class="file-icon">🌐</span>
+                            <a href="flashCard?topic=${card.topic}&type=custom&learnerID=${card.learnerID}">${card.topic}</a>
+                            <div style="color:#888;font-size:14px;">${card.mean}</div>
+                            <div style="font-size:12px;">By User: <c:out value="${publicLearnerNames[card.learnerID]}"/></div>
+                        </div>
+                    </c:forEach>
+                </div>
+            </div>
+            <c:if test="${not empty publicError}">
+                <p class="error">${publicError}</p>
             </c:if>
         </div>
 

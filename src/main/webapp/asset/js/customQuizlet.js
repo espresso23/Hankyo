@@ -324,4 +324,44 @@ document.addEventListener('DOMContentLoaded', function() {
             alert(`Có lỗi xảy ra khi thêm: ${error.message}`);
         });
     };
+
+    function togglePublic(cfcid, isPublic) {
+        const url = `${window.contextPath}/flashCard`;
+        
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: `action=togglePublic&cfcid=${cfcid}&isPublic=${isPublic}`
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Update the button state
+                const button = document.querySelector(`.toggle-public-btn[data-cfcid="${cfcid}"]`);
+                if (button) {
+                    const newState = !isPublic;
+                    button.setAttribute('data-public', newState);
+                    const label = button.querySelector('.toggle-label');
+                    if (label) {
+                        label.textContent = newState ? 'Public' : 'Private';
+                    }
+                }
+                // Show success message
+                alert(data.message || 'Successfully updated flashcard visibility');
+            } else {
+                alert(data.error || 'Failed to update flashcard visibility');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating flashcard visibility');
+        });
+    }
 });
