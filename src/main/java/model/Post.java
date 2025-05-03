@@ -4,9 +4,11 @@
  */
 package model;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Post {
+public class Post implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int postID;
     private int userID;
     private String imgURL;
@@ -17,14 +19,22 @@ public class Post {
     private String avtUserImg;
     private boolean status;
     private int score;
+    private String userName;      // Username of post author
     private int commentCount;
-
     public int getCommentCount() {
         return commentCount;
     }
 
     public void setCommentCount(int commentCount) {
         this.commentCount = commentCount;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public Post() {
@@ -153,5 +163,21 @@ public class Post {
         this.status = status;
     }
 
+    @Override
+    public String toString() {
+        return "Post{" +
+                "postID=" + postID +
+                ", userID=" + userID +
+                ", imgURL='" + imgURL + '\'' +
+                ", heading='" + heading + '\'' +
+                ", content='" + content + '\'' +
+                ", createdDate=" + createdDate +
+                ", userFullName='" + userFullName + '\'' +
+                ", avtUserImg='" + avtUserImg + '\'' +
+                ", status=" + status +
+                ", score=" + score +
+                ", commentCount=" + commentCount +
+                '}';
+    }
 }
 

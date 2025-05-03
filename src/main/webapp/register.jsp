@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Sign-Up</title>
     <link rel="stylesheet" href="asset/css/register.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/bootstrap.min.css">
 </head>
 <jsp:include page="/header.jsp" />
 <style>
@@ -19,6 +20,13 @@
         background-image: url("asset/png/background/background.png");
         background-repeat: no-repeat;
         background-size: auto;
+    }
+    .error-message {
+        color: red;
+        margin-top: 10px;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #ffebee;
     }
 </style>
 <body>
@@ -67,10 +75,10 @@
                 <div class="button">
                     <button type="submit">Sign Up</button>
                 </div>
-                <div class="isHidden">
-                    <c:if test="${not empty msg}">
+                <div class="error-message">
+                    <c:if test="${not empty message}">
                         <div class="alert alert-danger">
-                            <c:out value="${msg}"/>
+                            <c:out value="${message}"/>
                         </div>
                     </c:if>
                 </div>

@@ -200,6 +200,136 @@ function updateCourseContentUI() {
     console.log('Cập nhật giao diện nội dung hoàn tất');
 }
 
+async function submitAssignment(formData) {
+    try {
+        const response = await $.ajax({
+            url: 'submit-assignment',
+            type: 'POST',
+            data: formData,
+            dataType: 'json'
+        });
+
+        if (response.success) {
+            // Hiển thị thông báo thành công
+            Swal.fire({
+                icon: 'success',
+                title: 'Thành công!',
+                text: response.message,
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
+                // Nếu có thông tin redirect, chuyển hướng
+                if (response.redirect && response.redirectUrl) {
+                    window.location.href = response.redirectUrl;
+                }
+            });
+        } else {
+            // Hiển thị thông báo lỗi
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi!',
+                text: response.message
+            });
+        }
+    } catch (error) {
+        console.error('Lỗi khi submit bài làm:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Lỗi!',
+            text: 'Có lỗi xảy ra khi nộp bài. Vui lòng thử lại sau.'
+        });
+    }
+}
+
+async function viewAssignmentResult(assignmentID) {
+    try {
+        const response = await $.ajax({
+            url: 'get-assignment-result',
+            type: 'GET',
+            data: {
+                assignmentID: assignmentID
+            },
+            dataType: 'json'
+        });
+
+        if (response.success) {
+            // Tạo HTML cho chi tiết bài làm
+            let resultHTML = `
+                <div class="assignment-result-details">
+                    <div class="result-summary mb-4">
+                        <h4>Kết quả tổng quan</h4>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="stats-card">
+                                    <div class="stats-value">
+                                        <h3 class="text-primary">${response.score}/10</h3>
+                                        <p class="text-muted">Điểm số</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stats-card">
+                                    <div class="stats-value">
+                                        <h3 class="text-success">${response.correctCount}/${response.totalQuestions}</h3>
+                                        <p class="text-muted">Câu đúng</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stats-card">
+                                    <div class="stats-value">
+                                        <h3>${response.doneCount}</h3>
+                                        <p class="text-muted">Câu đã làm</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="questions-list">
+                        <h4>Chi tiết từng câu hỏi</h4>
+                        ${response.questions.map((question, index) => `
+                            <div class="question-item card mb-3 ${question.isCorrect ? 'border-success' : 'border-danger'}">
+                                <div class="card-body">
+                                    <h5 class="card-title">Câu ${index + 1}</h5>
+                                    <p class="card-text">${question.questionText}</p>
+                                    <div class="answer-details">
+                                        <p><strong>Câu trả lời của bạn:</strong> ${question.userAnswer}</p>
+                                        <p><strong>Đáp án đúng:</strong> ${question.correctAnswer}</p>
+                                        <p class="mb-0">
+                                            <span class="badge ${question.isCorrect ? 'bg-success' : 'bg-danger'}">
+                                                ${question.isCorrect ? 'Đúng' : 'Sai'}
+                                            </span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            // Hiển thị modal với nội dung
+            $('#assignmentResultContent').html(resultHTML);
+            const modal = new bootstrap.Modal(document.getElementById('assignmentResultModal'));
+            modal.show();
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi!',
+                text: response.message || 'Không thể tải chi tiết bài làm'
+            });
+        }
+    } catch (error) {
+        console.error('Lỗi khi tải chi tiết bài làm:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Lỗi!',
+            text: 'Có lỗi xảy ra khi tải chi tiết bài làm'
+        });
+    }
+}
+
 // Hàm khởi tạo
 $(document).ready(function () {
     console.log('Trang đã sẵn sàng');

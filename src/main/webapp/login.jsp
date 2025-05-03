@@ -3,8 +3,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="asset/css/login.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/asset/css/login.css">
     <title>Login Page</title>
+
 </head>
 <style>
     @font-face {
@@ -20,12 +21,12 @@
         background-size: auto;
     }
 </style>
-<jsp:include page="/header.jsp" />
+<jsp:include page="header.jsp"/>
 <body>
 <div class="container-fluid">
     <div class="login-form">
         <h2>Đăng Nhập</h2>
-        <form method="post" action="${pageContext.request.contextPath}/login">
+        <form method="post" action="login">
             <div class="input">
                 <div class="nameInput">
                     <input type="text" id="userName" name="Username" placeholder="Enter Username" required>
@@ -75,5 +76,5 @@
 </div>
 
 </body>
-<jsp:include page="/footer.jsp" />
+<jsp:include page="footer.jsp"/>
 </html>

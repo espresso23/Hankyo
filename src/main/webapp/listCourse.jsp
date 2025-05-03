@@ -1,5 +1,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -197,8 +198,11 @@
                             <div class="mt-auto">
                                 <div class="d-flex align-items-center mb-2">
                                     <span class="badge bg-secondary me-2">${course.category.categoryName}</span>
-                                    <span class="status-badge status-${course.status eq 'Active' ? 'active' : 'inactive'}">
-                                        ${course.status}
+                                    <span class="status-badge status-${course.status eq 'Active' || course.status eq 'active' ? 'active' : 'inactive'}">
+                                        <c:choose>
+                                            <c:when test="${fn:toLowerCase(course.status) eq 'active'}">Active</c:when>
+                                            <c:otherwise>${course.status}</c:otherwise>
+                                        </c:choose>
                                     </span>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center">

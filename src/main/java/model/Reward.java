@@ -1,8 +1,10 @@
 package model;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Reward {
+public class Reward implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int rewardID;
     private String rewardName;
     private String icon;

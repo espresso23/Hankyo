@@ -1,8 +1,10 @@
 package model;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 
-public class Files {
+public class Files implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int fileID;
     private String name;
     private int folderID;

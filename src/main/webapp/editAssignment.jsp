@@ -187,6 +187,85 @@
             margin-left: 5px;
             margin-bottom: 0;
         }
+
+
+        .import-question-btn {
+            position: fixed;
+            bottom: 93px;
+            right: 30px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #6cb4ff, #ff8fa3);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            font-weight: 600;
+            box-shadow: 0 6px 18px rgba(108,180,255,0.18);
+            z-index: 1000;
+            transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+            width: 60px;
+        }
+
+        .import-question-btn:hover {
+            background: linear-gradient(45deg, #ff8fa3, #6cb4ff);
+            box-shadow: 0 10px 28px rgba(255,143,163,0.18);
+            transform: translateY(-2px) scale(1.04);
+        }
+
+        .import-question-btn:hover {
+            background: linear-gradient(45deg, #ff8fa3, #6cb4ff);
+            box-shadow: 0 10px 28px rgba(255,143,163,0.18);
+            transform: translateY(-2px) scale(1.04);
+        }
+
+        .import-question-btn:hover {
+            background: linear-gradient(45deg, #ff8fa3, #6cb4ff);
+            box-shadow: 0 10px 28px rgba(255,143,163,0.18);
+            transform: translateY(-2px) scale(1.04);
+        }
+
+        @media (max-width: 600px) {
+            .import-question-btn {
+                min-width: 56px;
+                font-size: 1.1rem;
+                padding: 0 10px;
+            }
+            .import-question-btn .import-text {
+                display: none;
+            }
+        }
+
+        #uploadProgress {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .progress {
+            height: 25px;
+            border-radius: 15px;
+            background-color: #f0f0f0;
+        }
+
+        .progress-bar {
+            transition: width 0.3s ease-in-out;
+        }
+
+        #uploadStatus {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .btn-delete-option {
+            border-radius: 0 6px 6px 0 !important;
+        }
+
+        .input-group > .btn-delete-option {
+            margin-left: -1px;
+        }
     </style>
 </head>
 <body>
@@ -487,6 +566,67 @@
         </div>
     </div>
 </div>
+
+<!-- Nút import câu hỏi -->
+<button type="button" class="import-question-btn" id="importQuestionBtn">
+    <i class="fas fa-file-import me-2"></i>
+</button>
+
+<!-- Modal import câu hỏi -->
+<div id="importQuestionModal" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-file-import me-2"></i>Import câu hỏi từ file
+                </h5>
+                <button type="button" class="btn-close" id="closeImportModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="importForm" method="post" action="edit-assignment" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="importQuestions">
+                    <input type="hidden" name="assignmentID" value="${assignment.assignmentID}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Tải template mẫu:</label>
+                        <div class="mb-2">
+                            <a href="templates/question_template.xlsx" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-file-excel me-1"></i> Excel Template
+                            </a>
+                            <a href="templates/questionTest.csv" class="btn btn-sm btn-outline-success ms-2">
+                                <i class="fas fa-file-csv me-1"></i> CSV Template
+                            </a>
+                        </div>
+                        <small class="text-muted d-block">
+                            Template bao gồm các cột: questionType, questionText, questionMark, answer1-4, isCorrect1-4
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Chọn file Excel/CSV</label>
+                        <input type="file" name="questionFile" class="form-control" accept=".xlsx,.xls,.csv" required>
+                        <small class="text-muted d-block">Hỗ trợ file Excel (.xlsx, .xls) và CSV (.csv)</small>
+                        <small class="text-muted d-block">Kích thước file tối đa: 10MB</small>
+                    </div>
+                         <%--Tạo upload status --%>
+                    <div class="mb-3">
+                        <div class="progress" style="display: none;">
+                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div id="uploadStatus"></div>
+                    </div>
+
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" id="cancelImportBtn">Hủy</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload me-1"></i> Import
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 <c:import url="footer.jsp"/>
 <!-- Bootstrap Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -548,11 +688,30 @@
                 '<input type="checkbox" name="isCorrect" class="answer-checkbox" data-option="' + currentLabel + '">' +
                 '<label class="correct-label">Đúng</label>' +
                 '</div>' +
+                '<button type="button" class="btn btn-danger btn-delete-option">' +
+                '<i class="fas fa-times"></i>' +
+                '</button>' +
                 '</div>' +
                 '</div>';
 
             $('#answerOptions').append(newOptionHtml);
+            updateOptionLabels();
         });
+
+        // Xử lý xóa lựa chọn
+        $(document).on('click', '.btn-delete-option', function() {
+            $(this).closest('.answer-option').remove();
+            updateOptionLabels();
+        });
+
+        // Cập nhật lại labels sau khi xóa
+        function updateOptionLabels() {
+            $('.answer-option').each(function(index) {
+                const label = String.fromCharCode(65 + index); // 65 là mã ASCII của 'A'
+                $(this).find('.option-label').text(label);
+                $(this).find('.answer-checkbox').attr('data-option', label);
+            });
+        }
 
         // Hàm hiển thị modal chỉnh sửa
         function showEditModal() {
@@ -642,19 +801,22 @@
                                                 '<input type="text" name="answers" class="form-control" value="' + answer.answerText + '" required>' +
                                                 '<div class="input-group-text">' +
                                                     '<input type="checkbox" name="isCorrect" class="answer-checkbox"' + 
-                                                    (answer.isCorrect === true ? ' checked="checked"' : '') +
+                                                    (answer.isCorrect ? ' checked="checked"' : '') +
                                                     ' data-option="' + answer.optionLabel + '">' +
                                                     '<label class="correct-label">Đúng</label>' +
                                                 '</div>' +
+                                                '<button type="button" class="btn btn-danger btn-delete-option">' +
+                                                    '<i class="fas fa-times"></i>' +
+                                                '</button>' +
                                             '</div>' +
                                         '</div>';
                                     $('#editAnswerOptions').append(optionHtml);
 
-                                    // Log trạng thái của câu trả lời sau khi thêm
+                                    // Debug log để kiểm tra trạng thái đúng/sai
                                     console.log('Câu trả lời ' + answer.optionLabel + ':', {
                                         text: answer.answerText,
-                                        isCorrect: answer.correct,
-                                        checked: answer.correct === true
+                                        isCorrect: answer.isCorrect,
+                                        checked: answer.isCorrect === true
                                     });
                                 });
 
@@ -942,7 +1104,7 @@
             });
         });
 
-        // Xử lý thêm lựa chọn mới trong modal chỉnh sửa
+        // Thêm lựa chọn mới trong modal chỉnh sửa
         $('#editAddAnswerOption').click(function(e) {
             e.preventDefault();
             const optionLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
@@ -963,11 +1125,45 @@
                             '<input type="checkbox" name="isCorrect" class="answer-checkbox">' +
                             '<label class="correct-label">Đúng</label>' +
                         '</div>' +
+                        '<button type="button" class="btn btn-danger btn-delete-option">' +
+                            '<i class="fas fa-times"></i>' +
+                        '</button>' +
                     '</div>' +
                 '</div>';
 
             $('#editAnswerOptions').append(newOptionHtml);
+            updateEditOptionLabels();
         });
+
+        // Xử lý xóa lựa chọn trong modal chỉnh sửa
+        $(document).on('click', '#editAnswerOptions .btn-delete-option', function() {
+            const totalOptions = $('#editAnswerOptions .answer-option').length;
+            if (totalOptions <= 2) {
+                alert('Câu hỏi trắc nghiệm phải có ít nhất 2 đáp án');
+                return;
+            }
+            
+            // Kiểm tra xem còn bao nhiêu đáp án đúng
+            const correctAnswers = $('#editAnswerOptions .answer-checkbox:checked').length;
+            const isCurrentCorrect = $(this).closest('.answer-option').find('.answer-checkbox').prop('checked');
+            
+            if (correctAnswers <= 1 && isCurrentCorrect) {
+                alert('Phải có ít nhất một đáp án đúng');
+                return;
+            }
+            
+            $(this).closest('.answer-option').remove();
+            updateEditOptionLabels();
+        });
+
+        // Cập nhật lại labels sau khi xóa
+        function updateEditOptionLabels() {
+            $('#editAnswerOptions .answer-option').each(function(index) {
+                const label = String.fromCharCode(65 + index); // 65 là mã ASCII của 'A'
+                $(this).find('.option-label').text(label);
+                $(this).find('.answer-checkbox').attr('data-option', label);
+            });
+        }
 
         // Xử lý submit form chỉnh sửa
         $('#editQuestionForm').on('submit', function(e) {
@@ -985,16 +1181,27 @@
 
             // Kiểm tra câu trả lời nếu là câu hỏi trắc nghiệm
             if (questionType === 'multiple_choice') {
-                if ($('#editAnswerOptions .answer-option').length === 0) {
-                    alert('Vui lòng thêm ít nhất một câu trả lời');
+                const answerCount = $('#editAnswerOptions .answer-option').length;
+                
+                // Kiểm tra số lượng đáp án tối thiểu
+                if (answerCount < 2) {
+                    alert('Câu hỏi trắc nghiệm phải có ít nhất 2 đáp án');
                     return false;
                 }
 
+                // Kiểm tra số lượng đáp án tối đa
+                if (answerCount > 10) {
+                    alert('Câu hỏi trắc nghiệm không được có quá 10 đáp án');
+                    return false;
+                }
+
+                // Kiểm tra đáp án đúng
                 if ($('#editAnswerOptions .answer-checkbox:checked').length === 0) {
                     alert('Vui lòng chọn ít nhất một đáp án đúng');
                     return false;
                 }
 
+                // Kiểm tra nội dung đáp án
                 let hasEmptyAnswer = false;
                 $('#editAnswerOptions input[type="text"]').each(function() {
                     if (!$(this).val().trim()) {
@@ -1089,6 +1296,123 @@
                     }
                     
                     alert(errorMessage);
+                }
+            });
+        });
+
+        // Xử lý hiển thị modal import
+        $('#importQuestionBtn').on('click', function() {
+            $('#importQuestionModal').css('display', 'block');
+            document.body.style.overflow = 'hidden';
+        });
+
+        // Xử lý đóng modal import
+        $('#closeImportModalBtn, #cancelImportBtn').on('click', function() {
+            $('#importQuestionModal').css('display', 'none');
+            document.body.style.overflow = '';
+            $('#importForm')[0].reset();
+            $('.progress').hide();
+            $('#uploadStatus').empty();
+        });
+
+        // Xử lý submit form import
+        $('#importForm').on('submit', function(e) {
+            e.preventDefault();
+            var formData = new FormData(this);
+            
+            // Kiểm tra kích thước file
+            var fileInput = $('input[name="questionFile"]')[0];
+            if (fileInput.files.length > 0) {
+                var fileSize = fileInput.files[0].size; // bytes
+                var maxSize = 10 * 1024 * 1024; // 10MB
+                if (fileSize > maxSize) {
+                    alert('Kích thước file không được vượt quá 10MB');
+                    return;
+                }
+            }
+            
+            // Hiển thị progress bar
+            $('.progress').show();
+            $('.progress-bar').css('width', '50%');
+            $('#uploadStatus').html('<div class="text-center">' +
+                '<i class="fas fa-spinner fa-spin me-2"></i>' +
+                '<span>Đang import câu hỏi...</span>' +
+                '</div>');
+
+            $.ajax({
+                url: 'edit-assignment',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    try {
+                        if (typeof response === 'string') {
+                            response = JSON.parse(response);
+                        }
+                        
+                        if (response.success) {
+                            $('.progress-bar').css('width', '100%')
+                                .removeClass('bg-danger')
+                                .addClass('bg-success');
+                            
+                            var successMessage = '<div class="alert alert-success mb-0">' +
+                                '<i class="fas fa-check-circle me-2"></i>' +
+                                response.message +
+                                '</div>';
+                            
+                            $('#uploadStatus').html(successMessage);
+
+                            // Delay trước khi reload trang
+                            setTimeout(function() {
+                                $('#importQuestionModal').css('display', 'none');
+                                document.body.style.overflow = '';
+                                location.reload();
+                            }, 2000);
+                        } else {
+                            $('.progress-bar').css('width', '100%')
+                                .removeClass('bg-success')
+                                .addClass('bg-danger');
+                            
+                            var errorMessage = '<div class="alert alert-danger mb-0">' +
+                                '<i class="fas fa-times-circle me-2"></i>' +
+                                (response.message || 'Có lỗi xảy ra khi import file') +
+                                '</div>';
+                            
+                            $('#uploadStatus').html(errorMessage);
+                        }
+                    } catch (e) {
+                        console.error('Lỗi khi xử lý phản hồi:', e);
+                        $('.progress-bar').css('width', '100%')
+                            .removeClass('bg-success')
+                            .addClass('bg-danger');
+                        
+                        var errorMessage = '<div class="alert alert-danger mb-0">' +
+                            '<i class="fas fa-times-circle me-2"></i>' +
+                            'Có lỗi xảy ra khi xử lý phản hồi từ server' +
+                            '</div>';
+                        
+                        $('#uploadStatus').html(errorMessage);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Lỗi AJAX:', error);
+                    $('.progress-bar').css('width', '100%')
+                        .removeClass('bg-success')
+                        .addClass('bg-danger');
+                    
+                    var errorMessage = '<div class="alert alert-danger mb-0">' +
+                        '<i class="fas fa-times-circle me-2"></i>';
+                    
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        errorMessage += response.message || 'Có lỗi xảy ra khi import file';
+                    } catch (e) {
+                        errorMessage += 'Có lỗi xảy ra khi import file';
+                    }
+                    
+                    errorMessage += '</div>';
+                    $('#uploadStatus').html(errorMessage);
                 }
             });
         });

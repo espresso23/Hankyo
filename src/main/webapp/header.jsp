@@ -8,11 +8,12 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
-    <title>Title</title>
+    <title>Header</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/asset/css/header.css">
 </head>
-<body>
+<body>  
 <%
-  if (session.getAttribute("username") != null) {
+  if (session != null && session.getAttribute("user") != null) {
     request.getRequestDispatcher("/header-user.jsp").include(request, response);
   } else {
     request.getRequestDispatcher("/header-guest.jsp").include(request, response);

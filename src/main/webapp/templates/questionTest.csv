@@ -1,0 +1,6 @@
+questionType,questionText,questionMark,questionImage,audioFile,answer1,isCorrect1,answer2,isCorrect2,answer3,isCorrect3,answer4,isCorrect4,answer5,isCorrect5
+multiple_choice,Đâu là thủ đô của Việt Nam?,1,,,"Hà Nội",1,"TP. Hồ Chí Minh",0,,,,,,
+multiple_choice,Một năm có bao nhiêu tháng?,0.5,,,12,1,10,0,11,0,13,0,,
+multiple_choice,Các mùa trong năm?,1,,,"Mùa xuân",1,"Mùa hạ",1,"Mùa thu",1,,,,
+short_answer,Hãy kể tên 3 miền của Việt Nam,1,,,,,,,,,,,,,
+multiple_choice,Chọn các số chẵn,1,,,2,1,4,1,6,1,8,1,10,1

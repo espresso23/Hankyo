@@ -1,6 +1,9 @@
 package model;
 
-public class ReportType {
+import java.io.Serializable;
+
+public class ReportType implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int reportTypeID;
     private String typeName;
 

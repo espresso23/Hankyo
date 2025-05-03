@@ -1,0 +1,24 @@
+:root {
+    /* Colors */
+    --primary-pink: #FF69B4;
+    --light-pink: #FFB6C1;
+    --soft-pink: #FFC0CB;
+    
+    /* Layout */
+    --header-height: 60px;
+    --sidebar-width: 280px;
+    --sidebar-collapsed-width: 60px;
+    --toggle-button-size: 32px;
+    
+    /* Transitions */
+    --transition-speed: 0.3s;
+    
+    /* Z-indices */
+    --z-header: 1000;
+    --z-sidebar: 900;
+    --z-toggle: 901;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+} 

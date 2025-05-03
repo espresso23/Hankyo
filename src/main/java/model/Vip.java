@@ -1,95 +1,92 @@
 package model;
 
+import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
+import java.sql.Timestamp;
 
-public class Vip {
+public class Vip implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int vipID;
-    private String vipType;
-    private String status;
-    private String vipLearnerStatus;
-    private Date dateCreated;
-    private Date endDate;
-    private String vipImg;
+    private String vipName;
+    private String description;
+    private double price;
+    private double yearlyPrice;
+    private Timestamp createAt;
+    private String vipType; // FREE, POPULAR, PREMIUM
+    private String status; // ACTIVE, INACTIVE
+    private String vip_img;
+    private String features; // JSON string to store features list
+    private int duration; // Duration in days
+    private boolean isYearly; // true for yearly plan, false for monthly
 
     public Vip() {
     }
 
-    //method to add vip to learners
-    public Vip(Date dateCreated, Date endDate, String vipLearnerStatus, int vipID, String vipType) {
-        this.dateCreated = dateCreated;
-        this.endDate = endDate;
-        this.vipLearnerStatus = vipLearnerStatus;
+    public Vip(int vipID, String vipName, String description, double price, double yearlyPrice, 
+               Timestamp createAt, String vipType, String status, String vip_img, 
+               String features, int duration, boolean isYearly) {
         this.vipID = vipID;
+        this.vipName = vipName;
+        this.description = description;
+        this.price = price;
+        this.yearlyPrice = yearlyPrice;
+        this.createAt = createAt;
         this.vipType = vipType;
-    }
-
-    //Method to create a vip object.
-    public Vip(String vipType, String vipImg, String status, Date dateCreated) {
-        this.vipType = vipType;
-        this.vipImg = vipImg;
         this.status = status;
-        this.dateCreated = dateCreated;
+        this.vip_img = vip_img;
+        this.features = features;
+        this.duration = duration;
+        this.isYearly = isYearly;
     }
 
-    public Vip(Date dateCreated, int month, String status, int vipID, String vipType) {
-        this.dateCreated = dateCreated;
-        this.endDate = calculateEndDate(month);
-        this.status = status;
-        this.vipID = vipID;
-        this.vipType = vipType;
-    }
-
-    public Date getDateCreated() {
-        return dateCreated;
-    }
-
-    public void setDateCreated(Date dateCreated) {
-        this.dateCreated = dateCreated;
-    }
-
-    public String getVipImg() {
-        return vipImg;
-    }
-
-    public void setVipImg(String vipImg) {
-        this.vipImg = vipImg;
-    }
-
-    public String getVipLearnerStatus() {
-        return vipLearnerStatus;
-    }
-
-    public void setVipLearnerStatus(String vipLearnerStatus) {
-        this.vipLearnerStatus = vipLearnerStatus;
-    }
-
-    public void setEndDate(Date endDate) {
-        this.endDate = endDate;
-    }
-
-    public Date getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(int month) {
-        this.endDate = calculateEndDate(month);
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
+    // Getters and Setters
     public int getVipID() {
         return vipID;
     }
 
     public void setVipID(int vipID) {
         this.vipID = vipID;
+    }
+
+    public String getVipName() {
+        return vipName;
+    }
+
+    public void setVipName(String vipName) {
+        this.vipName = vipName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public double getYearlyPrice() {
+        return yearlyPrice;
+    }
+
+    public void setYearlyPrice(double yearlyPrice) {
+        this.yearlyPrice = yearlyPrice;
+    }
+
+    public Timestamp getCreateAt() {
+        return createAt;
+    }
+
+    public void setCreateAt(Timestamp createAt) {
+        this.createAt = createAt;
     }
 
     public String getVipType() {
@@ -100,14 +97,54 @@ public class Vip {
         this.vipType = vipType;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getVip_img() {
+        return vip_img;
+    }
+
+    public void setVip_img(String vip_img) {
+        this.vip_img = vip_img;
+    }
+
+    public String getFeatures() {
+        return features;
+    }
+
+    public void setFeatures(String features) {
+        this.features = features;
+    }
+
+    public int getDuration() {
+        return duration;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
+
+    public boolean isYearly() {
+        return isYearly;
+    }
+
+    public void setYearly(boolean yearly) {
+        isYearly = yearly;
+    }
+
     public Date calculateEndDate(int month) {
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(this.dateCreated);
-        calendar.add(Calendar.MONTH, month); // Thêm 1 tháng
+        calendar.setTime(new Date(this.createAt.getTime()));
+        calendar.add(Calendar.MONTH, month); // Thêm số tháng được chỉ định
         return calendar.getTime();
     }
 
     public String displayInfo() {
-        return "VIP ID: " + vipID + ", Type: " + vipType + ", Status: " + status + ", Created: " + dateCreated + ", Expires: " + endDate;
+        return "VIP ID: " + vipID + ", Type: " + vipType + ", Status: " + status + ", Created: " + createAt + ", Expires: " + calculateEndDate(duration);
     }
 }

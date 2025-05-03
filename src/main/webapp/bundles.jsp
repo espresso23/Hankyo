@@ -7,6 +7,8 @@
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -52,84 +54,72 @@
             </div>
         </div>
         <div class="row justify-content-center">
-            <!-- Start Single Pricing -->
-            <!-- <div class="col-sm-6 col-md-4 col-lg-3"> -->
-            <div class="single-pricing free">
-                <div class="header text-center">
-                    <h3 class="title">Dùng thử miễn phí</h3>
-                    <p>Học thử miễn phí với các bài học cơ bản</p>
+            <c:forEach items="${vips}" var="vip">
+                <div class="single-pricing ${vip.vipType.toLowerCase()}">
+                    <div class="header text-center">
+                        <h3 class="title">${vip.vipName}</h3>
+                        <p>${vip.description}</p>
+                    </div>
+                    <div class="content">
+                        <span class="monthly-price price">
+                            <c:choose>
+                                <c:when test="${vip.price == 0}">Miễn phí</c:when>
+                                <c:otherwise><fmt:formatNumber value="${vip.price}" type="number"/> VNĐ</c:otherwise>
+                            </c:choose>
+                        </span>
+                        <span class="yearly-price price">
+                            <c:choose>
+                                <c:when test="${vip.yearlyPrice == 0}">Miễn phí</c:when>
+                                <c:otherwise><fmt:formatNumber value="${vip.yearlyPrice}" type="number"/> VNĐ</c:otherwise>
+                            </c:choose>
+                        </span>
+                        <ul class="list-inline">
+                            <c:forEach var="feature" items="${fn:split(vip.features, ',')}">
+                                <c:set var="step1" value="${fn:replace(feature, '[', '')}" />
+                                <c:set var="step2" value="${fn:replace(step1, ']', '')}" />
+                                <c:set var="cleanFeature" value="${fn:trim(step2)}" />
+                                <c:choose>
+                                    <c:when test="${fn:startsWith(cleanFeature, 'Không')}">
+                                        <li class="no text-muted" style="opacity:0.6"><i class="far fa-times-circle"></i> ${cleanFeature}</li>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <li class="yes"><i class="far fa-check-circle"></i> ${cleanFeature}</li>
+                                    </c:otherwise>
+                                </c:choose>
+                            </c:forEach>
+                        </ul>
+                    </div>
+                    <div class="try-button">
+                        <c:choose>
+                            <c:when test="${hasActiveVip}">
+                                <button class="register-vip btn btn-secondary" disabled>Đã là VIP</button>
+                                <c:if test="${not empty activeVip}">
+                                    <div style="color:#2ecc71; font-size:14px; margin-top:8px;">Bạn đang sử dụng gói: <b>${activeVip.vipName}</b></div>
+                                </c:if>
+                            </c:when>
+                            <c:otherwise>
+                                <a href="#" class="register-vip" data-vip-id="${vip.vipID}">
+                                    <c:choose>
+                                        <c:when test="${vip.vipType == 'FREE'}">Thử ngay</c:when>
+                                        <c:when test="${vip.vipType == 'POPULAR'}">Bắt đầu học</c:when>
+                                        <c:otherwise>Đăng ký ngay</c:otherwise>
+                                    </c:choose>
+                                </a>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
                 </div>
-                <div class="content">
-                    <span class="monthly-price price">Miễn phí</span>
-                    <span class="yearly-price price">Miễn phí</span>
-                    <ul class="list-inline">
-                        <li class="yes"><i class="far fa-check-circle"></i>Truy cập các bài học cơ bản</li>
-                        <li class="yes"><i class="far fa-check-circle"></i>Thử nghiệm với các bài tập đơn giản
-                        </li>
-                        <li class="no"><i class="far fa-times-circle"></i>Không có bài học nâng cao</li>
-                    </ul>
-                </div>
-                <div class="try-button">
-                    <a href="#">Thử ngay</a>
-                </div>
-            </div>
-            <!-- </div> -->
-            <!-- / End Single Pricing -->
-            <!-- Start Single Pricing -->
-            <!-- <div class="col-sm-6 col-md-4 col-lg-3"> -->
-            <div class="single-pricing popular">
-                <div class="header text-center">
-                    <h3 class="title">Phổ biến</h3>
-                    <p>Khóa học tiếng Hàn cơ bản và nâng cao</p>
-                </div>
-                <div class="content">
-                    <span class="monthly-price price">70.000 VNĐ</span>
-                    <span class="yearly-price price">300.000 VNĐ</span>
-                    <ul class="list-inline">
-                        <li class="yes"><i class="far fa-check-circle"></i>Truy cập đầy đủ bài học</li>
-                        <li class="yes"><i class="far fa-check-circle"></i>Được hỗ trợ giải đáp thắc mắc qua
-                            chat</li>
-                        <li class="yes"><i class="far fa-check-circle"></i>Các bài học nâng cao về ngữ pháp và
-                            từ vựng</li>
-                        <li class="no"><i class="far fa-times-circle"></i>Không có tài liệu học mở rộng</li>
-                    </ul>
-                </div>
-                <div class="try-button">
-                    <a href="#">Bắt đầu học</a>
-                </div>
-            </div>
-            <!-- </div> -->
-            <!-- / End Single Pricing -->
-            <!-- Start Single Pricing -->
-            <!-- <div class="col-sm-6 col-md-4 col-lg-3"> -->
-            <div class="single-pricing premium">
-                <div class="header text-center">
-                    <h3 class="title">Premium</h3>
-                    <p>Khóa học tiếng Hàn toàn diện cho mọi trình độ</p>
-                </div>
-                <div class="content">
-                    <span class="monthly-price price">100.000 VNĐ</span>
-                    <span class="yearly-price price">450.000 VNĐ</span>
-                    <ul class="list-inline">
-                        <li class="yes"><i class="far fa-check-circle"></i>Truy cập tất cả bài học và bài tập
-                        </li>
-                        <li class="yes"><i class="far fa-check-circle"></i>Hỗ trợ học viên trực tuyến 24/7</li>
-                        <li class="yes"><i class="far fa-check-circle"></i>Giải đáp thắc mắc qua chat và email
-                        </li>
-                        <li class="yes"><i class="far fa-check-circle"></i>Tài liệu học mở rộng và đề thi mẫu
-                        </li>
-                        <li class="yes"><i class="far fa-check-circle"></i>Chứng chỉ hoàn thành khóa học</li>
-                    </ul>
-                </div>
-                <div class="try-button">
-                    <a href="#">Đăng ký ngay</a>
-                </div>
-            </div>
-            <!-- </div> -->
-            <!-- / End Single Pricing -->
+            </c:forEach>
         </div>
     </div>
 </section>
+
+<!-- Form ẩn để submit thanh toán VIP -->
+<form id="vip-payment-form" method="post" action="create-vip-payment-link" style="display:none;">
+    <input type="hidden" name="vipID" id="vipID-hidden" />
+    <input type="hidden" name="learnerID" id="learnerID-hidden" value="${learner.learnerID}" />
+</form>
+
 <c:import url="footer.jsp"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <script>
@@ -150,6 +140,14 @@
             }
         });
 
+        // Xử lý đăng ký gói VIP
+        $('.register-vip').click(function(e) {
+            e.preventDefault();
+            const vipId = $(this).data('vip-id');
+            $('#vipID-hidden').val(vipId);
+            // Nếu đã có learnerID trong session thì giữ nguyên, nếu chưa thì cần xử lý đăng nhập
+            $('#vip-payment-form').submit();
+        });
     });
 </script>
 </body>

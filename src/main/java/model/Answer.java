@@ -1,6 +1,9 @@
 package model;
 
-public class Answer {
+import java.io.Serializable;
+
+public class Answer implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int answerID;
     private String answerText;
     private boolean isCorrect;
@@ -16,12 +19,6 @@ public class Answer {
     }
 
     public Answer() {
-    }
-
-    public Answer(String answerText, boolean isCorrect, String optionLabel) {
-        this.answerText = answerText;
-        this.isCorrect = isCorrect;
-        this.optionLabel = optionLabel;
     }
 
     public int getAnswerID() {

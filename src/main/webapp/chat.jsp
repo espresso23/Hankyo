@@ -20,12 +20,8 @@
     </script>
 </head>
 <body>
+<jsp:include page="header.jsp"></jsp:include>
 <div class="chat-container">
-    <div class="chat-header">
-        <h2>Global Chat</h2>
-        <button onclick="closeChat()">Close</button>
-    </div>
-
     <div id="message-container">
         <ul>
             <c:forEach items="${messages}" var="message">
@@ -34,10 +30,19 @@
                     <div class="message-content">
                         <div class="message">
                             ${message.message}
+                            <c:if test="${not empty message.pictureSend}">
+                                <div class="message-image">
+                                    <img src="${message.pictureSend}" alt="Sent image" style="max-width: 200px; max-height: 200px;">
+                                </div>
+                            </c:if>
                             <span class="timestamp-tooltip">${message.sendAt}</span>
                         </div>
                         <c:if test="${message.userID != sessionScope.user.userID}">
-                            <button class="report-button" onclick="showReportForm('${message.chatID}', '${message.userID}')">Report</button>
+                            <img src="${pageContext.request.contextPath}/asset/png/icon/report.png" 
+                                 alt="Report" 
+                                 class="report-button" 
+                                 onclick="showReportForm('${message.chatID}', '${message.userID}')"
+                                 style="width: 20px; height: 20px; cursor: pointer;">
                         </c:if>
                     </div>
                 </li>
@@ -48,8 +53,14 @@
     <form id="message-form">
         <div class="input-container">
             <input type="text" id="message-input" placeholder="Type your message...">
-            <button type="button" id="emoji-button">😊</button>
-            <button type="submit">Send</button>
+            <button type="button" id="emoji-button" class="message-btn" style="font-size: 20px; color: #333;">😊</button>
+            <label for="image-upload" class="message-btn">
+                <img src="${pageContext.request.contextPath}/asset/png/icon/image-upload.png" alt="Upload Image" style="width: 20px; height: 20px;">
+                <input type="file" id="image-upload" accept="image/*" style="display: none;">
+            </label>
+            <button type="submit" class="message-btn">
+                <img src="${pageContext.request.contextPath}/asset/png/icon/send.png" alt="Send" style="width: 20px; height: 20px;">
+            </button>
         </div>
         <div id="emoji-container" style="display: none;">
             <!-- Emoji buttons will be added here -->
@@ -84,6 +95,7 @@
 <input type="hidden" id="fullName" value="${fullName}">
 
 <!-- Chat JavaScript -->
-<script src="${pageContext.request.contextPath}/asset/js/chat.js"></script>
+<script src="${pageContext.request.contextPath}/js/chat.js"></script>
+<jsp:include page="/footer.jsp"></jsp:include>
 </body>
 </html>

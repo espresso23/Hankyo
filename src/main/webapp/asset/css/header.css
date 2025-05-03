@@ -4,21 +4,28 @@
     padding: 0;
     box-sizing: border-box;
 }
+
+/* Common header styles */
 header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
     display: grid;
     grid-template-columns: repeat(12, 1fr);
     align-items: center;
-    background-color: #f8f8f8 ;
-    position: sticky;
+    background-color: #f8f8f8;
     padding: 10px 5px;
+    z-index: 1000;
 }
 
-
 .logo {
-    grid-column: 2 / 3; /* Đẩy logo sang cột tiếp theo */
+    grid-column: 2 / 3;
     justify-self: start;
     width: 50px;
 }
+
 .navbarContainer {
     padding-top: 5px;
     grid-column: 4 / 12;
@@ -26,28 +33,67 @@ header {
     justify-content: space-between;
     align-items: center;
 }
+
 .navbarContainer span {
     text-decoration: Highlight;
-    color: #8AACFF;
+
 }
+
 .navbarContent a {
     text-decoration: none;
     font-weight: bold;
     color: #333;
     transition: 0.3s;
 }
-.navbarContainer img {
-    transition: border 0.3s ease-in-out;
-    width: 5%;
-    border-radius: 100%;
-    cursor: pointer;
-}
+
+/*.navbarContainer img {*/
+/*    transition: border 0.3s ease-in-out;*/
+/*    width: 5%;*/
+/*    border-radius: 100%;*/
+/*    cursor: pointer;*/
+/*}*/
+
 .navbarContainer img:hover {
     border: 5px solid black;
 }
+
 .navbarContent a:hover {
     color: #007BFF;
 }
+
+.loginBtn, .registerBtn {
+    padding: 8px 20px;
+    border-radius: 20px;
+    transition: all 0.3s;
+}
+
+.loginBtn {
+    background-color: transparent;
+    border: 2px solid #8EC5FC;
+    color: #8EC5FC;
+}
+
+.registerBtn {
+    background-color: #8EC5FC;
+    border: 2px solid #8EC5FC;
+    color: white;
+}
+
+.loginBtn:hover {
+    background-color: #8EC5FC;
+    color: white;
+}
+
+.registerBtn:hover {
+    background-color: #7ab4e6;
+    border-color: #7ab4e6;
+}
+
+/* Ensure content doesn't hide behind fixed header */
+body {
+    padding-top: 80px;
+}
+
 .popupContainer {
     display: none;
     position: absolute;
@@ -58,25 +104,54 @@ header {
     border-radius: 5px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     z-index: 1000;
+    min-width: 150px;
 }
+
 .profile {
     flex-direction: column;
     display: flex;
-    align-items: center;
-    width: fit-content;
-    margin-right: 8.5em;
-    border: 2px solid black;
+    width: 100%;
+    border: none;
+    margin: 0;
+    padding: 8px 0;
 }
+
 .profileContent {
-    padding: 10px;
+    padding: 10px 15px;
+    border-bottom: 1px solid #eee;
 }
+
+.profileContent:last-child {
+    border-bottom: none;
+}
+
 .profileContent a {
     text-decoration: none;
     color: #333;
+    display: block;
+    font-size: 14px;
 }
+
 .profileContent a:hover {
     color: #F6DC43;
 }
+
+.logout-btn {
+    width: 100%;
+    padding: 10px 15px;
+    border: none;
+    background: none;
+    color: #333;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+    transition: color 0.2s ease;
+}
+
+.logout-btn:hover {
+    color: #F6DC43;
+}
+
 .menu-btn {
     max-width: 80px;
     display: block;
@@ -88,9 +163,11 @@ header {
     border-radius: 5px;
     cursor: pointer;
 }
+
 .menu-btn:hover {
     background-color: #45a049;
 }
+
 .vertical-menu {
     display: none;
     position: absolute;
@@ -107,14 +184,17 @@ header {
     max-height: 200px;
     overflow-y: auto;
 }
+
 .menu-item {
     padding: 10px;
 }
+
 .menu-item a {
     text-decoration: none;
     color: #333;
     display: block;
 }
+
 .menu-item a:hover {
     background-color: #f0f0f0;
 }

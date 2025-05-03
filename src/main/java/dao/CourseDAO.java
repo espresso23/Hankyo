@@ -250,7 +250,7 @@ public class CourseDAO {
                     "JOIN Category ct ON c.categoryID = ct.categoryID " +
                     "JOIN Expert ep ON c.expertID = ep.expertID " +
                     "JOIN [User] u ON ep.userID = u.userID " +
-                    "WHERE c.status = 'active' AND c.price BETWEEN ? AND ?";
+                    "WHERE c.status = 'Active' AND c.price BETWEEN ? AND ?";
 
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -302,7 +302,7 @@ public class CourseDAO {
                 "           (SELECT AVG(CAST(f.rating AS FLOAT)) FROM CourseFeedback f WHERE f.courseID = c.courseID) as avg_rating, \n" +
                 "\t\t   (SELECT COUNT(*) FROM CourseFeedback f WHERE f.courseID =  c.courseID) as rating_count, ct.categoryName as category_name,\n" +
                 "\t\t  u.fullName as expert_name\n" +
-                "             FROM Course c join Category ct on c.categoryID = ct.categoryID join Expert ep on c.expertID = ep.expertID join [User] u on ep.userID = u.userID  WHERE c.status = 'active' \n" +
+                "             FROM Course c join Category ct on c.categoryID = ct.categoryID join Expert ep on c.expertID = ep.expertID join [User] u on ep.userID = u.userID  WHERE c.status = 'Active' \n" +
                 "             ORDER BY c.createdAt DESC OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY";
         
         try (Connection conn = DBConnect.getInstance().getConnection();
@@ -333,7 +333,7 @@ public class CourseDAO {
                         "JOIN Category ct ON c.categoryID = ct.categoryID " +
                         "JOIN Expert ep ON c.expertID = ep.expertID " +
                         "JOIN [User] u ON ep.userID = u.userID " +
-                        "WHERE c.status = 'active' AND (c.title LIKE ? OR c.course_description LIKE ?)";
+                        "WHERE c.status = 'Active' AND (c.title LIKE ? OR c.course_description LIKE ?)";
 
         
         try (Connection conn = DBConnect.getInstance().getConnection();
@@ -505,23 +505,6 @@ public class CourseDAO {
         return 0.0;
     }
 
-    // Tạo bảng Category
-    public void createCategoryTable() throws SQLException {
-        String sql = "CREATE TABLE Category (" +
-                    "categoryID INT IDENTITY(1,1) PRIMARY KEY, " +
-                    "categoryName NVARCHAR(100) NOT NULL, " +
-                    "description NVARCHAR(500), " +
-                    "parentID INT, " +
-                    "FOREIGN KEY (parentID) REFERENCES Category(categoryID)" +
-                    ")";
-        
-        try (Connection conn = DBConnect.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.executeUpdate();
-        }
-    }
-
-
     // Thêm category mới
     public int addCategory(String name, String description, Integer parentID) throws SQLException {
         String sql = "INSERT INTO Category (categoryName, description, parentID) VALUES (?, ?, ?)";
@@ -625,7 +608,7 @@ public class CourseDAO {
         String sql = "SELECT c.*, " +
                     "(SELECT COUNT(*) FROM enrollments e WHERE e.courseID = c.courseID AND e.status = 'active') as student_count, " +
                     "(SELECT AVG(CAST(f.rating AS FLOAT)) FROM CourseFeedback f WHERE f.courseID = c.courseID) as avg_rating " +
-                    "FROM Course c WHERE c.level = ? AND c.status = 'active'";
+                    "FROM Course c WHERE c.level = ? AND c.status = 'Active'";
         
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -756,5 +739,277 @@ public class CourseDAO {
             }
         }
         return null;
+    }
+
+    // Lấy khóa học nổi bật cho expert dashboard
+    public List<Course> getHighlightedCoursesForExpert(int expertId) throws SQLException {
+        List<Course> courses = new ArrayList<>();
+        String sql = "SELECT c.courseID, c.title, c.price, " +
+                    "(SELECT COUNT(DISTINCT cp.learnerID) FROM Course_Paid cp WHERE cp.courseID = c.courseID) as student_count, " +
+                    "(SELECT AVG(CAST(f.rating AS FLOAT)) FROM CourseFeedback f WHERE f.courseID = c.courseID) as avg_rating, " +
+                    "(SELECT COUNT(*) FROM CourseFeedback f WHERE f.courseID = c.courseID) as rating_count, " +
+                    "(SELECT SUM(c2.price) FROM Course_Paid cp2 JOIN Course c2 ON cp2.courseID = c2.courseID WHERE cp2.courseID = c.courseID) as total_revenue, " +
+                    "(SELECT COUNT(*) FROM Course_Paid cp3 WHERE cp3.courseID = c.courseID) as total_sales " +
+                    "FROM Course c " +
+                    "WHERE c.expertID = ? AND c.status = 'active' " +
+                    "ORDER BY student_count DESC, avg_rating DESC";
+
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, expertId);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                Course course = new Course();
+                course.setCourseID(rs.getInt("courseID"));
+                course.setCourseTitle(rs.getString("title"));
+                course.setPrice(rs.getBigDecimal("price"));
+                course.setLearnersCount(rs.getInt("student_count"));
+                
+                // Xử lý rating
+                Double rating = rs.getObject("avg_rating") != null ? rs.getDouble("avg_rating") : 0.0;
+                course.setRating(rating);
+                course.setRatingCount(rs.getInt("rating_count"));
+
+                // Xử lý doanh thu
+                BigDecimal totalRevenue = rs.getBigDecimal("total_revenue");
+                if (totalRevenue == null) {
+                    totalRevenue = BigDecimal.ZERO;
+                }
+                course.setTotalRevenue(totalRevenue);
+
+                // Xử lý tổng số lượng bán
+                BigDecimal totalSales = BigDecimal.valueOf(rs.getLong("total_sales"));
+                course.setTotalSales(totalSales);
+
+                courses.add(course);
+            }
+        }
+        return courses;
+    }
+
+    public List<Course> getCoursesByQuery(String query) throws SQLException {
+        List<Course> courses = new ArrayList<>();
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Course course = new Course();
+                course.setCourseID(rs.getInt("courseID"));
+                course.setCourseTitle(rs.getString("title"));
+                course.setCourseDescription(rs.getString("course_description"));
+                course.setCourseImg(rs.getString("course_img"));
+                course.setStatus(rs.getString("status"));
+                course.setPrice(rs.getBigDecimal("price"));
+                course.setDateCreated(rs.getDate("createdAt"));
+                courses.add(course);
+            }
+        }
+        return courses;
+    }
+
+    public List<Course> getAllCourses() throws SQLException {
+        List<Course> courses = new ArrayList<>();
+        String sql = "SELECT c.*, " +
+                "cat.categoryID, cat.categoryName, " +
+                "u.fullName as expertName, u.avatar as expertAvatar, e.certificate as expertCertificate, " +
+                "(SELECT COUNT(*) FROM enrollments e2 WHERE e2.courseID = c.courseID AND e2.status = 'active') as learnersCount, " +
+                "(SELECT SUM(p.amount) FROM Course_Paid cp JOIN Payment p ON cp.paymentID = p.paymentID WHERE cp.courseID = c.courseID AND p.status = 'completed') as totalRevenue, " +
+                "(SELECT COUNT(*) FROM CourseFeedback f WHERE f.courseID = c.courseID) as ratingCount, " +
+                "(SELECT AVG(CAST(f.rating AS FLOAT)) FROM CourseFeedback f WHERE f.courseID = c.courseID) as avgRating " +
+                "FROM Course c " +
+                "LEFT JOIN Category cat ON c.categoryID = cat.categoryID " +
+                "LEFT JOIN Expert e ON c.expertID = e.expertID " +
+                "LEFT JOIN [User] u ON e.userID = u.userID " +
+                "ORDER BY c.createdAt DESC";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                Course course = new Course();
+                course.setCourseID(rs.getInt("courseID"));
+                course.setCourseTitle(rs.getString("title"));
+                course.setCourseDescription(rs.getString("course_description"));
+                course.setCourseImg(rs.getString("course_img"));
+                course.setStatus(rs.getString("status"));
+                course.setPrice(rs.getBigDecimal("price"));
+                course.setOriginalPrice(rs.getBigDecimal("original_price"));
+                course.setDateCreated(rs.getDate("createdAt"));
+                course.setLastUpdated(rs.getDate("updateAt"));
+                course.setExpertID(rs.getInt("expertID"));
+                // Set category
+                Category category = new Category();
+                category.setCategoryID(rs.getInt("categoryID"));
+                category.setCategoryName(rs.getString("categoryName"));
+                course.setCategory(category);
+                // Set expert
+                Expert expert = new Expert();
+                expert.setExpertID(rs.getInt("expertID"));
+                expert.setFullName(rs.getString("expertName"));
+                expert.setAvatar(rs.getString("expertAvatar"));
+                expert.setCertificate(rs.getString("expertCertificate"));
+                course.setExpert(expert);
+                // Thêm thống kê
+                course.setLearnersCount(rs.getInt("learnersCount"));
+                course.setTotalRevenue(rs.getBigDecimal("totalRevenue") != null ? rs.getBigDecimal("totalRevenue") : java.math.BigDecimal.ZERO);
+                course.setRatingCount(rs.getInt("ratingCount"));
+                course.setRating(rs.getObject("avgRating") != null ? rs.getDouble("avgRating") : 0.0);
+                courses.add(course);
+            }
+        }
+        return courses;
+    }
+
+    public List<Course> searchCoursesForAdmin(String keyword) throws SQLException {
+        List<Course> courses = new ArrayList<>();
+        String sql = "SELECT c.*, " +
+                "cat.categoryID, cat.categoryName, " +
+                "u.fullName as expertName, u.avatar as expertAvatar, e.certificate as expertCertificate, " +
+                "(SELECT COUNT(*) FROM enrollments e2 WHERE e2.courseID = c.courseID AND e2.status = 'active') as learnersCount, " +
+                "(SELECT SUM(p.amount) FROM Course_Paid cp JOIN Payment p ON cp.paymentID = p.paymentID WHERE cp.courseID = c.courseID AND p.status = 'completed') as totalRevenue, " +
+                "(SELECT COUNT(*) FROM CourseFeedback f WHERE f.courseID = c.courseID) as ratingCount, " +
+                "(SELECT AVG(CAST(f.rating AS FLOAT)) FROM CourseFeedback f WHERE f.courseID = c.courseID) as avgRating " +
+                "FROM Course c " +
+                "LEFT JOIN Category cat ON c.categoryID = cat.categoryID " +
+                "LEFT JOIN Expert e ON c.expertID = e.expertID " +
+                "LEFT JOIN [User] u ON e.userID = u.userID " +
+                "WHERE c.title LIKE ? OR c.course_description LIKE ? " +
+                "ORDER BY c.createdAt DESC";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            String pattern = "%" + keyword + "%";
+            pstmt.setString(1, pattern);
+            pstmt.setString(2, pattern);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Course course = new Course();
+                    course.setCourseID(rs.getInt("courseID"));
+                    course.setCourseTitle(rs.getString("title"));
+                    course.setCourseDescription(rs.getString("course_description"));
+                    course.setCourseImg(rs.getString("course_img"));
+                    course.setStatus(rs.getString("status"));
+                    course.setPrice(rs.getBigDecimal("price"));
+                    course.setOriginalPrice(rs.getBigDecimal("original_price"));
+                    course.setDateCreated(rs.getDate("createdAt"));
+                    course.setLastUpdated(rs.getDate("updateAt"));
+                    course.setExpertID(rs.getInt("expertID"));
+                    // Set category
+                    Category category = new Category();
+                    category.setCategoryID(rs.getInt("categoryID"));
+                    category.setCategoryName(rs.getString("categoryName"));
+                    course.setCategory(category);
+                    // Set expert
+                    Expert expert = new Expert();
+                    expert.setExpertID(rs.getInt("expertID"));
+                    expert.setFullName(rs.getString("expertName"));
+                    expert.setAvatar(rs.getString("expertAvatar"));
+                    expert.setCertificate(rs.getString("expertCertificate"));
+                    course.setExpert(expert);
+                    // Thêm thống kê
+                    course.setLearnersCount(rs.getInt("learnersCount"));
+                    course.setTotalRevenue(rs.getBigDecimal("totalRevenue") != null ? rs.getBigDecimal("totalRevenue") : java.math.BigDecimal.ZERO);
+                    course.setRatingCount(rs.getInt("ratingCount"));
+                    course.setRating(rs.getObject("avgRating") != null ? rs.getDouble("avgRating") : 0.0);
+                    courses.add(course);
+                }
+            }
+        }
+        return courses;
+    }
+
+    public List<Course> filterCourses(String status, String expert, String category) throws SQLException {
+        List<Course> courses = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT c.*, " +
+            "cat.categoryID, cat.categoryName, " +
+            "u.fullName as expertName, u.avatar as expertAvatar, e.certificate as expertCertificate, " +
+            "(SELECT COUNT(*) FROM enrollments e2 WHERE e2.courseID = c.courseID AND e2.status = 'active') as learnersCount, " +
+            "(SELECT SUM(p.amount) FROM Course_Paid cp JOIN Payment p ON cp.paymentID = p.paymentID WHERE cp.courseID = c.courseID AND p.status = 'completed') as totalRevenue, " +
+            "(SELECT COUNT(*) FROM CourseFeedback f WHERE f.courseID = c.courseID) as ratingCount, " +
+            "(SELECT AVG(CAST(f.rating AS FLOAT)) FROM CourseFeedback f WHERE f.courseID = c.courseID) as avgRating " +
+            "FROM Course c " +
+            "LEFT JOIN Category cat ON c.categoryID = cat.categoryID " +
+            "LEFT JOIN Expert e ON c.expertID = e.expertID " +
+            "LEFT JOIN [User] u ON e.userID = u.userID WHERE 1=1 ");
+        List<Object> params = new ArrayList<>();
+        if (status != null && !status.isEmpty()) {
+            sql.append(" AND LOWER(c.status) = ? ");
+            params.add(status.toLowerCase());
+        }
+        if (expert != null && !expert.isEmpty()) {
+            sql.append(" AND u.fullName = ? ");
+            params.add(expert);
+        }
+        if (category != null && !category.isEmpty()) {
+            sql.append(" AND cat.categoryName = ? ");
+            params.add(category);
+        }
+        sql.append(" ORDER BY c.createdAt DESC");
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                pstmt.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Course course = new Course();
+                    course.setCourseID(rs.getInt("courseID"));
+                    course.setCourseTitle(rs.getString("title"));
+                    course.setCourseDescription(rs.getString("course_description"));
+                    course.setCourseImg(rs.getString("course_img"));
+                    course.setStatus(rs.getString("status"));
+                    course.setPrice(rs.getBigDecimal("price"));
+                    course.setOriginalPrice(rs.getBigDecimal("original_price"));
+                    course.setDateCreated(rs.getDate("createdAt"));
+                    course.setLastUpdated(rs.getDate("updateAt"));
+                    course.setExpertID(rs.getInt("expertID"));
+                    // Set category
+                    Category categoryObj = new Category();
+                    categoryObj.setCategoryID(rs.getInt("categoryID"));
+                    categoryObj.setCategoryName(rs.getString("categoryName"));
+                    course.setCategory(categoryObj);
+                    // Set expert
+                    Expert expertObj = new Expert();
+                    expertObj.setExpertID(rs.getInt("expertID"));
+                    expertObj.setFullName(rs.getString("expertName"));
+                    expertObj.setAvatar(rs.getString("expertAvatar"));
+                    expertObj.setCertificate(rs.getString("expertCertificate"));
+                    course.setExpert(expertObj);
+                    // Thêm thống kê
+                    course.setLearnersCount(rs.getInt("learnersCount"));
+                    course.setTotalRevenue(rs.getBigDecimal("totalRevenue") != null ? rs.getBigDecimal("totalRevenue") : java.math.BigDecimal.ZERO);
+                    course.setRatingCount(rs.getInt("ratingCount"));
+                    course.setRating(rs.getObject("avgRating") != null ? rs.getDouble("avgRating") : 0.0);
+                    courses.add(course);
+                }
+            }
+        }
+        return courses;
+    }
+
+    public List<String> getAllExpertNames() throws SQLException {
+        List<String> experts = new ArrayList<>();
+        String sql = "SELECT DISTINCT u.fullName FROM Expert e JOIN [User] u ON e.userID = u.userID ORDER BY u.fullName";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                experts.add(rs.getString("fullName"));
+            }
+        }
+        return experts;
+    }
+
+    public List<String> getAllCategoryNames() throws SQLException {
+        List<String> categories = new ArrayList<>();
+        String sql = "SELECT DISTINCT categoryName FROM Category ORDER BY categoryName";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                categories.add(rs.getString("categoryName"));
+            }
+        }
+        return categories;
     }
 }

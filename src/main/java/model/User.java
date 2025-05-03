@@ -1,8 +1,10 @@
 package model;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class User {
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int userID;
     private String username;
     private String password;
@@ -16,6 +18,16 @@ public class User {
     private String gender;
     private Date dateOfBirth;
     private String avatar;
+    private String coverPhoto;
+
+    public String getCoverPhoto() {
+        return coverPhoto;
+    }
+
+    public void setCoverPhoto(String coverPhoto) {
+        this.coverPhoto = coverPhoto;
+    }
+    private boolean isReported;
 
     public User(int userID, String username, String password, String gmail, String phone, String role, String status, String fullName, String socialID, Date dateCreate, String gender, Date dateOfBirth, String avatar) {
         this.userID = userID;
@@ -142,6 +154,14 @@ public class User {
         this.gender = gender;
     }
 
+    public boolean isReported() {
+        return isReported;
+    }
+
+    public void setIsReported(boolean isReported) {
+        this.isReported = isReported;
+    }
+
     public String displayInfo() {
         return "Information: \n" +
                 "Gmail: " + gmail + "\n" +
@@ -154,4 +174,3 @@ public class User {
                 "Gender: " + gender + "\n" + "Date Of Birth: " + dateOfBirth + "\n";
     }
 }
-

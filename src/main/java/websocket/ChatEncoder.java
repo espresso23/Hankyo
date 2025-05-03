@@ -25,6 +25,9 @@ public class ChatEncoder implements Encoder.Text<Chat> {
             if (message.getSendAt() != null) {
                 jsonObject.put("sendAt", message.getSendAt().getTime());
             }
+            if (message.getPictureSend() != null) {
+                jsonObject.put("pictureSend", message.getPictureSend());
+            }
 
             return jsonObject.toString();
         } catch (Exception e) {

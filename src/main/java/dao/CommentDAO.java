@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import model.Comment;
+import model.Post;
 import util.DBConnect;
 
 
@@ -19,7 +20,7 @@ public class CommentDAO {
     private DBConnect dbContext;
 
     public CommentDAO() {
-        dbContext = new DBConnect();
+        dbContext = DBConnect.getInstance();
     }
 
     // Method to add a comment
@@ -30,7 +31,23 @@ public class CommentDAO {
             ps.setInt(2, comment.getPostID());
             ps.setString(3, comment.getContent());
             ps.setTimestamp(4, new Timestamp(comment.getCreatedDate().getTime()));
-            return ps.executeUpdate() > 0;
+
+            boolean success = ps.executeUpdate() > 0;
+
+            if (success) {
+                // Get post owner's ID and create notification
+                int postOwnerID = getPostOwnerID(comment.getPostID());
+                if (postOwnerID != -1 && postOwnerID != comment.getUserID()) {
+                    NotificationDAO notificationDAO = new NotificationDAO();
+                    notificationDAO.addPostCommentNotification(
+                        postOwnerID,
+                        comment.getPostID(),
+                        comment.getUserFullName()
+                    );
+                }
+            }
+
+            return success;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -45,7 +62,23 @@ public class CommentDAO {
             ps.setString(3, comment.getContent());
             ps.setTimestamp(4, new Timestamp(comment.getCreatedDate().getTime()));
             ps.setInt(5, comment.getParentCommentID());
-            return ps.executeUpdate() > 0;
+
+            boolean success = ps.executeUpdate() > 0;
+
+            if (success) {
+                // Get the parent comment owner's ID and create notification
+                int parentCommentOwnerID = getCommentOwnerID(comment.getParentCommentID());
+                if (parentCommentOwnerID != -1 && parentCommentOwnerID != comment.getUserID()) {
+                    NotificationDAO notificationDAO = new NotificationDAO();
+                    notificationDAO.addCommentReplyNotification(
+                        parentCommentOwnerID,
+                        comment.getCommentID(),
+                        comment.getUserFullName()
+                    );
+                }
+            }
+
+            return success;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -105,7 +138,7 @@ public class CommentDAO {
     // Method to retrieve all comments for a specific post with user details
     public List<Comment> getCommentsByPostID(int postID) throws Exception {
         List<Comment> comments = new ArrayList<>();
-        String sql = "SELECT c.*, u.fullName, u.avatar FROM Comment c JOIN [User] u ON c.UserID = u.UserID WHERE c.PostID = ? AND ParentCommentID IS NULL ORDER BY c.CreatedDate DESC";
+        String sql = "SELECT c.*, u.username, u.fullName, u.avatar FROM Comment c JOIN [User] u ON c.UserID = u.UserID WHERE c.PostID = ? AND ParentCommentID IS NULL ORDER BY c.CreatedDate DESC";
         try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, postID);
             try (ResultSet rs = ps.executeQuery()) {
@@ -119,6 +152,7 @@ public class CommentDAO {
                             rs.getString("Content"),
                             rs.getTimestamp("CreatedDate")
                     );
+                    comment.setUsername(rs.getString("username"));
                     comment.setScore(rs.getInt("Score"));
                     comments.add(comment);
                 }
@@ -128,10 +162,43 @@ public class CommentDAO {
         }
         return comments;
     }
+    public List<Comment> getCommentsByUserID(int userID) throws Exception {
+        List<Comment> comments = new ArrayList<>();
+        String sql = "SELECT c.*, p.Heading AS PostHeading, u.fullName, u.avatar FROM Comment c JOIN [User] u \n" +
+                "ON c.UserID = u.UserID JOIN Post p ON c.PostID = p.PostID WHERE c.UserID = ?\n" +
+                "ORDER BY c.CreatedDate DESC";
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, userID);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Comment comment = new Comment(
+                            rs.getInt("CommentID"),
+                            rs.getInt("UserID"),
+                            rs.getString("fullName"),
+                            rs.getString("avatar"),
+                            rs.getInt("PostID"),
+                            rs.getString("Content"),
+                            rs.getTimestamp("CreatedDate")
+                    );
+                    comment.setScore(rs.getInt("Score"));
+                    comment.setPostHeading(rs.getString("PostHeading"));
+                    comments.add(comment);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new Exception("Lỗi truy xuất bình luận theo userID", e);
+        }
+        return comments;
+    }
 
     public List<Comment> getRepliesByCommentID(int commentID) throws Exception {
         List<Comment> comments = new ArrayList<>();
-        String sql = "SELECT c.*, u.fullName, u.avatar FROM Comment c JOIN [User] u ON c.UserID = u.UserID WHERE ParentCommentID = ? ORDER BY c.CreatedDate DESC";
+        String sql = "SELECT c.*, u.username, u.fullName, u.avatar FROM Comment c JOIN [User] u ON c.UserID = u.UserID WHERE ParentCommentID = ? ORDER BY c.CreatedDate DESC";
         try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, commentID);
             try (ResultSet rs = ps.executeQuery()) {
@@ -145,6 +212,7 @@ public class CommentDAO {
                             rs.getString("Content"),
                             rs.getTimestamp("CreatedDate")
                     );
+                    comment.setUsername(rs.getString("username"));
                     comment.setScore(rs.getInt("Score"));
                     comments.add(comment);
                 }
@@ -192,9 +260,15 @@ public class CommentDAO {
 
         try {
             conn = dbContext.getConnection();
-            conn.setAutoCommit(false); // Bắt đầu transaction
+            conn.setAutoCommit(false);
 
-            // 1. Kiểm tra xem người dùng đã vote chưa
+            // Get comment owner's ID
+            int commentOwnerID = getCommentOwnerID(commentID);
+
+            // Get voter's full name
+            String voterFullName = getUserFullName(userID);
+
+            // Rest of the existing vote logic
             String checkSql = "SELECT VoteType FROM UserVotes WHERE UserID = ? AND CommentID = ?";
             ps = conn.prepareStatement(checkSql);
             ps.setInt(1, userID);
@@ -220,40 +294,45 @@ public class CommentDAO {
 
                 // Cập nhật điểm (bỏ vote cũ)
                 updateCommentScore(conn, commentID, -oldVoteType);
-            }
-            // 3. Nếu đã vote khác loại hoặc chưa vote
-            else {
+            } else {
                 if (existingVote) {
-                    // Cập nhật vote từ loại cũ sang loại mới
+                    // Update vote logic...
                     String updateSql = "UPDATE UserVotes SET VoteType = ?, VoteDate = CURRENT_TIMESTAMP WHERE UserID = ? AND CommentID = ?";
                     ps = conn.prepareStatement(updateSql);
                     ps.setInt(1, voteType);
                     ps.setInt(2, userID);
                     ps.setInt(3, commentID);
                     ps.executeUpdate();
-
-                    // Cập nhật điểm (bỏ vote cũ, thêm vote mới)
-                    updateCommentScore(conn, commentID, -oldVoteType); // Bỏ vote cũ
-                    updateCommentScore(conn, commentID, voteType);    // Thêm vote mới
+                    updateCommentScore(conn, commentID, -oldVoteType);
+                    updateCommentScore(conn, commentID, voteType);
                 } else {
-                    // Thêm vote mới
+                    // Insert new vote logic...
                     String insertSql = "INSERT INTO UserVotes (UserID, CommentID, VoteType) VALUES (?, ?, ?)";
                     ps = conn.prepareStatement(insertSql);
                     ps.setInt(1, userID);
                     ps.setInt(2, commentID);
                     ps.setInt(3, voteType);
                     ps.executeUpdate();
-
-                    // Cập nhật điểm (thêm vote mới)
                     updateCommentScore(conn, commentID, voteType);
+
+                    // Create notification for comment vote
+                    if (commentOwnerID != -1 && commentOwnerID != userID && voterFullName != null) {
+                        NotificationDAO notificationDAO = new NotificationDAO();
+                        notificationDAO.addCommentVoteNotification(
+                            commentOwnerID,
+                            commentID,
+                            voterFullName,
+                            voteType == 1
+                        );
+                    }
                 }
             }
 
-            conn.commit(); // Kết thúc transaction thành công
+            conn.commit();
             success = true;
         } catch (Exception e) {
             try {
-                if (conn != null) conn.rollback(); // Hoàn tác nếu lỗi
+                if (conn != null) conn.rollback();
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
@@ -337,6 +416,190 @@ public class CommentDAO {
         }
 
         return score; // Return the score of the comment
+    }
+    public List<Comment> getAllRepliesTree(int parentID) {
+        List<Comment> replies = new ArrayList<>();
+        try (Connection conn = dbContext.getConnection()) {
+            buildReplyTree(parentID, replies, conn);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return replies;
+    }
+
+    private void buildReplyTree(int parentID, List<Comment> list, Connection conn) throws SQLException {
+        String sql = "SELECT c.*, u.username, u.fullName, u.avatar FROM Comment c JOIN [User] u ON c.UserID = u.UserID WHERE c.ParentCommentID = ? ORDER BY c.CreatedDate ASC";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, parentID);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Comment reply = new Comment(
+                        rs.getInt("CommentID"),
+                        rs.getInt("UserID"),
+                        rs.getString("fullName"),
+                        rs.getString("avatar"),
+                        rs.getInt("PostID"),
+                        rs.getString("Content"),
+                        rs.getTimestamp("CreatedDate")
+                );
+                reply.setUsername(rs.getString("username"));
+                reply.setScore(rs.getInt("Score"));
+
+                // Đệ quy cho các reply con
+                List<Comment> childReplies = new ArrayList<>();
+                buildReplyTree(reply.getCommentID(), childReplies, conn);
+                reply.setReplies(childReplies);
+
+                list.add(reply);
+            }
+        }
+    }
+
+    public List<Comment> getAllRepliesRecursive(int parentID) {
+        List<Comment> allReplies = new ArrayList<>();
+        try (Connection conn = dbContext.getConnection()) {
+            getRepliesRecursiveHelper(parentID, allReplies, conn);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return allReplies;
+    }
+
+    private void getRepliesRecursiveHelper(int parentID, List<Comment> list, Connection conn) throws SQLException {
+        String sql = "SELECT c.*, u.username, u.fullName, u.avatar FROM Comment c JOIN [User] u ON c.UserID = u.UserID WHERE c.ParentCommentID = ? ORDER BY c.CreatedDate ASC";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, parentID);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Comment reply = new Comment(
+                        rs.getInt("CommentID"),
+                        rs.getInt("UserID"),
+                        rs.getString("fullName"),
+                        rs.getString("avatar"),
+                        rs.getInt("PostID"),
+                        rs.getString("Content"),
+                        rs.getTimestamp("CreatedDate")
+                );
+                reply.setUsername(rs.getString("username"));
+                reply.setScore(rs.getInt("Score"));
+                list.add(reply);
+                getRepliesRecursiveHelper(reply.getCommentID(), list, conn);
+            }
+        }
+    }
+    public int getCommentCountByUserID(int userID) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM Comment WHERE userID = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, userID);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+
+    public List<Comment> getRepliesByParentId(int parentID) {
+        List<Comment> replies = new ArrayList<>();
+        String sql = "SELECT c.*, u.username, u.fullName, u.avatar " +
+                "FROM Comment c " +
+                "JOIN [User] u ON c.UserID = u.UserID " +
+                "WHERE c.ParentCommentID = ? " +
+                "ORDER BY c.CreatedDate ASC";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, parentID);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Comment reply = new Comment(
+                            rs.getInt("CommentID"),
+                            rs.getInt("UserID"),
+                            rs.getString("fullName"),
+                            rs.getString("avatar"),
+                            rs.getInt("PostID"),
+                            rs.getString("Content"),
+                            rs.getTimestamp("CreatedDate")
+                    );
+                    reply.setUsername(rs.getString("username"));
+                    reply.setScore(rs.getInt("Score"));
+
+                    replies.add(reply);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return replies;
+    }
+    public boolean deleteCommentAndReplies(int commentId) {
+        String deleteRepliesSql = "DELETE FROM Comment WHERE ParentCommentID = ?";
+        String deleteMainSql = "DELETE FROM Comment WHERE commentID = ?";
+
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement deleteRepliesStmt = conn.prepareStatement(deleteRepliesSql);
+             PreparedStatement deleteMainStmt = conn.prepareStatement(deleteMainSql)) {
+
+            deleteRepliesStmt.setInt(1, commentId);
+            deleteRepliesStmt.executeUpdate(); // delete replies
+
+            deleteMainStmt.setInt(1, commentId);
+            int rowsAffected = deleteMainStmt.executeUpdate(); // delete main comment
+
+            return rowsAffected > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    private int getCommentOwnerID(int commentID) throws SQLException {
+        String sql = "SELECT UserID FROM Comment WHERE CommentID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, commentID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("UserID");
+                }
+            }
+        }
+        return -1;
+    }
+
+    private String getUserFullName(int userID) {
+        String sql = "SELECT fullName FROM [User] WHERE UserID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("fullName");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private int getPostOwnerID(int postID) throws SQLException {
+        String sql = "SELECT UserID FROM Post WHERE PostID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, postID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("UserID");
+                }
+            }
+        }
+        return -1;
     }
 
 }

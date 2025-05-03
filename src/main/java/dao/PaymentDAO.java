@@ -14,6 +14,11 @@ import java.util.List;
 
 public class PaymentDAO {
 
+    private Connection connection;
+
+    public PaymentDAO() {
+        this.connection = DBConnect.getInstance().getConnection();
+    }
 
     public List<CoursePaid> getAllCoursePaid() {
         List<CoursePaid> list = new ArrayList<>();
@@ -85,6 +90,54 @@ public class PaymentDAO {
         return list;
     }
 
+    public List<Payment> getAllPayments() throws SQLException {
+        List<Payment> payments = new ArrayList<>();
+        String sql = "SELECT p.*, u.fullName as learnerName FROM Payment p JOIN Learner l on p.learnerID = l.learnerID JOIN [User] u on u.userID = l.userID ORDER BY paymentDate DESC";
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Payment payment = new Payment();
+                payment.setPaymentID(rs.getString("paymentID"));
+                payment.setLearnerID(rs.getInt("learnerID"));
+                payment.setLearnerName(rs.getString("learnerName"));
+                payment.setTotalAmount(rs.getBigDecimal("amount"));
+                payment.setDescription(rs.getString("description"));
+                Timestamp ts = rs.getTimestamp("paymentDate");
+                payment.setPayDate(ts != null ? ts.toLocalDateTime() : null);
+                payment.setStatus(rs.getString("status"));
+                payment.setType(rs.getString("type"));
+                payments.add(payment);
+            }
+        }
+        return payments;
+    }
+
+    public List<Payment> getPaymentsByLearner(int learnerId) throws SQLException {
+        List<Payment> payments = new ArrayList<>();
+        String sql = "SELECT * FROM Payment p WHERE learnerID = ? ORDER BY paymentDate DESC";
+
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, learnerId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Payment payment = new Payment();
+                payment.setPaymentID(rs.getString("paymentID"));
+                payment.setLearnerID(rs.getInt("learnerID"));
+                payment.setTotalAmount(rs.getBigDecimal("amount"));
+                payment.setDescription(rs.getString("description"));
+                payment.setPayDate(rs.getTimestamp("paymentDate").toLocalDateTime() != null ? rs.getTimestamp("paymentDate").toLocalDateTime() : null);
+                payment.setStatus(rs.getString("status"));
+                payment.setType(rs.getString("type"));
+                payments.add(payment);
+            }
+        }
+        return payments;
+
+
+    }
     public boolean addPaymentWithCourses(Payment payment, List<CoursePaid> coursePaidList) {
         String paymentSQL = "INSERT INTO Payment (paymentID,amount, paymentDate,description,learnerID,status) VALUES (?,?, ?, ?, ?,?)";
         String coursePaidSQL = "INSERT INTO Course_Paid (paymentID, courseID, learnerID, datePaid) VALUES (?, ?, ?, ?)";
@@ -194,4 +247,52 @@ public class PaymentDAO {
             return false;
         }
     }
+
+    public boolean createPayment(Payment payment, Connection connection) {
+        String sql = "INSERT INTO Payment (paymentID, learnerID, amount, description, paymentDate, status) " +
+                    "VALUES (?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, payment.getPaymentID());
+            stmt.setInt(2, payment.getLearnerID());
+            stmt.setBigDecimal(3, payment.getTotalAmount());
+            stmt.setString(4, payment.getDescription());
+            stmt.setTimestamp(5, Timestamp.valueOf(payment.getPayDate()));
+            stmt.setString(6, payment.getStatus());
+            
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean createCoursePaid(CoursePaid coursePaid, Connection connection) {
+        String sql = "INSERT INTO Course_Paid (courseID, learnerID,paymentID, datePaid) VALUES (?, ?,?,GETDATE())";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, coursePaid.getCourseID());
+            stmt.setInt(2, coursePaid.getLearnerID());
+            stmt.setString(3, coursePaid.getPaymentID());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // Thêm mới payment cho VIP
+    public boolean addPayment(model.Payment payment) throws SQLException {
+        String sql = "INSERT INTO Payment (paymentID, learnerID, amount, description, paymentDate, status, type) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = util.DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, payment.getPaymentID());
+            ps.setInt(2, payment.getLearnerID());
+            ps.setBigDecimal(3, payment.getTotalAmount());
+            ps.setString(4, payment.getDescription());
+            ps.setTimestamp(5, java.sql.Timestamp.valueOf(payment.getPayDate()));
+            ps.setString(6, payment.getStatus());
+            ps.setString(7, payment.getType());
+            return ps.executeUpdate() > 0;
+        }
+    }
+
 }

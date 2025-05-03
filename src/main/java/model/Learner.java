@@ -1,8 +1,10 @@
 package model;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Learner extends User {
+public class Learner extends User implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int learnerID;
     private double hankyoPoint;
     private Honour honour;
@@ -23,16 +25,14 @@ public Learner(int learnerID){
         this.vip = vip;
     }
 
-    public Learner(int userID, String username, String password, String gmail, String phone, String role, String status, String fullName, String socialID, Date dateCreate, String gender, Date dateOfBirth, String avatar, double hankyoPoint, Honour honour, int learnerID, Reward reward, Vip vip) {
+    public Learner(int userID, String username, String password, String gmail, String phone, String role, String status, String fullName, String socialID, Date dateCreate, String gender, Date dateOfBirth, String avatar, int learnerID, double hankyoPoint, Honour honour, Reward reward, Vip vip) {
         super(userID, username, password, gmail, phone, role, status, fullName, socialID, dateCreate, gender, dateOfBirth, avatar);
+        this.learnerID = learnerID;
         this.hankyoPoint = hankyoPoint;
         this.honour = honour;
-        this.learnerID = learnerID;
         this.reward = reward;
         this.vip = vip;
     }
-
-
 
     public double getHankyoPoint() {
         return hankyoPoint;
@@ -99,25 +99,4 @@ public Learner(int learnerID){
                 '}';
     }
 
-    public static void main(String[] args) {
-        Learner learner = new Learner();
-        learner.setGmail("tan@gmail.com");
-        learner.setFullName("Tan Pham");
-        learner.setHankyoPoint(100.30);
-        learner.setLearnerID(12345);
-        learner.setGender("Male");
-        learner.setPhone("0987654321");
-        learner.setRole("Learner");
-        learner.setStatus("Active");
-        learner.setSocialID("1234567890");
-        learner.setDateCreate(new Date());
-        Honour honour = new Honour(1, "IMG1", "SLIVER", "normal");
-        learner.setHonour(honour);
-        Vip vip = new Vip(new Date(), 3, "active", 123, "VIP");
-        learner.setVip(vip);
-        Reward reward = new Reward(3, "Hard-Working", "IMG", new Date());
-        learner.setReward(reward);
-        System.out.println(learner.displayInfo());
-
-    }
 }

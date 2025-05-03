@@ -173,6 +173,7 @@ public class UserDAO {
                         throw new SQLException("Creating user failed, no ID obtained.");
                     }
                     userID = generatedKeys.getInt(1);
+                    user.setUserID(userID);
                 }
             }
 
@@ -205,7 +206,10 @@ public class UserDAO {
                 user.setFullName(rs.getString("fullName"));
                 user.setGmail(rs.getString("gmail"));
                 user.setRole(rs.getString("role"));
-                // Add other fields if necessary
+                user.setStatus(rs.getString("status"));
+                user.setDateCreate(rs.getDate("dateCreate"));
+                user.setGender(rs.getString("gender"));
+                user.setAvatar(rs.getString("avatar"));
                 return user;
             }
             return null;
@@ -265,6 +269,7 @@ public class UserDAO {
                 u.setFullName(rs.getString("fullName"));
                 u.setDateCreate(rs.getDate("dateCreate"));
                 u.setGender(rs.getString("gender"));
+                u.setAvatar(rs.getString("avatar"));
                 return u;
             }
 
@@ -316,13 +321,14 @@ public class UserDAO {
         return user;
     }
 
-    public void updatePassword(User user, String newPassword) throws SQLException {
+    public boolean updatePassword(User user, String newPassword) throws SQLException {
         String hashPass = Encrypt.hashPassword(newPassword);
         String sql = "UPDATE [User] SET password = ? WHERE userID = ?";
         try (Connection con = DBConnect.getInstance().getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, hashPass);
             ps.setInt(2, user.getUserID());
-            ps.executeUpdate();
+            int rowsUpdated = ps.executeUpdate();
+            return rowsUpdated > 0;
         }
     }
 
@@ -432,8 +438,6 @@ public class UserDAO {
             }
         }
     }
-
-    // Lấy tên đầy đủ của người dùng theo UserID
     public String getFullNameByUserId(int userId) {
         String fullName = null;
         String sql = "SELECT fullName FROM [User] WHERE UserID = ?";
@@ -451,7 +455,6 @@ public class UserDAO {
         }
         return fullName;
     }
-    // Get the avatar image URL of the user based on the UserID
     public String getAvatarByUserId(int userID) throws Exception {
         String avatarImg = null;
         String sql = "SELECT avatar FROM [User] WHERE UserID = ?";
@@ -470,5 +473,42 @@ public class UserDAO {
         }
         return avatarImg;
     }
+    public String getCoverPhotoByUserId(int userId) {
+        String query = "SELECT [cover-photo] FROM [User] WHERE UserID = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("cover-photo");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null; // Trả về null nếu không tìm thấy cover photo
+    }
+    public boolean updateAvatar(int userId, String avatarUrl) throws SQLException {
+        String sql = "UPDATE [User] SET avatar = ? WHERE UserID = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, avatarUrl);
+            stmt.setInt(2, userId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    public boolean updateCoverPhoto(int userId, String coverUrl) throws SQLException {
+        String sql = "UPDATE [User] SET [cover-photo] = ? WHERE UserID = ? ";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, coverUrl);
+            stmt.setInt(2, userId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+    // Lấy tên đầy đủ của người dùng theo UserID
+
 
 }

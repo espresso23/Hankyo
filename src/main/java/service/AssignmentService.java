@@ -2,20 +2,36 @@ package service;
 
 import dao.AssignmentDAO;
 import dao.QuestionAndAnswerDAO;
+import dao.AssignmentQuestionDAO;
+import dao.AssignmentTakenDAO;
+import dao.AssignmentResultDAO;
 import model.Answer;
 import model.Assignment;
 import model.Question;
+import model.AssignmentQuestion;
+import model.AssignmentTaken;
+import model.AssignmentResult;
+import util.DBConnect;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class AssignmentService {
     private final AssignmentDAO assignmentDAO;
     private final QuestionAndAnswerDAO questionAndAnswerDAO;
+    private final AssignmentQuestionDAO questionDAO;
+    private final AssignmentTakenDAO takenDAO;
+    private final AssignmentResultDAO resultDAO;
 
     public AssignmentService() {
         this.assignmentDAO = new AssignmentDAO();
         this.questionAndAnswerDAO = new QuestionAndAnswerDAO();
+        this.questionDAO = new AssignmentQuestionDAO();
+        this.takenDAO = new AssignmentTakenDAO();
+        this.resultDAO = new AssignmentResultDAO();
     }
 
     /**
@@ -197,75 +213,6 @@ public class AssignmentService {
     }
 
     /**
-     * Hàm main để test chức năng
-     */
-    public static void main(String[] args) {
-        try {
-            AssignmentService service = new AssignmentService();
-
-            // Test lấy tất cả assignment
-            System.out.println("=== DANH SÁCH TẤT CẢ ASSIGNMENT ===");
-            List<Assignment> assignments = service.getAllAssignments();
-            for (Assignment assignment : assignments) {
-                System.out.println("Assignment ID: " + assignment.getAssignmentID());
-                System.out.println("Tiêu đề: " + assignment.getAssignmentTitle());
-                System.out.println("------------------------");
-            }
-
-            // Test lấy câu hỏi và câu trả lời của một assignment cụ thể
-            int testAssignmentId = 5; // Thay đổi ID này để test với assignment khác
-            System.out.println("\n=== CHI TIẾT ASSIGNMENT ID " + testAssignmentId + " ===");
-
-            // Lấy thông tin assignment
-            Assignment assignment = service.getAssignmentById(testAssignmentId);
-            if (assignment != null) {
-                System.out.println("Tiêu đề: " + assignment.getAssignmentTitle());
-                System.out.println("Mô tả: " + assignment.getDescription());
-
-                // Lấy câu hỏi và câu trả lời
-                List<Question> questions = service.getAllQuestionsAndAnswersOfAssignment(testAssignmentId);
-                System.out.println("\nSố câu hỏi: " + questions.size());
-
-                // In chi tiết từng câu hỏi và câu trả lời
-                for (int i = 0; i < questions.size(); i++) {
-                    Question question = questions.get(i);
-                    System.out.println("\nCâu hỏi " + (i + 1) + ":");
-                    System.out.println("Nội dung: " + question.getQuestionText());
-                    System.out.println("Loại câu hỏi: " + question.getQuestionType());
-                    System.out.println("Điểm: " + question.getQuestionMark());
-
-                    if (question.getQuestionImage() != null) {
-                        System.out.println("Hình ảnh: " + question.getQuestionImage());
-                    }
-                    if (question.getAudioFile() != null) {
-                        System.out.println("File âm thanh: " + question.getAudioFile());
-                    }
-
-                    System.out.println("Các câu trả lời:");
-                    for (Answer answer : question.getAnswers()) {
-                        System.out.println("- " + answer.getAnswerText() +
-                                " (Đáp án " + answer.getOptionLabel() + ")" +
-                                (answer.isCorrect() ? " [ĐÚNG]" : " [SAI]"));
-                    }
-                }
-            } else {
-                System.out.println("Không tìm thấy assignment với ID: " + testAssignmentId);
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Lỗi khi truy vấn database: " + e.getMessage());
-            e.printStackTrace();
-        } finally {
-            try {
-                // Đóng kết nối
-                new AssignmentService().closeConnection();
-            } catch (SQLException e) {
-                System.err.println("Lỗi khi đóng kết nối: " + e.getMessage());
-            }
-        }
-    }
-
-    /**
      * Lấy thông tin một câu hỏi theo ID
      *
      * @param questionID ID của câu hỏi
@@ -273,5 +220,57 @@ public class AssignmentService {
      */
     public Question getQuestionById(int questionID) throws SQLException {
         return questionAndAnswerDAO.getQuestionById(questionID);
+    }
+
+    // Lấy thông tin bài tập và câu hỏi
+    public Assignment getAssignmentWithQuestions(int assignmentID) throws SQLException {
+        Assignment assignment = assignmentDAO.getAssignmentById(assignmentID);
+        if (assignment != null) {
+            List<AssignmentQuestion> questions = questionDAO.getQuestionsByAssignmentId(assignmentID);
+            assignment.setAssignmentQuestions(questions);
+        }
+        return assignment;
+    }
+
+    // Tạo một bài làm mới
+    public AssignmentTaken createAssignmentTaken(int assignmentID, int learnerID) {
+        AssignmentTaken taken = new AssignmentTaken();
+        taken.setAssignmentID(assignmentID);
+        taken.setLearnerID(learnerID);
+        taken.setDateCreated(new Date());
+        taken.setFinalMark(0);
+        taken.setSkipQues(0);
+        taken.setDoneQues(0);
+
+        if (takenDAO.addAssignmentTaken(taken)) {
+            return taken;
+        }
+        return null;
+    }
+
+    // Lấy bài làm theo ID
+    public AssignmentTaken getAssignmentTakenById(int takenID) {
+        return takenDAO.getAssignmentTakenById(takenID);
+    }
+
+    // Lấy danh sách câu hỏi của bài tập
+    public List<AssignmentQuestion> getQuestionsByAssignmentId(int assignmentID) {
+        return questionDAO.getQuestionsByAssignmentId(assignmentID);
+    }
+
+    // Cập nhật thông tin bài làm
+    public boolean updateAssignmentTaken(AssignmentTaken taken) {
+        return takenDAO.updateAssignmentTaken(taken);
+    }
+
+    // Lấy kết quả của một bài làm
+    public List<AssignmentResult> getResultsByTakenID(int takenID) {
+        return resultDAO.getResultsByTakenID(takenID);
+    }
+
+    // Kiểm tra xem học viên đã làm bài này chưa
+    public boolean hasCompletedAssignment(int assignmentID, int learnerID) {
+        AssignmentTaken taken = takenDAO.getAssignmentTakenByLearnerAndAssignment(learnerID, assignmentID);
+        return taken != null;
     }
 } 

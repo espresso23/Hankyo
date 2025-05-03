@@ -1,10 +1,12 @@
 package model;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 
-public class Course {
+public class Course implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int courseID;
     private String courseTitle;
     private BigDecimal price;
@@ -27,6 +29,7 @@ public class Course {
     private int progress;
     private int firstContentID;
     private BigDecimal totalRevenue;
+    private BigDecimal totalSales;
 
     public Course() {
     }
@@ -207,6 +210,13 @@ public class Course {
         this.totalRevenue = totalRevenue;
     }
 
+    public BigDecimal getTotalSales() {
+        return totalSales;
+    }
+
+    public void setTotalSales(BigDecimal totalSales) {
+        this.totalSales = totalSales;
+    }
 
     @Override
     public String toString() {

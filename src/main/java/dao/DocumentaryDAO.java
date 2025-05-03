@@ -10,7 +10,7 @@ public class DocumentaryDAO {
     private DBConnect dbContext;
 
     public DocumentaryDAO() {
-        dbContext = new DBConnect();
+        dbContext = DBConnect.getInstance();
     }
     public boolean checkConnection() throws Exception {
         try (Connection conn = dbContext.getConnection()) {
@@ -19,6 +19,23 @@ public class DocumentaryDAO {
             e.printStackTrace();
             return false;
         }
+    }
+    public List<String> getAllDistinctTypes() {
+        List<String> types = new ArrayList<>();
+        String sql = "SELECT DISTINCT type FROM Documentary WHERE type IS NOT NULL ORDER BY type ASC";
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                types.add(rs.getString("type"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return types;
     }
 
     public List<Documentary> getAllDocuments() throws SQLException {
@@ -120,4 +137,30 @@ public class DocumentaryDAO {
         }
         return types;
     }
+
+
+    //VIP Document
+    public int getLearnerIdByUserId(int userID) throws SQLException {
+        String sql = "SELECT learnerID FROM Learner WHERE userID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userID);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("learnerID");
+            }
+        }
+        return -1; // hoặc throw exception
+    }
+
+    public boolean isLearnerVIP(int learnerID) throws SQLException {
+        String sql = "SELECT 1 FROM Vip_User WHERE learnerID = ? AND endDate >= GETDATE() AND vipStatus = 'active'";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, learnerID);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next();
+        }
+    }
+
 }

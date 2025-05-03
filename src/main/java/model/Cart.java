@@ -1,6 +1,9 @@
 package model;
 
-public class Cart {//luu danh sach course se mua
+import java.io.Serializable;
+
+public class Cart implements Serializable {
+    private static final long serialVersionUID = 1L;//luu danh sach course se mua
     private int cartID;
     private String status;
     private Course course;//lay ten, hinh anh preview

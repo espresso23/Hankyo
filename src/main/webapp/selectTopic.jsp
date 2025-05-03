@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-=======
-
->>>>>>> 880bb7bc0259975e40dc8b8108c3d0689bcde447
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" isELIgnored="false" %>
 <html>
@@ -12,11 +8,7 @@
     <style>
         @font-face {
             font-family: 'Poppins';
-<<<<<<< HEAD
-            src: url('${pageContext.request.contextPath}/assets/fonts/Poppins-Regular.ttf') format('ttf');
-=======
             src: url('${pageContext.request.contextPath}/assets/fonts/Poppins-Regular.ttf') format('truetype');
->>>>>>> 880bb7bc0259975e40dc8b8108c3d0689bcde447
         }
         * {
             margin: 0;
@@ -29,9 +21,6 @@
             min-height: 100vh;
             background-position: left center;
         }
-<<<<<<< HEAD
-
-=======
         .debug {
             color: #888;
             font-size: 0.9rem;
@@ -42,7 +31,27 @@
             color: #888;
             font-size: 1.2rem;
         }
->>>>>>> 880bb7bc0259975e40dc8b8108c3d0689bcde447
+        .play-game-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 20px auto;
+            display: block;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .play-game-btn:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+        .play-game-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
     </style>
 </head>
 <jsp:include page="header.jsp"></jsp:include>
@@ -50,34 +59,36 @@
 <div class="container">
     <div class="containerSmall">
         <h1>Flashcards - ${topic}</h1>
-<<<<<<< HEAD
-=======
         <p class="debug">Type: ${type}</p>
         <p class="debug">FlashCards size: <c:out value="${flashCards != null ? flashCards.size() : 'null'}" /></p>
->>>>>>> 880bb7bc0259975e40dc8b8108c3d0689bcde447
+        
+        <!-- Add Play Game button -->
+        <c:if test="${not empty flashCards && flashCards.size() >= 10}">
+            <form action="memory-game" method="GET">
+                <input type="hidden" name="topic" value="${topic}">
+                <input type="hidden" name="type" value="${type}">
+                <button type="submit" class="play-game-btn">Play Memory Game</button>
+            </form>
+        </c:if>
+        <c:if test="${empty flashCards || flashCards.size() < 10}">
+            <button class="play-game-btn" disabled>Need at least 10 cards to play</button>
+        </c:if>
+
         <div class="flashcard-container">
             <c:choose>
                 <c:when test="${empty flashCardsJson}">
                     <p class="no-data">No flashcards available for this topic.</p>
                 </c:when>
                 <c:otherwise>
-<<<<<<< HEAD
-                    <div class="previousButton"><---</div>
-=======
                     <div class="previousButton">←</div>
->>>>>>> 880bb7bc0259975e40dc8b8108c3d0689bcde447
                     <div class="flashcard">
                         <div class="flashcard-inner">
                             <div class="flashcard-front"></div>
                             <div class="flashcard-back"></div>
                         </div>
                     </div>
-<<<<<<< HEAD
-                    <div class="nextButton">---></div>
-=======
                     <div class="nextButton">→</div>
                     <div class="flashcard-counter"></div>
->>>>>>> 880bb7bc0259975e40dc8b8108c3d0689bcde447
                 </c:otherwise>
             </c:choose>
         </div>
@@ -93,13 +104,8 @@
             <tbody>
             <c:forEach items="${flashCards}" var="flashcard">
                 <tr>
-<<<<<<< HEAD
-                    <td>${flashcard.dictionary.word}</td>
-                    <td>${flashcard.dictionary.mean}</td>
-=======
                     <td><c:out value="${flashcard.dictionary.word}" /></td>
                     <td><c:out value="${flashcard.dictionary.mean}" /></td>
->>>>>>> 880bb7bc0259975e40dc8b8108c3d0689bcde447
                 </tr>
             </c:forEach>
             </tbody>
@@ -108,11 +114,6 @@
 </div>
 
 <script>
-<<<<<<< HEAD
-    const flashCards = ${flashCardsJson};
-    let currentIndex = 0;
-
-=======
     const flashCards = ${flashCardsJson != null ? flashCardsJson : '[]'};
     const flashCardType = "${type}";
     let currentIndex = 0;
@@ -120,7 +121,6 @@
     console.log("FlashCards:", flashCards);
     console.log("FlashCardType:", flashCardType);
 
->>>>>>> 880bb7bc0259975e40dc8b8108c3d0689bcde447
     const flashcardInner = document.querySelector('.flashcard-inner');
     const frontElement = document.querySelector('.flashcard-front');
     const backElement = document.querySelector('.flashcard-back');
@@ -129,11 +129,6 @@
 
     function showFlashcard(index) {
         if (flashCards && flashCards[index]) {
-<<<<<<< HEAD
-            frontElement.textContent = flashCards[index].dictionary.word;
-            backElement.textContent = flashCards[index].dictionary.mean;
-            flashcardInner.classList.remove('flipped'); // Reset về mặt trước
-=======
             console.log("Showing flashcard at index:", index, flashCards[index]);
             if (flashCardType === 'system' || flashCardType === 'favorite') {
                 frontElement.textContent = flashCards[index].dictionary && flashCards[index].dictionary.word ? flashCards[index].dictionary.word : 'No word';
@@ -150,19 +145,15 @@
             console.error("No flashcard data at index:", index);
             frontElement.textContent = 'No data';
             backElement.textContent = 'No data';
->>>>>>> 880bb7bc0259975e40dc8b8108c3d0689bcde447
         }
     }
 
     if (flashCards && flashCards.length > 0) {
         showFlashcard(currentIndex);
-<<<<<<< HEAD
-=======
     } else {
         console.error("FlashCards is empty or null");
         frontElement.textContent = 'No flashcards';
         backElement.textContent = 'No flashcards';
->>>>>>> 880bb7bc0259975e40dc8b8108c3d0689bcde447
     }
 
     nextButton.addEventListener('click', function() {
@@ -187,8 +178,4 @@
 </script>
 <jsp:include page="footer.jsp"></jsp:include>
 </body>
-<<<<<<< HEAD
 </html>
-=======
-</html>
->>>>>>> 880bb7bc0259975e40dc8b8108c3d0689bcde447

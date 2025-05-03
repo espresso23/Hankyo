@@ -8,14 +8,14 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
-    <link rel="stylesheet" href="asset/css/footer.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/asset/css/footer.css">
     <title>Title</title>
 </head>
 <body>
 <footer class="footer">
     <!-- Logo -->
     <div class="footer-column">
-        <img src="asset/png/loginPage/logo.png" alt="Logo" class="footer-logo">
+        <img src="${pageContext.request.contextPath}/asset/png/loginPage/logo.png" alt="Logo" class="footer-logo">
     </div>
 
     <!-- Cột 1: Use Cases -->
@@ -36,12 +36,10 @@
 
     <!-- Cột 3: Resources -->
     <div class="footer-column">
-        <h5 class="footer-heading">Resources</h5>
-        <a href="#" class="footer-link">Blog</a>
-        <a href="#" class="footer-link">Best Practices</a>
-        <a href="#" class="footer-link">Colors</a>
-        <a href="#" class="footer-link">Color Wheel</a>
-        <a href="#" class="footer-link">Support</a>
+        <h5 class="footer-heading"> About HANKYO</h5>
+        <a href="about-us.jsp" class="footer-link">About us</a>
+        <a href="term.jsp" class="footer-link">Term & Conditions</a>
+        <a href="recruitment.jsp" class="footer-link">Recruitment</a>
     </div>
 </footer>
 </body>

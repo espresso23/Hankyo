@@ -1,6 +1,9 @@
 package model;
 
-public class SystemFlashCard {
+import java.io.Serializable;
+
+public class SystemFlashCard implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int hiddenID;
     private int SFCID;
     private int wordID;

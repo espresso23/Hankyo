@@ -1,6 +1,9 @@
 package model;
 
-public class CourseSales {
+import java.io.Serializable;
+
+public class CourseSales implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int courseID;
     private String title;
     private int totalSold;

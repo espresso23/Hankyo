@@ -9,9 +9,11 @@ import org.apache.http.client.fluent.Form;
 import org.apache.http.client.fluent.Request;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.sql.SQLException;
 
-public class GoogleLogin {
+public class GoogleLogin implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     public static String getToken(String code) throws IOException {
         // Call API to get token

@@ -1,7 +1,9 @@
 package model;
+import java.io.Serializable;
 import java.sql.Timestamp;
 
-public class Report {
+public class Report implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int reportID;
     private int reporterID;
     private int reportedUserID;
@@ -12,6 +14,25 @@ public class Report {
     private Timestamp reportDate;
     private String status;
     private int commentID;
+    private int chatID;
+    private String commentContent;
+    private String postTitle;
+
+    public String getCommentContent() {
+        return commentContent;
+    }
+
+    public void setCommentContent(String commentContent) {
+        this.commentContent = commentContent;
+    }
+
+    public String getPostTitle() {
+        return postTitle;
+    }
+
+    public void setPostTitle(String postTitle) {
+        this.postTitle = postTitle;
+    }
 
     // Default constructor
     public Report() {
@@ -108,5 +129,13 @@ public class Report {
 
     public void setCommentID(int commentID) {
         this.commentID = commentID;
+    }
+
+    public int getChatID() {
+        return chatID;
+    }
+
+    public void setChatID(int chatID) {
+        this.chatID = chatID;
     }
 }

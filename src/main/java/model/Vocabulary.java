@@ -1,6 +1,9 @@
 package model;
 
-public class Vocabulary {
+import java.io.Serializable;
+
+public class Vocabulary implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String vocabID;
     private String wordID;
     private String custom_definition;

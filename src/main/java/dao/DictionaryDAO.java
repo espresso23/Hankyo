@@ -11,6 +11,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 
 public class DictionaryDAO {
 
@@ -163,29 +166,15 @@ public class DictionaryDAO {
     }
 
     public boolean addFavoriteFlashCard(FavoriteFlashCard fc) {
-        String checkQuery = "SELECT COUNT(*) FROM favoriteFlashCard WHERE learnerID = ? AND wordID = ? AND nameOfList = ?";
         String insertQuery = "INSERT INTO favoriteFlashCard (learnerID, wordID, nameOfList) VALUES (?, ?, ?)";
 
-        try (Connection conn = getConnection()) {
-            // Kiểm tra trùng lặp
-            try (PreparedStatement checkStmt = conn.prepareStatement(checkQuery)) {
-                checkStmt.setInt(1, fc.getLearner().getLearnerID());
-                checkStmt.setInt(2, fc.getDictionary().getWordID());
-                checkStmt.setString(3, fc.getNameOfList());
-                ResultSet rs = checkStmt.executeQuery();
-                if (rs.next() && rs.getInt(1) > 0) {
-                    return true; // Bản ghi đã tồn tại
-                }
-            }
-
-            // Thêm mới (FCID sẽ tự động tăng)
-            try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
-                insertStmt.setInt(1, fc.getLearner().getLearnerID());
-                insertStmt.setInt(2, fc.getDictionary().getWordID());
-                insertStmt.setString(3, fc.getNameOfList());
-                int rowsAffected = insertStmt.executeUpdate();
-                return rowsAffected > 0;
-            }
+        try (Connection conn = getConnection();
+             PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
+            insertStmt.setInt(1, fc.getLearner().getLearnerID());
+            insertStmt.setInt(2, fc.getDictionary().getWordID());
+            insertStmt.setString(3, fc.getNameOfList());
+            int rowsAffected = insertStmt.executeUpdate();
+            return rowsAffected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -226,12 +215,172 @@ public class DictionaryDAO {
         }
         return listNames;
     }
+    public List<Dictionary> searchDictionary(String query) {
+        List<Dictionary> dictionaryList = new ArrayList<>();
+        String searchQuery = "SELECT wordID, word, definition, type, mean FROM dictionary WHERE word LIKE ? OR mean LIKE ? OR definition LIKE ?";
+        
+        try (Connection conn = getConnection();
+             PreparedStatement statement = conn.prepareStatement(searchQuery)) {
+
+            String searchPattern = "%" + query + "%";
+            statement.setString(1, searchPattern);
+            statement.setString(2, searchPattern);
+            statement.setString(3, searchPattern);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Dictionary word = new Dictionary(
+                            resultSet.getInt("wordID"),
+                            resultSet.getString("word").trim(),
+                            resultSet.getString("definition").trim(),
+                            resultSet.getString("type").trim(),
+                            resultSet.getString("mean").trim()
+                    );
+                    dictionaryList.add(word);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi khi tìm kiếm từ điển: " + e.getMessage(), e);
+        }
+        return dictionaryList;
+    }
+
+    public List<Dictionary> searchExactWord(String word) {
+        List<Dictionary> dictionaryList = new ArrayList<>();
+        String searchQuery = "SELECT wordID, word, definition, type, mean FROM dictionary WHERE word = ?";
+        
+        try (Connection conn = getConnection();
+             PreparedStatement statement = conn.prepareStatement(searchQuery)) {
+
+            statement.setString(1, word.trim());
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Dictionary dictionary = new Dictionary(
+                            resultSet.getInt("wordID"),
+                            resultSet.getString("word").trim(),
+                            resultSet.getString("definition").trim(),
+                            resultSet.getString("type").trim(),
+                            resultSet.getString("mean").trim()
+                    );
+                    dictionaryList.add(dictionary);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi khi tìm kiếm từ chính xác: " + e.getMessage(), e);
+        }
+        return dictionaryList;
+    }
+
+    public List<Dictionary> searchByType(String type) {
+        List<Dictionary> dictionaryList = new ArrayList<>();
+        String searchQuery = "SELECT wordID, word, definition, type, mean FROM dictionary WHERE type = ?";
+        
+        try (Connection conn = getConnection();
+             PreparedStatement statement = conn.prepareStatement(searchQuery)) {
+
+            statement.setString(1, type.trim());
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Dictionary dictionary = new Dictionary(
+                            resultSet.getInt("wordID"),
+                            resultSet.getString("word").trim(),
+                            resultSet.getString("definition").trim(),
+                            resultSet.getString("type").trim(),
+                            resultSet.getString("mean").trim()
+                    );
+                    dictionaryList.add(dictionary);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi khi tìm kiếm theo loại từ: " + e.getMessage(), e);
+        }
+        return dictionaryList;
+    }
+
+    public List<Dictionary> advancedSearch(String word, String type, String mean) {
+        List<Dictionary> dictionaryList = new ArrayList<>();
+        StringBuilder searchQuery = new StringBuilder(
+            "SELECT wordID, word, definition, type, mean FROM dictionary WHERE 1=1");
+        List<Object> params = new ArrayList<>();
+
+        if (word != null && !word.trim().isEmpty()) {
+            searchQuery.append(" AND word LIKE ?");
+            params.add("%" + word.trim() + "%");
+        }
+        if (type != null && !type.trim().isEmpty()) {
+            searchQuery.append(" AND type = ?");
+            params.add(type.trim());
+        }
+        if (mean != null && !mean.trim().isEmpty()) {
+            searchQuery.append(" AND mean LIKE ?");
+            params.add("%" + mean.trim() + "%");
+        }
+
+        try (Connection conn = getConnection();
+             PreparedStatement statement = conn.prepareStatement(searchQuery.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                statement.setObject(i + 1, params.get(i));
+            }
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Dictionary dictionary = new Dictionary(
+                            resultSet.getInt("wordID"),
+                            resultSet.getString("word").trim(),
+                            resultSet.getString("definition").trim(),
+                            resultSet.getString("type").trim(),
+                            resultSet.getString("mean").trim()
+                    );
+                    dictionaryList.add(dictionary);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi khi tìm kiếm nâng cao: " + e.getMessage(), e);
+        }
+        return dictionaryList;
+    }
+
+    public boolean importDictionaryFromFile(String filePath) {
+        String insertQuery = "INSERT INTO dictionary (word, mean, definition, type) VALUES (?, ?, ?, ?)";
+        
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(insertQuery);
+             BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            
+            String line;
+            while ((line = reader.readLine()) != null) {
+                // Định dạng: từ tiếng Hàn:từ tiếng Việt:định nghĩa
+                String[] parts = line.split(":");
+                if (parts.length >= 2) {
+                    String koreanWord = parts[0].trim();
+                    String vietnameseWord = parts[1].trim();
+                    String definition = parts.length > 2 ? parts[2].trim() : "";
+                    
+                    stmt.setString(1, koreanWord);
+                    stmt.setString(2, vietnameseWord);
+                    stmt.setString(3, definition);
+                    stmt.setString(4, "noun"); // Mặc định là noun, có thể thay đổi sau
+                    stmt.addBatch();
+                }
+            }
+            
+            int[] results = stmt.executeBatch();
+            return true;
+        } catch (IOException | SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
     public static void main(String[] args) {
         // Thay đổi learnerID và nameOfList phù hợp với dữ liệu bạn có trong database
         int learnerID = 1;
         String nameOfList = "favorite";
 
         DictionaryDAO dao = new DictionaryDAO();
+        boolean success = dao.importDictionaryFromFile("c:\\Users\\bearx\\Desktop\\가방Cặp sáchDanhNơi đựng sách vở đồ d.txt");
         List<FavoriteFlashCard> list = dao.getAllFavoriteFlashCardByLearnerID(learnerID, nameOfList);
 
         if (list.isEmpty()) {

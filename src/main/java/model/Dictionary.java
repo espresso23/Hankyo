@@ -1,6 +1,9 @@
 package model;
 
-public class Dictionary {
+import java.io.Serializable;
+
+public class Dictionary implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int wordID;
     private String word;
     private String definition;

@@ -1,0 +1,224 @@
+body {
+    background: linear-gradient(135deg, #ffd1d1 0%, #ffd1d1 25%, #fff5f5 50%, #e8f0ff 75%, #d4e4ff 100%);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    padding: 15px 20px;
+    max-width: 1400px;
+    margin: 15px auto;
+    background-color: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    min-height: calc(100vh - 140px);
+    height: auto;
+}
+
+.card {
+    margin-bottom: 15px;
+    height: auto;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+    border-radius: 12px 12px 0 0 !important;
+    padding: 12px 20px;
+    font-weight: 500;
+    background: linear-gradient(45deg, rgba(255, 143, 163, 0.9), rgba(108, 180, 255, 0.9)) !important;
+    color: white !important;
+    border: none;
+    backdrop-filter: blur(5px);
+}
+
+.card-body {
+    padding: 20px;
+    height: auto;
+    overflow: visible;
+}
+
+.form-row {
+    margin-bottom: 15px;
+}
+
+.form-col {
+    flex: 1;
+}
+
+.pdf-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.pdf-preview-section {
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.pdf-preview-container {
+    background-color: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.pdf-preview-wrapper {
+    height: 600px;
+    transition: all 0.3s ease;
+}
+
+.pdf-preview-container.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1050;
+    background: white;
+    padding: 20px;
+}
+
+.pdf-preview-container.fullscreen .pdf-preview-wrapper {
+    height: calc(100vh - 100px) !important;
+}
+
+.file-upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    border: 2px dashed rgba(255, 143, 163, 0.5);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+.file-upload-label:hover {
+    border-color: #ff8fa3;
+    background-color: rgba(255, 143, 163, 0.1);
+    transform: translateY(-2px);
+}
+
+.upload-success {
+    display: none;
+    color: #198754;
+    background-color: rgba(25, 135, 84, 0.1);
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    margin-top: 15px;
+}
+
+.progress {
+    height: 6px;
+    margin: 15px 0;
+    background-color: rgba(108, 180, 255, 0.2);
+    border-radius: 3px;
+}
+
+.progress-bar {
+    background: linear-gradient(45deg, #ff8fa3, #6cb4ff);
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #ff8fa3, #6cb4ff);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(45deg, #ff7088, #4a9eff);
+    transform: translateY(-1px);
+}
+
+.btn-outline-secondary {
+    border-color: #ff8fa3;
+    color: #ff8fa3;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-secondary:hover {
+    background: linear-gradient(45deg, #ff8fa3, #6cb4ff);
+    border-color: transparent;
+    color: white;
+    transform: translateY(-1px);
+}
+
+.alert {
+    border-radius: 12px;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.9);
+    margin: 10px 0;
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 1px solid rgba(108, 180, 255, 0.3);
+    padding: 8px 12px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #ff8fa3;
+    box-shadow: 0 0 0 0.2rem rgba(255, 143, 163, 0.25);
+}
+
+textarea.form-control {
+    resize: none;
+    height: 100px;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 143, 163, 0.5);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 143, 163, 0.7);
+}
+
+.btn-group {
+    gap: 5px;
+}
+
+.text-muted {
+    font-size: 0.75rem;
+    color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+#editPdfForm {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+} 

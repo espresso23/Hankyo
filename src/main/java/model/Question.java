@@ -1,9 +1,11 @@
 package model;
 
 import java.util.ArrayList;
+import java.io.Serializable;
 import java.util.List;
 
-public class Question {
+public class Question implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int questionID;
     private String questionText;
     private String questionImage;
@@ -11,6 +13,7 @@ public class Question {
     private String questionType;
     private double questionMark;
     private int assignmentID;
+    private int examID;
     private List<Answer> answers = new ArrayList<>();//luu bo cau hoi cho 1 question
 
     public Question(int questionID, String questionText, String questionImage, String questionType, String audioFile) {
@@ -88,6 +91,13 @@ public class Question {
         this.assignmentID = assignmentID;
     }
 
+    public int getExamID() {
+        return examID;
+    }
+
+    public void setExamID(int examID) {
+        this.examID = examID;
+    }
 
     @Override
     public String toString() {

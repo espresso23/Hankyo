@@ -4,6 +4,7 @@ let fullName = null;
 let socket = null;
 let reconnectAttempts = 0;
 const maxReconnectAttempts = 5;
+let selectedImage = null;
 
 // Khởi tạo khi trang load
 $(document).ready(function() {
@@ -11,17 +12,83 @@ $(document).ready(function() {
     userID = $("#userID").val();
     fullName = $("#fullName").val();
     
+    console.log('Initial userID:', userID);
+    console.log('Initial fullName:', fullName);
+    
+    // Kiểm tra và chuyển đổi userID thành số
+    if (userID) {
+        userID = parseInt(userID);
+        if (isNaN(userID)) {
+            console.error("Invalid userID format");
+            return;
+        }
+    }
+    
     if (!userID || !fullName) {
         console.error("Missing user information");
         return;
     }
+    
+    console.log('Validated userID:', userID);
     
     // Kết nối WebSocket
     connectToChat();
     
     // Khởi tạo emoji
     initEmoji();
+
+    // Xử lý Enter key
+    $('#message-input').on('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            $('#message-form').submit();
+        }
+    });
+
+    // Xử lý upload ảnh
+    $('#image-upload').on('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                alert('Image size should be less than 5MB');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Data = e.target.result;
+                if (base64Data.length > 2 * 1024 * 1024) { // 2MB base64 limit
+                    alert('Image is too large. Please choose a smaller image.');
+                    return;
+                }
+                selectedImage = base64Data;
+                // Xóa preview cũ nếu có
+                $('.image-preview').remove();
+                
+                // Tạo preview phía trên thanh chat
+                const preview = $('<div class="image-preview" style="position: absolute; bottom: 100%; left: 50px; background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin: 0 auto 10px; min-height: 200px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1);"><div style="position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;"><img src="' + selectedImage + '" alt="Preview" style="max-width: 100%; max-height: 400px; object-fit: contain;"><button onclick="removeImage()" style="position: absolute; top: -20px; right: -20px; background: #ff4444; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; font-size: 18px;">×</button></div></div>');
+                
+                // Thêm preview vào form chat với position relative
+                const messageForm = $('#message-form');
+                messageForm.css('position', 'relative');
+                messageForm.prepend(preview);
+                
+                // Cuộn xuống để hiển thị ảnh
+                $('html, body').animate({
+                    scrollTop: preview.offset().top
+                }, 500);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
 });
+
+function removeImage() {
+    selectedImage = null;
+    $('.image-preview').remove();
+    $('#message-form').css('position', ''); // Reset position
+    $('#image-upload').val('');
+}
 
 function initEmoji() {
     const emojis = ['😀', '😁', '😂', '😃', '😄', '😅', '😆', '😇', '😈', '😉', '😊', '😋', '😌', '😍', '😎', '😏'];
@@ -34,6 +101,11 @@ function initEmoji() {
 
 function connectToChat() {
     try {
+        if (!userID || typeof userID !== 'number') {
+            console.error('Invalid userID for WebSocket connection:', userID);
+            return;
+        }
+        
         // Tạo URL WebSocket
         const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const wsUrl = `${wsProtocol}//${window.location.host}/Hankyo/chat/${userID}`;
@@ -42,7 +114,7 @@ function connectToChat() {
         socket = new WebSocket(wsUrl);
 
         socket.onopen = function() {
-            console.log('WebSocket connection opened for global chat.');
+            console.log('WebSocket connection opened for global chat. UserID:', userID);
             reconnectAttempts = 0;
         };
 
@@ -50,6 +122,17 @@ function connectToChat() {
             try {
                 const response = JSON.parse(event.data);
                 console.log('Received message:', response);
+
+                if (response.error) {
+                    console.error('Server error:', response.error);
+                    alert('Error: ' + response.error);
+                    return;
+                }
+
+                if (response.warning) {
+                    console.warn('Server warning:', response.warning);
+                    return;
+                }
 
                 if (response.message === "You are banned from chatting.") {
                     alert(response.message);
@@ -63,10 +146,14 @@ function connectToChat() {
         };
 
         socket.onclose = function(event) {
-            console.log('WebSocket connection closed. Reconnecting...');
+            console.log('WebSocket connection closed. Code:', event.code, 'Reason:', event.reason);
             if (reconnectAttempts < maxReconnectAttempts) {
                 reconnectAttempts++;
+                console.log('Reconnecting... Attempt', reconnectAttempts, 'of', maxReconnectAttempts);
                 setTimeout(connectToChat, 3000);
+            } else {
+                console.error('Max reconnection attempts reached');
+                alert('Connection lost. Please refresh the page.');
             }
         };
 
@@ -85,18 +172,30 @@ function displayMessage(content) {
         return;
     }
 
+    // Check if message already exists (to prevent duplicates)
+    const existingMessage = $(`li[data-message-id="${content.chatID}"]`);
+    if (existingMessage.length > 0) {
+        return; // Message already displayed
+    }
+
     const censoredMessage = censorBadWords(content.message);
-    const isMyMessage = content.userID === userID;
+    const isMyMessage = content.userID === parseInt(userID);
+    
+    let imageHtml = '';
+    if (content.pictureSend) {
+        imageHtml = `<div class="message-image"><img src="${content.pictureSend}" alt="Sent image" style="max-width: 200px; max-height: 200px;"></div>`;
+    }
     
     const messageHtml = `
-        <li class="${isMyMessage ? 'my-message' : 'other-message'}">
-            <div class="message-wrapper">
-                <span class="sender-name">${content.fullName}</span>
+        <li class="${isMyMessage ? 'my-message' : 'other-message'}" data-message-id="${content.chatID || Date.now()}">
+            <span class="sender-name">${content.fullName}</span>
+            <div class="message-content">
                 <div class="message">
                     ${censoredMessage}
-                    <span class="timestamp-tooltip">${content.timestamp || new Date().toLocaleTimeString()}</span>
+                    ${imageHtml}
+                    <span class="timestamp-tooltip">${content.sendAt || new Date().toLocaleTimeString()}</span>
                 </div>
-                ${!isMyMessage ? `<button onclick="showReportForm(${content.chatID})" class="report-button" style="display: block;">Report</button>` : ''}
+                ${!isMyMessage ? `<button class="report-button" onclick="showReportForm('${content.chatID}', '${content.userID}')">Report</button>` : ''}
             </div>
         </li>
     `;
@@ -111,32 +210,56 @@ $('#message-form').on('submit', function(e) {
     
     if (!socket || socket.readyState !== WebSocket.OPEN) {
         console.error('WebSocket is not connected');
+        alert('Not connected to server. Please wait...');
         return;
     }
 
     const messageInput = $('#message-input').val().trim();
-    if (!messageInput) return;
+    if (!messageInput && !selectedImage) return;
 
     const censoredMessage = censorBadWords(messageInput);
     
+    // Create message object with proper image handling
     const message = {
-        userID: userID,
+        userID: parseInt(userID),
         fullName: fullName,
         message: censoredMessage,
-        timestamp: new Date().toISOString()
+        sendAt: new Date().toLocaleTimeString(),
+        chatID: Date.now()
     };
 
-    // Hiển thị message ngay lập tức
-    displayMessage({
-        ...message,
-        chatID: Date.now() // Tạm thời sử dụng timestamp làm chatID
-    });
+    if (selectedImage) {
+        if (selectedImage.startsWith('http://') || selectedImage.startsWith('https://')) {
+            message.pictureSend = selectedImage;
+        } else if (selectedImage.startsWith('data:image')) {
+            message.pictureSend = selectedImage;
+        } else {
+            console.error('Invalid image format');
+            alert('Invalid image format');
+            return;
+        }
+    }
 
-    // Gửi message qua WebSocket
-    socket.send(JSON.stringify(message));
+    try {
+        // Display the message immediately for the sender
+        displayMessage(message);
 
-    // Xóa input
-    $('#message-input').val('');
+        // Send message to server
+        socket.send(JSON.stringify(message));
+
+        // Clear input, image preview and reset image
+        $('#message-input').val('');
+        removeImage();
+        
+        // Cuộn xuống tin nhắn mới nhất
+        const messageContainer = $('#message-container');
+        messageContainer.animate({
+            scrollTop: messageContainer[0].scrollHeight
+        }, 500);
+    } catch (error) {
+        console.error('Error sending message:', error);
+        alert('Error sending message. Please try again.');
+    }
 });
 
 // Xử lý emoji
@@ -231,8 +354,10 @@ function censorBadWords(message) {
 }
 
 // Xử lý report message
-function showReportForm(chatID) {
+function showReportForm(chatID, userID) {
     document.getElementById('report-chatID').value = chatID;
+    document.getElementById('report-reporterID').value = userID;
+    document.getElementById('report-reportedUserID').value = userID;
     document.getElementById('report-overlay').style.display = 'flex';
 }
 
@@ -243,7 +368,7 @@ function closeReportForm() {
 
 function submitReport() {
     const chatID = document.getElementById('report-chatID').value;
-    const userID = document.getElementById('report-userID').value;
+    const userID = document.getElementById('report-reporterID').value;
     const reportType = document.getElementById('report-type').value;
     const description = document.getElementById('report-description').value;
 
@@ -334,5 +459,5 @@ function refreshChat() {
 }
 
 function closeChat() {
-    window.location.href = '/Hankyo/character?action=home&userID=' + userID;
+    window.location.href = '/Hankyo/home.jsp';
 }

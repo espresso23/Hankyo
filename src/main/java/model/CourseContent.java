@@ -1,6 +1,9 @@
 package model;
 
-public class CourseContent {
+import java.io.Serializable;
+
+public class CourseContent implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int courseContentID;
     private String title;
     private String description;
@@ -94,16 +97,17 @@ public class CourseContent {
 
     @Override
     public String toString() {
-        return "CourseContent{" +
-                "assignment=" + assignment +
-                ", courseContentID=" + courseContentID +
-                ", title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", image='" + image + '\'' +
-                ", courseID=" + courseID +
-                ", media='" + media + '\'' +
-                ", exam=" + exam +
-                '}';
+        StringBuilder sb = new StringBuilder("CourseContent{");
+        sb.append("assignment=").append(assignment != null ? assignment.toString() : "null");
+        sb.append(", courseContentID=").append(courseContentID);
+        sb.append(", title='").append(title).append('\'');
+        sb.append(", description='").append(description).append('\'');
+        sb.append(", image='").append(image).append('\'');
+        sb.append(", courseID=").append(courseID);
+        sb.append(", media='").append(media).append('\'');
+        sb.append(", exam=").append(exam);
+        sb.append('}');
+        return sb.toString();
     }
 
     public void setTitle(String title) {

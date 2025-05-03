@@ -55,19 +55,19 @@ public class CartDAO {
     }
 
     public int getCartItemCount(int learnerID) {
-        String query = "SELECT COUNT(*) as count FROM Cart WHERE learnerID = ? AND status = 'pending'";
-        try {
-            Connection connection = DBConnect.getInstance().getConnection();
-            PreparedStatement stmt = connection.prepareStatement(query);
-            stmt.setInt(1, learnerID);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("count");
+        String sql = "SELECT COUNT(*) FROM Cart WHERE learnerID = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, learnerID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
             }
-            return 0;
         } catch (SQLException e) {
-            throw new RuntimeException("Error getting cart count", e);
+            e.printStackTrace();
         }
+        return 0;
     }
 
     public List<Cart> getPendingCartItems(int learnerID) {

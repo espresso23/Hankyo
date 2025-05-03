@@ -1,6 +1,9 @@
 package model;
 
-public class FavoriteFlashCard {
+import java.io.Serializable;
+
+public class FavoriteFlashCard implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int FCID;
     private Dictionary dictionary;
     private String nameOfList;

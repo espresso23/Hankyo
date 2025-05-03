@@ -1,77 +1,191 @@
 package dao;
 
-import filter.BadwordsFilter;
-import model.Chat;
 import util.DBConnect;
+import model.Chat;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.http.Part;
+
+import cloud.CloudinaryConfig;
+import com.cloudinary.utils.ObjectUtils;
+
+import java.io.*;
+import java.util.Map;
 
 public class ChatDAO {
-
     private static final Logger LOGGER = Logger.getLogger(ChatDAO.class.getName());
+    private final Connection connection;
 
-    private Connection getConnection() throws SQLException, Exception {
-        // Use the DatabaseConnect utility for obtaining the connection
-        return DBConnect.getInstance().getConnection();
+    public String uploadImageToCloudinary(Part filePart) throws IOException {
+        if (filePart == null || filePart.getSize() == 0) {
+            throw new IOException("Không có file ảnh được chọn.");
+        }
+
+        String fileName = filePart.getSubmittedFileName();
+        if (fileName == null || !fileName.matches(".*\\.(png|jpg|jpeg|gif|webp)$")) {
+            throw new IOException("Chỉ chấp nhận file ảnh (png, jpg, jpeg, gif, webp)");
+        }
+
+        fileName = fileName.replaceAll("[^\\w.-]", "_");
+        File tempFile = File.createTempFile("chat_img_", "_" + fileName);
+        try (InputStream input = filePart.getInputStream();
+             OutputStream output = new FileOutputStream(tempFile)) {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = input.read(buffer)) != -1) {
+                output.write(buffer, 0, bytesRead);
+            }
+        }
+
+        Map<String, Object> uploadOptions = ObjectUtils.asMap(
+                "resource_type", "image",
+                "folder", "chat_images",
+                "public_id", "chat_" + System.currentTimeMillis(),
+                "overwrite", false,
+                "unique_filename", true
+        );
+
+        Map<?, ?> uploadResult = CloudinaryConfig.getCloudinary()
+                .uploader()
+                .upload(tempFile, uploadOptions);
+
+        String url = (String) uploadResult.get("secure_url");
+        if (url == null || url.isEmpty()) {
+            throw new IOException("Upload ảnh thất bại.");
+        }
+
+        // Return the clean URL without any prefix
+        return url;
     }
 
-    public void save(Chat chat) {
-        // First, retrieve characterName using JOIN
-        String selectSql = "SELECT c.fullName FROM [user] c WHERE c.userID = ?";
-
-        try (Connection conn = getConnection(); PreparedStatement selectStmt = conn.prepareStatement(selectSql)) {
-            selectStmt.setInt(1, chat.getUserID());
-            ResultSet rs = selectStmt.executeQuery();
-            if (rs.next()) {
-                String fullName = rs.getString("fullName");
-                chat.setFullName(fullName);
-                // Censor bad words in the message
-                String censoredMessage = BadwordsFilter.censorBadWords(chat.getMessage());
-                chat.setMessage(censoredMessage);
-
-                // Now insert the chat message
-                String sql = "INSERT INTO chat (userID, fullName, message) VALUES (?, ?, ?)";
-                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                    stmt.setInt(1, chat.getUserID());  // Corrected method call
-                    stmt.setString(2, chat.getFullName()); // Added characterName from database
-                    stmt.setString(3, chat.getMessage());
-                    stmt.executeUpdate();
-                }
-            } else {
-                LOGGER.warning("Character ID not found: " + chat.getUserID());
-            }
-        } catch (SQLException e) {
-            // Log the exception for debugging
-            LOGGER.log(Level.SEVERE, "SQL error while saving message", e);
+    public ChatDAO() {
+        try {
+            this.connection = DBConnect.getInstance().getConnection();
         } catch (Exception e) {
-            // Log any other exceptions
-            LOGGER.log(Level.SEVERE, "Error while saving message", e);
+            LOGGER.log(Level.SEVERE, "Error initializing database connection", e);
+            throw new RuntimeException("Failed to initialize database connection", e);
         }
     }
 
-    public List<Chat> getAll() {
-        List<Chat> chat = new ArrayList<>();
-        String sql = "SELECT * FROM chat ORDER BY sendAt ASC";
-        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                int chatID = rs.getInt("chatID");
-                int userID = rs.getInt("userID");
-                String fullName = rs.getString("fullName");
-                String message = rs.getString("message");
-                Timestamp sendAt = rs.getTimestamp("sendAt");
-                // Remove the extra comma at the end
-                chat.add(new Chat(chatID, userID, message, sendAt, fullName));
+    public boolean save(Chat chat) {
+        boolean result = false;
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = DBConnect.getInstance().getConnection();
+            LOGGER.info("Database connection established successfully");
+
+            // Check if pictureSend is a URL (starts with http:// or https://)
+            boolean isCloudUrl = chat.getPictureSend() != null &&
+                    (chat.getPictureSend().startsWith("http://") ||
+                            chat.getPictureSend().startsWith("https://"));
+            
+            boolean isBase64 = chat.getPictureSend() != null &&
+                    chat.getPictureSend().startsWith("data:image");
+
+            LOGGER.info("Picture data check - Length: " + (chat.getPictureSend() != null ? chat.getPictureSend().length() : 0) + 
+                    ", Type: " + (chat.getPictureSend() != null ?
+                    (isCloudUrl ? "Cloud URL" : 
+                     isBase64 ? "Base64 data" : "Unknown format") : 
+                    "No picture data"));
+
+            // Build SQL statement
+            StringBuilder sqlBuilder = new StringBuilder();
+            sqlBuilder.append("INSERT INTO chat (userID, fullName, message, sendAt");
+            
+            if (chat.getPictureSend() != null) {
+                sqlBuilder.append(", pictureSend");
             }
+            
+            sqlBuilder.append(") VALUES (?, ?, ?, GETDATE()");
+            
+            if (chat.getPictureSend() != null) {
+                sqlBuilder.append(", ?");
+            }
+            
+            sqlBuilder.append(")");
+            
+            String sql = sqlBuilder.toString();
+            LOGGER.info("SQL statement: " + sql);
+
+            stmt = conn.prepareStatement(sql);
+            int paramIndex = 1;
+            
+            // Set parameters
+            stmt.setInt(paramIndex++, chat.getUserID());
+            stmt.setString(paramIndex++, chat.getFullName());
+            stmt.setString(paramIndex++, chat.getMessage());
+
+            if (chat.getPictureSend() != null) {
+                // For base64 images, store them as is without truncation
+                String pictureData = chat.getPictureSend();
+                LOGGER.info("Setting picture data - Length: " + pictureData.length() + 
+                           ", First 100 chars: " + pictureData.substring(0, Math.min(100, pictureData.length())));
+                stmt.setString(paramIndex, pictureData);
+            }
+
+            LOGGER.info("Executing SQL statement...");
+            int rowsAffected = stmt.executeUpdate();
+            result = rowsAffected > 0;
+            LOGGER.info("SQL execution result: " + (result ? "Success" : "Failed") +
+                    " (rows affected: " + rowsAffected + ")");
+
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "SQL error while fetching messages", e);
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error while fetching messages", e);
+            LOGGER.log(Level.SEVERE, "Database error in save: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to save chat message", e);
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                LOGGER.log(Level.SEVERE, "Error closing database resources", e);
+            }
         }
-        return chat;
+
+        return result;
     }
 
+    public List<Chat> getAllChats() {
+        List<Chat> chats = new ArrayList<>();
+        String sql = "SELECT chatID, userID, fullName, message, pictureSend, " +
+                "CAST(CAST(sendAt AS DATETIME2) AS VARCHAR(23)) as sendAt " +
+                "FROM Chat " +
+                "ORDER BY sendAt ASC";
+
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(sql)) {
+
+            while (resultSet.next()) {
+                Chat chat = new Chat(
+                        resultSet.getInt("chatID"),
+                        resultSet.getInt("userID"),
+                        resultSet.getString("message"),
+                        resultSet.getTimestamp("sendAt"),
+                        resultSet.getString("fullName"),
+                        resultSet.getString("pictureSend")
+                );
+                chats.add(chat);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error retrieving chat messages", e);
+            throw new RuntimeException("Error retrieving chat messages", e);
+        }
+
+        return chats;
+    }
+
+    public void close() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error closing database connection", e);
+        }
+    }
 }
