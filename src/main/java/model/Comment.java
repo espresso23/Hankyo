@@ -22,6 +22,15 @@ public class Comment {
     public int score;
     public String postHeading;
     private List<Comment> replies = new ArrayList<>();
+    private String username;
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
     public List<Comment> getReplies() {
         return replies;

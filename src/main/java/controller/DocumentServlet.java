@@ -33,45 +33,38 @@ public class DocumentServlet extends HttpServlet {
         String filterType = request.getParameter("filterType");
 
         try {
-            // Truy vấn theo docID (xem chi tiết tài liệu)
+            boolean isVIP = isUserVIP(session);
+
+            // Truy vấn chi tiết tài liệu
             if (docIDParam != null) {
                 int docID = Integer.parseInt(docIDParam);
                 Documentary doc = documentaryDAO.getDocumentById(docID);
 
                 if (doc == null) {
                     response.sendRedirect("documents");
-                } else {
-                    request.setAttribute("document", doc);
-                    request.getRequestDispatcher("document-detail.jsp").forward(request, response);
+                    return;
                 }
+
+                if ("VIP Documents".equalsIgnoreCase(doc.getType()) && !isVIP && !isAdmin(user)) {
+                    request.setAttribute("vipOnly", true); // thông báo overlay trong JSP
+                }
+
+                request.setAttribute("document", doc);
+                request.getRequestDispatcher("document-detail.jsp").forward(request, response);
                 return;
             }
 
             // Lấy danh sách loại tài liệu
             List<String> allTypes = new ArrayList<>(documentaryDAO.getAllDocumentTypes());
-
-            boolean isVIP = isUserVIP(session);
             request.setAttribute("documentTypes", allTypes);
 
-
-            // Lọc danh sách tài liệu
+            // Lọc theo loại nếu có
             List<Documentary> docs;
-            if ("VIP Documents".equals(filterType)) {
-                if (!isVIP && !isAdmin(user)) {
-                    docs = List.of(); // không có quyền xem VIP
-                } else {
-                    docs = documentaryDAO.getDocumentsByType("VIP Documents");
-                }
-            } else if (filterType != null && !filterType.isEmpty()) {
+            if (filterType != null && !filterType.isEmpty()) {
                 docs = documentaryDAO.getDocumentsByType(filterType);
             } else {
-                docs = documentaryDAO.getAllDocuments();
-                if (!isVIP && !isAdmin(user)) {
-                    // Lọc bỏ tài liệu VIP khỏi danh sách
-                    docs.removeIf(d -> "VIP Documents".equalsIgnoreCase(d.getType()));
-                }
+                docs = documentaryDAO.getAllDocuments(); // luôn hiển thị toàn bộ
             }
-
 
             request.setAttribute("documents", docs);
             request.getRequestDispatcher("document-list.jsp").forward(request, response);
@@ -81,6 +74,7 @@ public class DocumentServlet extends HttpServlet {
             response.sendRedirect("documents");
         }
     }
+
     private boolean isAdmin(User user) {
         return user != null && "admin".equalsIgnoreCase(user.getRole());
     }

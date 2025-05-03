@@ -526,7 +526,8 @@
                                     <img class="post-avatar"
                                          src="${post.avtUserImg != null ? post.avtUserImg : 'https://dongvat.edu.vn/upload/2025/01/avatar-cho-hai-04.webp'}"
                                          alt="User Avatar">
-                                    <span class="post-username"><a href="profile?user=${post.userName}">${post.userFullName}</a></span>
+                                    <span class="post-username"><a href="profile?user=${post.userName}&tab=overview"
+       onclick="event.stopPropagation();">${not empty post.userFullName ? post.userFullName : post.userName}</a></span>
                                 </div>
                             </div>
                             <div class="post-content">

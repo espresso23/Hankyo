@@ -122,7 +122,7 @@
 <div class="sidebar">
     <div class="profile-card">
         <div class="profile-header">
-            <h3><c:out value="${user.username}"/></h3>
+            <h3><c:out value="${profileUser.username}"/></h3>
         </div>
 
         <div class="profile-stats">
@@ -139,15 +139,15 @@
         <div class="join-date">
             <i class="fas fa-birthday-cake"></i>
             Ngày tham gia:
-            <fmt:formatDate value="${user.dateCreate}" pattern="d 'thg' M, yyyy"/>
+            <fmt:formatDate value="${profileUser.dateCreate}" pattern="d 'thg' M, yyyy"/>
         </div>
 
         <div class="profile-info">
             <i class="fas fa-venus-mars"></i>
             Giới tính:
             <c:choose>
-                <c:when test="${user.gender == 'male'}">Nam</c:when>
-                <c:when test="${user.gender == 'female'}">Nữ</c:when>
+                <c:when test="${profileUser.gender == 'male'}">Nam</c:when>
+                <c:when test="${profileUser.gender == 'female'}">Nữ</c:when>
                 <c:otherwise>Khác</c:otherwise>
             </c:choose>
         </div>
@@ -155,28 +155,31 @@
         <div class="profile-info">
             <i class="fas fa-calendar-alt"></i>
             Ngày sinh:
-            <fmt:formatDate value="${user.dateOfBirth}" pattern="d 'thg' M, yyyy"/>
-        </div>
-    </div>
-    <div class="settings-section">
-        <div class="settings-title">CÀI ĐẶT</div>
-        <div class="settings-item">
-            <i class="fas fa-user"></i>
-            <span>Tùy chỉnh hồ sơ</span>
-        </div>
-        <div class="settings-item">
-            <i class="fas fa-trophy"></i>
-            <span>Các thành tựu đã đạt được</span>
+            <fmt:formatDate value="${profileUser.dateOfBirth}" pattern="d 'thg' M, yyyy"/>
         </div>
     </div>
 
-    <div class="settings-section">
-        <div class="settings-title">LIÊN KẾT</div>
-        <div class="settings-item">
-            <i class="fas fa-link"></i>
-            <span>Thêm liên kết mạng xã hội</span>
+    <c:if test="${isOwnProfile}">
+        <div class="settings-section">
+            <div class="settings-title">CÀI ĐẶT</div>
+            <div class="settings-item">
+                <i class="fas fa-user"></i>
+                <span>Tùy chỉnh hồ sơ</span>
+            </div>
+            <div class="settings-item">
+                <i class="fas fa-trophy"></i>
+                <span>Các thành tựu đã đạt được</span>
+            </div>
         </div>
-    </div>
+
+        <div class="settings-section">
+            <div class="settings-title">LIÊN KẾT</div>
+            <div class="settings-item">
+                <i class="fas fa-link"></i>
+                <span>Thêm liên kết mạng xã hội</span>
+            </div>
+        </div>
+    </c:if>
 </div>
 </body>
 </html>

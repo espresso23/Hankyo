@@ -11,6 +11,7 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 
 @MultipartConfig(
@@ -23,6 +24,7 @@ public class ProfileController extends HttpServlet {
     private PostDAO postDAO = new PostDAO();
     private CommentDAO commentDAO = new CommentDAO();
     private ReportDAO reportDAO = new ReportDAO();
+    private UserDAO userDAO = new UserDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -37,117 +39,36 @@ public class ProfileController extends HttpServlet {
             return;
         }
 
-        String usernameParam = request.getParameter("user"); // user đang được xem
-        String tab = request.getParameter("tab");
-        if (tab == null) tab = "overview";
-
-        UserDAO userDAO = new UserDAO();
-        User profileUser;
-        boolean isOwnProfile = false;
+        String usernameParam = request.getParameter("user");
+        String tab = request.getParameter("tab") != null ? request.getParameter("tab") : "overview";
 
         try {
-            if (usernameParam != null && !usernameParam.isEmpty() && !usernameParam.equalsIgnoreCase(loggedInUser.getUsername())) {
-                profileUser = userDAO.getUserByUserName(usernameParam);
-                if (profileUser == null) {
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND, "Người dùng không tồn tại.");
-                    return;
-                }
-                // Khi xem profile người khác
-                request.setAttribute("profileUser", profileUser);
-                request.setAttribute("isOwnProfile", false);
-            } else {
-                // Khi xem profile chính mình
-                profileUser = loggedInUser;
-                isOwnProfile = true;
-                request.setAttribute("user", loggedInUser); // Sử dụng user từ session
-                request.setAttribute("isOwnProfile", true);
-            }
-
-            int postCount = postDAO.getPostCountByUserID(profileUser.getUserID());
-            int commentCount = commentDAO.getCommentCountByUserID(profileUser.getUserID());
-            request.setAttribute("postCount", postCount);
-            request.setAttribute("commentCount", commentCount);
-
-            // Kiểm tra các tab chỉ dành cho chủ profile
-            if (!isOwnProfile && (tab.equals("downvoted") || tab.equals("upvoted") || tab.equals("reported"))) {
-                response.sendRedirect("profile?user=" + (usernameParam != null ? usernameParam : "") + "&tab=overview");
+            ProfileAccessInfo accessInfo = determineProfileAccess(loggedInUser, usernameParam);
+            if (accessInfo == null) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Người dùng không tồn tại.");
                 return;
             }
-            System.out.println("Logged in user: " + loggedInUser);
-            System.out.println("Username param: " + usernameParam);
-            System.out.println("Is own profile: " + isOwnProfile);
-            System.out.println("Profile user: " + profileUser);
 
-            switch (tab) {
-                case "posts":
-                    List<Post> posts = postDAO.getPostsByUserID(profileUser.getUserID());
-                    for (Post post : posts) {
-                        post.setCommentCount(postDAO.getCommentCount(post.getPostID()));
-                    }
-                    request.setAttribute("userPosts", posts);
-                    request.getRequestDispatcher("posts.jsp").forward(request, response);
-                    break;
+            request.setAttribute("profileUser", accessInfo.profileUser);
+            request.setAttribute("isOwnProfile", accessInfo.isOwnProfile);
+            request.setAttribute("user", loggedInUser);
 
-                case "comments":
-                    List<Comment> comments = commentDAO.getCommentsByUserID(profileUser.getUserID());
-                    request.setAttribute("userComments", comments);
-                    request.getRequestDispatcher("comments.jsp").forward(request, response);
-                    break;
+            setBasicStatistics(request, accessInfo.profileUser);
 
-                case "upvoted":
-                    if (isOwnProfile) {
-                        List<Post> upvotedPosts = postDAO.getUpvotedPostsByUserID(profileUser.getUserID());
-                        for (Post post : upvotedPosts) {
-                            post.setCommentCount(postDAO.getCommentCount(post.getPostID()));
-                        }
-                        request.setAttribute("upvotedPosts", upvotedPosts);
-                        request.getRequestDispatcher("upvoted.jsp").forward(request, response);
-                    }
-                    break;
+            handleProfileTabs(request, response, accessInfo.profileUser, tab, accessInfo.isOwnProfile);
 
-                case "downvoted":
-                    if (isOwnProfile) {
-                        List<Post> downvotedPosts = postDAO.getDownvotedPostsByUserID(profileUser.getUserID());
-                        for (Post post : downvotedPosts) {
-                            post.setCommentCount(postDAO.getCommentCount(post.getPostID()));
-                        }
-                        request.setAttribute("downvotedPosts", downvotedPosts);
-                        request.getRequestDispatcher("downvoted.jsp").forward(request, response);
-                    }
-                    break;
-
-                case "reported":
-                    if (isOwnProfile) {
-                        List<Report> reportedPosts = reportDAO.getReportedPostsByUserID(profileUser.getUserID());
-                        List<Report> reportedComments = reportDAO.getReportedCommentsByUserID(profileUser.getUserID());
-                        request.setAttribute("reportedPosts", reportedPosts);
-                        request.setAttribute("reportedComments", reportedComments);
-                        request.getRequestDispatcher("reported.jsp").forward(request, response);
-                    }
-                    break;
-
-                default:
-                    List<Post> overviewPosts = postDAO.getPostsByUserID(profileUser.getUserID());
-                    for (Post post : overviewPosts) {
-                        post.setCommentCount(postDAO.getCommentCount(post.getPostID()));
-                    }
-                    request.setAttribute("userPosts", overviewPosts);
-                    request.getRequestDispatcher("overview.jsp").forward(request, response);
-                    break;
-            }
         } catch (Exception e) {
             e.printStackTrace();
             throw new ServletException("Lỗi xử lý profile", e);
         }
     }
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
-        UserDAO userDAO = new UserDAO();
-        String action = request.getParameter("action");
+
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute("user");
 
@@ -157,63 +78,19 @@ public class ProfileController extends HttpServlet {
         }
 
         try {
-            // Xử lý addPost trước các xử lý khác
+            String action = request.getParameter("action");
+
             if ("addPost".equals(action)) {
-                String title = request.getParameter("title");
-                String description = request.getParameter("description");
-
-                Post newPost = new Post();
-                newPost.setUserID(user.getUserID());
-                newPost.setHeading(title);
-                newPost.setContent(description);
-                newPost.setCreatedDate(new java.util.Date());
-
-                boolean success = postDAO.createPost(newPost);
-
-                if (success) {
-                    response.sendRedirect("profile?tab=overview&msg=post_created");
-                } else {
-                    response.sendRedirect("profile?tab=overview&msg=post_failed");
-                }
-                return; // Quan trọng: return ngay sau khi xử lý xong
-            }
-
-            // Các xử lý khác
-            CloudinaryConfig cloudinaryConfig = new CloudinaryConfig();
-
-            if ("deleteReport".equals(action)) {
-                int reportID = Integer.parseInt(request.getParameter("reportID"));
-                boolean deleted = reportDAO.deleteReportByID(reportID);
-                response.sendRedirect("profile?tab=reported&msg=" + (deleted ? "deleted" : "fail"));
+                handleAddPost(request, response, user);
                 return;
             }
 
-            // Xử lý avatar và cover photo
-            Part avatarPart = request.getPart("avatar");
-            Part coverPart = request.getPart("coverPhoto");
-
-            boolean updated = false;
-
-            if (avatarPart != null && avatarPart.getSize() > 0) {
-                String avatarUrl = cloudinaryConfig.convertMediaToUrl(avatarPart);
-                user.setAvatar(avatarUrl);
-                userDAO.updateAvatar(user.getUserID(), avatarUrl);
-                updated = true;
+            if ("deleteReport".equals(action)) {
+                handleDeleteReport(request, response);
+                return;
             }
 
-            if (coverPart != null && coverPart.getSize() > 0) {
-                String coverUrl = cloudinaryConfig.convertMediaToUrl(coverPart);
-                user.setCoverPhoto(coverUrl);
-                userDAO.updateCoverPhoto(user.getUserID(), coverUrl);
-                updated = true;
-            }
-
-            if (updated) {
-                session.setAttribute("user", user);
-                response.sendRedirect("profile?tab=overview&msg=updated");
-            } else {
-                response.sendRedirect("profile?tab=overview&msg=nochange");
-            }
+            handleProfileMediaUpdate(request, response, user);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -221,6 +98,149 @@ public class ProfileController extends HttpServlet {
         }
     }
 
+    private ProfileAccessInfo determineProfileAccess(User loggedInUser, String usernameParam) throws SQLException {
+        if (usernameParam == null || usernameParam.isEmpty() || usernameParam.equalsIgnoreCase(loggedInUser.getUsername())) {
+            return new ProfileAccessInfo(loggedInUser, true);
+        }
 
+        User profileUser = userDAO.getUserByUserName(usernameParam);
+        if (profileUser == null) {
+            return null;
+        }
 
+        return new ProfileAccessInfo(profileUser, false);
+    }
+
+    private void setBasicStatistics(HttpServletRequest request, User profileUser) throws SQLException {
+        request.setAttribute("postCount", postDAO.getPostCountByUserID(profileUser.getUserID()));
+        request.setAttribute("commentCount", commentDAO.getCommentCountByUserID(profileUser.getUserID()));
+    }
+
+    private void handleProfileTabs(HttpServletRequest request, HttpServletResponse response,
+                                   User profileUser, String tab, boolean isOwnProfile)
+            throws Exception {
+
+        switch (tab) {
+            case "posts":
+                List<Post> posts = postDAO.getPostsByUserID(profileUser.getUserID());
+                enrichPostsWithAdditionalData(posts);
+                request.setAttribute("userPosts", posts);
+                request.getRequestDispatcher("posts.jsp").forward(request, response);
+                break;
+
+            case "comments":
+                List<Comment> comments = commentDAO.getCommentsByUserID(profileUser.getUserID());
+                request.setAttribute("userComments", comments);
+                request.getRequestDispatcher("comments.jsp").forward(request, response);
+                break;
+
+            case "upvoted":
+                List<Post> upvotedPosts = postDAO.getUpvotedPostsByUserID(profileUser.getUserID());
+                enrichPostsWithCreatorInfo(upvotedPosts);
+                request.setAttribute("upvotedPosts", upvotedPosts);
+                request.getRequestDispatcher("upvoted.jsp").forward(request, response);
+                break;
+
+            case "downvoted":
+                List<Post> downvotedPosts = postDAO.getDownvotedPostsByUserID(profileUser.getUserID());
+                enrichPostsWithAdditionalData(downvotedPosts);
+                request.setAttribute("downvotedPosts", downvotedPosts);
+                request.getRequestDispatcher("downvoted.jsp").forward(request, response);
+                break;
+
+            case "reported":
+                List<Report> reportedPosts = reportDAO.getReportedPostsByUserID(profileUser.getUserID());
+                List<Report> reportedComments = reportDAO.getReportedCommentsByUserID(profileUser.getUserID());
+                request.setAttribute("reportedPosts", reportedPosts);
+                request.setAttribute("reportedComments", reportedComments);
+                request.getRequestDispatcher("reported.jsp").forward(request, response);
+                break;
+
+            default: // overview
+                List<Post> overviewPosts = postDAO.getPostsByUserID(profileUser.getUserID());
+                enrichPostsWithAdditionalData(overviewPosts);
+                request.setAttribute("userPosts", overviewPosts);
+                request.getRequestDispatcher("overview.jsp").forward(request, response);
+                break;
+        }
+    }
+
+    private void enrichPostsWithAdditionalData(List<Post> posts) {
+        for (Post post : posts) {
+            post.setCommentCount(postDAO.getCommentCount(post.getPostID()));
+        }
+    }
+
+    private void enrichPostsWithCreatorInfo(List<Post> posts) throws SQLException {
+        for (Post post : posts) {
+            post.setCommentCount(postDAO.getCommentCount(post.getPostID()));
+            User creator = userDAO.getUserByID(post.getUserID());
+            if (creator != null) {
+                post.setUserName(creator.getUsername());
+                post.setUserFullName(creator.getFullName());
+                post.setAvtUserImg(creator.getAvatar());
+            }
+        }
+    }
+
+    private void handleAddPost(HttpServletRequest request, HttpServletResponse response, User user)
+            throws Exception {
+        String title = request.getParameter("title");
+        String description = request.getParameter("description");
+
+        Post newPost = new Post();
+        newPost.setUserID(user.getUserID());
+        newPost.setHeading(title);
+        newPost.setContent(description);
+        newPost.setCreatedDate(new java.util.Date());
+
+        boolean success = postDAO.createPost(newPost);
+
+        response.sendRedirect("profile?tab=overview&msg=" + (success ? "post_created" : "post_failed"));
+    }
+
+    private void handleDeleteReport(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        int reportID = Integer.parseInt(request.getParameter("reportID"));
+        boolean deleted = reportDAO.deleteReportByID(reportID);
+        response.sendRedirect("profile?tab=reported&msg=" + (deleted ? "deleted" : "fail"));
+    }
+
+    private void handleProfileMediaUpdate(HttpServletRequest request, HttpServletResponse response, User user)
+            throws IOException, ServletException, SQLException {
+        CloudinaryConfig cloudinaryConfig = new CloudinaryConfig();
+        boolean updated = false;
+
+        Part avatarPart = request.getPart("avatar");
+        if (avatarPart != null && avatarPart.getSize() > 0) {
+            String avatarUrl = cloudinaryConfig.convertMediaToUrl(avatarPart);
+            user.setAvatar(avatarUrl);
+            userDAO.updateAvatar(user.getUserID(), avatarUrl);
+            updated = true;
+        }
+
+        Part coverPart = request.getPart("coverPhoto");
+        if (coverPart != null && coverPart.getSize() > 0) {
+            String coverUrl = cloudinaryConfig.convertMediaToUrl(coverPart);
+            user.setCoverPhoto(coverUrl);
+            userDAO.updateCoverPhoto(user.getUserID(), coverUrl);
+            updated = true;
+        }
+
+        if (updated) {
+            request.getSession().setAttribute("user", user);
+        }
+
+        response.sendRedirect("profile?tab=overview&msg=" + (updated ? "updated" : "nochange"));
+    }
+
+    private static class ProfileAccessInfo {
+        User profileUser;
+        boolean isOwnProfile;
+
+        ProfileAccessInfo(User profileUser, boolean isOwnProfile) {
+            this.profileUser = profileUser;
+            this.isOwnProfile = isOwnProfile;
+        }
+    }
 }

@@ -77,7 +77,7 @@ public class PostDAO {
 
     public List<Post> getAllPostsHaveFullNameAndAvtImg() throws Exception {
         List<Post> posts = new ArrayList<>();
-        String query = "SELECT * FROM Post WHERE status = 1 ORDER BY CreatedDate DESC";
+        String query = "SELECT p.*, u.username FROM Post p JOIN [User] u ON p.UserID = u.UserID WHERE p.status = 1 ORDER BY p.CreatedDate DESC";
         System.out.println("Executing query: " + query);
 
         try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
@@ -93,6 +93,7 @@ public class PostDAO {
                         rs.getBoolean("status")
                 );
                 post.setScore(rs.getInt("ScorePost"));
+                post.setUserName(rs.getString("username"));
                 String fullName = userDAO.getFullNameByUserId(post.getUserID());
                 if (fullName != null) {
                     post.setUserFullName(fullName);
@@ -180,7 +181,7 @@ public class PostDAO {
     // Get post by ID if it's active
     public Post getPostById(int postID) throws Exception {
         Post post = null;
-        String query = "SELECT * FROM Post WHERE PostID = ? AND status = 1";
+        String query = "SELECT c.*, u.username FROM Post c join [User] u ON c.UserID = u.UserID  WHERE c.PostID = ? AND c.status = 1";
         try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, postID);
             try (ResultSet rs = ps.executeQuery()) {
@@ -195,6 +196,7 @@ public class PostDAO {
                             rs.getBoolean("status"),
                             rs.getInt("ScorePost")
                     );
+                    post.setUserName(rs.getString("username"));
                 }
             }
         } catch (SQLException e) {
@@ -252,7 +254,7 @@ public class PostDAO {
     // Get posts ordered by latest (newest to oldest)
     public List<Post> getPostsOrderedByLatest() throws Exception {
         List<Post> posts = new ArrayList<>();
-        String query = "SELECT * FROM Post WHERE status = 1 ORDER BY CreatedDate DESC";
+        String query = "SELECT p.*, u.username FROM Post p JOIN [User] u ON p.UserID = u.UserID WHERE p.status = 1 ORDER BY p.CreatedDate DESC";
         try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
@@ -266,6 +268,7 @@ public class PostDAO {
                         rs.getBoolean("status")
                 );
                 post.setScore(rs.getInt("ScorePost"));
+                post.setUserName(rs.getString("username"));
 
                 String fullName = userDAO.getFullNameByUserId(post.getUserID());
                 post.setUserFullName(fullName != null ? fullName : "Unknown");
@@ -284,7 +287,7 @@ public class PostDAO {
     // Get the latest post
     public Post getLatestPost() throws Exception {
         Post post = null;
-        String query = "SELECT TOP 1 * FROM Post WHERE status = 1 ORDER BY CreatedDate DESC";
+        String query = "SELECT TOP 1 p.*, u.username FROM Post p JOIN [User] u ON p.UserID = u.UserID WHERE p.status = 1 ORDER BY p.CreatedDate DESC";
         try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -297,6 +300,14 @@ public class PostDAO {
                             rs.getTimestamp("CreatedDate"),
                             rs.getBoolean("status")
                     );
+                    post.setScore(rs.getInt("ScorePost"));
+                    post.setUserName(rs.getString("username"));
+                    
+                    String fullName = userDAO.getFullNameByUserId(post.getUserID());
+                    post.setUserFullName(fullName != null ? fullName : "Unknown");
+
+                    String avatarURL = userDAO.getAvatarByUserId(post.getUserID());
+                    post.setAvtUserImg(avatarURL != null ? avatarURL : "default-avatar.png");
                 }
             }
         } catch (SQLException e) {
@@ -345,11 +356,11 @@ public class PostDAO {
 
     public List<Post> getPostsByUserID(int userId) throws Exception {
         List<Post> posts = new ArrayList<>();
-        String query = "SELECT * FROM Post WHERE status = 1 AND UserID = ? ORDER BY CreatedDate DESC";
+        String query = "SELECT p.*, u.username FROM Post p JOIN [User] u ON p.UserID = u.UserID WHERE p.status = 1 AND p.UserID = ? ORDER BY p.CreatedDate DESC";
         System.out.println("Executing query: " + query);
 
         try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
-            ps.setInt(1, userId); // Đặt tham số cho PreparedStatement
+            ps.setInt(1, userId);
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -362,6 +373,7 @@ public class PostDAO {
                             rs.getTimestamp("CreatedDate"),
                             rs.getBoolean("status")
                     );
+                    post.setUserName(rs.getString("username"));
 
                     String fullName = userDAO.getFullNameByUserId(post.getUserID());
                     if (fullName != null) {
@@ -428,7 +440,7 @@ public class PostDAO {
 
     public List<Post> getPostsOrderedFilterByScore() throws Exception {
         List<Post> posts = new ArrayList<>();
-        String query = "SELECT * FROM Post ORDER BY ScorePost DESC";
+        String query = "SELECT p.*, u.username FROM Post p JOIN [User] u ON p.UserID = u.UserID ORDER BY p.ScorePost DESC";
         try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
@@ -442,6 +454,7 @@ public class PostDAO {
                         rs.getBoolean("status")
                 );
                 post.setScore(rs.getInt("ScorePost"));
+                post.setUserName(rs.getString("username"));
                 String fullName = userDAO.getFullNameByUserId(post.getUserID());
                 post.setUserFullName(fullName != null ? fullName : "Unknown");
 
@@ -457,7 +470,7 @@ public class PostDAO {
     }
     public List<Post> getPostsOrderedByScore() throws Exception {
         List<Post> posts = new ArrayList<>();
-        String query = "SELECT TOP 3 * FROM Post ORDER BY ScorePost DESC";
+        String query = "SELECT TOP 3 p.*, u.username FROM Post p JOIN [User] u ON p.UserID = u.UserID WHERE p.status = 1 ORDER BY p.ScorePost DESC";
         try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
@@ -471,6 +484,14 @@ public class PostDAO {
                         rs.getBoolean("status")
                 );
                 post.setScore(rs.getInt("ScorePost"));
+                post.setUserName(rs.getString("username"));
+                
+                String fullName = userDAO.getFullNameByUserId(post.getUserID());
+                post.setUserFullName(fullName != null ? fullName : "Unknown");
+
+                String avatarURL = userDAO.getAvatarByUserId(post.getUserID());
+                post.setAvtUserImg(avatarURL != null ? avatarURL : "default-avatar.png");
+
                 posts.add(post);
             }
         } catch (SQLException e) {
@@ -732,7 +753,7 @@ public class PostDAO {
     }
     public List<Post> searchPosts(String query) {
         List<Post> posts = new ArrayList<>();
-        String sql = "SELECT p.*, u.fullName, u.avatar, (SELECT COUNT(*) FROM Comment c WHERE c.postID = p.postID) AS commentCount FROM Post p JOIN dbo.[User] u ON p.userID = u.userID WHERE p.heading LIKE ? OR p.content LIKE ? ORDER BY p.CreatedDate DESC";
+        String sql = "SELECT p.*,u.username, u.fullName, u.avatar, (SELECT COUNT(*) FROM Comment c WHERE c.postID = p.postID) AS commentCount FROM Post p JOIN dbo.[User] u ON p.userID = u.userID WHERE p.heading LIKE ? OR p.content LIKE ? ORDER BY p.CreatedDate DESC";
 
         try (Connection conn = dbContext.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -748,6 +769,7 @@ public class PostDAO {
                 post.setHeading(rs.getString("Heading"));
                 post.setContent(rs.getString("Content"));
                 post.setUserID(rs.getInt("UserID"));
+                post.setUserName(rs.getString("username"));
                 post.setCreatedDate(rs.getTimestamp("CreatedDate"));
                 post.setUserFullName(rs.getString("fullName"));
                 post.setAvtUserImg(rs.getString("avatar"));
@@ -762,7 +784,7 @@ public class PostDAO {
     }
     public List<Post> getPostsOrderedByOldest() throws Exception {
         List<Post> posts = new ArrayList<>();
-        String query = "SELECT * FROM Post WHERE status = 1 ORDER BY CreatedDate ASC";
+        String query = "SELECT p.*, u.username FROM Post p JOIN [User] u ON p.UserID = u.UserID WHERE p.status = 1 ORDER BY p.CreatedDate ASC";
         try (Connection conn = dbContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
@@ -778,6 +800,7 @@ public class PostDAO {
                         rs.getBoolean("status")
                 );
                 post.setScore(rs.getInt("ScorePost"));
+                post.setUserName(rs.getString("username"));
 
                 String fullName = userDAO.getFullNameByUserId(post.getUserID());
                 post.setUserFullName(fullName != null ? fullName : "Unknown");
