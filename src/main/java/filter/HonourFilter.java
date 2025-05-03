@@ -5,6 +5,7 @@ import dao.HonourOwnedDAO;
 import model.Honour;
 import model.HonourOwned;
 import model.Learner;
+import model.User;
 import util.DBConnect;
 
 import javax.servlet.*;
@@ -33,6 +34,7 @@ public class HonourFilter implements Filter {
 
         if (session != null) {
             Integer userID = (Integer) session.getAttribute("userID");
+            User user = (User) session.getAttribute("user");
             if (userID != null) {
                 // Fetch equipped honour details using userID
                 Integer equippedHonourID = honourOwnedDAO.getEquippedHonourID(userID);

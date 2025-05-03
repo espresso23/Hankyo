@@ -120,7 +120,7 @@ public class HonourOwnedDAO {
             ps.setInt(1, userID);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt("equippedHonourID") != 0 ? rs.getInt("equippedHonourID") : null;
+                    return rs.getInt("equippedHonourID") != -1 ? rs.getInt("equippedHonourID") : null;
                 }
             }
         } catch (SQLException e) {
