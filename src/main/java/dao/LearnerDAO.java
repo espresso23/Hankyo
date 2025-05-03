@@ -51,10 +51,8 @@ public class LearnerDAO {
 
     public boolean updateLearner(Learner learner) throws SQLException {
         String updateUserQuery = "UPDATE [User] SET gmail = ?, phone = ?, fullName = ? WHERE userID = ?";
-
-
-        // Update Users table
-        try (PreparedStatement userStmt = connection.prepareStatement(updateUserQuery)) {
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement userStmt = conn.prepareStatement(updateUserQuery)) {
             userStmt.setString(1, learner.getGmail());
             userStmt.setString(2, learner.getPhone());
             userStmt.setString(3, learner.getFullName());
@@ -62,51 +60,36 @@ public class LearnerDAO {
             userStmt.executeUpdate();
             return true;
         } catch (SQLException e) {
-            try {
-                connection.rollback();
-            } catch (SQLException rollbackEx) {
-                rollbackEx.printStackTrace();
-            }
             e.printStackTrace();
-        } finally {
-            connection.close();
         }
         return false;
     }
 
     //UPDATE HONOUR of LEARNERS READ ALL HONOUR WHOSE BY LEARNERS AND CHANGE -> List ra danh sach danh huu dang so huu va chọn ra 1 danh hiệu sau đó thay đổi
     public boolean updateHonourByLearnerId(int learnerId, int newHonourOwnedId) throws SQLException {
-        String updateQuery = "UPDATE Learner " +
-                "SET honour_ownedID = ? " +
-                "WHERE learnerID = ?";
-
-        try (PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
+        String updateQuery = "UPDATE Learner SET honour_ownedID = ? WHERE learnerID = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(updateQuery)) {
             preparedStatement.setInt(1, newHonourOwnedId);
             preparedStatement.setInt(2, learnerId);
-
             int rowsUpdated = preparedStatement.executeUpdate();
-
             return rowsUpdated > 0;
-
         } catch (SQLException e) {
             e.printStackTrace();
-        return false;
-        } finally {
-            connection.close();
         }
+        return false;
     }
 
 
     public boolean deleteLearner(int learnerId) throws SQLException {
         String query = "UPDATE Learner SET  status = 'deleted' WHERE learnerID = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, learnerId);
             stmt.executeUpdate();
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            connection.close();
         }
         return false;
     }

@@ -12,7 +12,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class ExamService {
-    private ExamDAO examDAO = new ExamDAO(DBConnect.getInstance().getConnection());
+    private ExamDAO examDAO = new ExamDAO();
     private QuestionAndAnswerDAO questionAndAnswerDAO = new QuestionAndAnswerDAO();
     private ExamQuestionDAO examQuestionDAO = new ExamQuestionDAO();
 
@@ -26,19 +26,10 @@ public class ExamService {
      * @param examID       ID của bài kiểm tra
      * @return true nếu thêm thành công, false nếu thất bại
      */
-    public boolean addQuestionToExam(Question question, String[] answers, String[] isCorrect, String[] optionLabels, int examID) throws SQLException {
-        Connection conn = null;
+    public boolean addQuestionToExam(Question question, String[] answers, String[] isCorrect, String[] optionLabels, int examID) {
         try {
-            // Lấy connection và tắt auto commit
-            conn = DBConnect.getInstance().getConnection();
-            if (conn == null || conn.isClosed()) {
-                throw new SQLException("Không thể tạo kết nối database");
-            }
-            conn.setAutoCommit(false);
-            System.out.println("Bắt đầu transaction");
-
             // Thêm câu hỏi vào database và lấy ID
-            int questionId = questionAndAnswerDAO.addQuestion(question, conn);
+            int questionId = questionAndAnswerDAO.addQuestion(question);
             System.out.println("Đã thêm câu hỏi với ID: " + questionId);
 
             if (questionId <= 0) {
@@ -47,7 +38,7 @@ public class ExamService {
 
             // Thêm liên kết giữa exam và question
             String eQuesType = question.getAudioFile() != null ? "Listening" : "Reading";
-            examQuestionDAO.saveExamQuestion(examID, questionId, eQuesType, conn);
+            examQuestionDAO.saveExamQuestion(examID, questionId, eQuesType);
             System.out.println("Đã thêm liên kết exam-question: examID=" + examID + ", questionId=" + questionId + ", type=" + eQuesType);
 
             // Nếu là câu hỏi trắc nghiệm, thêm các câu trả lời
@@ -63,7 +54,7 @@ public class ExamService {
                     System.out.println("Thêm câu trả lời thứ " + (i + 1) + ": " + answer.getAnswerText() +
                             " (Đúng/Sai: " + answer.isCorrect() + ", Label: " + answer.getOptionLabel() + ")");
 
-                    boolean answerAdded = questionAndAnswerDAO.addAnswer(answer, conn);
+                    boolean answerAdded = questionAndAnswerDAO.addAnswer(answer);
                     if (!answerAdded) {
                         throw new SQLException("Không thể thêm câu trả lời thứ " + (i + 1));
                     }
@@ -71,35 +62,12 @@ public class ExamService {
                 }
             }
 
-            // Commit nếu mọi thứ thành công
-            conn.commit();
-            System.out.println("Đã commit transaction thành công");
             return true;
 
         } catch (Exception e) {
-            // Rollback nếu có lỗi
-            if (conn != null && !conn.isClosed()) {
-                try {
-                    conn.rollback();
-                    System.out.println("Đã rollback do lỗi: " + e.getMessage());
-                } catch (SQLException ex) {
-                    System.out.println("Lỗi khi rollback: " + ex.getMessage());
-                    ex.printStackTrace();
-                }
-            }
             System.out.println("Lỗi trong addQuestionToExam: " + e.getMessage());
             e.printStackTrace();
             return false;
-        } finally {
-            // Reset auto commit và đóng connection
-            if (conn != null && !conn.isClosed()) {
-                try {
-                    conn.setAutoCommit(true);
-                } catch (SQLException e) {
-                    System.out.println("Lỗi khi set auto commit: " + e.getMessage());
-                    e.printStackTrace();
-                }
-            }
         }
     }
 
@@ -152,7 +120,7 @@ public class ExamService {
         if (answers != null && !answers.isEmpty()) {
             for (Answer answer : answers) {
                 answer.setQuestionID(question.getQuestionID());
-                questionAndAnswerDAO.addAnswer(answer, DBConnect.getInstance().getConnection());
+                questionAndAnswerDAO.addAnswer(answer);
             }
         }
     }

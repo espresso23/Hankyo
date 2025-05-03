@@ -188,26 +188,55 @@
             margin-bottom: 0;
         }
 
+
         .import-question-btn {
             position: fixed;
-            bottom: 30px;
-            right: 100px;
-            width: 50px;
-            height: 50px;
+            bottom: 93px;
+            right: 30px;
+            height: 60px;
             border-radius: 50%;
-            background-color: #17a2b8;
-            color: white;
+            background: linear-gradient(45deg, #6cb4ff, #ff8fa3);
+            color: #fff;
             border: none;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            font-size: 1.15rem;
+            font-weight: 600;
+            box-shadow: 0 6px 18px rgba(108,180,255,0.18);
             z-index: 1000;
+            transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+            width: 60px;
         }
 
         .import-question-btn:hover {
-            background-color: #138496;
+            background: linear-gradient(45deg, #ff8fa3, #6cb4ff);
+            box-shadow: 0 10px 28px rgba(255,143,163,0.18);
+            transform: translateY(-2px) scale(1.04);
+        }
+
+        .import-question-btn:hover {
+            background: linear-gradient(45deg, #ff8fa3, #6cb4ff);
+            box-shadow: 0 10px 28px rgba(255,143,163,0.18);
+            transform: translateY(-2px) scale(1.04);
+        }
+
+        .import-question-btn:hover {
+            background: linear-gradient(45deg, #ff8fa3, #6cb4ff);
+            box-shadow: 0 10px 28px rgba(255,143,163,0.18);
+            transform: translateY(-2px) scale(1.04);
+        }
+
+        @media (max-width: 600px) {
+            .import-question-btn {
+                min-width: 56px;
+                font-size: 1.1rem;
+                padding: 0 10px;
+            }
+            .import-question-btn .import-text {
+                display: none;
+            }
         }
 
         #uploadProgress {
@@ -540,7 +569,7 @@
 
 <!-- Nút import câu hỏi -->
 <button type="button" class="import-question-btn" id="importQuestionBtn">
-    <i class="fas fa-file-import"></i>
+    <i class="fas fa-file-import me-2"></i>
 </button>
 
 <!-- Modal import câu hỏi -->
@@ -562,10 +591,10 @@
                         <label class="form-label">Tải template mẫu:</label>
                         <div class="mb-2">
                             <a href="templates/question_template.xlsx" class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-download"></i> Excel Template
+                                <i class="fas fa-file-excel me-1"></i> Excel Template
                             </a>
-                            <a href="templates/question_template.csv" class="btn btn-sm btn-outline-primary ms-2">
-                                <i class="fas fa-download"></i> CSV Template
+                            <a href="templates/questionTest.csv" class="btn btn-sm btn-outline-success ms-2">
+                                <i class="fas fa-file-csv me-1"></i> CSV Template
                             </a>
                         </div>
                         <small class="text-muted d-block">

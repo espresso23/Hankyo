@@ -12,10 +12,11 @@ import java.util.List;
 
 public class ExamQuestionDAO {
 
-    public void saveExamQuestion(int examId, int questionId, String eQuesType, Connection conn) throws SQLException {
+    public void saveExamQuestion(int examId, int questionId, String eQuesType) throws SQLException {
         System.out.println("Saving exam question: " + examId + " - " + questionId + " - " + eQuesType);
         String sql = "INSERT INTO exam_question (examID, questionID, eQuesType) VALUES (?,?,?)";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, examId);
             ps.setInt(2, questionId);
             ps.setString(3, eQuesType);
@@ -35,36 +36,28 @@ public class ExamQuestionDAO {
         String deleteExamQuestionSQL = "DELETE FROM Exam_Question WHERE questionID = ?";
         String deleteAnswersSQL = "DELETE FROM Answer WHERE questionID = ?";
         String deleteQuestionSQL = "DELETE FROM Question WHERE questionID = ?";
-        Connection connection1 = DBConnect.getInstance().getConnection();
-        try {
+        try (Connection connection1 = DBConnect.getInstance().getConnection()) {
             // Bắt đầu transaction
             connection1.setAutoCommit(false);
-
             // Xóa các bản ghi trong Assignment_Question
             try (PreparedStatement pstmt = connection1.prepareStatement(deleteExamQuestionSQL)) {
                 pstmt.setInt(1, questionID);
                 pstmt.executeUpdate();
             }
-
             // Xóa các câu trả lời
             try (PreparedStatement pstmt = connection1.prepareStatement(deleteAnswersSQL)) {
                 pstmt.setInt(1, questionID);
                 pstmt.executeUpdate();
             }
-
             // Xóa câu hỏi
             try (PreparedStatement pstmt = connection1.prepareStatement(deleteQuestionSQL)) {
                 pstmt.setInt(1, questionID);
                 pstmt.executeUpdate();
             }
-
             // Commit transaction
             connection1.commit();
         } catch (SQLException e) {
-            connection1.rollback();
             throw e;
-        } finally {
-            connection1.setAutoCommit(true);
         }
     }
 
@@ -73,23 +66,22 @@ public class ExamQuestionDAO {
                 "FROM Question q\n" +
                 "JOIN Exam_Question eq ON q.questionID = eq.questionID\n" +
                 "WHERE eq.examID = ?;";
-        List<Question> questions = null;
-        try {
-            Connection con = DBConnect.getInstance().getConnection();
-            PreparedStatement ps = con.prepareStatement(sql);
+        List<Question> questions = new ArrayList<>();
+        try (Connection con = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, examID);
-            ResultSet rs = ps.executeQuery();
-            questions = new ArrayList<>();
-            while (rs.next()) {
-                Question question = new Question();
-                question.setQuestionID(rs.getInt("questionID"));
-                question.setQuestionText(rs.getString("questionText"));
-                question.setQuestionImage(rs.getString("questionImg"));
-                question.setAudioFile(rs.getString("audio_file"));
-                question.setQuestionType(rs.getString("questionType"));
-                question.setQuestionMark(rs.getDouble("questionMark"));
-                question.setExamID(rs.getInt("examID"));
-                questions.add(question);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Question question = new Question();
+                    question.setQuestionID(rs.getInt("questionID"));
+                    question.setQuestionText(rs.getString("questionText"));
+                    question.setQuestionImage(rs.getString("questionImg"));
+                    question.setAudioFile(rs.getString("audio_file"));
+                    question.setQuestionType(rs.getString("questionType"));
+                    question.setQuestionMark(rs.getDouble("questionMark"));
+                    question.setExamID(rs.getInt("examID"));
+                    questions.add(question);
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

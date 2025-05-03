@@ -34,45 +34,33 @@ public class AssignmentDAO {
 
     public void addQuestionsToAssignment(int assignmentID, int questionID) {
         String sqlAssignmentQuestion = "INSERT INTO Assignment_Question (assignmentID, questionID) VALUES (?, ?)";
-        PreparedStatement pstmtAssignmentQuestion = null;
-
-        try {
-            Connection connection1 = DBConnect.getInstance().getConnection();
+        try (Connection connection1 = DBConnect.getInstance().getConnection()) {
             // Kiểm tra xem liên kết đã tồn tại chưa
             String checkSql = "SELECT COUNT(*) FROM Assignment_Question WHERE assignmentID = ? AND questionID = ?";
-            PreparedStatement checkStmt = connection1.prepareStatement(checkSql);
-            checkStmt.setInt(1, assignmentID);
-            checkStmt.setInt(2, questionID);
-            ResultSet rs = checkStmt.executeQuery();
-
-            if (rs.next() && rs.getInt(1) > 0) {
-                System.out.println("Liên kết giữa Assignment " + assignmentID + " và Question " + questionID + " đã tồn tại");
-                return;
+            try (PreparedStatement checkStmt = connection1.prepareStatement(checkSql)) {
+                checkStmt.setInt(1, assignmentID);
+                checkStmt.setInt(2, questionID);
+                try (ResultSet rs = checkStmt.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) > 0) {
+                        System.out.println("Liên kết giữa Assignment " + assignmentID + " và Question " + questionID + " đã tồn tại");
+                        return;
+                    }
+                }
             }
-
             // Thêm liên kết mới
-            pstmtAssignmentQuestion = connection1.prepareStatement(sqlAssignmentQuestion);
-            pstmtAssignmentQuestion.setInt(1, assignmentID);
-            pstmtAssignmentQuestion.setInt(2, questionID);
-            int result = pstmtAssignmentQuestion.executeUpdate();
-
-            if (result > 0) {
-                System.out.println("Đã thêm liên kết giữa Assignment " + assignmentID + " và Question " + questionID);
-            } else {
-                System.out.println("Không thể thêm liên kết giữa Assignment " + assignmentID + " và Question " + questionID);
+            try (PreparedStatement pstmtAssignmentQuestion = connection1.prepareStatement(sqlAssignmentQuestion)) {
+                pstmtAssignmentQuestion.setInt(1, assignmentID);
+                pstmtAssignmentQuestion.setInt(2, questionID);
+                int result = pstmtAssignmentQuestion.executeUpdate();
+                if (result > 0) {
+                    System.out.println("Đã thêm liên kết giữa Assignment " + assignmentID + " và Question " + questionID);
+                } else {
+                    System.out.println("Không thể thêm liên kết giữa Assignment " + assignmentID + " và Question " + questionID);
+                }
             }
-
         } catch (SQLException e) {
             System.out.println("Lỗi khi thêm liên kết Assignment-Question: " + e.getMessage());
             e.printStackTrace();
-        } finally {
-            try {
-                if (pstmtAssignmentQuestion != null) {
-                    pstmtAssignmentQuestion.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -141,20 +129,20 @@ public class AssignmentDAO {
     public List<Question> getAllQuestionOfAssignment(int assignmentID) {
         List<Question> questionList = new ArrayList<>();
         String SQL_GET_QUESTION = "Select distinct q.* from Assignment_Question aq join question q on aq.questionID = q.questionID where assignmentID = ?";
-        try {
-            Connection connection1 = DBConnect.getInstance().getConnection();
-            PreparedStatement preparedStatement = connection1.prepareStatement(SQL_GET_QUESTION);
+        try (Connection connection1 = DBConnect.getInstance().getConnection();
+             PreparedStatement preparedStatement = connection1.prepareStatement(SQL_GET_QUESTION)) {
             preparedStatement.setInt(1, assignmentID);
-            ResultSet rs = preparedStatement.executeQuery();
-            while (rs.next()) {
-                Question questionOfAssignment = new Question();
-                questionOfAssignment.setQuestionID(rs.getInt("questionID"));
-                questionOfAssignment.setQuestionText(rs.getString("questionText"));
-                questionOfAssignment.setQuestionImage(rs.getString("questionImg"));
-                questionOfAssignment.setAudioFile(rs.getString("audio_file"));
-                questionOfAssignment.setQuestionType(rs.getString("questionType"));
-                questionOfAssignment.setQuestionMark(rs.getDouble("questionMark"));
-                questionList.add(questionOfAssignment);
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                while (rs.next()) {
+                    Question questionOfAssignment = new Question();
+                    questionOfAssignment.setQuestionID(rs.getInt("questionID"));
+                    questionOfAssignment.setQuestionText(rs.getString("questionText"));
+                    questionOfAssignment.setQuestionImage(rs.getString("questionImg"));
+                    questionOfAssignment.setAudioFile(rs.getString("audio_file"));
+                    questionOfAssignment.setQuestionType(rs.getString("questionType"));
+                    questionOfAssignment.setQuestionMark(rs.getDouble("questionMark"));
+                    questionList.add(questionOfAssignment);
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -182,36 +170,28 @@ public class AssignmentDAO {
         String deleteAssignmentQuestionSQL = "DELETE FROM Assignment_Question WHERE questionID = ?";
         String deleteAnswersSQL = "DELETE FROM Answer WHERE questionID = ?";
         String deleteQuestionSQL = "DELETE FROM Question WHERE questionID = ?";
-        Connection connection1 = DBConnect.getInstance().getConnection();
-        try {
+        try (Connection connection1 = DBConnect.getInstance().getConnection()) {
             // Bắt đầu transaction
             connection1.setAutoCommit(false);
-
             // Xóa các bản ghi trong Assignment_Question
             try (PreparedStatement pstmt = connection1.prepareStatement(deleteAssignmentQuestionSQL)) {
                 pstmt.setInt(1, questionID);
                 pstmt.executeUpdate();
             }
-
             // Xóa các câu trả lời
             try (PreparedStatement pstmt = connection1.prepareStatement(deleteAnswersSQL)) {
                 pstmt.setInt(1, questionID);
                 pstmt.executeUpdate();
             }
-
             // Xóa câu hỏi
             try (PreparedStatement pstmt = connection1.prepareStatement(deleteQuestionSQL)) {
                 pstmt.setInt(1, questionID);
                 pstmt.executeUpdate();
             }
-
-            // Commit transaction
             connection1.commit();
         } catch (SQLException e) {
-            connection1.rollback();
+            e.printStackTrace();
             throw e;
-        } finally {
-            connection1.setAutoCommit(true);
         }
     }
 

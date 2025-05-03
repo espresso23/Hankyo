@@ -12,17 +12,15 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ExpertDAO {
-    private Connection connection;
-
     public ExpertDAO() {
-        this.connection = DBConnect.getInstance().getConnection();
+        // Không khởi tạo connection instance nữa
     }
 
     public boolean createExpert(Expert expert) throws SQLException {
         String insertUserQuery = "INSERT INTO [User] (username, password, gmail, phone, role, status, fullName, socialID, dateCreate, gender, avatar) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         String insertLearnerQuery = "INSERT INTO Expert (userID, certificate, CCCD) VALUES (?, ?, ?)";
 
-        try {
+        try (Connection connection = DBConnect.getInstance().getConnection()) {
             connection.setAutoCommit(false);
 
             // Mã hóa password trước khi lưu
@@ -60,15 +58,8 @@ public class ExpertDAO {
             connection.commit();
             return true;
         } catch (SQLException e) {
-            try {
-                connection.rollback();
-            } catch (SQLException rollbackEx) {
-                rollbackEx.printStackTrace();
-            }
             e.printStackTrace();
-            return false;
-        } finally {
-            connection.setAutoCommit(true);
+            throw e;
         }
     }
 
@@ -121,10 +112,10 @@ public class ExpertDAO {
 
     public Expert getExpertByUserID(int userID) {
         String sql = "SELECT e.*, u.* FROM Expert e JOIN [User] u ON e.userID = u.userID WHERE e.userID = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, userID);
             ResultSet rs = pstmt.executeQuery();
-
             if (rs.next()) {
                 return mapResultSetToExpert(rs);
             }
@@ -136,13 +127,13 @@ public class ExpertDAO {
 
     public boolean addNewBankAccount(ExpertBank expertBank) {
         String sql = "Insert into ExpertBankAccount(bankAccount,binCode,bankName,expertID) values(?,?,?,?)";
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, expertBank.getBankAccount());
             preparedStatement.setString(2, expertBank.getBinCode());
             preparedStatement.setString(3, expertBank.getBankName());
             preparedStatement.setInt(4, expertBank.getExpertID());
-            return preparedStatement.executeUpdate() > 1;
+            return preparedStatement.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -152,7 +143,7 @@ public class ExpertDAO {
         String updateUserQuery = "UPDATE [User] SET username=?, password=?, gmail=?, phone=?, role=?, status=?, fullName=?, socialID=?, gender=?, avatar=? WHERE userID=?";
         String updateExpertQuery = "UPDATE Expert SET certificate=?, honour_ownedID=?, CCCD=? WHERE expertID=?";
 
-        try {
+        try (Connection connection = DBConnect.getInstance().getConnection()) {
             connection.setAutoCommit(false);
 
             // Mã hóa password trước khi cập nhật
@@ -186,15 +177,8 @@ public class ExpertDAO {
             connection.commit();
             return true;
         } catch (SQLException e) {
-            try {
-                connection.rollback();
-            } catch (SQLException rollbackEx) {
-                rollbackEx.printStackTrace();
-            }
             e.printStackTrace();
-            return false;
-        } finally {
-            connection.setAutoCommit(true);
+            throw e;
         }
     }
 
@@ -202,7 +186,7 @@ public class ExpertDAO {
         String deleteExpertQuery = "DELETE FROM Expert WHERE expertID=?";
         String deleteUserQuery = "DELETE FROM [User] WHERE userID=(SELECT userID FROM Expert WHERE expertID=?)";
 
-        try {
+        try (Connection connection = DBConnect.getInstance().getConnection()) {
             connection.setAutoCommit(false);
 
             // Delete from Expert table first
@@ -220,15 +204,8 @@ public class ExpertDAO {
             connection.commit();
             return true;
         } catch (SQLException e) {
-            try {
-                connection.rollback();
-            } catch (SQLException rollbackEx) {
-                rollbackEx.printStackTrace();
-            }
             e.printStackTrace();
-            return false;
-        } finally {
-            connection.setAutoCommit(true);
+            throw e;
         }
     }
 
@@ -236,7 +213,8 @@ public class ExpertDAO {
         List<Expert> experts = new ArrayList<>();
         String query = "SELECT e.*, u.* FROM Expert e JOIN [User] u ON e.userID = u.userID";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 experts.add(mapResultSetToExpert(rs));
@@ -249,7 +227,8 @@ public class ExpertDAO {
         List<Expert> experts = new ArrayList<>();
         String query = "SELECT e.*, u.* FROM Expert e JOIN [User] u ON e.userID = u.userID WHERE u.fullName LIKE ?";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, "%" + name + "%");
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
@@ -262,7 +241,8 @@ public class ExpertDAO {
     public boolean updateExpertStatus(int expertID, String status) throws SQLException {
         String query = "UPDATE [User] SET status = ? WHERE userID = (SELECT userID FROM Expert WHERE expertID = ?)";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, status);
             stmt.setInt(2, expertID);
             return stmt.executeUpdate() > 0;
@@ -273,7 +253,8 @@ public class ExpertDAO {
         List<Expert> experts = new ArrayList<>();
         String query = "SELECT e.*, u.* FROM Expert e JOIN [User] u ON e.userID = u.userID WHERE u.status = ?";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        try (Connection connection = DBConnect.getInstance().getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, status);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
@@ -282,7 +263,6 @@ public class ExpertDAO {
         }
         return experts;
     }
-
 
     public List<Expert> getExpertsByQuery(String query) throws SQLException {
         List<Expert> experts = new ArrayList<>();

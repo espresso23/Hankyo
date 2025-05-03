@@ -425,6 +425,15 @@
     <c:import url="header.jsp"/>
     <div id="message-container"></div>
 
+    <!-- Thêm jQuery local như fallback -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Fallback nếu CDN không load được
+        if (typeof jQuery == 'undefined') {
+            document.write('<script src="asset/js/jquery-3.6.0.min.js"><\/script>');
+        }
+    </script>
+
     <div class="container my-4">
         <div class="row">
             <!-- Left Content -->
@@ -436,16 +445,22 @@
                     <span><i class="bi bi-star-fill text-warning"></i> ${course.rating} (${course.ratingCount} đánh giá)</span>
                 </div>
 
-                <!-- Course Image -->
+                <!-- Course Image với fallback cloud -->
                 <div class="course-preview">
-                    <img src="${course.courseImg}" alt="Course Preview" class="img-fluid">
+                    <img src="${empty course.courseImg ? 'https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=facearea&w=400&h=225&facepad=2' : course.courseImg}"
+                         alt="Course Preview"
+                         class="img-fluid"
+                         onerror="this.src='https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=facearea&w=400&h=225&facepad=2'">
                 </div>
 
-                <!-- Instructor Info -->
+                <!-- Instructor Info với fallback cloud -->
                 <div class="instructor-section">
                     <h4 class="mb-3">Giảng viên</h4>
                     <div class="instructor-info">
-                        <img src="${course.expert.avatar}" alt="Expert" class="instructor-avatar">
+                        <img src="${empty course.expert.avatar ? 'https://ui-avatars.com/api/?name=Expert&background=eee&color=888&size=128' : course.expert.avatar}"
+                             alt="Expert"
+                             class="instructor-avatar"
+                             onerror="this.src='https://ui-avatars.com/api/?name=Expert&background=eee&color=888&size=128'">
                         <div class="instructor-details">
                             <h5>${course.expert.fullName}</h5>
                             <span class="certificate">${course.expert.certificate}</span>
@@ -655,7 +670,7 @@
                                             <div class="progress flex-grow-1" style="height: 6px;">
                                                 <c:set var="ratingPercentage" value="${course.ratingCount > 0 ? (course.ratingCount * (6-star) / course.ratingCount) : 0}" />
                                                 <div class="progress-bar bg-warning" role="progressbar"
-                                                     style="width: ${ratingPercentage * 100}%">
+                                                     style="width: ${ratingPercentage * 100}%;">
                                                 </div>
                                             </div>
                                             <span class="ms-2 text-muted small" style="min-width: 30px;">
@@ -694,14 +709,19 @@
                     </div>
                 </c:if>
 
-                <!-- Reviews List -->
+                <!-- Reviews List với fallback cho avatar cloud -->
                 <div class="reviews-list">
                     <c:set var="totalFeedbacks" value="${fn:length(feedbacks)}" />
                     <c:forEach items="${feedbacks}" var="feedback" varStatus="status">
                         <div class="card mb-3 review-card ${status.index >= 5 ? 'review-hidden' : ''}">
                             <div class="card-body">
                                 <div class="d-flex align-items-center mb-3">
-                                    <img src="${feedback.learner.avatar}" alt="User Avatar" class="rounded-circle me-3" width="50" height="50">
+                                    <img src="${empty feedback.learner.avatar ? 'https://ui-avatars.com/api/?name=User&background=eee&color=888&size=128' : feedback.learner.avatar}"
+                                         alt="User Avatar"
+                                         class="rounded-circle me-3"
+                                         width="50"
+                                         height="50"
+                                         onerror="this.src='https://ui-avatars.com/api/?name=User&background=eee&color=888&size=128'">
                                     <div>
                                         <h6 class="mb-0">${feedback.learner.fullName}</h6>
                                         <small class="text-muted">
@@ -737,7 +757,6 @@
     <c:import url="footer.jsp"/>
 
     <!-- JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
@@ -916,7 +935,7 @@
 
                 const rating = $('#ratingValue').val();
                 const comment = $('#comment').val();
-                const courseID = ${course.courseID};
+                const currentCourseID = ${course.courseID};
 
                 if (rating == 0) {
                     showMessage('Vui lòng chọn số sao đánh giá', 'error');
@@ -927,7 +946,7 @@
                     url: 'course-feedback',
                     type: 'POST',
                     data: {
-                        courseID: courseID,
+                        courseID: currentCourseID,
                         rating: rating,
                         comment: comment
                     },
@@ -981,14 +1000,14 @@
                 if (!$(this).hasClass('enrolled')) {
                     e.preventDefault();
                     const button = $(this);
-                    const courseID = ${course.courseID};
+                    const currentCourseID = ${course.courseID};
 
                     button.html('<i class="bi bi-arrow-repeat spin me-2"></i>Đang xử lý...').prop('disabled', true);
 
                     $.ajax({
                         url: 'enroll-course',
                         type: 'POST',
-                        data: {courseID: courseID},
+                        data: {courseID: currentCourseID},
                         dataType: 'json',
                         success: function(response) {
                             if (response.success) {
@@ -996,7 +1015,7 @@
                                 button.addClass('enrolled');
                                 // Chuyển hướng đến trang nội dung khóa học sau 1 giây
                                 setTimeout(function() {
-                                    window.location.href = 'learn-course?courseID=' + courseID;
+                                    window.location.href = 'learn-course?courseID=' + currentCourseID;
                                 }, 1000);
                             } else {
                                 showMessage(response.message, 'error');
