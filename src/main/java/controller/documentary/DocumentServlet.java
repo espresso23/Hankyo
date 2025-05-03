@@ -1,4 +1,4 @@
-package controller;
+package controller.documentary;
 
 import dao.DocumentaryDAO;
 import model.Documentary;

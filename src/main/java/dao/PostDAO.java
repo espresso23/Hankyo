@@ -800,7 +800,7 @@ public class PostDAO {
                 "WHERE v.UserID = ? AND v.VoteType = 1 AND p.status = 1 " +
                 "ORDER BY p.CreatedDate DESC";
 
-        try (Connection conn = dbContext.getConnection();
+        try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, userID);
@@ -839,7 +839,7 @@ public class PostDAO {
                 "WHERE v.UserID = ? AND v.VoteType = -1 AND p.status = 1 " +
                 "ORDER BY p.CreatedDate DESC";
 
-        try (Connection conn = dbContext.getConnection();
+        try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, userID);

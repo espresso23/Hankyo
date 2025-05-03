@@ -470,14 +470,14 @@ public class UserDAO {
         return avatarImg;
     }
     public String getCoverPhotoByUserId(int userId) {
-        String query = "SELECT coverPhoto FROM User WHERE UserID = ?";
+        String query = "SELECT cover-photo FROM User WHERE UserID = ?";
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
 
             ps.setInt(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getString("coverPhoto");
+                    return rs.getString("cover-photo");
                 }
             }
         } catch (SQLException e) {
@@ -496,7 +496,7 @@ public class UserDAO {
     }
 
     public boolean updateCoverPhoto(int userId, String coverUrl) throws SQLException {
-        String sql = "UPDATE [User] SET cover_photo = ? WHERE UserID = ? ";
+        String sql = "UPDATE [User] SET cover-photo = ? WHERE UserID = ? ";
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, coverUrl);
