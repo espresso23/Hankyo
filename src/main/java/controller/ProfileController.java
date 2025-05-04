@@ -6,6 +6,8 @@ import model.Comment;
 import model.Post;
 import model.Report;
 import model.User;
+import model.Expert;
+import model.Course;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -25,6 +27,8 @@ public class ProfileController extends HttpServlet {
     private CommentDAO commentDAO = new CommentDAO();
     private ReportDAO reportDAO = new ReportDAO();
     private UserDAO userDAO = new UserDAO();
+    private ExpertDAO expertDAO = new ExpertDAO();
+    private CourseDAO courseDAO = new CourseDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -52,6 +56,15 @@ public class ProfileController extends HttpServlet {
             request.setAttribute("profileUser", accessInfo.profileUser);
             request.setAttribute("isOwnProfile", accessInfo.isOwnProfile);
             request.setAttribute("user", loggedInUser);
+
+            // Kiểm tra xem user có phải là expert không
+            Expert expert = expertDAO.getExpertByUserID(accessInfo.profileUser.getUserID());
+            if (expert != null) {
+                request.setAttribute("isExpert", true);
+                request.setAttribute("expert", expert);
+            } else {
+                request.setAttribute("isExpert", false);
+            }
 
             setBasicStatistics(request, accessInfo.profileUser);
 
@@ -154,6 +167,17 @@ public class ProfileController extends HttpServlet {
                 request.setAttribute("reportedPosts", reportedPosts);
                 request.setAttribute("reportedComments", reportedComments);
                 request.getRequestDispatcher("reported.jsp").forward(request, response);
+                break;
+
+            case "courses":
+                Expert expert = expertDAO.getExpertByUserID(profileUser.getUserID());
+                if (expert != null) {
+                    List<Course> courses = courseDAO.getCourseByExpert(expert.getExpertID());
+                    request.setAttribute("expertCourses", courses);
+                    request.getRequestDispatcher("expert-courses.jsp").forward(request, response);
+                } else {
+                    response.sendRedirect("profile?user=" + profileUser.getUsername() + "&tab=overview");
+                }
                 break;
 
             default: // overview

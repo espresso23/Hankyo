@@ -8,68 +8,110 @@
     <link rel="icon" href="${pageContext.request.contextPath}/asset/png/icon/logo.jpg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Nanum+Gothic:wght@400;700&family=Comfortaa:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --pink-light: #fff0f6;
+            --pink-medium: #ffd6ec;
+            --pink-dark: #ffb8e0;
+            --blue-light: #f3f8fd;
+            --blue-medium: #e5f6fb;
+            --blue-dark: #b8e0f7;
+            --purple-light: #f6eaff;
+            --yellow-light: #fffbe8;
+            --white: #fff;
+            --text-dark: #4A4A68;
+            --main-pink: #ffb8e0;
+        }
+
         body {
-            font-family: 'Noto Sans KR', 'Nanum Gothic', Arial, sans-serif;
-            background-image: url("${pageContext.request.contextPath}/asset/png/background/background.png");
-            background-size: auto;
+            font-family: 'Comfortaa', 'Noto Sans KR', 'Nanum Gothic', Arial, sans-serif;
+            background-color: var(--white);
+            background-image: none;
+            background: linear-gradient(135deg, var(--pink-light) 0%, var(--blue-light) 100%);
+            background-size: cover;
             margin: 0;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            overflow: hidden;
+            overflow-x: hidden;
+            color: var(--text-dark);
         }
 
         .game-wrapper {
-            margin-top: 80px;
+            margin-top: 60px;
             padding: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 18px;
+            box-shadow: 0 4px 16px rgba(149, 157, 165, 0.10);
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
+            max-width: 95%;
+            border: 1.5px solid var(--blue-light);
         }
 
         .container {
-            /* min-width: 1200px; */
-            max-width: 100vw;
             width: 100%;
             margin: 0;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
             overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.4);
         }
 
         .game-header {
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 18px;
+            padding: 10px;
+            background: linear-gradient(135deg, var(--blue-light) 0%, var(--pink-light) 100%);
+            border-radius: 10px;
+            color: #5a6a7a;
+            text-shadow: none;
         }
 
         .game-header h1 {
-            color: #2c3e50;
-            margin-bottom: 5px;
-            font-size: 1.8em;
+            margin: 0;
+            font-size: 1.6em;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .game-header p {
+            margin: 8px 0 0;
+            font-size: 1.05em;
+            opacity: 0.85;
         }
 
         .game-info {
             display: flex;
-            justify-content: space-between;
+            justify-content: space-around;
             align-items: center;
-            margin-bottom: 15px;
-            padding: 8px;
-            background: #f8f9fa;
-            border-radius: 8px;
+            margin-bottom: 18px;
+            padding: 10px;
+            background: linear-gradient(135deg, var(--purple-light) 0%, var(--yellow-light) 100%);
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
         }
 
-        .score {
-            font-size: 1.3em;
-            font-weight: 700;
-            color: #2c3e50;
+        .score, .moves {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .score::before {
+            content: "❤️";
+        }
+
+        .moves::before {
+            content: "↻";
         }
 
         .game-container {
@@ -86,25 +128,31 @@
             cursor: pointer;
             min-width: 0;
             min-height: 110px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(44,62,80,0.1), 0 1px 2px rgba(44,62,80,0.05);
-            transition: box-shadow 0.3s, transform 0.2s;
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(255, 184, 224, 0.13), 0 2px 8px rgba(255, 184, 224, 0.10);
+            transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+            background: #fff;
+            border: 2.5px solid var(--main-pink);
         }
+
         .card:hover {
-            box-shadow: 0 6px 12px rgba(44,62,80,0.12), 0 2px 4px rgba(44,62,80,0.08);
-            transform: scale(1.02);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 16px rgba(74, 74, 104, 0.10);
         }
+
         .card-inner {
             position: relative;
             width: 100%;
             height: 100%;
             text-align: center;
-            transition: transform 0.5s cubic-bezier(.4,2,.6,1);
+            transition: transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1);
             transform-style: preserve-3d;
         }
+
         .card.flipped .card-inner {
             transform: rotateY(180deg);
         }
+
         .card-front, .card-back {
             position: absolute;
             width: 100%;
@@ -113,59 +161,79 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 8px;
-            box-shadow: none;
-            padding: 8px;
-            font-size: 1.1em;
-            word-break: break-word;
+            border-radius: 10px;
+            padding: 10px;
             font-weight: 600;
-            letter-spacing: 0.5px;
+            word-break: break-word;
+            overflow: hidden;
         }
+
         .card-front {
-            background: linear-gradient(135deg, #f0f0f0 0%, #fff 100%);
-            color: #2c3e50;
-            font-size: 1.3em;
-            font-weight: 700;
+            border: 2.5px dashed var(--main-pink);
+            color: var(--main-pink);
+            font-size: 2.5em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #fff 0%, #fff0f6 100%);
         }
-        .card-back.card-korean, .card-back.card-vietnamese {
-            background: linear-gradient(135deg, #FFB8E0 0%, #B4EBE6 100%);
-            color: #fff;
-            font-family: 'Noto Sans KR', 'Nanum Gothic', Arial, sans-serif;
-            font-size: 1.2em;
-            letter-spacing: 1px;
+
+        .card-front::before { display: none !important; content: none !important; }
+
+        .card-back {
             transform: rotateY(180deg);
-            border: none;
-            box-shadow: none;
+            font-size: 1.1em;
+            color: #4A4A68;
+            text-shadow: none;
         }
-        .card.flipped .card-back {
-            background: linear-gradient(135deg, #FFD6EC 0%, #B4EBE6 100%);
-            border: none;
-            box-shadow: none;
+
+        .card-back.card-korean {
+            background: linear-gradient(135deg, #e6e6f7 0%, #b8e0f7 100%);
+            font-family: 'Noto Sans KR', 'Nanum Gothic', sans-serif;
         }
+
+        .card-back.card-vietnamese {
+            background: linear-gradient(135deg, #e5f6fb 0%, #eaeafb 100%);
+        }
+
         .matched {
             pointer-events: none;
-            opacity: 0.5;
-            filter: grayscale(0.3) brightness(0.9);
+            opacity: 0.85;
+            filter: brightness(0.98) drop-shadow(0 0 6px rgba(200, 220, 255, 0.3));
         }
-        .matched .card-inner {
-            transform: rotateY(180deg);
+
+        .matched .card-back {
+            background: linear-gradient(135deg, #eaeafb 0%, #e5f6fb 100%);
         }
+
         @media (max-width: 1024px) {
+            .game-container {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .game-wrapper {
+                flex-direction: column;
+                align-items: center;
+            }
             .game-container {
                 grid-template-columns: repeat(3, 1fr);
             }
-            .card {
-                min-width: 60px;
-                min-height: 90px;
+            .controls {
+                margin-left: 0;
+                margin-top: 20px;
+                flex-direction: row;
             }
         }
-        @media (max-width: 600px) {
+
+        @media (max-width: 480px) {
             .game-container {
                 grid-template-columns: repeat(2, 1fr);
             }
             .card {
-                min-width: 50px;
-                min-height: 70px;
+                min-height: 80px;
             }
         }
 
@@ -173,44 +241,76 @@
             display: flex;
             flex-direction: column;
             margin-left: 20px;
+            min-width: 200px;
         }
 
         .btn {
-            padding: 10px 22px;
-            font-size: 1.1em;
+            padding: 12px 24px;
+            font-size: 1.05em;
             border: none;
             border-radius: 24px;
             cursor: pointer;
-            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+            transition: all 0.25s ease;
             margin: 8px 0;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
+            font-family: 'Comfortaa', sans-serif;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+            background: #fff;
+            color: #4A4A68;
         }
 
         .btn-primary {
-            background-color: #4CAF50;
-            color: white;
-            box-shadow: 0 2px 8px rgba(76,175,80,0.08);
+            background: linear-gradient(135deg, #b8e0f7 0%, #e6e6f7 100%);
+            color: #4A4A68;
         }
 
         .btn-primary:hover {
-            background-color: #388e3c;
-            color: #fff;
-            box-shadow: 0 4px 16px rgba(76,175,80,0.18);
+            background: linear-gradient(135deg, #e6e6f7 0%, #b8e0f7 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(123, 198, 224, 0.13);
         }
 
         .btn-secondary {
-            background-color: #f8f9fa;
-            color: #2c3e50;
-            border: 1.5px solid #FFD700;
-            box-shadow: 0 2px 8px rgba(255,215,0,0.08);
+            background: linear-gradient(135deg, #eaeafb 0%, #e5f6fb 100%);
+            color: #4A4A68;
         }
 
         .btn-secondary:hover {
-            background-color: #ffe066;
-            color: #2c3e50;
-            box-shadow: 0 4px 16px rgba(255,215,0,0.18);
+            background: linear-gradient(135deg, #e5f6fb 0%, #eaeafb 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(200, 220, 255, 0.13);
+        }
+
+        @keyframes cardBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-7px); }
+        }
+
+        .card.matched {
+            animation: cardBounce 0.5s ease;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-80px) rotate(20deg); opacity: 0; }
+        }
+
+        .heart {
+            display: none !important;
+        }
+
+        .previousButton, .nextButton {
+            color: var(--main-pink);
+            background: #fff;
+            font-size: 32px;
+        }
+        .previousButton:hover, .nextButton:hover {
+            background: var(--main-pink);
+            color: #fff;
         }
     </style>
 </head>
@@ -220,20 +320,20 @@
 <div class="game-wrapper">
     <div class="container">
         <div class="game-header">
-            <h1>Trò chơi trí nhớ - ${topic}</h1>
-            <p>Ghép từ tiếng Hàn với nghĩa tiếng Việt tương ứng</p>
+            <h1> Trò chơi trí nhớ - ${topic} </h1>
+            <p>Ghép cặp từ tiếng Hàn và nghĩa tiếng Việt tương ứng!</p>
         </div>
 
         <div class="game-info">
-            <div class="score">Số cặp đã ghép: <span id="matchCount">0</span>/10</div>
-            <div class="moves">Số lượt chơi: <span id="moveCount">0</span></div>
+            <div class="score">Cặp đã ghép: <span id="matchCount">0</span>/10</div>
+            <div class="moves">Lượt chơi: <span id="moveCount">0</span></div>
         </div>
 
         <div class="game-container">
             <c:forEach items="${words}" var="word" varStatus="status">
                 <div class="card" data-word="${word}" data-pair-id="${pairIds[status.index]}">
                     <div class="card-inner">
-                        <div class="card-front">?</div>
+                        <div class="card-front">❓</div>
                         <div class="card-back card-korean">${word}</div>
                     </div>
                 </div>
@@ -241,7 +341,7 @@
             <c:forEach items="${meanings}" var="meaning" varStatus="status">
                 <div class="card" data-meaning="${meaning}" data-pair-id="${shuffledPairIds[status.index]}">
                     <div class="card-inner">
-                        <div class="card-front">?</div>
+                        <div class="card-front">❓</div>
                         <div class="card-back card-vietnamese">${meaning}</div>
                     </div>
                 </div>
@@ -250,8 +350,8 @@
     </div>
 
     <div class="controls">
-        <button class="btn btn-secondary" onclick="location.href='quizlet'"><span style="font-size:1.2em;">&#8592;</span> Quay lại chủ đề</button>
-        <button class="btn btn-primary" onclick="resetGame()"><span style="font-size:1.2em;">&#8635;</span> Chơi lại</button>
+        <button class="btn btn-secondary" onclick="location.href='quizlet'">🏠 Về chủ đề</button>
+        <button class="btn btn-primary" onclick="resetGame()">🔄 Chơi lại</button>
     </div>
 </div>
 
@@ -299,17 +399,15 @@
     }
 
     function checkMatch(card1, card2) {
-        // Ensure one card has data-word and the other has data-meaning
         const hasWord1 = card1.dataset.word !== undefined;
         const hasMeaning1 = card1.dataset.meaning !== undefined;
         const hasWord2 = card2.dataset.word !== undefined;
         const hasMeaning2 = card2.dataset.meaning !== undefined;
 
         if ((hasWord1 && hasMeaning2) || (hasMeaning1 && hasWord2)) {
-            // Valid pair: one word and one meaning
             return card1.dataset.pairId === card2.dataset.pairId;
         }
-        return false; // Invalid pair (e.g., two words or two meanings)
+        return false;
     }
 
     function handleMatch(card1, card2) {
@@ -322,79 +420,136 @@
 
         if (matchedPairs === 10) {
             setTimeout(() => {
-                const victoryPopup = document.createElement('div');
-                victoryPopup.id = 'victory-popup';
-                victoryPopup.innerHTML = `
-                    <div style="
-                        background: linear-gradient(135deg, #FFB8E0 0%, #B4EBE6 100%);
-                        border-radius: 20px;
-                        padding: 30px;
-                        box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-                        position: fixed;
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
-                        z-index: 9999;
-                        text-align: center;
-                        max-width: 90vw;
-                        width: 400px;
-                        animation: popupAppear 0.5s ease-out;
-                    ">
-                        <h2 style="
-                            font-family: 'Noto Sans KR', 'Nanum Gothic', Arial, sans-serif;
-                            font-size: 1.8em;
-                            margin-bottom: 15px;
-                            color: #fff;
-                            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                        ">Chúc mừng!</h2>
-                        <p style="
-                            font-size: 1.2em;
-                            margin-bottom: 20px;
-                            color: #fff;
-                        ">Bạn đã hoàn thành trò chơi với ${moveCount} lượt chơi!</p>
-                        <div style="display: flex; justify-content: center; gap: 15px;">
-                            <button onclick="resetGame()" style="
-                                padding: 10px 25px;
-                                border-radius: 20px;
-                                background: rgba(255,255,255,0.9);
-                                color: #2c3e50;
-                                font-size: 1.1em;
-                                border: none;
-                                cursor: pointer;
-                                transition: all 0.3s;
-                            ">Chơi lại</button>
-                            <button onclick="location.href='quizlet'" style="
-                                padding: 10px 25px;
-                                border-radius: 20px;
-                                background: rgba(255,255,255,0.9);
-                                color: #2c3e50;
-                                font-size: 1.1em;
-                                border: none;
-                                cursor: pointer;
-                                transition: all 0.3s;
-                            ">Quay lại chủ đề</button>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(victoryPopup);
-
-                // Thêm animation cho popup
-                const style = document.createElement('style');
-                style.textContent = `
-                    @keyframes popupAppear {
-                        0% {
-                            opacity: 0;
-                            transform: translate(-50%, -50%) scale(0.8);
-                        }
-                        100% {
-                            opacity: 1;
-                            transform: translate(-50%, -50%) scale(1);
-                        }
-                    }
-                `;
-                document.head.appendChild(style);
-            }, 500);
+                showVictoryPopup();
+            }, 800);
         }
+    }
+
+    function showVictoryPopup() {
+        const victoryPopup = document.createElement('div');
+        victoryPopup.id = 'victory-popup';
+        victoryPopup.innerHTML = `
+            <div style="
+                background: linear-gradient(135deg, var(--pink-medium) 0%, var(--blue-medium) 100%);
+                border-radius: 24px;
+                padding: 30px;
+                box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 9999;
+                text-align: center;
+                max-width: 90vw;
+                width: 450px;
+                animation: popupAppear 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                color: white;
+                border: 3px solid white;
+            ">
+                <h2 style="
+                    font-family: 'Comfortaa', sans-serif;
+                    font-size: 2em;
+                    margin-bottom: 15px;
+                    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                ">🎉 Chúc mừng! 🎉</h2>
+                <p style="
+                    font-size: 1.3em;
+                    margin-bottom: 25px;
+                ">Bạn đã hoàn thành với ${moveCount} lượt chơi!</p>
+                <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                    <button onclick="resetGame()" style="
+                        padding: 12px 30px;
+                        border-radius: 30px;
+                        background: white;
+                        color: var(--pink-dark);
+                        font-size: 1.1em;
+                        border: none;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                        font-family: 'Comfortaa', sans-serif;
+                        font-weight: 700;
+                        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                    ">🔄 Chơi lại</button>
+                    <button onclick="location.href='quizlet'" style="
+                        padding: 12px 30px;
+                        border-radius: 30px;
+                        background: white;
+                        color: var(--blue-dark);
+                        font-size: 1.1em;
+                        border: none;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                        font-family: 'Comfortaa', sans-serif;
+                        font-weight: 700;
+                        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                    ">🏠 Về chủ đề</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(victoryPopup);
+
+        // Add confetti effect
+        createConfetti();
+
+        // Add animation for popup
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes popupAppear {
+                0% {
+                    opacity: 0;
+                    transform: translate(-50%, -50%) scale(0.5);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translate(-50%, -50%) scale(1);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    function createConfetti() {
+        const colors = ['#FFB8E0', '#B4EBE6', '#D4C4FB', '#FFF6B8', '#FF8CC6', '#7BD5D6'];
+
+        for (let i = 0; i < 100; i++) {
+            const confetti = document.createElement('div');
+            confetti.style.position = 'fixed';
+            confetti.style.width = '10px';
+            confetti.style.height = '10px';
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.borderRadius = '50%';
+            confetti.style.left = `${Math.random() * 100}vw`;
+            confetti.style.top = '-10px';
+            confetti.style.zIndex = '9998';
+            confetti.style.opacity = '0.8';
+            confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+
+            const animationDuration = `${2 + Math.random() * 3}s`;
+            const animationDelay = `${Math.random() * 0.5}s`;
+
+            confetti.style.animation = `confettiFall ${animationDuration} ${animationDelay} linear forwards`;
+
+            document.body.appendChild(confetti);
+
+            setTimeout(() => {
+                confetti.remove();
+            }, 5000);
+        }
+
+        const confettiStyle = document.createElement('style');
+        confettiStyle.textContent = `
+            @keyframes confettiFall {
+                0% {
+                    transform: translateY(0) rotate(0deg);
+                    opacity: 0.8;
+                }
+                100% {
+                    transform: translateY(100vh) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(confettiStyle);
     }
 
     function resetGame() {
@@ -402,25 +557,20 @@
         if (popup) {
             popup.remove();
         }
-        
-        // Lật tất cả thẻ lên
+
+        // Flip all cards first
         const allCards = document.querySelectorAll('.card');
         allCards.forEach(card => {
             card.classList.add('flipped');
         });
 
-        // Sau 3 giây, lật lại và reload trang
+        // Then reset after delay
         setTimeout(() => {
-            allCards.forEach(card => {
-                card.classList.remove('flipped');
-            });
-            setTimeout(() => {
-                location.reload();
-            }, 500); // Thêm delay nhỏ để animation hoàn thành
-        }, 3000);
+            location.reload();
+        }, 1500);
     }
 
-    // Lật tất cả card khi bấm 'Bắt đầu chơi', sau 3s lật lại
+    // Initial reveal of all cards
     function revealAllCardsThenHide() {
         const allCards = document.querySelectorAll('.card');
         allCards.forEach(card => card.classList.add('flipped'));
@@ -430,17 +580,49 @@
     }
 
     window.addEventListener('DOMContentLoaded', function() {
-        // Popup hướng dẫn lần đầu
-        if (!sessionStorage.getItem('firstVisit')) {
+        // First visit popup
+        if (!sessionStorage.getItem('firstVisitMemory')) {
             const popup = document.createElement('div');
             popup.id = 'guide-popup';
-            popup.innerHTML = `<div style="background:rgba(255,255,255,0.98);border-radius:18px;padding:32px 28px;box-shadow:0 8px 32px rgba(0,0,0,0.18);position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;text-align:center;max-width:90vw;">
-                <h2 style='font-family:"Noto Sans KR","Nanum Gothic",Arial,sans-serif;font-size:1.5em;margin-bottom:12px;'>Hướng dẫn chơi</h2>
-                <p style='font-size:1.1em;margin-bottom:18px;'>Lật hai thẻ để tìm cặp từ Hàn-Việt tương ứng! Hãy ghi nhớ vị trí các thẻ để chiến thắng nhanh nhất nhé.</p>
-                <button id='startGameBtn' style='padding:8px 24px;border-radius:18px;background:#4CAF50;color:#fff;font-size:1.1em;border:none;cursor:pointer;'>Bắt đầu chơi</button>
+            popup.innerHTML = `<div style="
+                background: linear-gradient(135deg, var(--pink-light) 0%, var(--blue-light) 100%);
+                border-radius: 20px;
+                padding: 30px;
+                box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 9999;
+                text-align: center;
+                max-width: 90vw;
+                width: 400px;
+                animation: popupAppear 0.5s ease-out;
+                color: white;
+                border: 3px solid white;
+            ">
+                <h2 style="font-family: 'Comfortaa', sans-serif; font-size: 1.8em; margin-bottom: 15px;">✨ Cách chơi ✨</h2>
+                <p style="font-size: 1.1em; margin-bottom: 25px; line-height: 1.5;">
+                    Lật 2 thẻ để tìm cặp từ Hàn-Việt tương ứng!<br>
+                    Hãy ghi nhớ vị trí các thẻ để ghép đúng nhanh nhất nhé!
+                </p>
+                <button id='startGameBtn' style="
+                    padding: 12px 30px;
+                    border-radius: 30px;
+                    background: white;
+                    color: var(--pink-dark);
+                    font-size: 1.1em;
+                    border: none;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    font-family: 'Comfortaa', sans-serif;
+                    font-weight: 700;
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                ">Bắt đầu chơi</button>
             </div>`;
             document.body.appendChild(popup);
-            sessionStorage.setItem('firstVisit', 'true');
+            sessionStorage.setItem('firstVisitMemory', 'true');
+
             document.getElementById('startGameBtn').onclick = function() {
                 document.getElementById('guide-popup').remove();
                 revealAllCardsThenHide();
