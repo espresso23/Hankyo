@@ -51,16 +51,28 @@ public class GoogleLogin implements Serializable {
             if (!userDAO.userExistsSocial(user.getSocialID())) {
                 // Save new user
                 boolean isSave = userDAO.saveUserSocialMedia(user);
-                if (isSave)
+                System.out.println("Kết quả saveUserSocialMedia: " + isSave);
+                if (isSave) {
                     user = userDAO.getUserBySocialID(user.getSocialID());
-                user.displayInfo();
+                    if (user != null) {
+                        System.out.println("ĐÃ LƯU USER GOOGLE VÀO DB: " + user.displayInfo());
+                    } else {
+                        System.out.println("getUserBySocialID trả về null, user chưa được insert vào DB!");
+                    }
+                } else {
+                    System.out.println("saveUserSocialMedia trả về false, không insert được user vào DB!");
+                }
             } else {
                 user = userDAO.getUserBySocialID(user.getSocialID());
+                if (user != null) {
+                    System.out.println("USER GOOGLE ĐÃ TỒN TẠI TRONG DB: " + user.displayInfo());
+                } else {
+                    System.out.println("userExistsSocial trả về true nhưng getUserBySocialID lại null!");
+                }
             }
         } catch (SQLException e) {
             throw new IOException("Database error: " + e.getMessage(), e);
         }
-
         return user;
     }
 }

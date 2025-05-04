@@ -20,7 +20,6 @@ public class GoogleLoginServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String code = request.getParameter("code");
-        HttpSession session = request.getSession();
 
         if (code == null || code.isEmpty()) {
             forwardWithMessage(request, response, "Login failed. Invalid authorization code.");
@@ -46,7 +45,7 @@ public class GoogleLoginServlet extends HttpServlet {
             }
 
             createUserSession(request, user);
-            response.sendRedirect("index.jsp");
+            response.sendRedirect("home.jsp");
 
         } catch (Exception e) {
             e.printStackTrace(); // Log lỗi đầy đủ trong console
@@ -66,7 +65,8 @@ public class GoogleLoginServlet extends HttpServlet {
         Learner learner = learnerDAO.getLearnerById(user.getUserID());
         session.setAttribute("learner", learner);
 
-        System.out.println("Session Created: " + user.getFullName() + " (ID: " + user.getUserID() + ")"); // Log session
+        System.out.println("Session Created: " + user.getFullName() + " (ID: " + user.getUserID() + ")");
+        System.out.println(learner.displayInfo());// Log session
     }
 
     private void forwardWithMessage(HttpServletRequest request, HttpServletResponse response, String message)

@@ -396,7 +396,7 @@ public class QuizletDAO {
             return learnerNames;
         }
 
-        String sql = "SELECT learnerID, fullName FROM Learner WHERE learnerID IN (";
+        String sql = "SELECT learnerID, u.fullName FROM Learner l JOIN [User] u on l.userID = u.userID WHERE learnerID IN (";
         StringBuilder placeholders = new StringBuilder();
         for (int i = 0; i < flashCards.size(); i++) {
             if (i > 0) placeholders.append(",");

@@ -138,9 +138,11 @@ public class UserDAO {
     public boolean saveUserSocialMedia(User user) {
         String checkEmailQuery = "SELECT COUNT(*) FROM [User] WHERE gmail = ?";
         String saveUserQuery = "INSERT INTO [User] (fullName, gmail, socialID, role, dateCreate, avatar, status) VALUES (?, ?, ?, ?, GETDATE(), ?, ?)";
-        String insertLearnerQuery = "INSERT INTO Learner (userID, hankyoPoint, honour_ownedID) VALUES (?, ?, ?)";
+        String insertLearnerQuery = "INSERT INTO Learner (userID, hankyoPoint) VALUES (?, ?)";
 
-        try (Connection con = DBConnect.getInstance().getConnection()) {
+        Connection con = null;
+        try {
+            con = DBConnect.getInstance().getConnection();
             con.setAutoCommit(false);
 
             // Check if email exists
@@ -148,6 +150,8 @@ public class UserDAO {
                 checkEmailStmt.setString(1, user.getGmail());
                 try (ResultSet rs = checkEmailStmt.executeQuery()) {
                     if (rs.next() && rs.getInt(1) > 0) {
+                        con.rollback();
+                        System.out.println("[saveUserSocialMedia] Email already exists: " + user.getGmail());
                         return false;
                     }
                 }
@@ -162,14 +166,18 @@ public class UserDAO {
                 ps.setString(4, "Learner");
                 ps.setString(5, user.getAvatar());
                 ps.setString(6, "active");
-                
+
                 if (ps.executeUpdate() == 0) {
-                    throw new SQLException("Creating user failed, no rows affected.");
+                    con.rollback();
+                    System.out.println("[saveUserSocialMedia] Creating user failed, no rows affected. Info: " + user.displayInfo());
+                    return false;
                 }
 
                 try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                     if (!generatedKeys.next()) {
-                        throw new SQLException("Creating user failed, no ID obtained.");
+                        con.rollback();
+                        System.out.println("[saveUserSocialMedia] Creating user failed, no ID obtained. Info: " + user.displayInfo());
+                        return false;
                     }
                     userID = generatedKeys.getInt(1);
                     user.setUserID(userID);
@@ -180,7 +188,6 @@ public class UserDAO {
             try (PreparedStatement learnerStmt = con.prepareStatement(insertLearnerQuery)) {
                 learnerStmt.setInt(1, userID);
                 learnerStmt.setDouble(2, 0.0);
-                learnerStmt.setNull(3, Types.INTEGER);
                 learnerStmt.executeUpdate();
             }
 
@@ -188,7 +195,24 @@ public class UserDAO {
             return true;
 
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to save social media user: " + e.getMessage(), e);
+            if (con != null) {
+                try {
+                    con.rollback();
+                } catch (SQLException ex) {
+                    System.out.println("[saveUserSocialMedia] Rollback error: " + ex.getMessage());
+                }
+            }
+            System.out.println("[saveUserSocialMedia] SQLException: " + e.getMessage() + ", Info: " + user.displayInfo());
+            return false;
+        } finally {
+            if (con != null) {
+                try {
+                    con.setAutoCommit(true); // Trả lại trạng thái mặc định cho pool
+                    con.close();
+                } catch (SQLException e) {
+                    System.out.println("[saveUserSocialMedia] Close connection error: " + e.getMessage());
+                }
+            }
         }
     }
 

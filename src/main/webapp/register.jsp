@@ -33,7 +33,7 @@
     </div>
     <div class="signUp-form">
         <h2>Register</h2>
-        <div class="isHidden ${not empty msg ? 'show' : ''}">
+        <div class="${not empty msg ? 'show' : ''}">
             <c:if test="${not empty msg}">
                 <div class="alert alert-danger">
                     <c:out value="${msg}"/>

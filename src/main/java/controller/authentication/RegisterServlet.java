@@ -31,7 +31,7 @@ public class RegisterServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         LOGGER.info("RegisterServlet doPost called");
-        
+
         String fullName = request.getParameter("fullName");
         String username = request.getParameter("username");
         String password = request.getParameter("password");
@@ -40,40 +40,19 @@ public class RegisterServlet extends HttpServlet {
         String phone = request.getParameter("phone");
         String gender = request.getParameter("gender");
 
-        LOGGER.info("Received registration data: " + 
-            "fullName=" + fullName + ", " +
-            "username=" + username + ", " +
-            "email=" + email + ", " +
-            "phone=" + phone + ", " +
-            "gender=" + gender);
-
-        if (fullName.isEmpty() || username.isEmpty() || email.isEmpty() || password.isEmpty() || phone.isEmpty() || gender.isEmpty()) {
-            LOGGER.warning("Validation failed: Empty fields detected");
-            request.setAttribute("message", "Please fill out all fields");
-            request.getRequestDispatcher("register.jsp").forward(request, response);
-            return;
-        }
-
-        if (!password.equals(confirmPassword)) {
-            LOGGER.warning("Validation failed: Passwords do not match");
-            request.setAttribute("message", "Passwords do not match");
-            request.getRequestDispatcher("register.jsp").forward(request, response);
-            return;
-        }
-        
-        if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
-            LOGGER.warning("Validation failed: Invalid email format");
-            request.setAttribute("message", "Invalid email format.");
-            request.getRequestDispatcher("register.jsp").forward(request, response);
-            return;
-        }
+        LOGGER.info("Received registration data: " +
+                "fullName=" + fullName + ", " +
+                "username=" + username + ", " +
+                "email=" + email + ", " +
+                "phone=" + phone + ", " +
+                "gender=" + gender);
 
         UserDAO dao = new UserDAO();
         try {
             LOGGER.info("Checking if username exists: " + username);
             if (dao.usernameExists(username)) {
                 LOGGER.warning("Validation failed: Username already exists");
-                request.setAttribute("message", "Username already exists.");
+                request.setAttribute("msg", "Username already exists.");
                 request.getRequestDispatcher("register.jsp").forward(request, response);
                 return;
             }
@@ -82,7 +61,7 @@ public class RegisterServlet extends HttpServlet {
                 LOGGER.info("Checking if email exists: " + email);
                 if (dao.userExists(email)) {
                     LOGGER.warning("Validation failed: Email already exists");
-                    request.setAttribute("message", "Email already exists. Please use a different email address.");
+                    request.setAttribute("msg", "Email already exists. Please use a different email address.");
                     request.getRequestDispatcher("register.jsp").forward(request, response);
                     return;
                 }
@@ -106,7 +85,7 @@ public class RegisterServlet extends HttpServlet {
                 session.setAttribute("gmail", email);
                 session.setAttribute("user", user);
                 session.setAttribute("otpCode", verifyCode);
-                
+
                 LOGGER.info("Session attributes set. Redirecting to verify page...");
                 request.getRequestDispatcher("verify").forward(request, response);
 

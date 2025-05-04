@@ -1,4 +1,4 @@
-package controller;
+package controller.quizlet;
 
 import dao.QuizletDAO;
 import model.CustomFlashCard;
