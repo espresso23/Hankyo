@@ -1,6 +1,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ page import="java.util.*, model.Documentary" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" isELIgnored="false" %>
 <%@ page import="model.User" %>
 <%
     List<Documentary> docs = (List<Documentary>) request.getAttribute("documents");
@@ -13,6 +14,8 @@
     List<Documentary> pageDocs = docs.subList(startIdx, endIdx);
 
     String filterType = request.getParameter("filterType");
+
+    User currentUser = (User) session.getAttribute("user");
 %>
 
 <!DOCTYPE html>
@@ -170,6 +173,7 @@
             padding: 12px 15px;
             display: flex;
             justify-content: center;
+            gap: 15px;
             border-top: 1px solid rgba(0,0,0,0.05);
         }
 
@@ -179,10 +183,29 @@
             font-size: 0.9rem;
             font-weight: 600;
             transition: all 0.3s ease;
+            padding: 5px 10px;
+            border-radius: 5px;
         }
 
         .doc-actions a:hover {
             color: var(--pink-primary);
+            background-color: rgba(240, 161, 184, 0.1);
+        }
+
+        .doc-actions .delete-btn {
+            color: #dc3545;
+        }
+
+        .doc-actions .delete-btn:hover {
+            background-color: rgba(220, 53, 69, 0.1);
+        }
+
+        .doc-actions .edit-btn {
+            color: #28a745;
+        }
+
+        .doc-actions .edit-btn:hover {
+            background-color: rgba(40, 167, 69, 0.1);
         }
 
         /* Empty state */
@@ -298,7 +321,6 @@
 <div class="documents-container">
     <h1 class="page-title"><i class="fas fa-book"></i> Tài liệu học tiếng Hàn</h1>
     <%
-        User currentUser = (User) session.getAttribute("user");
         if (currentUser != null && "admin".equalsIgnoreCase(currentUser.getRole())) {
     %>
     <div style="text-align: right; margin-bottom: 20px;">
@@ -375,6 +397,14 @@
                 <a href="<%= doc.getSource() %>" download>
                     <i class="fas fa-download"></i> Tải xuống
                 </a>
+                <% if (currentUser != null && "admin".equalsIgnoreCase(currentUser.getRole())) { %>
+                <a href="edit-document?docID=<%= doc.getDocID() %>" class="edit-btn">
+                    <i class="fas fa-edit"></i> Sửa
+                </a>
+                <a href="#" class="delete-btn" onclick="confirmDelete(<%= doc.getDocID() %>)">
+                    <i class="fas fa-trash"></i> Xóa
+                </a>
+                <% } %>
             </div>
         </div>
         <% } %>
@@ -422,6 +452,15 @@
     </div>
     <% } %>
 </div>
+
+<script>
+function confirmDelete(docID) {
+    if (confirm('Bạn có chắc chắn muốn xóa tài liệu này?')) {
+        window.location.href = 'delete-document?docID=' + docID;
+    }
+}
+</script>
+
 <c:import url="footer.jsp"/>
 </body>
 </html>

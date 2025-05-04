@@ -88,6 +88,37 @@ public class DocumentaryDAO {
             ps.executeUpdate();
         }
     }
+
+    public boolean deleteDocument(int docID) throws SQLException {
+        String sql = "DELETE FROM Documentary WHERE docID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setInt(1, docID);
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        }
+    }
+
+    public boolean updateDocument(Documentary doc) throws SQLException {
+        String sql = "UPDATE Documentary SET title = ?, author = ?, source = ?, doc_content = ?, type = ?, audioPath = ?, thumbnail = ? WHERE docID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setString(1, doc.getTitle());
+            ps.setString(2, doc.getAuthor());
+            ps.setString(3, doc.getSource());
+            ps.setString(4, doc.getDocContent());
+            ps.setString(5, doc.getType());
+            ps.setString(6, doc.getAudioPath());
+            ps.setString(7, doc.getThumbnail());
+            ps.setInt(8, doc.getDocID());
+
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        }
+    }
+
     public List<Documentary> getDocumentsByType(String type) throws SQLException {
         List<Documentary> list = new ArrayList<>();
         String sql = "SELECT * FROM Documentary WHERE type = ?";
