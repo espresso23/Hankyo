@@ -12,11 +12,24 @@
   <title>Danh sách thành tựu</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --primary-pink: #ff6b8b;       /* Màu hồng chủ đạo */
+      --light-pink: #ffd6de;        /* Hồng nhạt */
+      --primary-blue: #6cb4ee;      /* Xanh dương */
+      --light-blue: #e6f2ff;        /* Xanh nhạt */
+      --success-color: #4cc9a7;     /* Xanh lá */
+      --text-dark: #3a3a3a;         /* Màu chữ tối */
+      --text-light: #6c757d;        /* Màu chữ phụ */
+      --bg-gradient: linear-gradient(135deg, #fff9fb 0%, #f0f8ff 100%);
+    }
+
     body {
       font-family: 'Roboto', Arial, sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #f4f4f4;
+      background-image: url('asset/png/background/background-2.png');
+      color: var(--text-dark);
+      line-height: 1.6;
       display: flex;
       flex-direction: column;
       min-height: 100vh;
@@ -30,91 +43,100 @@
     }
 
     .main-container {
-      max-width: 900px;
+      max-width: 1000px;
       width: 100%;
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      padding: 20px;
+      background-color: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+      padding: 25px;
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
-
-    header, footer {
-      background-color: #333;
-      color: white;
-      padding: 10px 20px;
-      text-align: center;
-    }
-
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-
-    footer {
-      margin-top: auto;
-    }
-
     h1 {
       text-align: center;
-      color: #333;
+      color: var(--primary-pink);
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+      position: relative;
+      padding-bottom: 10px;
+    }
+
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary-pink), var(--primary-blue));
     }
 
     .message {
       text-align: center;
-      padding: 10px;
-      margin-bottom: 15px;
-      border-radius: 5px;
+      padding: 12px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     }
 
     .message.success {
-      background-color: #d4edda;
+      background-color: rgba(76, 201, 167, 0.15);
       color: #155724;
+      border-left: 4px solid var(--success-color);
     }
 
     .message.error {
-      background-color: #f8d7da;
+      background-color: rgba(255, 107, 107, 0.15);
       color: #721c24;
+      border-left: 4px solid var(--primary-pink);
     }
 
     .filter-list {
       display: flex;
       justify-content: center;
+      flex-wrap: wrap;
       gap: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
     }
 
     .filter-list button {
-      padding: 8px 16px;
+      padding: 10px 20px;
       border: none;
-      border-radius: 5px;
-      background-color: #007bff;
-      color: white;
+      border-radius: 25px;
+      background-color: white;
+      color: var(--primary-pink);
       cursor: pointer;
       transition: all 0.3s;
+      font-weight: 500;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      border: 1px solid rgba(255, 107, 139, 0.3);
     }
 
     .filter-list button:hover {
-      background-color: #0056b3;
-      transform: translateY(-2px);
+      background-color: var(--light-pink);
+      transform: translateY(-3px);
+      box-shadow: 0 5px 10px rgba(255, 107, 139, 0.2);
     }
 
     .filter-list button.active {
-      background-color: #28a745;
+      background: linear-gradient(135deg, var(--primary-pink), var(--primary-blue));
+      color: white;
+      box-shadow: 0 4px 10px rgba(255, 107, 139, 0.3);
     }
 
     .honour-container {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 20px;
-      padding: 20px;
-      position: relative;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 25px;
+      padding: 10px;
     }
 
     .honour-card {
-      background: linear-gradient(135deg, #ffffff, #f8f9fa);
-      border-radius: 10px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
       padding: 20px;
       text-align: center;
       transition: all 0.3s ease;
@@ -124,38 +146,42 @@
     }
 
     .honour-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+      transform: translateY(-8px);
+      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
     }
 
     .honour-card.equipped {
-      border-color: gold;
-      box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-      background: linear-gradient(135deg, #fff9e6, #fff0b3);
+      border-color: var(--primary-pink);
+      box-shadow: 0 0 25px rgba(255, 107, 139, 0.3);
+      background: linear-gradient(135deg, #fff0f3, #f0f8ff);
     }
 
     .honour-card img {
-      width: 120px;
-      height: 120px;
+      width: 140px;
+      height: 140px;
       object-fit: cover;
+      border-radius: 50%;
       transition: all 0.3s ease;
       margin-bottom: 15px;
       filter: grayscale(100%);
+      border: 3px solid #f0f0f0;
     }
 
     .honour-card img.owned {
       filter: grayscale(0%);
+      border-color: var(--light-blue);
     }
 
     .honour-card.equipped img {
-      box-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+      border-color: var(--primary-pink);
+      box-shadow: 0 0 15px rgba(255, 107, 139, 0.4);
     }
 
     .honour-card h3 {
-      font-size: 1.2em;
-      margin: 10px 0;
+      font-size: 1.3em;
+      margin: 15px 0;
       font-weight: 600;
-      color: #333;
+      color: var(--text-dark);
       transition: all 0.3s;
     }
 
@@ -163,56 +189,54 @@
     <c:forEach var="honour" items="${listHonour}">
     .honour-card[data-honour-id="${honour.honourID}"].owned h3 {
       color: transparent;
-      background: linear-gradient(45deg, ${honour.gradientStart != null ? honour.gradientStart : '#28a745'}, ${honour.gradientEnd != null ? honour.gradientEnd : '#20c997'});
+      background: linear-gradient(45deg, ${honour.gradientStart != null ? honour.gradientStart : 'var(--primary-pink)'}, ${honour.gradientEnd != null ? honour.gradientEnd : 'var(--primary-blue)'});
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      font-weight: 700;
     }
     </c:forEach>
 
     .honour-card p {
-      font-size: 0.9em;
-      color: #666;
+      font-size: 0.95em;
+      color: var(--text-light);
       margin-bottom: 15px;
     }
 
     .owned-badge {
       position: absolute;
-      top: 10px;
-      right: 10px;
-      background-color: #28a745;
+      top: 15px;
+      right: 15px;
+      background: linear-gradient(135deg, var(--success-color), #20c997);
       color: white;
-      padding: 3px 8px;
-      border-radius: 10px;
-      font-size: 0.8em;
+      padding: 4px 12px;
+      border-radius: 15px;
+      font-size: 0.85em;
       font-weight: bold;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
     }
 
     .equip-btn {
       display: inline-block;
-      padding: 8px 15px;
+      padding: 10px 20px;
       margin-top: 10px;
-      background-color: #4CAF50;
+      background: linear-gradient(135deg, var(--primary-pink), var(--primary-blue));
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 25px;
       cursor: pointer;
       transition: all 0.3s;
-      font-size: 0.9em;
+      font-size: 0.95em;
       font-weight: 500;
+      box-shadow: 0 3px 8px rgba(255, 107, 139, 0.2);
     }
 
     .equip-btn:hover {
-      background-color: #3e8e41;
-      transform: translateY(-2px);
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(255, 107, 139, 0.3);
     }
 
     .equip-btn.equipped {
-      background-color: #f44336;
-    }
-
-    .equip-btn.equipped:hover {
-      background-color: #d32f2f;
+      background: linear-gradient(135deg, #ff4757, #ff6b6b);
     }
 
     .hidden {
@@ -221,48 +245,50 @@
 
     .no-results {
       text-align: center;
-      color: #666;
+      color: var(--text-light);
       grid-column: 1 / -1;
-      padding: 20px;
-      font-size: 1.1em;
+      padding: 30px;
+      font-size: 1.2em;
     }
 
     .pagination {
       display: flex;
       justify-content: center;
-      gap: 10px;
-      margin-top: 20px;
+      gap: 8px;
+      margin-top: 30px;
       flex-wrap: wrap;
     }
 
     .pagination button {
-      padding: 8px 12px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
+      padding: 10px 15px;
+      border: 1px solid rgba(255, 107, 139, 0.3);
+      border-radius: 25px;
       background-color: white;
-      color: #333;
+      color: var(--primary-pink);
       cursor: pointer;
       transition: all 0.3s;
+      font-weight: 500;
     }
 
     .pagination button:hover:not(.disabled) {
-      background-color: #f0f0f0;
-      transform: translateY(-2px);
+      background-color: var(--light-pink);
+      transform: translateY(-3px);
     }
 
     .pagination button.active {
-      background-color: #007bff;
+      background: linear-gradient(135deg, var(--primary-pink), var(--primary-blue));
       color: white;
-      border-color: #007bff;
+      border-color: transparent;
     }
 
     .pagination button.disabled {
       color: #ccc;
       cursor: not-allowed;
       transform: none !important;
+      border-color: #eee;
     }
 
-    /* Animation for equip/unequip */
+    /* Animation */
     @keyframes pulse {
       0% { transform: scale(1); }
       50% { transform: scale(1.05); }
@@ -272,6 +298,55 @@
     .honour-card.equip-animation {
       animation: pulse 0.5s ease;
     }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .main-container {
+        padding: 15px;
+      }
+
+      .honour-container {
+        grid-template-columns: 1fr;
+      }
+
+      .honour-card {
+        max-width: 350px;
+        margin: 0 auto;
+      }
+
+      .filter-list {
+        gap: 8px;
+      }
+
+      .filter-list button {
+        padding: 8px 15px;
+        font-size: 0.9em;
+      }
+    }
+
+    /* Hiệu ứng khi load */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .honour-card {
+      animation: fadeInUp 0.5s ease forwards;
+      opacity: 0;
+    }
+
+    .honour-card:nth-child(1) { animation-delay: 0.1s; }
+    .honour-card:nth-child(2) { animation-delay: 0.2s; }
+    .honour-card:nth-child(3) { animation-delay: 0.3s; }
+    .honour-card:nth-child(4) { animation-delay: 0.4s; }
+    .honour-card:nth-child(5) { animation-delay: 0.5s; }
+    .honour-card:nth-child(6) { animation-delay: 0.6s; }
   </style>
 </head>
 <body>

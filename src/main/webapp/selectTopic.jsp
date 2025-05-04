@@ -223,7 +223,7 @@
         }
     </style>
 </head>
-<jsp:include page="header.jsp"></jsp:include>
+<c:import url="header.jsp"/>
 <body>
 <div class="container">
     <div class="containerSmall">
@@ -343,6 +343,6 @@
         this.classList.toggle('flipped');
     });
 </script>
-<jsp:include page="footer.jsp"></jsp:include>
+<c:import url="footer.jsp"/>
 </body>
 </html>

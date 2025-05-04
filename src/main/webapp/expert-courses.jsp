@@ -651,7 +651,7 @@
             <c:choose>
                 <c:when test="${not empty expertCourses}">
                     <c:forEach var="course" items="${expertCourses}">
-                        <a href="course-detail?courseID=${course.courseID}" style="text-decoration:none; color:inherit; display:block;">
+                        <a href="course-details?courseID=${course.courseID}" style="text-decoration:none; color:inherit; display:block;">
                             <div class="course-card">
                                 <img src="${course.courseImg}" alt="${course.courseTitle}" class="course-image">
                                 <div class="course-content">
