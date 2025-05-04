@@ -4,487 +4,519 @@
 <head>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/asset/css/quizlet.css">
     <link rel="icon" href="${pageContext.request.contextPath}/asset/png/icon/logo.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <title>Quizlet - Select Topic</title>
     <style>
+        :root {
+            --pink-light: #ffe6f0;
+            --pink-medium: #ffb6d5;
+            --pink-dark: #ff9ec7;
+            --blue-light: #d6f5f2;
+            --blue-medium: #a0e6e0;
+            --blue-dark: #7ad4cd;
+            --text-dark: #4a4a4a;
+            --text-light: #ffffff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --border-radius: 16px;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(90deg, #ffd6ec 0%, #b4ebe6 100%);
-            background-size: cover;
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, var(--pink-light) 0%, var(--blue-light) 100%);
+            background-attachment: fixed;
             margin: 0;
             min-height: 100vh;
+            color: var(--text-dark);
         }
+
         .file-wrapper {
             max-width: 1200px;
-            margin: 40px auto 70px auto;
-            position: relative;
+            margin: 60px auto 30px auto;
+            padding: 0 20px;
         }
-        .container {
-            width: 100%;
-            padding: 48px 32px 32px 32px;
-            background: #fff;
-            border-radius: 28px;
-            border: none;
-            box-shadow: 0 8px 32px 0 rgba(180, 235, 230, 0.18), 0 1.5px 0 #ffd6ec inset;
-            min-height: 70vh;
+
+        /* Header Style */
+        .quizlet-header {
             position: relative;
-            z-index: 1;
+            margin-bottom: 20px;
+            padding: 0 20px;
         }
-        .file-tab {
-            position: absolute;
-            top: -32px;
-            left: 36px;
-            min-width: 180px;
-            height: 48px;
-            background: linear-gradient(90deg, #ffd6ec 0%, #b4ebe6 100%);
-            border: none;
-            border-top-left-radius: 18px;
-            border-top-right-radius: 18px;
-            box-shadow: 0 6px 18px rgba(180,235,230,0.13);
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .header-title {
+            color: var(--text-dark);
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
             display: flex;
             align-items: center;
-            padding: 0 32px;
-            font-size: 22px;
-            font-weight: bold;
-            color: #1976D2;
-            z-index: 2;
-            letter-spacing: 1px;
         }
-        .overlay-image {
-            position: absolute;
-            top: -75px; /* Đè nửa trên */
-            left: 32px;
-            width: 200px; /* Nhỏ hơn 300px cho phù hợp */
-            height: 150px;
-            object-fit: cover;
-            border-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            z-index: 10;
-            transition: transform 0.2s ease;
+
+        .header-title i {
+            margin-right: 12px;
+            color: var(--pink-medium);
+            font-size: 32px;
         }
-        .overlay-image:hover {
-            transform: scale(1.05); /* Hiệu ứng tương tự favorite-btn */
-        }
-        .tabs {
+
+        /* Floating Tabs Navigation */
+        .tabs-nav {
             display: flex;
-            flex-direction: row;
-            align-items: flex-start;
-            justify-content: flex-start;
-            gap: 0;
-            margin-bottom: -18px;
-            position: relative;
-            z-index: 10;
-            width: 100%;
+            background: white;
+            border-radius: 50px;
+            padding: 8px;
+            box-shadow: var(--shadow);
+            overflow-x: auto;
+            scrollbar-width: none;
         }
-        .tab {
-            display: flex;
-            align-items: center;
-            gap: 0;
-            width: 44px;
-            height: 44px;
-            padding: 0 8px;
-            font-size: 0px;
-            color: #fff;
-            background: linear-gradient(90deg, #ff6fae 0%, #3ec6e0 100%);
-            border-top-left-radius: 18px;
-            border-top-right-radius: 18px;
-            border-bottom-left-radius: 0;
-            border-bottom-right-radius: 0;
-            margin-right: 2px;
-            margin-bottom: 0;
-            box-shadow: 0 2px 8px rgba(180,235,230,0.18);
+
+        .tabs-nav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-btn {
+            padding: 10px 24px;
+            border: none;
+            background: transparent;
+            color: var(--text-dark);
+            font-weight: 600;
             cursor: pointer;
-            transition:
-                    background 0.3s,
-                    color 0.3s,
-                    width 0.25s cubic-bezier(.4,2,.6,1),
-                    font-size 0.18s,
-                    box-shadow 0.18s;
-            position: relative;
-            z-index: 11;
-            overflow: hidden;
-        }
-        .tab .folder-icon {
-            font-size: 22px;
-            margin-right: 0;
-            transition: font-size 0.18s;
-        }
-        .tab .tab-label {
-            opacity: 0;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
             white-space: nowrap;
-            margin-left: 0;
+            font-size: 15px;
+            margin: 0 2px;
+        }
+
+        .tab-btn i {
+            margin-right: 8px;
             font-size: 16px;
-            transition: opacity 0.18s, margin-left 0.18s;
+            transition: all 0.3s ease;
         }
-        .tab.active,
-        .tab:hover {
-            background: linear-gradient(90deg, #3ec6e0 0%, #ff6fae 100%);
-            color: #fff;
-            font-weight: bold;
-            box-shadow: 0 8px 24px rgba(180,235,230,0.22);
-            width: 180px;
-            font-size: 18px;
-            z-index: 12;
-            transform: translateY(8px) scale(1.08);
+
+        .tab-btn:hover {
+            background: rgba(255, 182, 213, 0.1);
+            color: var(--pink-dark);
         }
-        .tab.active .tab-label,
-        .tab:hover .tab-label {
-            opacity: 1;
-            margin-left: 10px;
+
+        .tab-btn:hover i {
+            transform: scale(1.1);
         }
-        .tab.active .folder-icon,
-        .tab:hover .folder-icon {
-            font-size: 26px;
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--pink-medium) 0%, var(--blue-medium) 100%);
+            color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+
+        .tab-btn.active i {
+            color: white;
+        }
+
+        /* Container Style */
+        .container {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(6px);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        /* Tab Content */
         .tab-content {
             display: none;
-            border: none;
         }
+
         .tab-content.active {
             display: block;
-            border: none;
+            animation: fadeIn 0.5s ease;
         }
-        .topics-scroll-container {
-            border: none !important;
-            box-shadow: none !important;
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .topics-scroll {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 24px 12px;
-            width: 100%;
-            background: none;
-            border-radius: 0;
-            box-shadow: none !important;
-            max-height: none;
-            overflow: visible !important;
-            padding: 24px 0 0 0;
-            margin: 0;
-        }
-        .topics-scroll::-webkit-scrollbar {
-            display: none !important;
-        }
-        .topic-box {
-            background: none;
-            border: none;
-            border-radius: 0;
-            box-shadow: none;
-            transition: color 0.18s, transform 0.18s;
-            padding: 0;
-            margin: 0;
-            min-width: 0;
-            min-height: 80px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Segoe UI', 'Arial', sans-serif;
-            font-size: 16px;
-            position: relative;
-            cursor: pointer;
-        }
-        .topic-box .file-icon {
-            font-size: 38px;
-            margin-bottom: 6px;
-            color: #7ed6df;
-            filter: drop-shadow(0 1px 1px #ffd6ec);
-        }
-        .topic-box a {
-            text-decoration: none;
-            color: #222;
-            font-size: 16px;
-            font-family: inherit;
-            font-weight: 600;
-            margin-bottom: 4px;
-            display: block;
-            text-align: center;
-            transition: color 0.2s;
-        }
-        .topic-box:hover a {
-            color: #1976D2;
-        }
-        .topic-count {
-            font-size: 12px;
-            color: #888;
-            font-weight: 400;
-            background: none;
-            padding: 0;
-            border-radius: 0;
-            text-align: center;
-        }
-        .scroll-btn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background-color: #2196F3; /* Đồng bộ với custom-btn */
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            cursor: pointer;
-            font-size: 16px;
-            line-height: 30px;
-            text-align: center;
-            opacity: 0.8;
-            transition: opacity 0.3s, transform 0.2s;
-        }
-        .scroll-btn:hover {
-            opacity: 1;
-            transform: translateY(-50%) scale(1.1);
-        }
-        .scroll-btn.left {
-            left: 5px;
-        }
-        .scroll-btn.right {
-            right: 5px;
-        }
-        .error {
-            color: red;
-            text-align: center;
-            margin: 20px 0;
-        }
-        .add-flashcard-form {
-            background-color: #ffffff;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-            width: 100%;
-            max-width: 450px;
-            margin: 20px auto;
-        }
-        .add-flashcard-form h2 {
-            text-align: center;
-            color: #1a1a1a; /* Từ custom-topics-title */
+
+        .tab-content h2 {
+            color: var(--pink-medium);
+            margin-top: 0;
             margin-bottom: 25px;
             font-size: 24px;
-            font-weight: 600;
-        }
-        .add-flashcard-form form {
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
-        .add-flashcard-form input[type="text"] {
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            outline: none;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-            background-color: #f9f9f9;
-        }
-        .add-flashcard-form input[type="text"]:focus {
-            border-color: #2196F3;
-            box-shadow: 0 0 5px rgba(33, 150, 243, 0.3);
-        }
-        .add-flashcard-form input[type="text"]::placeholder {
-            color: #999;
-        }
-        .add-flashcard-form button {
-            padding: 12px;
-            background-color: #2196F3;
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-        .add-flashcard-form button:hover {
-            background-color: #1976D2;
-            transform: translateY(-2px);
-        }
-        .add-flashcard-form button:active {
-            transform: translateY(0);
-        }
-        .add-flashcard-form .toggle-btn {
-            background-color: #4CAF50; /* Đồng bộ với favorite-btn */
-            margin-bottom: 15px;
-            font-size: 14px;
-            padding: 10px;
-        }
-        .add-flashcard-form .toggle-btn:hover {
-            background-color: #45a049;
-        }
-        .add-flashcard-form .manual-input, .add-flashcard-form .individual-input {
-            display: none;
-        }
-        .add-flashcard-form .manual-input.active, .add-flashcard-form .individual-input.active {
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
-        .add-flashcard-form .note {
-            font-size: 13px;
-            color: #7f8c8d;
+            font-weight: 700;
             text-align: center;
-            margin-top: 15px;
-            line-height: 1.4;
+            position: relative;
         }
-        .add-flashcard-form .success, .add-flashcard-form .error-list {
+
+        .tab-content h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--pink-medium) 0%, var(--blue-medium) 100%);
+            border-radius: 2px;
+        }
+
+        /* Topics Grid - 3 cards per row */
+        .topics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+
+        .topic-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .topic-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            border-color: var(--blue-medium);
+        }
+
+        .topic-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--pink-medium) 0%, var(--blue-medium) 100%);
+        }
+
+        .card-icon {
+            font-size: 36px;
+            color: var(--pink-medium);
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .topic-card:hover .card-icon {
+            color: var(--pink-dark);
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .card-title {
+            margin: 0 0 10px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .card-title a {
+            color: var(--text-dark);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .topic-card:hover .card-title a {
+            color: var(--pink-dark);
+        }
+
+        .card-meta {
+            font-size: 14px;
+            color: #777;
+            background: rgba(160, 230, 224, 0.2);
+            padding: 6px 12px;
+            border-radius: 50px;
+            display: inline-block;
+        }
+
+        /* Alert Messages */
+        .alert {
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: rgba(0, 200, 150, 0.1);
+            border: 1px solid rgba(0, 200, 150, 0.2);
+            color: #00c896;
+        }
+
+        .alert-danger {
+            background: rgba(255, 100, 120, 0.1);
+            border: 1px solid rgba(255, 100, 120, 0.3);
+            color: #ff6478;
+        }
+
+        /* Public Cards Specific Styling */
+        .public-card .card-icon {
+            color: var(--blue-medium);
+        }
+
+        .public-card .card-description {
+            color: #666;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+
+        .public-card .card-author {
+            font-size: 13px;
+            color: #888;
+        }
+
+        /* Add Flashcard Form */
+        .add-flashcard-form {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: 0 8px 24px rgba(180, 235, 230, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+        }
+
+        .form-group {
             margin-bottom: 20px;
         }
-        .add-flashcard-form .success ul, .add-flashcard-form .error-list ul {
-            list-style: none;
-            padding: 0;
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-dark);
         }
-        .add-flashcard-form .success li {
-            color: #4CAF50;
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid rgba(160, 230, 224, 0.5);
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: 'Nunito', sans-serif;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
         }
-        .add-flashcard-form .error-list li {
-            color: red;
+
+        .form-control:focus {
+            border-color: var(--blue-medium);
+            box-shadow: 0 0 10px rgba(137, 247, 254, 0.3);
+            outline: none;
         }
-        .add-flashcard-form .result-container {
+
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--pink-medium) 0%, var(--blue-medium) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(255, 158, 187, 0.3);
+            background: linear-gradient(135deg, var(--pink-dark) 0%, var(--blue-dark) 100%);
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+
+        /* Input Mode Toggle */
+        .input-mode-toggle {
+            display: flex;
             margin-bottom: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
-        .container, .topic-box {
-            transition: box-shadow 0.25s, border 0.18s, background 0.25s;
+
+        .input-mode-btn {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.7);
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .input-mode-btn i {
+            margin-right: 8px;
+        }
+
+        .input-mode-btn.active {
+            background: linear-gradient(135deg, var(--pink-medium) 0%, var(--blue-medium) 100%);
+            color: white;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 992px) {
+            .topics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .topics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tab-content {
+                padding: 20px;
+            }
+
+            .header-title {
+                font-size: 24px;
+            }
+
+            .tab-btn {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .input-mode-toggle {
+                flex-direction: column;
+            }
+
+            .add-flashcard-form {
+                padding: 20px;
+            }
+
+            .header-title {
+                font-size: 22px;
+            }
+
+            .header-title i {
+                font-size: 28px;
+            }
         }
     </style>
 </head>
 <body>
 <jsp:include page="header.jsp"></jsp:include>
-<div class="file-wrapper">
-    <div class="file-tab">Quizlet File</div>
-    <div class="tabs">
-        <div class="tab active" data-tab="system"><span class="tab-label">System Flashcards</span></div>
-        <div class="tab" data-tab="custom"><span class="tab-label">Custom Flashcards</span></div>
-        <div class="tab" data-tab="favorite"><span class="tab-label">Favorite Flashcards</span></div>
-        <div class="tab" data-tab="add"><span class="tab-label">Add Flashcard</span></div>
-        <div class="tab" data-tab="public"><span class="tab-label">Public Flashcards</span></div>
+
+<!-- Header Outside Container -->
+<div class="quizlet-header">
+    <div class="header-content">
+        <h1 class="header-title"><i class="fas fa-layer-group"></i> My Flashcards</h1>
     </div>
+    <div class="tabs-nav">
+        <button class="tab-btn active" data-tab="system"><i class="fas fa-book"></i> System</button>
+        <button class="tab-btn" data-tab="custom"><i class="fas fa-edit"></i> My Cards</button>
+        <button class="tab-btn" data-tab="favorite"><i class="fas fa-star"></i> Favorites</button>
+        <button class="tab-btn" data-tab="add"><i class="fas fa-plus"></i> Add New</button>
+        <button class="tab-btn" data-tab="public"><i class="fas fa-globe"></i> Public</button>
+    </div>
+</div>
+
+<div class="file-wrapper">
     <div class="container">
         <!-- System Flashcards Tab -->
         <div class="tab-content active" id="system">
             <h2>System Flashcards</h2>
-            <div class="topics-scroll-container">
-                <div class="topics-scroll">
-                    <c:choose>
-                        <c:when test="${empty systemTopics}">
-                            <div class="empty-state">
-                                <i class="fas fa-folder-open"></i>
-                                <p>Chưa có flashcard hệ thống nào.</p>
-                                <p class="empty-state-sub">Hãy quay lại sau khi chúng tôi cập nhật thêm nội dung.</p>
-                            </div>
-                        </c:when>
-                        <c:otherwise>
-                            <c:forEach var="item" items="${systemTopics}" varStatus="status">
-                                <div class="topic-box" data-topic="${item}" data-type="system">
-                                    <span class="file-icon">🗂️</span>
-                                    <a href="flashCard?topic=${item}&type=system">${item}</a>
-                                    <span class="topic-count">0 từ</span>
-                                </div>
-                            </c:forEach>
-                        </c:otherwise>
-                    </c:choose>
-                </div>
+            <div class="topics-grid">
+                <c:forEach var="item" items="${systemTopics}" varStatus="status">
+                    <div class="topic-card" data-topic="${item}" data-type="system">
+                        <div class="card-icon"><i class="fas fa-book-open"></i></div>
+                        <h3 class="card-title"><a href="flashCard?topic=${item}&type=system">${item}</a></h3>
+                        <div class="card-meta">System Cards</div>
+                    </div>
+                </c:forEach>
             </div>
             <c:if test="${not empty systemError}">
-                <p class="error">${systemError}</p>
+                <div class="alert alert-danger">${systemError}</div>
             </c:if>
         </div>
 
         <!-- Custom Flashcards Tab -->
         <div class="tab-content" id="custom">
-            <h2>Custom Flashcards</h2>
-            <div class="topics-scroll-container">
-                <div class="topics-scroll">
-                    <c:choose>
-                        <c:when test="${empty customTopics}">
-                            <div class="empty-state">
-                                <i class="fas fa-folder-plus"></i>
-                                <p>Bạn chưa tạo flashcard tùy chỉnh nào.</p>
-                                <p class="empty-state-sub">Hãy tạo flashcard mới bằng cách nhấn vào tab "Add Flashcard".</p>
-                            </div>
-                        </c:when>
-                        <c:otherwise>
-                            <c:forEach var="item" items="${customTopics}" varStatus="status">
-                                <div class="topic-box" data-topic="${item}" data-type="custom">
-                                    <span class="file-icon">🗂️</span>
-                                    <a href="flashCard?topic=${item}&type=custom">${item}</a>
-                                    <span class="topic-count">
-                                        <c:out value="${customTopicCounts[item]}"/> từ
-                                    </span>
-                                </div>
-                            </c:forEach>
-                        </c:otherwise>
-                    </c:choose>
-                </div>
+            <h2>My Flashcards</h2>
+            <div class="topics-grid">
+                <c:forEach var="item" items="${customTopics}" varStatus="status">
+                    <div class="topic-card" data-topic="${item}" data-type="custom">
+                        <div class="card-icon"><i class="fas fa-edit"></i></div>
+                        <h3 class="card-title"><a href="flashCard?topic=${item}&type=custom">${item}</a></h3>
+                        <div class="card-meta"><c:out value="${customTopicCounts[item]}"/> cards</div>
+                    </div>
+                </c:forEach>
             </div>
             <c:if test="${not empty customError}">
-                <p class="error">${customError}</p>
+                <div class="alert alert-danger">${customError}</div>
             </c:if>
         </div>
 
         <!-- Favorite Flashcards Tab -->
         <div class="tab-content" id="favorite">
             <h2>Favorite Flashcards</h2>
-            <div class="topics-scroll-container">
-                <div class="topics-scroll">
-                    <c:choose>
-                        <c:when test="${empty favoriteTopics}">
-                            <div class="empty-state">
-                                <i class="fas fa-star"></i>
-                                <p>Bạn chưa có flashcard yêu thích nào.</p>
-                                <p class="empty-state-sub">Hãy thêm flashcard vào mục yêu thích để xem chúng ở đây.</p>
-                            </div>
-                        </c:when>
-                        <c:otherwise>
-                            <c:forEach var="item" items="${favoriteTopics}" varStatus="status">
-                                <div class="topic-box" data-topic="${item}" data-type="favorite">
-                                    <span class="file-icon">🗂️</span>
-                                    <a href="flashCard?topic=${item}&type=favorite">${item}</a>
-                                    <span class="topic-count">0 từ</span>
-                                </div>
-                            </c:forEach>
-                        </c:otherwise>
-                    </c:choose>
-                </div>
+            <div class="topics-grid">
+                <c:forEach var="item" items="${favoriteTopics}" varStatus="status">
+                    <div class="topic-card" data-topic="${item}" data-type="favorite">
+                        <div class="card-icon"><i class="fas fa-star"></i></div>
+                        <h3 class="card-title"><a href="flashCard?topic=${item}&type=favorite">${item}</a></h3>
+                        <div class="card-meta">Favorite Cards</div>
+                    </div>
+                </c:forEach>
             </div>
             <c:if test="${not empty favoriteError}">
-                <p class="error">${favoriteError}</p>
+                <div class="alert alert-danger">${favoriteError}</div>
             </c:if>
         </div>
 
         <!-- Public Flashcards Tab -->
         <div class="tab-content" id="public">
             <h2>Public Flashcards</h2>
-            <div class="topics-scroll-container">
-                <div class="topics-scroll">
-                    <c:choose>
-                        <c:when test="${empty publicFlashCards}">
-                            <div class="empty-state">
-                                <i class="fas fa-users"></i>
-                                <p>Chưa có flashcard công khai nào.</p>
-                                <p class="empty-state-sub">Hãy quay lại sau để xem các flashcard được chia sẻ từ cộng đồng.</p>
-                            </div>
-                        </c:when>
-                        <c:otherwise>
-                            <c:forEach var="card" items="${publicFlashCards}">
-                                <div class="topic-box" data-topic="${card.topic}" data-type="public">
-                                    <span class="file-icon">🌐</span>
-                                    <a href="flashCard?topic=${card.topic}&type=custom&learnerID=${card.learnerID}">${card.topic}</a>
-                                    <div style="color:#888;font-size:14px;">${card.mean}</div>
-                                    <div style="font-size:12px;">By User: <c:out value="${publicLearnerNames[card.learnerID]}"/></div>
-                                </div>
-                            </c:forEach>
-                        </c:otherwise>
-                    </c:choose>
-                </div>
+            <div class="topics-grid">
+                <c:forEach var="card" items="${publicFlashCards}">
+                    <div class="topic-card public-card" data-topic="${card.topic}" data-type="public">
+                        <div class="card-icon"><i class="fas fa-globe"></i></div>
+                        <h3 class="card-title"><a href="flashCard?topic=${card.topic}&type=custom&learnerID=${card.learnerID}">${card.topic}</a></h3>
+                        <div class="card-description">${card.mean}</div>
+                        <div class="card-author">By <c:out value="${publicLearnerNames[card.learnerID]}"/></div>
+                    </div>
+                </c:forEach>
             </div>
             <c:if test="${not empty publicError}">
-                <p class="error">${publicError}</p>
+                <div class="alert alert-danger">${publicError}</div>
             </c:if>
         </div>
 
         <!-- Add Flashcard Tab -->
         <div class="tab-content" id="add">
             <div class="add-flashcard-form">
-                <h2>Thêm Flashcard Mới</h2>
+                <h2>Add New Flashcards</h2>
+
                 <c:if test="${not empty successMessages}">
-                    <div class="success">
-                        <p>Thêm thành công:</p>
+                    <div class="alert alert-success">
+                        <p><i class="fas fa-check-circle"></i> Added successfully:</p>
                         <ul>
                             <c:forEach var="msg" items="${successMessages}">
                                 <li>${msg}</li>
@@ -492,9 +524,10 @@
                         </ul>
                     </div>
                 </c:if>
+
                 <c:if test="${not empty errorMessages}">
-                    <div class="error-list">
-                        <p>Lỗi:</p>
+                    <div class="alert alert-danger">
+                        <p><i class="fas fa-exclamation-circle"></i> Errors:</p>
                         <ul>
                             <c:forEach var="msg" items="${errorMessages}">
                                 <li>${msg}</li>
@@ -502,21 +535,51 @@
                         </ul>
                     </div>
                 </c:if>
-                <button class="toggle-btn" onclick="toggleInputMode()">Chuyển sang nhập từng ô</button>
+
+                <div class="input-mode-toggle">
+                    <button type="button" class="input-mode-btn active" data-mode="manual">
+                        <i class="fas fa-bolt"></i> Quick Add
+                    </button>
+                    <button type="button" class="input-mode-btn" data-mode="individual">
+                        <i class="fas fa-keyboard"></i> Single Add
+                    </button>
+                </div>
+
                 <form id="flashcardForm" method="post">
                     <div class="manual-input active">
-                        <input type="text" id="manualTopic" name="manualTopic" placeholder="Nhập Topic" required />
-                        <input type="text" id="manualFlashCards" name="manualFlashCards"
-                               placeholder="Nhập từ:nghĩa (VD: hello:xin chào;good:tốt)" required />
+                        <div class="form-group">
+                            <label for="manualTopic"><i class="fas fa-tag"></i> Topic Name</label>
+                            <input type="text" id="manualTopic" name="manualTopic" class="form-control" placeholder="Enter topic name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="manualFlashCards"><i class="fas fa-list"></i> Flashcards (word:meaning pairs)</label>
+                            <textarea id="manualFlashCards" name="manualFlashCards" class="form-control" placeholder="Enter word:meaning pairs (e.g. hello:xin chào;good:tốt)" required></textarea>
+                        </div>
                     </div>
+
                     <div class="individual-input">
-                        <input type="text" id="individualTopic" name="individualTopic" placeholder="Nhập Topic" />
-                        <input type="text" id="word" name="word" placeholder="Nhập từ" />
-                        <input type="text" id="mean" name="mean" placeholder="Nhập nghĩa" />
+                        <div class="form-group">
+                            <label for="individualTopic"><i class="fas fa-tag"></i> Topic Name</label>
+                            <input type="text" id="individualTopic" name="individualTopic" class="form-control" placeholder="Enter topic name">
+                        </div>
+                        <div class="form-group">
+                            <label for="word"><i class="fas fa-font"></i> Word</label>
+                            <input type="text" id="word" name="word" class="form-control" placeholder="Enter word">
+                        </div>
+                        <div class="form-group">
+                            <label for="mean"><i class="fas fa-comment"></i> Meaning</label>
+                            <input type="text" id="mean" name="mean" class="form-control" placeholder="Enter meaning">
+                        </div>
                     </div>
-                    <button type="submit">Thêm Flashcard</button>
+
+                    <button type="submit" class="btn btn-block">
+                        <i class="fas fa-plus-circle"></i> Add Flashcards
+                    </button>
                 </form>
-                <p class="note">Lưu ý: Nhập nhiều flashcard cách nhau bằng dấu ";", mỗi cặp theo cú pháp "từ:nghĩa" (cho chế độ thủ công).</p>
+
+                <div style="margin-top:20px;font-size:14px;color:#666;text-align:center;">
+                    <p><i class="fas fa-info-circle"></i> For quick add, separate multiple flashcards with semicolons (;) and format each pair as "word:meaning"</p>
+                </div>
             </div>
         </div>
     </div>
@@ -524,9 +587,63 @@
 
 <script>
     window.contextPath = '${pageContext.request.contextPath}';
+
+    // Tab switching functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all tabs and contents
+                tabBtns.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+
+                // Add active class to clicked tab
+                btn.classList.add('active');
+
+                // Show corresponding content
+                const tabId = btn.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+
+        // Input mode toggle
+        const modeBtns = document.querySelectorAll('.input-mode-btn');
+        const manualInput = document.querySelector('.manual-input');
+        const individualInput = document.querySelector('.individual-input');
+
+        modeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const mode = btn.getAttribute('data-mode');
+                if (mode === 'manual') {
+                    manualInput.classList.add('active');
+                    individualInput.classList.remove('active');
+                } else {
+                    manualInput.classList.remove('active');
+                    individualInput.classList.add('active');
+                }
+            });
+        });
+
+        // Animate cards on load
+        const cards = document.querySelectorAll('.topic-card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    });
 </script>
-<script src="${pageContext.request.contextPath}/asset/js/quizlet.js"></script>
-<script src="${pageContext.request.contextPath}/asset/js/quizlet-add.js"></script>
+
 <jsp:include page="footer.jsp"></jsp:include>
 </body>
 </html>

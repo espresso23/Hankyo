@@ -576,11 +576,7 @@
                         Bài viết: <span class="post-title"><%= comment.getPostHeading() %></span>
                     </div>
                     <p class="post-body"><%= comment.getContent() %></p>
-                    <div class="post-actions">
-                        <div class="action-item">
-                            <i class="fas fa-arrow-up"></i> <%= comment.getScore() %>
-                        </div>
-                    </div>
+
                 </div>
             </div>
             <% } %>

@@ -10,14 +10,20 @@
         response.sendRedirect("login.jsp");
         return;
     }
+
+    int currentPage = 1;
+    int totalPages = 1;
+    try {
+        currentPage = request.getAttribute("currentPage") != null ? (Integer) request.getAttribute("currentPage") : 1;
+        totalPages = request.getAttribute("totalPages") != null ? (Integer) request.getAttribute("totalPages") : 1;
+    } catch (Exception e) {}
 %>
 
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="icon" href="${pageContext.request.contextPath}/asset/png/icon/logo.jpg">
     <meta charset="UTF-8">
-    <title>User Profile - Posts</title>
+    <title>User Profile - Courses</title>
     <link rel="stylesheet" href="asset/css/sidebar.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/themify-icons@1.0.1/css/themify-icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -500,11 +506,137 @@
             width: 100%;
         }
     }
+    /* Course card styles */
+    .course-card {
+        background-color: var(--card-bg);
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        overflow: hidden;
+        margin-bottom: 20px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .course-card:hover {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        transform: translateY(-5px) scale(1.02);
+    }
+
+    .course-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .course-content {
+        padding: 20px;
+    }
+
+    .course-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 10px;
+    }
+
+    .course-description {
+        color: var(--text-light);
+        font-size: 14px;
+        line-height: 1.5;
+        margin-bottom: 15px;
+    }
+
+    .course-stats {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+    }
+
+    .stat-group {
+        display: flex;
+        gap: 20px;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: var(--text-light);
+        font-size: 14px;
+    }
+
+    .course-price {
+        font-weight: 600;
+        color: var(--primary-pink);
+        font-size: 18px;
+    }
+
+    .course-status {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        margin-top: 10px;
+    }
+
+    .status-active {
+        background-color: #dff9fb;
+        color: #00b894;
+    }
+
+    .status-draft {
+        background-color: #ffeaa7;
+        color: #fdcb6e;
+    }
+
+    .status-pending {
+        background-color: #fab1a0;
+        color: #e17055;
+    }
+
+    .no-courses {
+        text-align: center;
+        padding: 40px 20px;
+        background-color: rgba(255, 255, 255, 0.5);
+        border-radius: 12px;
+        border: 1px dashed rgba(255, 159, 243, 0.3);
+    }
+
+    .no-courses i {
+        font-size: 48px;
+        color: var(--primary-pink);
+        margin-bottom: 16px;
+        opacity: 0.7;
+    }
+
+    .no-courses p {
+        font-size: 16px;
+        color: var(--text-light);
+        margin: 0;
+    }
+
+    @media (max-width: 992px) {
+        .main-content {
+            flex-direction: column;
+        }
+
+        .sidebar {
+            width: 100%;
+        }
+    }
+
+    a[style*="display:block"]:hover {
+        text-decoration: none;
+    }
+
 </style>
+
 <body>
 <c:import url="header.jsp"/>
 
-<!-- Profile container to organize layout -->
 <div class="profile-container">
     <!-- PROFILE INFO SECTION (Cover + Avatar + User Info) -->
     <jsp:include page="profileHeader.jsp" />
@@ -513,76 +645,69 @@
     <div class="main-content">
         <!-- SIDEBAR -->
         <c:import url="sidebar.jsp"/>
+
         <!-- PROFILE CONTENT -->
         <div class="profile-content">
-            <!-- Posts content -->
             <c:choose>
-                <c:when test="${not empty userPosts}">
-                    <c:forEach var="post" items="${userPosts}">
-                        <div class="post-card">
-                            <div class="post-header">
-                                <div class="post-user-info">
-                                    <!-- Use post author's avatar instead of current user's avatar -->
-                                    <img class="post-avatar" src="${not empty post.avtUserImg ? post.avtUserImg : 'https://dongvat.edu.vn/upload/2025/01/avatar-cho-hai-04.webp'}" alt="User Avatar">
-                                    <!-- Use post author's name instead of current user's name -->
-                                    <span class="post-username">${post.userFullName}</span>
-                                </div>
-
-                                <c:if test="${post.userID == sessionScope.user.userID}">
-                                    <div class="more-options-wrapper">
-                                        <i class="ti-more-alt" onclick="toggleOptions(this)"></i>
-                                        <div class="dropdown-options">
-                                            <a href="editPost.jsp?postID=${post.postID}" class="dropdown-item">Sửa</a>
-                                            <a href="deletePost?postID=${post.postID}" class="dropdown-item">Xoá</a>
+                <c:when test="${not empty expertCourses}">
+                    <c:forEach var="course" items="${expertCourses}">
+                        <a href="course-details?courseID=${course.courseID}" style="text-decoration:none; color:inherit; display:block;">
+                            <div class="course-card">
+                                <img src="${course.courseImg}" alt="${course.courseTitle}" class="course-image">
+                                <div class="course-content">
+                                    <h3 class="course-title">${course.courseTitle}</h3>
+                                    <p class="course-description">${course.courseDescription}</p>
+                                    <div class="course-stats">
+                                        <div class="stat-group">
+                                            <div class="stat-item">
+                                                <i class="fas fa-users"></i>
+                                                <span>${course.learnersCount} học viên</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <i class="fas fa-star"></i>
+                                                <span><fmt:formatNumber value="${course.rating}" pattern="#.#"/> (${course.ratingCount})</span>
+                                            </div>
+                                        </div>
+                                        <div class="course-price">
+                                            <fmt:formatNumber value="${course.price}" type="currency" currencySymbol="₫"/>
                                         </div>
                                     </div>
-                                </c:if>
-                            </div>
-
-                            <div class="post-content">
-                                <h4 class="post-title">${post.heading}</h4>
-                                <div class="post-meta">
-                                    <fmt:formatDate value="${post.createdDate}" pattern="dd/MM/yyyy" /> - ${post.commentCount} bình luận
-                                </div>
-                                <p class="post-body">${post.content}</p>
-
-
-                                <div class="post-actions">
-                                    <div class="action-item"><i class="far fa-comment"></i> ${post.commentCount} bình luận</div>
-                                    <div class="action-item"><i class="far fa-heart"></i> Thích</div>
+                                    <span class="course-status status-${course.status.toLowerCase()}">
+                                        ${course.status}
+                                    </span>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     </c:forEach>
+                    <!-- PHÂN TRANG -->
+                    <c:if test="${totalPages > 1}">
+                        <div style="text-align:center; margin-top:30px;">
+                            <c:if test="${currentPage > 1}">
+                                <a href="profile?user=${profileUser.username}&tab=courses&page=${currentPage-1}" style="margin:0 8px;">&laquo; Trước</a>
+                            </c:if>
+                            <c:forEach var="i" begin="1" end="${totalPages}">
+                                <a href="profile?user=${profileUser.username}&tab=courses&page=${i}"
+                                   style="margin:0 4px; font-weight:${i==currentPage?'bold':'normal'}; color:${i==currentPage?'#ff7eb9':'#444'};">
+                                    ${i}
+                                </a>
+                            </c:forEach>
+                            <c:if test="${currentPage < totalPages}">
+                                <a href="profile?user=${profileUser.username}&tab=courses&page=${currentPage+1}" style="margin:0 8px;">Sau &raquo;</a>
+                            </c:if>
+                        </div>
+                    </c:if>
                 </c:when>
                 <c:otherwise>
-                    <div class="no-posts">
-                        <i class="fas fa-scroll"></i>
-                        <p>u/${user.username} vẫn chưa đăng gì</p>
+                    <div class="no-courses">
+                        <i class="fas fa-book"></i>
+                        <p>Bạn chưa có khóa học nào</p>
                     </div>
                 </c:otherwise>
             </c:choose>
         </div>
-
     </div>
 </div>
 
-<script>
-    function toggleOptions(icon) {
-        const dropdown = icon.nextElementSibling;
-        document.querySelectorAll('.dropdown-options').forEach(opt => {
-            if (opt !== dropdown) opt.style.display = 'none';
-        });
-        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-    }
-
-    document.addEventListener('click', function (e) {
-        if (!e.target.closest('.more-options-wrapper')) {
-            document.querySelectorAll('.dropdown-options').forEach(opt => opt.style.display = 'none');
-        }
-    });
-</script>
 <c:import url="footer.jsp"/>
-
 </body>
 </html>

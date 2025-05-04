@@ -252,6 +252,12 @@
         <a href="profile?user=${profileUser.username}&tab=reported"
            class="nav-tab ${tab == 'reported' ? 'active' : ''}">BÃ¡o cÃ¡o</a>
     </c:if>
+
+    <!-- Hiển thị tab Khóa học của tôi cho expert -->
+    <c:if test="${isExpert}">
+        <a href="profile?user=${profileUser.username}&tab=courses"
+           class="nav-tab ${tab == 'courses' ? 'active' : ''}">Khóa học của tôi</a>
+    </c:if>
 </div>
 
 <!-- Modal Viewer -->

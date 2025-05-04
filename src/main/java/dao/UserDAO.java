@@ -293,6 +293,7 @@ public class UserDAO {
                 u.setDateCreate(rs.getDate("dateCreate"));
                 u.setGender(rs.getString("gender"));
                 u.setAvatar(rs.getString("avatar"));
+                u.setDateOfBirth(rs.getDate("dateOfBirth"));
                 return u;
             }
 

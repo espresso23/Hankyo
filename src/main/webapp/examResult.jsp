@@ -299,7 +299,7 @@
             </div>
             <div>
                 <span>Độ chính xác:</span>
-                <span><fmt:formatNumber value="${score}" pattern="#.##"/>%</span>
+                <span><fmt:formatNumber value="${git a}" pattern="#.##"/>%</span>
             </div>
             <div>
                 <span>Thời gian hoàn thành:</span>

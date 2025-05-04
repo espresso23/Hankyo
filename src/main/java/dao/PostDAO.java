@@ -22,6 +22,9 @@ public class PostDAO {
     UserDAO userDAO = new UserDAO();
     private DBConnect dbContext;
 
+    public PostDAO() {
+        dbContext = new DBConnect();
+    }
 
     public boolean checkConnection() throws Exception {
         try (Connection conn = dbContext.getConnection()) {

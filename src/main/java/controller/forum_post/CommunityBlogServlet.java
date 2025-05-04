@@ -5,7 +5,6 @@ import dao.ReportDAO;
 import dao.UserDAO;
 import dao.PostDAO;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -41,10 +40,10 @@ public class CommunityBlogServlet extends HttpServlet {
         try {
             String filter = request.getParameter("filter");
             String searchQuery = request.getParameter("searchQuery");
-
+            String id = request.getParameter("id");
             List<Post> postList;
 
-            // Lọc nếu có filter
+            // Lọc bài viết theo filter nếu có
             if (filter != null) {
                 switch (filter) {
                     case "newest":
@@ -64,30 +63,44 @@ public class CommunityBlogServlet extends HttpServlet {
                 postList = postDAO.getAllPostsHaveFullNameAndAvtImg();
             }
 
-            // Đếm comment
+            // Đếm comment cho từng bài viết
             for (Post post : postList) {
                 int commentCount = postDAO.getCommentCount(post.getPostID());
                 post.setCommentCount(commentCount);
             }
 
-            // Top rated
+            // Lấy bài viết mới nhất
+//            User user = userDAO.getUserByID(id);
             Post newPost = postDAO.getLatestPost();
-            String fullNameNewPost = (newPost != null) ? userDAO.getFullNameByUserId(newPost.getUserID()) : "";
-            String avatarURLNewPost = (newPost != null) ? userDAO.getAvatarByUserId(newPost.getUserID()) : "";
+            String fullNameNewPost = "";
+            String avatarURLNewPost = "";
+
+            if (newPost != null && newPost.getUserID() > 0) {
+                User postUser = userDAO.getUserByID(newPost.getUserID());
+                if (postUser != null) {
+                    fullNameNewPost = postUser.getFullName() != null ? postUser.getFullName() : "";
+                    avatarURLNewPost = postUser.getAvatar() != null ? postUser.getAvatar() : "";
+                }
+            }
+
+            // Top rated posts
             List<Post> topRatedPosts = postDAO.getPostsOrderedByScore();
 
-            // Tìm kiếm nếu có
+            // Xử lý tìm kiếm nếu có
             if (searchQuery != null && !searchQuery.trim().isEmpty()) {
                 List<Post> searchResults = postDAO.searchPosts(searchQuery);
                 request.setAttribute("searchResults", searchResults);
             }
 
-            // Gửi lên JSP
+            // Set dữ liệu lên request để chuyển sang JSP
             request.setAttribute("postList", postList);
             request.setAttribute("newPost", newPost);
             request.setAttribute("fullNameNewPost", fullNameNewPost);
             request.setAttribute("avatarURLNewPost", avatarURLNewPost);
             request.setAttribute("topRatedPosts", topRatedPosts);
+
+            // Forward tới blog.jsp
+
             request.getRequestDispatcher("blog.jsp").forward(request, response);
 
         } catch (Exception e) {
@@ -95,6 +108,7 @@ public class CommunityBlogServlet extends HttpServlet {
             throw new ServletException("Error loading blog data", e);
         }
     }
+
 
     @Override
     protected void doPost (HttpServletRequest request, HttpServletResponse response) throws
@@ -288,7 +302,7 @@ public class CommunityBlogServlet extends HttpServlet {
             report.setReason(reason);
             report.setReportTypeID(3);
             report.setReporterID(user.getUserID());
-
+            report.setStatus("Pending");
             ReportDAO reportDAO = new ReportDAO();
             boolean success = reportDAO.createPostReport(report);
             response.getWriter().write("{\"success\": " + success + "}");

@@ -17,205 +17,91 @@
     <link rel="stylesheet" href="asset/css/courseDetails.css">
     <style>
         :root {
-            --primary-color: #ff8fa3;  /* Hồng nhạt */
-            --primary-light: #6cb4ff;  /* Xanh dương nhạt */
-            --secondary-color: #ffd93d; /* Vàng nhạt */
-            --secondary-light: #ff9b44; /* Cam nhạt */
-            --success-color: #20bf6b;  /* Xanh lá */
-            --success-light: #26de81;  /* Xanh lá nhạt */
-            --danger-color: #ff6b6b;   /* Đỏ */
-            --danger-light: #ff4757;   /* Đỏ đậm */
+            --primary-color: #ff6b8b;  /* Hồng đậm hơn */
+            --primary-light: #a8d8ea;  /* Xanh nhạt dịu */
+            --secondary-color: #ffd3b6; /* Màu cam nhạt */
+            --success-color: #4cc9a7;  /* Xanh lá dịu */
+            --danger-color: #ff6b6b;   /* Đỏ cam */
+            --text-color: #4a4a4a;     /* Màu chữ tối hơn */
+            --text-light: #6c757d;     /* Màu chữ phụ */
+            --bg-light: #fff9fb;       /* Nền hồng nhạt */
         }
 
         body {
-            background: linear-gradient(135deg, #ffd1d1 0%, #ffd1d1 25%, #fff5f5 50%, #e8f0ff 75%, #d4e4ff 100%);
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
+            background: linear-gradient(135deg, #fff9fb 0%, #f0f8ff 100%);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
         }
 
+        /* Header và tiêu đề */
+        h1, h2, h3, h4, h5, h6 {
+            color: #3d3d3d;
+            font-weight: 600;
+        }
+
+        .display-5 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        /* Card styling */
         .card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
             border: none;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
         }
 
-        .btn-primary {
-            background: linear-gradient(45deg, #ff8fa3, #6cb4ff);
-            border: none;
-        }
-
-        .btn-success {
-            background: linear-gradient(45deg, #20bf6b, #26de81);
-            border: none;
-        }
-
-        .btn-danger {
-            background: linear-gradient(45deg, #ff6b6b, #ff4757);
-            border: none;
-        }
-
-        .bg-primary {
-            background: linear-gradient(45deg, #ff8fa3, #6cb4ff) !important;
-        }
-
-        .bg-success {
-            background: linear-gradient(45deg, #20bf6b, #26de81) !important;
-        }
-
-        .bg-secondary {
-            background: linear-gradient(45deg, #ffd93d, #ff9b44) !important;
-        }
-
-        .accordion-button:not(.collapsed) {
-            background: linear-gradient(45deg, #ff8fa3, #6cb4ff);
-            color: white;
-        }
-
-        .instructor-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        }
-
-        .course-preview img {
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        .content-icon {
-            color: #ff8fa3;
-            margin-right: 10px;
-        }
-
-        .rating-bars .progress {
-            background-color: rgba(255, 255, 255, 0.9);
+        /* Nút bấm */
+        .btn {
+            font-weight: 500;
             border-radius: 8px;
-        }
-
-        .rating-bars .progress-bar {
-            background: linear-gradient(45deg, #ff8fa3, #6cb4ff);
-            border-radius: 8px;
-        }
-
-        .review-card {
-            border-radius: 15px;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-        }
-
-        .message {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 25px;
-            border-radius: 10px;
-            color: white;
-            z-index: 1000;
-            animation: slideIn 0.5s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .message.success {
-            background: linear-gradient(45deg, #20bf6b, #26de81);
-        }
-
-        .message.error {
-            background: linear-gradient(45deg, #ff6b6b, #ff4757);
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        .rating-input {
-            font-size: 24px;
-        }
-
-        .rating-star {
-            cursor: pointer;
-            transition: color 0.3s ease;
-        }
-
-        .rating-star:hover {
-            color: #ff8fa3;
-        }
-
-        .text-warning {
-            color: #ff8fa3 !important;
-        }
-
-        .badge {
-            padding: 8px 12px;
-            border-radius: 20px;
-            backdrop-filter: blur(5px);
-        }
-
-        /* Thêm hiệu ứng glass morphism */
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            padding: 10px 20px;
             transition: all 0.3s ease;
         }
 
-        /* Course Content Styling */
-        .accordion {
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        }
-
-        .accordion-item {
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #ff8fab);
             border: none;
-            background: transparent;
         }
 
-        .accordion-item:not(:last-child) {
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #ff5a7d, #ff7a95);
+            transform: translateY(-2px);
         }
 
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color), #5fd8b9);
+            border: none;
+        }
+
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Accordion cải tiến */
         .accordion-button {
-            padding: 15px 20px;
-            background: rgba(255, 255, 255, 0.9);
-            font-size: 0.95rem;
-            color: #333;
+            background-color: rgba(255, 255, 255, 0.9);
             font-weight: 500;
+            color: var(--text-color);
         }
 
         .accordion-button:not(.collapsed) {
-            background: rgba(255, 143, 163, 0.1);
-            color: #ff8fa3;
-        }
-
-        .accordion-button::after {
-            background-size: 16px;
-            width: 16px;
-            height: 16px;
-            margin-left: 10px;
+            background-color: rgba(255, 107, 139, 0.1);
+            color: var(--primary-color);
         }
 
         .accordion-button:focus {
@@ -223,202 +109,130 @@
             border-color: rgba(0, 0, 0, 0.05);
         }
 
-        .content-info {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
+        /* Rating stars */
+        .bi-star-fill.text-warning {
+            color: #ffb347 !important; /* Màu cam nhạt */
         }
 
-        .content-title {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex: 1;
+        /* Instructor card */
+        .instructor-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
         }
 
+        .instructor-avatar {
+            border: 3px solid rgba(255, 107, 139, 0.2);
+        }
+
+        /* Course features */
+        .course-features li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .course-features li:last-child {
+            border-bottom: none;
+        }
+
+        /* Review cards */
+        .review-card {
+            border-left: 3px solid var(--primary-light);
+            transition: all 0.3s ease;
+        }
+
+        .review-card:hover {
+            transform: translateX(5px);
+        }
+
+        /* Price section */
+        .current-price {
+            color: var(--primary-color);
+            font-size: 2rem;
+        }
+
+        .discount-badge {
+            background: linear-gradient(135deg, var(--danger-color), #ff8a8a);
+        }
+
+        /* Video container */
+        .video-container {
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f8f9fa;
+        }
+
+        /* Text contrast */
+        .text-muted {
+            color: var(--text-light) !important;
+        }
+
+        /* Badges */
+        .badge {
+            font-weight: 500;
+            padding: 6px 12px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .card {
+                margin-bottom: 20px;
+            }
+
+            .instructor-info {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card, .review-card, .accordion-item {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        /* Loading spinner */
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Message notification */
+        .message {
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Progress bars */
+        .progress {
+            height: 8px;
+            border-radius: 4px;
+        }
+
+        /* Content items */
         .content-icon {
-            font-size: 1.1rem;
-            width: 24px;
-            height: 24px;
+            background-color: rgba(255, 107, 139, 0.1);
+            width: 30px;
+            height: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            background: rgba(255, 143, 163, 0.1);
-            color: #ff8fa3;
         }
 
-        .content-duration {
-            font-size: 0.85rem;
-            color: #666;
-            white-space: nowrap;
-            margin-left: 15px;
-        }
-
-        .accordion-body {
-            padding: 15px 20px;
-            background: rgba(255, 255, 255, 0.95);
-            font-size: 0.9rem;
-            color: #555;
-        }
-
-        .course-stats {
-            font-size: 0.9rem;
-            color: #666;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .course-stats i {
-            color: #ff8fa3;
-            font-size: 1rem;
-        }
-
-        /* Video container styling */
-        .video-container {
-            border-radius: 8px;
-            overflow: hidden;
-            margin-top: 15px;
-            background: rgba(0, 0, 0, 0.03);
-        }
-
-        .course-video {
-            width: 100%;
-            max-height: 200px;
-            object-fit: cover;
-        }
-
-        /* Assignment and Exam styling */
-        .content-meta {
-            margin-top: 10px;
-            padding-top: 10px;
+        /* Footer adjustments */
+        footer {
+            background-color: rgba(0, 0, 0, 0.03);
             border-top: 1px solid rgba(0, 0, 0, 0.05);
-        }
-
-        .content-meta-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-        }
-
-        .content-meta-item i {
-            color: #ff8fa3;
-            font-size: 0.9rem;
-        }
-
-        /* Show more/less button styling */
-        #show-more-content, #show-less-content {
-            font-size: 0.9rem;
-            padding: 8px 20px;
-            border-radius: 20px;
-            background: rgba(255, 143, 163, 0.1);
-            color: #ff8fa3;
-            border: none;
-            transition: all 0.3s ease;
-        }
-
-        #show-more-content:hover, #show-less-content:hover {
-            background: rgba(255, 143, 163, 0.2);
-            transform: translateY(-1px);
-        }
-
-        /* Instructor section styling */
-        .instructor-section {
-            margin: 2rem 0;
-        }
-
-        .instructor-info {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            padding: 1rem 0;
-        }
-
-        .instructor-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid rgba(255, 143, 163, 0.2);
-        }
-
-        .instructor-details h5 {
-            color: #333;
-            margin-bottom: 0.3rem;
-            font-weight: 600;
-        }
-
-        .instructor-details .certificate {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        /* Price section styling */
-        .price-section {
-            margin-bottom: 1.5rem;
-        }
-
-        .current-price {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #ff8fa3;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .current-price .currency {
-            font-size: 1rem;
-            font-weight: 500;
-            color: #666;
-        }
-
-        .original-price {
-            font-size: 1rem;
-            color: #999;
-            text-decoration: line-through;
-            margin-right: 0.5rem;
-        }
-
-        .discount-badge {
-            background: linear-gradient(45deg, #ff6b6b, #ff4757);
-            color: white;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-
-        /* Course features list */
-        .course-features {
-            margin: 1.5rem 0;
-            padding: 0;
-            list-style: none;
-        }
-
-        .course-features li {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            margin-bottom: 0.8rem;
-            color: #555;
-            font-size: 0.95rem;
-        }
-
-        .course-features i {
-            color: #20bf6b;
-            font-size: 1.1rem;
-        }
-
-        .last-updated {
-            font-size: 0.85rem;
-            color: #777;
-            margin-top: 1rem;
         }
     </style>
 </head>

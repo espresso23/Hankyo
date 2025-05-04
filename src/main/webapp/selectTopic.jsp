@@ -3,7 +3,7 @@
 <html>
 <head>
     <title>Quizlet Flashcards</title>
-    <link rel="stylesheet" href="./asset/css/selectTopic.css">
+<%--    <link rel="stylesheet" href="./asset/css/selectTopic.css">--%>
     <link rel="icon" href="asset/png/icon/logo.jpg">
     <style>
         @font-face {
@@ -14,54 +14,221 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            transition: all 0.3s ease;
         }
         body {
             font-family: 'Poppins', sans-serif;
-            background-image: url('asset/png/background/background-2.png');
+            background: linear-gradient(135deg, #f9e5ee 0%, #e5f1ff 100%);
             min-height: 100vh;
             background-position: left center;
+            color: #555;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+        .containerSmall {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 20px rgba(179, 186, 231, 0.2);
+            margin-bottom: 30px;
         }
         .debug {
-            color: #888;
-            font-size: 0.9rem;
+            color: #aaa;
+            font-size: 0.8rem;
             margin: 5px 0;
+        }
+        h1 {
+            text-align: center;
+            color: #6a7cd0;
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
         }
         .no-data {
             text-align: center;
             color: #888;
             font-size: 1.2rem;
+            padding: 20px;
+            background-color: rgba(249, 229, 238, 0.3);
+            border-radius: 10px;
         }
         .play-game-btn {
-            background-color: #4CAF50;
+            background: linear-gradient(135deg, #f9a8d4 0%, #95b5ee 100%);
             color: white;
-            padding: 12px 24px;
+            padding: 14px 28px;
             border: none;
-            border-radius: 8px;
+            border-radius: 30px;
             font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
             margin: 20px auto;
             display: block;
-            transition: background-color 0.3s, transform 0.2s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(249, 168, 212, 0.3);
         }
         .play-game-btn:hover {
-            background-color: #45a049;
-            transform: translateY(-2px);
+            background: linear-gradient(135deg, #f9a8d4 20%, #95b5ee 80%);
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(249, 168, 212, 0.4);
         }
         .play-game-btn:disabled {
-            background-color: #cccccc;
+            background: linear-gradient(135deg, #e5e5e5 0%, #cccccc 100%);
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
+            opacity: 0.7;
+        }
+        /* Flashcard Styling */
+        .flashcard-container {
+            width: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 30px 0;
+            min-height: 280px;
+        }
+        .flashcard {
+            width: 70%;
+            height: 260px;
+            perspective: 1000px;
+        }
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(179, 186, 231, 0.3);
+        }
+        .flashcard-inner.flipped {
+            transform: rotateY(180deg);
+        }
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            border-radius: 15px;
+            font-size: 24px;
+            font-weight: 500;
+            color: #555;
+        }
+        .flashcard-front {
+            font-size: 40px;
+            background: linear-gradient(135deg, #f9e5ee 0%, #e5f1ff 100%);
+            border: 2px solid #f9a8d4;
+        }
+        .flashcard-back {
+            background: linear-gradient(135deg, #e5f1ff 0%, #f9e5ee 100%);
+            transform: rotateY(180deg);
+            border: 2px solid #95b5ee;
+        }
+        .previousButton, .nextButton {
+            background-color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(179, 186, 231, 0.3);
+            color: #6a7cd0;
+        }
+        .previousButton:hover, .nextButton:hover {
+            background-color: #f9a8d4;
+            color: white;
+            box-shadow: 0 6px 15px rgba(249, 168, 212, 0.4);
+        }
+        .flashcard-counter {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 16px;
+            color: #777;
+        }
+        /* Word Table Styling */
+        .wordContainer {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 20px rgba(179, 186, 231, 0.2);
+        }
+        .wordTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(179, 186, 231, 0.2);
+        }
+        .wordTable thead {
+            background: linear-gradient(135deg, #f9a8d4 0%, #95b5ee 100%);
+            color: white;
+        }
+        .wordTable th {
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .wordTable tbody tr {
+            border-bottom: 1px solid #eee;
+            transition: all 0.3s;
+        }
+        .wordTable tbody tr:nth-child(even) {
+            background-color: rgba(249, 229, 238, 0.3);
+        }
+        .wordTable tbody tr:hover {
+            background-color: rgba(149, 181, 238, 0.2);
+        }
+        .wordTable td {
+            padding: 12px 15px;
+        }
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            .containerSmall, .wordContainer {
+                padding: 15px;
+            }
+            .flashcard {
+                width: 85%;
+                height: 200px;
+            }
+            .flashcard-front, .flashcard-back {
+                font-size: 20px;
+            }
+            .wordTable th, .wordTable td {
+                padding: 8px 10px;
+                font-size: 14px;
+            }
+            .play-game-btn {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
-<jsp:include page="header.jsp"></jsp:include>
+<c:import url="header.jsp"/>
 <body>
 <div class="container">
     <div class="containerSmall">
         <h1>Flashcards - ${topic}</h1>
-        <p class="debug">Type: ${type}</p>
-        <p class="debug">FlashCards size: <c:out value="${flashCards != null ? flashCards.size() : 'null'}" /></p>
-        
+
         <!-- Add Play Game button -->
         <c:if test="${not empty flashCards && flashCards.size() >= 10}">
             <form action="memory-game" method="GET">
@@ -176,6 +343,6 @@
         this.classList.toggle('flipped');
     });
 </script>
-<jsp:include page="footer.jsp"></jsp:include>
+<c:import url="footer.jsp"/>
 </body>
 </html>

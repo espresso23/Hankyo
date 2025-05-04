@@ -7,6 +7,7 @@
 --%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page isELIgnored="false" %>
 
@@ -160,27 +161,91 @@
         </div>
     </div>
 
-    <c:if test="${isOwnProfile}">
-        <div class="settings-section">
-            <div class="settings-title">CÀI ĐẶT</div>
-            <div class="settings-item">
-                <i class="fas fa-user"></i>
-                <span>Tùy chỉnh hồ sơ</span>
-            </div>
-            <div class="settings-item">
-                <i class="fas fa-trophy"></i>
-                <span>Các thành tựu đã đạt được</span>
-            </div>
+    <!-- Thành tựu hiển thị cho cả chủ hồ sơ và người ngoài -->
+    <div class="settings-section">
+        <div class="settings-title">
+            <i class="fas fa-trophy"></i> Các thành tựu đã đạt được
         </div>
 
+        <c:if test="${not empty listHonour}">
+            <div class="honour-section" style="margin-top: 10px;">
+                <c:choose>
+                    <c:when test="${isOwnProfile}">
+                        <ul style="list-style: none; padding: 0;">
+                            <c:forEach var="honour" items="${listHonour}">
+                                <li style="margin-bottom: 10px;">
+                                    <span style="font-weight: bold;"><c:out value="${honour.honourName}" /></span>
+                                    <c:if test="${honourOwnedMap[honour.honourID]}">
+                                        <span style="color: green;">(Đã sở hữu)</span>
+                                    </c:if>
+                                    <c:if test="${equippedHonourID == honour.honourID}">
+                                        <span style="color: blue;">(Đang trang bị)</span>
+                                    </c:if>
+                                </li>
+                            </c:forEach>
+                        </ul>
+                    </c:when>
+                    <c:otherwise>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                            <c:forEach var="honour" items="${listHonour}">
+                                <c:if test="${honourOwnedMap[honour.honourID]}">
+                                    <div style="padding: 8px 12px; background-color: #dff9fb; border-radius: 10px;">
+                                        <c:out value="${honour.honourName}" />
+                                    </div>
+                                </c:if>
+                            </c:forEach>
+                        </div>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+        </c:if>
+    </div>
+
+    <!-- Hiển thị chứng chỉ cho expert -->
+    <c:if test="${isExpert}">
         <div class="settings-section">
-            <div class="settings-title">LIÊN KẾT</div>
-            <div class="settings-item">
-                <i class="fas fa-link"></i>
-                <span>Thêm liên kết mạng xã hội</span>
+            <div class="settings-title">
+                <i class="fas fa-certificate"></i> Chứng chỉ của tôi
+            </div>
+            <div class="certificate-section" style="margin-top: 10px;">
+                <c:if test="${not empty expert.certificate}">
+                    <c:choose>
+                        <c:when test="${fn:endsWith(expert.certificate, '.pdf')}">
+                            <div style="text-align:center;">
+                                <i class="fas fa-file-pdf" style="font-size:48px;color:#e74c3c;"></i>
+                                <div>
+                                    <a href="${expert.certificate}" target="_blank" style="color:#e74c3c;font-weight:bold;text-decoration:none;">
+                                        Xem file PDF
+                                    </a>
+                                </div>
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="certificate-item" style="cursor: pointer;" onclick="viewImage('${expert.certificate}')">
+                                <img src="${expert.certificate}" alt="Chứng chỉ" style="width: 100%; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <div style="text-align: center; margin-top: 8px; color: #666;">
+                                    <i class="fas fa-eye"></i> Nhấn để xem chi tiết
+                                </div>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                </c:if>
             </div>
         </div>
     </c:if>
+
+    <!-- Chỉ hiển thị phần cài đặt và liên kết cho chủ hồ sơ -->
+    <c:if test="${isOwnProfile}">
+        <div class="settings-section">
+            <div class="settings-title">CÀI ĐẶT</div>
+            <a href="update-profile" class="settings-item" style="text-decoration: none;">
+                <i class="fas fa-user"></i>
+                <span>Tùy chỉnh hồ sơ</span>
+            </a>
+        </div>
+
+    </c:if>
 </div>
+
 </body>
 </html>
