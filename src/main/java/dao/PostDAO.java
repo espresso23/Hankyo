@@ -23,7 +23,7 @@ public class PostDAO {
     private DBConnect dbContext;
 
     public PostDAO() {
-        dbContext = new DBConnect();
+        dbContext = gitnew DBConnect();
     }
 
     public boolean checkConnection() throws Exception {
