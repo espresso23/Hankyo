@@ -765,6 +765,31 @@
             html += '</div>';
             container.html(html);
             $('#aiSearchResult').show();
+
+            // Tự động lưu ví dụ đầu tiên nếu là tra từ Hàn sang Việt
+            if ($('#fromLang').val() === 'han' && $('#toLang').val() === 'vi' && result.examples && result.examples.length > 0) {
+                var example = result.examples[0];
+                $.ajax({
+                    url: 'dictionary',
+                    type: 'POST',
+                    data: {
+                        action: 'addExample',
+                        searchDirection: 'han2vi',
+                        word: result.word,
+                        mean: result.translation,
+                        definition: result.definition,
+                        type: result.type,
+                        vietnameseExample: example.vi,
+                        koreanExample: example.han
+                    },
+                    success: function(res) {
+                        // Không alert, hoạt động ngầm
+                    },
+                    error: function(xhr, status, error) {
+                        // Không alert, hoạt động ngầm
+                    }
+                });
+            }
         }
 
         // Xử lý hiển thị ví dụ

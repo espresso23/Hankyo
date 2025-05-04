@@ -159,15 +159,32 @@ public class DictionaryServlet extends HttpServlet {
         String wordIDStr = request.getParameter("wordID");
         String vietnameseExample = request.getParameter("vietnameseExample");
         String koreanExample = request.getParameter("koreanExample");
+        String searchDirection = request.getParameter("searchDirection"); // "han2vi" hoặc "vi2han"
 
-        if (wordIDStr == null || vietnameseExample == null || koreanExample == null) {
+        if (vietnameseExample == null || koreanExample == null) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write("{\"success\": false, \"error\": \"Missing parameters\"}");
             return;
         }
 
         try {
-            int wordID = Integer.parseInt(wordIDStr);
+            int wordID = -1;
+            if (wordIDStr != null && !wordIDStr.trim().isEmpty()) {
+                wordID = Integer.parseInt(wordIDStr);
+            } else if ("han2vi".equals(searchDirection)) {
+                // Nếu là từ mới và search từ Hàn sang Việt thì thêm vào dictionary
+                String word = request.getParameter("word");
+                String mean = request.getParameter("mean");
+                String definition = request.getParameter("definition");
+                String type = request.getParameter("type");
+                if (word != null && mean != null && definition != null && type != null) {
+                    wordID = dictionaryDAO.insertDictionaryAndGetId(word, mean, definition, type);
+                }
+            }
+            if (wordID == -1) {
+                response.getWriter().write("{\"success\": false, \"error\": \"Không xác định được wordID để lưu ví dụ!\"}");
+                return;
+            }
             boolean success = dictionaryDAO.addDictionaryExample(wordID, vietnameseExample, koreanExample);
             response.getWriter().write("{\"success\": " + success + "}");
         } catch (Exception e) {

@@ -3,9 +3,9 @@
 <html>
 <head>
     <link rel="icon" href="${pageContext.request.contextPath}/asset/png/icon/logo.jpg">
-    <title>Title</title>
+  <title>Title</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/asset/css/header.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <script src="asset/js/header.js"></script>
   <meta charset="UTF-8">
   <style>
@@ -860,7 +860,7 @@
           appendMessage(data.response, 'bot');
         } else if (data.error) {
           appendMessage('Lỗi: ' + data.error, 'bot');
-        } else {
+          } else {
           appendMessage('Không nhận được phản hồi từ AI.', 'bot');
         }
 
@@ -997,7 +997,7 @@
       if (btnRect.left + btnRect.width / 2 < winWidth / 2) {
         menu.style.left = (btnRect.right + 8) + 'px';
         menu.style.right = '';
-      } else {
+          } else {
         menu.style.left = (btnRect.left - menuWidth - 8) + 'px';
         menu.style.right = '';
       }

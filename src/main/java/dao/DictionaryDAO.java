@@ -455,4 +455,26 @@ public class DictionaryDAO {
             return false;
         }
     }
+
+    // Thêm từ mới vào bảng dictionary và trả về wordID vừa tạo
+    public int insertDictionaryAndGetId(String word, String mean, String definition, String type) {
+        String sql = "INSERT INTO dictionary (word, mean, definition, type) VALUES (?, ?, ?, ?)";
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            stmt.setString(1, word);
+            stmt.setString(2, mean);
+            stmt.setString(3, definition);
+            stmt.setString(4, type);
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows == 0) return -1;
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    return generatedKeys.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
 }
