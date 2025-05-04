@@ -1,6 +1,10 @@
 body {
     overflow-x: hidden;
 }
+/* Xóa hoặc sửa thành */
+.show {
+    visibility: visible;
+}
 .container-fluid {
     height: 100%;
     width: 100%;
