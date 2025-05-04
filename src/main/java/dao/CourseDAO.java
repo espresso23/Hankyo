@@ -1116,7 +1116,6 @@ public class CourseDAO {
     public List<Course> suggestCourses(String skill, double score) throws SQLException {
         List<Course> result = new ArrayList<>();
         if (skill == null) return result;
-        skill = skill.trim().toLowerCase();
         // Nếu là topik i
         if (skill.contains("TOPIK I") || skill.contains("TOPIKI")) {
             if (score >= 5) {
@@ -1149,7 +1148,7 @@ public class CourseDAO {
         List<Course> courses = new ArrayList<>();
         String sql = "SELECT c.*, \n" +
                 "       cat.categoryID, \n" +
-                "       cat.categoryName, \n" +
+                "       cat.categoryName as category_name, \n" +
                 "       u.fullName as expert_name, \n" +
                 "       u.avatar as expert_avatar, \n" +
                 "       e.certificate as expert_certificate,\n" +

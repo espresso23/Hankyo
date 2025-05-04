@@ -118,7 +118,7 @@ public class ExamController extends HttpServlet {
 
                         session.setAttribute("skill", eQuesType);
                         session.setAttribute("time", String.valueOf(timeInMinutes));
-                        session.setAttribute("examID", String.valueOf(examId));
+                        session.setAttribute("examID", examId);
                         session.setAttribute("questions", questions);
 
                         request.setAttribute("exam", exam);
@@ -230,9 +230,9 @@ public class ExamController extends HttpServlet {
                 return;
             }
 
-            String skill = (String) request.getSession().getAttribute("skill");
+            String skill = request.getParameter("skill");
             String time = request.getParameter("time");
-            String examIDStr = (String) request.getSession().getAttribute("examID");
+            String examIDStr = request.getParameter("examID");
             System.out.println(examIDStr + "      ----    " + examTakenIDStr);//done
 
             int examID;

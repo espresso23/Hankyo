@@ -11,12 +11,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.sql.Time;
-import java.util.List;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.time.LocalDateTime;
 import java.sql.SQLException;
+import java.sql.Time;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/submitExam")
 public class SubmitExamServlet extends HttpServlet {
@@ -147,12 +147,12 @@ public class SubmitExamServlet extends HttpServlet {
                         examTakenID, finalMark, correctAnswers, questions.size(), doneQues, skipQues, timeTaken));
 
                 // Đảm bảo các giá trị session cần thiết được lưu lại
-                session.setAttribute("examID", String.valueOf(examID)); // Lưu lại examID dưới dạng String
+                session.setAttribute("examID", examID); // Lưu lại examID dưới dạng String
                 session.setAttribute("skill", session.getAttribute("skill")); // Lưu lại skill
                 session.setAttribute("time", session.getAttribute("time")); // Lưu lại time
                 session.setAttribute("questions", questions); // Lưu lại questions
-
-                response.sendRedirect("exam?action=result&examTakenID=" + examTakenID);
+                String skill = (String) session.getAttribute("skill");
+                response.sendRedirect("exam?action=result&examTakenID=" + examTakenID + "&examID=" + examID + "&skill=" + skill);
             } catch (SQLException e) {
                 LOGGER.log(Level.SEVERE, "Error updating exam results for examTakenID: " + examTakenID + ": " + e.getMessage(), e);
                 request.setAttribute("errorMessage", "Có lỗi xảy ra khi cập nhật kết quả bài thi: " + e.getMessage());

@@ -376,7 +376,7 @@
 
         <div class="section-title mt-5">Gợi ý khóa học phù hợp cho bạn</div>
         <div id="suggested-courses"></div>
-        <span id="exam-score" style="display:none;">${score}</span>
+        <span id="exam-score" style="display:none;">${examTaken.finalMark}</span>
         <span id="exam-skill" style="display:none;">${exam.examType}</span>
         <script>
         $(document).ready(function() {
@@ -498,9 +498,24 @@ $(document).ready(function() {
             contentType: 'application/json',
             success: function(response) {
                 popover.find('.ai-help-content').removeClass('ai-help-loading').html(response);
+                // Gọi API lấy quota AI và chèn vào cuối popover
+                fetch('ai-usage-info')
+                  .then(function(res) { return res.json(); })
+                  .then(function(data) {
+                    var msg = '';
+                    if (data.isVip) {
+                      msg = '<div style="font-size:13px;color:#888;margin-top:8px;">AI: Không giới hạn</div>';
+                    } else {
+                      msg = '<div style="font-size:13px;color:#888;margin-top:8px;">AI: Đã dùng ' + data.used + '/20 lượt. Còn lại: ' + data.left;
+                      if (data.left <= 3 && data.left > 0) msg += ' <b>(Sắp hết lượt!)</b>';
+                      if (data.left === 0) msg += ' <b>(Đã hết lượt miễn phí!)</b>';
+                      msg += '</div>';
+                    }
+                    popover.find('.ai-help-content').append(msg);
+                  });
             },
             error: function() {
-                popover.find('.ai-help-content').removeClass('ai-help-loading').html('<div class="alert alert-danger">Không thể tạo gợi ý lúc này. Vui lòng thử lại sau.</div>');
+                popover.find('.ai-help-content').removeClass('ai-help-loading').html('<div class="alert alert-danger">Bạn đã dùng hết lượt hôm nay. Vui lòng nâng cấp VIP để có thể sử dụng AI không giới hạn</div>');
             }
         });
     });

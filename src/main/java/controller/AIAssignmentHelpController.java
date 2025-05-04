@@ -11,15 +11,32 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.stream.Collectors;
+import dao.VipUserDAO;
+import model.Learner;
 
 @WebServlet("/ai-assignment-help")
 public class AIAssignmentHelpController extends HttpServlet {
     private final GeminiService geminiService = new GeminiService();
+    private final VipUserDAO vipUserDAO = new VipUserDAO();
     
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
         try {
+            // Lấy learner từ session
+            Learner learner = (Learner) req.getSession().getAttribute("learner");
+            if (learner == null) {
+                resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                resp.getWriter().write("Bạn cần đăng nhập để sử dụng AI.");
+                return;
+            }
+            int learnerID = learner.getLearnerID();
+            // Kiểm tra quota AI
+            if (!vipUserDAO.canUseAI(learnerID)) {
+                resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                resp.getWriter().write("Bạn đã hết lượt sử dụng AI miễn phí trong ngày. Hãy nâng cấp VIP để sử dụng không giới hạn!");
+                return;
+            }
             // Đọc dữ liệu từ request
             String jsonData = req.getReader().lines().collect(Collectors.joining());
             JSONObject questionData = new JSONObject(jsonData);
@@ -44,6 +61,11 @@ public class AIAssignmentHelpController extends HttpServlet {
             
             // Gọi Gemini API
             String analysis = geminiService.analyzeExercise(prompt.toString());
+            
+            // Tăng số lần sử dụng AI nếu không phải VIP
+            if (!vipUserDAO.isVipUser(learnerID)) {
+                vipUserDAO.incrementTodayUsage(learnerID);
+            }
             
             // Trả về kết quả
             resp.setContentType("text/html; charset=UTF-8");

@@ -415,6 +415,7 @@
     border-radius: 10px;
     margin-bottom: 20px;
     height: auto;
+    margin-top: 5px;
   }
   .message {
     margin-bottom: 15px;
@@ -423,7 +424,7 @@
     max-width: 80%;
   }
   .user-message {
-    background-color: #007bff;
+    background-color: #ffa7e4;
     color: white;
     margin-left: auto;
   }
@@ -496,26 +497,27 @@
     box-shadow: 0 2px 8px rgba(108,180,255,0.10);
   }
   /* Widget chat bot nhỏ gọn & hiệu ứng mượt */
-  #chatBotWidget {
-    overflow: hidden;
-    position: fixed;
-    bottom: 100px;
-    right: 30px;
-    width: 400px;
-    max-width: 188vw;
-    height: 480px;
-    max-height: 70vh;
-    background: #f8f9fa;
-    border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(108, 180, 255, 0.10);
-    z-index: 3000;
-    display: flex;
-    flex-direction: column;
-    opacity: 0;
-    transform: scale(0.8) translateY(40px);
-    pointer-events: none;
-    transition: opacity 0.25s cubic-bezier(.4,0,.2,1), transform 0.25s cubic-bezier(.4,0,.2,1);
-  }
+    /* Widget chat bot nhỏ gọn & hiệu ứng mượt */
+    #chatBotWidget {
+      overflow: hidden;
+      position: fixed;
+      bottom: 100px;
+      right: 30px;
+      width: 400px;
+      max-width: 188vw;
+      height: 480px;
+      max-height: 70vh;
+      background: #f8f9fa;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(108, 180, 255, 0.10);
+      z-index: 3000;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      transform: scale(0.8) translateY(40px);
+      pointer-events: none;
+      transition: opacity 0.25s cubic-bezier(.4,0,.2,1), transform 0.25s cubic-bezier(.4,0,.2,1);
+    }
   #chatBotWidget.open {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -703,6 +705,8 @@
     <div>
       <div class="chatbot-greeting">Hi, <%= session.getAttribute("username") != null ? session.getAttribute("username") : "bạn" %>!</div>
       <div class="chatbot-sub">Tôi có thể giúp gì cho bạn?</div>
+      <div id="ai-usage-info"
+           style="font-size:12px;color:#d483ce;text-align:right;margin-bottom: -10px;    font-weight: 700;"></div>
     </div>
     <button class="close-btn" onclick="toggleChatWidget()">&times;</button>
   </div>
@@ -1036,6 +1040,51 @@
     userInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     userInput.focus();
   }
+
+  // Thêm JS cập nhật quota AI:
+  let aiUsageCache = {isVip: false, used: 0, left: 20};
+
+  function updateAIUsageInfo(forceFetch = false) {
+    // Nếu không force, ưu tiên dùng cache để cập nhật nhanh
+    if (!forceFetch && aiUsageCache) {
+      renderAIUsageInfo(aiUsageCache);
+    }
+    // Luôn fetch lại để đồng bộ số liệu mới nhất
+    fetch(contextPath + '/ai-usage-info')
+      .then(res => res.json())
+      .then(data => {
+        aiUsageCache = data;
+        renderAIUsageInfo(data);
+      });
+  }
+
+  function renderAIUsageInfo(data) {
+    let msg = '';
+    if (data.isVip) msg = 'AI: Không giới hạn';
+    else msg = 'AI: Đã dùng ' + data.used + '/20 lượt hôm nay. Còn lại: ' + data.left;
+    if (!data.isVip && data.left <= 3 && data.left > 0) msg += ' <b>(Sắp hết lượt!)</b>';
+    if (!data.isVip && data.left === 0) msg += ' <b>(Đã hết lượt miễn phí!)</b>';
+    document.querySelectorAll('#ai-usage-info').forEach(function(el) {
+      el.innerHTML = msg;
+    });
+  }
+
+  document.getElementById('chatBotWidget').addEventListener('transitionend', function () {
+    if (this.classList.contains('open')) updateAIUsageInfo(true);
+  });
+
+  document.getElementById('chatForm').addEventListener('submit', function (e) {
+    setTimeout(() => {
+      // Nếu không phải VIP, cập nhật nhanh số lượt trên giao diện
+      if (!aiUsageCache.isVip && aiUsageCache.left > 0) {
+        aiUsageCache.used += 1;
+        aiUsageCache.left -= 1;
+        renderAIUsageInfo(aiUsageCache);
+      }
+      // Sau 1-2 giây, fetch lại từ server để đồng bộ
+      setTimeout(() => updateAIUsageInfo(true), 1200);
+    }, 200);
+  });
 </script>
 </body>
 </html>

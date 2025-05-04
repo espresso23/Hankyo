@@ -659,6 +659,25 @@ $(document).ready(function() {
             contentType: 'application/json',
             success: function(response) {
                 popover.find('.ai-help-content').removeClass('ai-help-loading').html(response);
+                // Gọi API lấy quota AI và chèn vào cuối popover
+                fetch('ai-usage-info')
+                  .then(res => res.json())
+                  .then(data => {
+                    let msg = '';
+                    if (data.isVip) {
+                      msg = '<div style="font-size:13px;color:#888;margin-top:8px;">AI: Không giới hạn</div>';
+                    } else {
+                      msg = '<div style="font-size:13px;color:#888;margin-top:8px;">AI: Đã dùng ' + data.used + '/20 lượt. Còn lại: ' + data.left;
+                      if (data.left <= 3 && data.left > 0) {
+                        msg += ' <b>(Sắp hết lượt!)</b>';
+                      }
+                      if (data.left == 0) {
+                        msg += ' <b>(Đã hết lượt miễn phí!)</b>';
+                      }
+                      msg += '</div>';
+                    }
+                    popover.find('.ai-help-content').append(msg);
+                  });
             },
             error: function() {
                 popover.find('.ai-help-content').removeClass('ai-help-loading').html('<div class="alert alert-danger">Không thể tạo gợi ý lúc này. Vui lòng thử lại sau.</div>');
