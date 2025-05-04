@@ -545,7 +545,7 @@
 
     // For VIP Modal
     function redirectToVipPage() {
-        window.location.href = 'bundles.jsp';
+        window.location.href = 'bundles';
     }
 
     // Memory game logic
