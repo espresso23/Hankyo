@@ -13,13 +13,12 @@ header {
     right: 0;
     height: 80px;
     display: grid;
-    grid-template-columns: repeat(12, 1fr);
+    grid-template-columns: repeat(0, 1fr);
     align-items: center;
     background-color: #f8f8f8;
     padding: 10px 5px;
     z-index: 100;
 }
-
 /* Logo styles */
 .logo {
     grid-column: 2 / 3;

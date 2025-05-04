@@ -386,6 +386,40 @@ public class CourseDAO {
 
         return course;
     }
+    private Course extractSuggetsCourseFromResultSet(ResultSet rs) throws SQLException {
+        Course course = new Course();
+
+        course.setCourseID(rs.getObject("courseID") != null ? rs.getInt("courseID") : null);
+        course.setCourseTitle(rs.getString("title"));
+        course.setCourseDescription(rs.getString("course_description"));
+        course.setCourseImg(rs.getString("course_img"));
+        course.setStatus(rs.getString("status"));
+        course.setPrice(rs.getBigDecimal("price"));
+        course.setOriginalPrice(rs.getBigDecimal("original_price"));
+        course.setDateCreated(rs.getDate("createdAt"));
+        course.setLastUpdated(rs.getDate("updateAt"));
+        course.setExpertID(rs.getObject("expertID") != null ? rs.getInt("expertID") : null);
+
+        // Handle Category object
+        Category category = new Category();
+        category.setCategoryName(rs.getString("categoryName") != null ? rs.getString("category_name") : null);
+        course.setCategory(category);
+
+        course.setLearnersCount(rs.getObject("student_count") != null ? rs.getInt("student_count") : 0);
+
+        // Handle Expert object
+        Expert expert = new Expert();
+        expert.setFullName(rs.getString("expert_name") != null ? rs.getString("expert_name") : null);
+        course.setExpert(expert);
+
+        Double rating = rs.getObject("avg_rating") != null ? rs.getDouble("avg_rating") : 0;
+        course.setRating(rating);
+
+        course.setRatingCount(rs.getObject("rating_count") != null ? rs.getInt("rating_count") : 0);
+
+        return course;
+    }
+
 
     // Đăng ký khóa học
     public void enrollCourse(int learnerID, int courseID) throws SQLException {
@@ -1011,5 +1045,71 @@ public class CourseDAO {
             }
         }
         return categories;
+    }
+
+    /**
+     * Gợi ý khóa học phù hợp dựa trên loại bài thi (skill/categoryName) và điểm số
+     */
+    public List<Course> suggestCourses(String skill, double score) throws SQLException {
+        List<Course> result = new ArrayList<>();
+        if (skill == null) return result;
+        skill = skill.trim().toLowerCase();
+        // Nếu là topik i
+        if (skill.contains("TOPIK I") || skill.contains("TOPIKI")) {
+            if (score >= 5) {
+                // Gợi ý topik ii
+                result.addAll(getCoursesByCategoryName("TOPIK II"));
+            } else {
+                // Gợi ý sơ cấp
+                result.addAll(getCoursesByCategoryName("Tiếng Hàn Sơ Cấp"));
+            }
+        } else if (skill.contains("TOPIK II") || skill.contains("TOPIKII")) {
+            if (score >= 5) {
+                // Gợi ý nâng cao
+                result.addAll(getCoursesByCategoryName("Tiếng Hàn Cao Cấp"));
+            } else {
+                // Gợi ý topik i và topik ii
+                result.addAll(getCoursesByCategoryName("TOPIK I"));
+                result.addAll(getCoursesByCategoryName("TOPIK II"));
+            }
+        } else {
+            // Nếu không phải topik i/ii thì gợi ý sơ cấp
+            result.addAll(getCoursesByCategoryName("Tiếng Hàn Sơ Cấp"));
+        }
+        return result;
+    }
+
+    /**
+     * Lấy danh sách khóa học theo tên category (không phân biệt hoa thường)
+     */
+    public List<Course> getCoursesByCategoryName(String categoryName) throws SQLException {
+        List<Course> courses = new ArrayList<>();
+        String sql = "SELECT c.*, \n" +
+                "       cat.categoryID, \n" +
+                "       cat.categoryName, \n" +
+                "       u.fullName as expert_name, \n" +
+                "       u.avatar as expert_avatar, \n" +
+                "       e.certificate as expert_certificate,\n" +
+                "       (SELECT COUNT(*) FROM enrollments e2 WHERE e2.courseID = c.courseID AND e2.status = 'active' OR e2.status = 'Active') as student_count,\n" +
+                "       (SELECT AVG(CAST(f.rating AS FLOAT)) FROM CourseFeedback f WHERE f.courseID = c.courseID) as avg_rating,\n" +
+                "       (SELECT COUNT(*) FROM CourseFeedback f WHERE f.courseID = c.courseID) as rating_count\n" +
+                "FROM Course c\n" +
+                "LEFT JOIN Category cat ON c.categoryID = cat.categoryID\n" +
+                "LEFT JOIN Expert e ON c.expertID = e.expertID\n" +
+                "LEFT JOIN [User] u ON e.userID = u.userID\n" +
+                "WHERE cat.categoryName LIKE ? \n" +
+                "  AND (c.status = 'active' OR c.status = 'Active')\n" +
+                "ORDER BY c.createdAt DESC;";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, "%" + categoryName + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Course course = extractCourseFromResultSet(rs);
+                    courses.add(course);
+                }
+            }
+        }
+        return courses;
     }
 }

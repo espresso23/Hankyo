@@ -34,10 +34,13 @@
             padding: 0 25px;
         }
         .page-header {
-            text-align: center;
+            text-align: center !important;
             margin-bottom: 40px;
             position: relative;
             padding-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            /* position: relative; */
         }
         .page-title {
             font-size: 2.5rem;
@@ -122,8 +125,8 @@
         }
         .view-detail {
             position: absolute;
-            right: 0;
-            top: 50%;
+            right: 5px;
+            top: 69%;
             transform: translateY(-50%);
             color: white;
             text-decoration: none;

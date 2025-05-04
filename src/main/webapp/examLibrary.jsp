@@ -85,6 +85,29 @@
             border: 1px solid #e1f5fe;
         }
 
+        .exam-history-btn {
+            width: 17vh;
+            padding: 12px 24px;
+            background: white;
+            border-radius: 30px;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--text-medium);
+            transition: all 0.3s ease;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(137, 196, 244, 0.1);
+            border: 1px solid #e1f5fe;
+            position: absolute;
+            left: 142.5vh;
+            top: 24.8vh;
+        }
+
+        .exam-history-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(137, 196, 244, 0.2);
+            color: var(--primary-blue);
+            border-color: var(--primary-blue);
+        }
         .filter-tab:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(137, 196, 244, 0.2);
@@ -300,7 +323,7 @@
                 <i class="fas fa-award"></i> TOPIK II
             </a>
         </div>
-
+        <div class="exam-history-btn" onclick="window.location.href='examHistory'">Lịch sử làm bài</div>
         <form class="search-form" action="exam" method="get">
             <input type="hidden" name="action" value="list" />
             <input type="text" name="searchName" class="search-box" placeholder="🔍 Tìm kiếm theo tên đề thi..." />

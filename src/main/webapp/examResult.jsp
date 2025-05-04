@@ -7,6 +7,8 @@
     <link rel="icon" href="${pageContext.request.contextPath}/asset/png/icon/logo.jpg">
     <title>Kết quả bài thi</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         :root {
             --primary-pink: #ffb6c1;
@@ -372,11 +374,37 @@
             </c:forEach>
         </c:if>
 
+        <div class="section-title mt-5">Gợi ý khóa học phù hợp cho bạn</div>
+        <div id="suggested-courses"></div>
+        <span id="exam-score" style="display:none;">${score}</span>
+        <span id="exam-skill" style="display:none;">${exam.examType}</span>
+        <script>
+        $(document).ready(function() {
+            // Lấy điểm số và loại bài thi
+            console.log('Suggest-courses script loaded!');
+            var score = Number(document.getElementById('exam-score').textContent);
+            var skill = document.getElementById('exam-skill').textContent;
+            // Gọi API lấy danh sách khóa học đề xuất
+            console.log('score:', score, 'skill:', skill);
+            $.ajax({
+                url: '/Hankyo/suggest-courses',
+                method: 'POST',
+                data: JSON.stringify({score: score, skill: skill}),
+                contentType: 'application/json',
+                success: function(response) {
+                    $('#suggested-courses').html(response);
+                },
+                error: function() {
+                    $('#suggested-courses').html('<div class="alert alert-danger">Không thể lấy gợi ý khóa học lúc này.</div>');
+                }
+            });
+        });
+        </script>
+
     </c:if>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
 $(document).ready(function() {
     // Xóa modal AI Help cũ nếu có
