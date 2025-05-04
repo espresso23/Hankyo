@@ -186,6 +186,33 @@
             color: #6c757d;
             font-weight: 500;
         }
+        .answer-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .answer-item {
+            margin-bottom: 5px;
+        }
+        .student-correct {
+            color: #28a745;
+            font-weight: 500;
+        }
+        .student-wrong {
+            color: #dc3545;
+            font-weight: 500;
+        }
+        .correct-answer {
+            color: #28a745;
+            font-weight: 500;
+        }
+        .correct-mark {
+            color: #28a745;
+            font-weight: 500;
+        }
+        .student-choice {
+            color: #6c757d;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -270,29 +297,19 @@
                 <c:if test="${result != null}">
                     <div class="question-details">
                         <p><strong>Câu ${loop.index + 1}:</strong> ${question.questionText}</p>
-                        <p>
-                            <strong>Đáp án của bạn:</strong>
-                            <span class="${result.answerIsCorrect ? 'answer-correct' : (result.answerLabel == null || result.answerLabel == '' ? 'answer-skipped' : 'answer-incorrect')}">
-                                <c:choose>
-                                    <c:when test="${result.answerLabel == null || result.answerLabel == ''}">
-                                        (Bỏ qua)
-                                    </c:when>
-                                    <c:otherwise>
-                                        ${result.answerLabel}
-                                    </c:otherwise>
-                                </c:choose>
-                            </span>
-                        </p>
-                        <p>
-                            <strong>Đáp án đúng:</strong>
-                            <span class="answer-correct">
-                                <c:forEach var="answer" items="${question.answers}">
-                                    <c:if test="${answer.correct}">
-                                        ${answer.optionLabel}
+                        <div class="answer-list">
+                            <c:forEach var="answer" items="${question.answers}">
+                                <div class="answer-item ${result.answerLabel == answer.optionLabel ? (result.answerIsCorrect ? 'student-correct' : 'student-wrong') : ''} ${answer.correct ? 'correct-answer' : ''}">
+                                    <strong>${answer.optionLabel}.</strong> ${answer.answerText}
+                                    <c:if test="${result.answerLabel == answer.optionLabel}">
+                                        <span class="student-choice">(Đáp án của bạn)</span>
                                     </c:if>
-                                </c:forEach>
-                            </span>
-                        </p>
+                                    <c:if test="${answer.correct}">
+                                        <span class="correct-mark">(Đáp án đúng)</span>
+                                    </c:if>
+                                </div>
+                            </c:forEach>
+                        </div>
                     </div>
                 </c:if>
             </c:forEach>
