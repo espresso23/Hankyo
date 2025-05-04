@@ -56,7 +56,10 @@ public class CommentDAO {
 
     public boolean addReplyComment(Comment comment) throws Exception {
         String sql = "INSERT INTO Comment (UserID, PostID, Content, CreatedDate, ParentCommentID) VALUES (?, ?, ?, ?, ?)";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
             ps.setInt(1, comment.getUserID());
             ps.setInt(2, comment.getPostID());
             ps.setString(3, comment.getContent());
@@ -66,24 +69,35 @@ public class CommentDAO {
             boolean success = ps.executeUpdate() > 0;
 
             if (success) {
-                // Get the parent comment owner's ID and create notification
+                // Lấy commentID vừa được auto-increment trong DB
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        int generatedID = rs.getInt(1);
+                        comment.setCommentID(generatedID); // rất quan trọng để dùng trong thông báo
+                    }
+                }
+
+                // Gửi thông báo nếu reply không phải do chính chủ comment
                 int parentCommentOwnerID = getCommentOwnerID(comment.getParentCommentID());
+
                 if (parentCommentOwnerID != -1 && parentCommentOwnerID != comment.getUserID()) {
                     NotificationDAO notificationDAO = new NotificationDAO();
                     notificationDAO.addCommentReplyNotification(
-                        parentCommentOwnerID,
-                        comment.getCommentID(),
-                        comment.getUserFullName()
+                            parentCommentOwnerID,
+                            comment.getCommentID(), // đã có giá trị nhờ getGeneratedKeys()
+                            comment.getUserFullName()
                     );
                 }
             }
 
             return success;
+
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
-        return false;
     }
+
 
     // Method to update a comment
     public boolean updateComment(int commentID, String newContent) throws Exception {
@@ -536,26 +550,44 @@ public class CommentDAO {
         return replies;
     }
     public boolean deleteCommentAndReplies(int commentId) {
-        String deleteRepliesSql = "DELETE FROM Comment WHERE ParentCommentID = ?";
-        String deleteMainSql = "DELETE FROM Comment WHERE commentID = ?";
-
-        try (Connection conn = DBConnect.getInstance().getConnection();
-             PreparedStatement deleteRepliesStmt = conn.prepareStatement(deleteRepliesSql);
-             PreparedStatement deleteMainStmt = conn.prepareStatement(deleteMainSql)) {
-
-            deleteRepliesStmt.setInt(1, commentId);
-            deleteRepliesStmt.executeUpdate(); // delete replies
-
-            deleteMainStmt.setInt(1, commentId);
-            int rowsAffected = deleteMainStmt.executeUpdate(); // delete main comment
-
-            return rowsAffected > 0;
-
+        try (Connection conn = DBConnect.getInstance().getConnection()) {
+            conn.setAutoCommit(false);
+            deleteRepliesRecursive(conn, commentId); // <-- xóa replies đệ quy
+            String deleteMainSql = "DELETE FROM Comment WHERE CommentID = ?";
+            try (PreparedStatement deleteMainStmt = conn.prepareStatement(deleteMainSql)) {
+                deleteMainStmt.setInt(1, commentId);
+                int rowsAffected = deleteMainStmt.executeUpdate();
+                conn.commit();
+                return rowsAffected > 0;
+            } catch (SQLException e) {
+                conn.rollback();
+                e.printStackTrace();
+                return false;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
     }
+
+    private void deleteRepliesRecursive(Connection conn, int parentID) throws SQLException {
+        String query = "SELECT CommentID FROM Comment WHERE ParentCommentID = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, parentID);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                int childID = rs.getInt("CommentID");
+                deleteRepliesRecursive(conn, childID); // đệ quy
+            }
+        }
+
+        String deleteSQL = "DELETE FROM Comment WHERE ParentCommentID = ?";
+        try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSQL)) {
+            deleteStmt.setInt(1, parentID);
+            deleteStmt.executeUpdate();
+        }
+    }
+
 
 
     private int getCommentOwnerID(int commentID) throws SQLException {

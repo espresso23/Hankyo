@@ -32,9 +32,11 @@
             background-size: cover;
             background-position: left;
         }
+
         .modal {
             z-index: 1055; /* hoặc cao hơn */
         }
+
         .modal-backdrop {
             z-index: 1040;
         }
@@ -193,7 +195,7 @@
             display: none;
             background: white;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             z-index: 1;
             min-width: 120px;
         }
@@ -247,7 +249,7 @@
         .modal-content {
             border-radius: 16px;
             border: none;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
 
         .modal-header {
@@ -297,6 +299,56 @@
             transform: translateY(-2px);
         }
 
+        #blog-details {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 30px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .blog-details-title h2 {
+            font-size: 28px;
+            font-weight: bold;
+            color: #222;
+            margin-bottom: 16px;
+        }
+
+        .blog-details-author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .details-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #eee;
+        }
+
+        .details-name {
+            font-weight: 600;
+            color: #444;
+            margin: 0;
+        }
+
+        .blog-details-date {
+            font-size: 13px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .blog-content {
+            font-size: 17px;
+            line-height: 1.7;
+            color: #333;
+            margin-top: 20px;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .comment-content {
@@ -313,6 +365,7 @@
                 margin-left: 20px;
             }
         }
+
     </style>
 </head>
 <body>
@@ -330,7 +383,8 @@
                     <i class="ti-more-alt" id="more-options"></i>
                     <div class="dropdown-menu" id="dropdown-menu" style="display:none;">
                         <a id="openModalBtn"><i class="ti-pencil"> Edit</i></a>
-                        <a href="#" id="delete" onclick="confirmDelete(${post.getPostID()})"><i class="ti-trash"> Delete</i></a>
+                        <a href="#" id="delete" onclick="confirmDelete(${post.getPostID()})"><i class="ti-trash">
+                            Delete</i></a>
                     </div>
                 </div>
                 <!-- Hidden form for deletion -->
@@ -341,14 +395,40 @@
             </c:if>
         </div>
         <div class="blog-details-author">
-            <img src="${avatar}" alt="Author Avatar"
-                 onerror="this.onerror=null;this.src='https://i.pinimg.com/564x/09/a9/2c/09a92c1cbe440f31d1818e4fe0bcf23a.jpg';"
-                 class="details-avatar">
-            <p class="details-name">${fullName}</p>
-            <div class="blog-details-date">${post.createdDate}</div>
+            <a href="profile?user=${post.getUserName()}">
+                <img src="${avatar}" alt="Author Avatar"
+                     class="details-avatar"
+                     onerror="this.onerror=null;this.src='https://i.pinimg.com/564x/09/a9/2c/09a92c1cbe440f31d1818e4fe0bcf23a.jpg';"/>
+            </a>
+            <div style="display: flex; flex-direction: column; justify-content: center;">
+                <p class="details-name" style="margin: 0;">
+                    <a href="profile?user=${post.getUserName()}"
+                       style="color: inherit; text-decoration: none;">${fullName}</a>
+                </p>
+                <!-- Honour Badge -->
+                <c:if test="${not empty equippedHonourImage}">
+                    <div style="margin-top: 6px; display: inline-flex; align-items: center; gap: 6px;">
+                        <span style="
+                                font-weight: bold;
+                                font-size: 13px;
+                                background: linear-gradient(to right, ${equippedGradientStart}, ${equippedGradientEnd});
+                                -webkit-background-clip: text;
+                                -webkit-text-fill-color: transparent;
+                                background-clip: text;
+                                text-fill-color: transparent;
+                                ">
+                                ${equippedHonourName}
+                        </span>
+                        <img src="${equippedHonourImage}" alt="Badge" style="width: 20px; height: 20px;"/>
+                    </div>
+                </c:if>
+
+
+                <div class="blog-details-date" style="margin-top: 4px;">${post.createdDate}</div>
+            </div>
         </div>
+
         <div class="blog-content">
-            <img src="${post.imgURL}" alt="Post Image" class="blog-content-img">
             <p>${post.content}</p>
         </div>
     </c:if>
@@ -366,7 +446,8 @@
         <c:when test="${user != null}">
             <form action="postDetails" method="POST">
                 <div class="comment-box">
-                    <textarea name="commentInput" rows="4" placeholder="Nhập bình luận của bạn..." required></textarea><br>
+                    <textarea name="commentInput" rows="4" placeholder="Nhập bình luận của bạn..."
+                              required></textarea><br>
                     <input type="hidden" name="postID" value="${post.postID}">
                     <input type="hidden" name="action" value="addComment">
                     <input type="submit" value="Gửi bình luận" class="btn btn-primary">
@@ -385,12 +466,17 @@
         <c:if test="${not empty comments}">
             <c:forEach var="comment" items="${comments}">
                 <div class="comment-section" id="comment-${comment.commentID}">
-                    <img src="${comment.userAvtURL}" alt="Avatar" class="comment-avt"
-                         onerror="this.onerror=null;this.src='https://i.pinimg.com/564x/09/a9/2c/09a92c1cbe440f31d1818e4fe0bcf23a.jpg';">
+                    <a href="profile?user=${comment.username}">
+                        <img src="${comment.userAvtURL}" alt="Avatar" class="comment-avt"
+                             onerror="this.onerror=null;this.src='https://i.pinimg.com/564x/09/a9/2c/09a92c1cbe440f31d1818e4fe0bcf23a.jpg';">
+                    </a>
                     <div class="comment-content">
                         <div class="comment-header">
                             <div>
-                                <span class="comment-author">${comment.userFullName}</span>
+<span class="comment-author">
+    <a href="profile?user=${comment.username}"
+       style="color: #365899; text-decoration: none;">${comment.userFullName}</a>
+</span>
                                 <span class="comment-time">${comment.createdDate}</span>
                             </div>
                             <c:if test="${user != null}">
@@ -410,25 +496,30 @@
                         </div>
                         <div class="comment-text">${comment.content}</div>
                         <div class="vote-controls">
-                            <button type="button" class="vote-btn upvote-btn" data-comment-id="${comment.commentID}" onclick="handleVote(this, 1)">
+                            <button type="button" class="vote-btn upvote-btn" data-comment-id="${comment.commentID}"
+                                    onclick="handleVote(this, 1)">
                                 <i class="ti-angle-up"></i>
                             </button>
                             <span class="vote-score" id="score-${comment.commentID}">${comment.score}</span>
-                            <button type="button" class="vote-btn downvote-btn" data-comment-id="${comment.commentID}" onclick="handleVote(this, -1)">
+                            <button type="button" class="vote-btn downvote-btn" data-comment-id="${comment.commentID}"
+                                    onclick="handleVote(this, -1)">
                                 <i class="ti-angle-down"></i>
                             </button>
                         </div>
                         <div class="comment-actions">
-                            <button class="btn-update" onclick="toggleReplyForm(${comment.commentID}, '${comment.userFullName}')">
+                            <button class="btn-update"
+                                    onclick="toggleReplyForm(${comment.commentID}, '${comment.userFullName}')">
                                 <i class="ti-comment"></i> Reply
                             </button>
                             <c:if test="${not empty replyMap[comment.commentID]}">
-                                <button class="view-reply-button" id="view-reply-button-${comment.commentID}" onclick="showReplies(${comment.commentID})">
+                                <button class="view-reply-button" id="view-reply-button-${comment.commentID}"
+                                        onclick="showReplies(${comment.commentID})">
                                     View reply (${fn:length(replyMap[comment.commentID])})
                                 </button>
                             </c:if>
                             <c:if test="${user != null && user.userID != comment.userID}">
-                                <button type="button" class="btn-report" onclick="openReportModal(${comment.commentID})">
+                                <button type="button" class="btn-report"
+                                        onclick="openReportModal(${comment.commentID})">
                                     <i class="fas fa-flag"></i> Report
                                 </button>
                             </c:if>
@@ -436,7 +527,8 @@
 
                         <div id="replyForm-${comment.commentID}" class="reply-form" style="display:none;">
                             <form method="POST" action="postDetails">
-                                <textarea name="commentInput" rows="2" class="form-control" required>@${comment.userFullName} </textarea>
+                                <textarea name="commentInput" rows="2" class="form-control"
+                                          required>@${comment.userFullName} </textarea>
                                 <input type="hidden" name="postID" value="${post.postID}">
                                 <input type="hidden" name="parentID" value="${comment.commentID}">
                                 <input type="hidden" name="action" value="addComment">
@@ -453,7 +545,14 @@
                                             <div class="comment-content">
                                                 <div class="comment-header">
                                                     <div>
-                                                        <span class="comment-author">${reply.userFullName}</span>
+                                                       <span class="comment-author">
+    <a href="profile?user=${reply.username}" style="color: #365899; text-decoration: none;">${reply.userFullName}</a>
+</span>
+                                                        <a href="profile?user=${reply.username}">
+                                                            <img src="${reply.userAvtURL}" alt="Avatar" class="comment-avt"
+                                                                 onerror="this.onerror=null;this.src='https://i.pinimg.com/564x/09/a9/2c/09a92c1cbe440f31d1818e4fe0bcf23a.jpg';">
+                                                        </a>
+
                                                         <span class="comment-time">${reply.createdDate}</span>
                                                     </div>
                                                     <c:if test="${user != null && (user.userID == reply.userID || user.userID == post.userID)}">
@@ -471,31 +570,41 @@
                                                 </div>
                                                 <div class="comment-text">${reply.content}</div>
                                                 <div class="vote-controls">
-                                                    <button type="button" class="vote-btn upvote-btn" data-comment-id="${reply.commentID}" onclick="handleVote(this, 1)">
+                                                    <button type="button" class="vote-btn upvote-btn"
+                                                            data-comment-id="${reply.commentID}"
+                                                            onclick="handleVote(this, 1)">
                                                         <i class="ti-angle-up"></i>
                                                     </button>
-                                                    <span class="vote-score" id="score-${reply.commentID}">${reply.score}</span>
-                                                    <button type="button" class="vote-btn downvote-btn" data-comment-id="${reply.commentID}" onclick="handleVote(this, -1)">
+                                                    <span class="vote-score"
+                                                          id="score-${reply.commentID}">${reply.score}</span>
+                                                    <button type="button" class="vote-btn downvote-btn"
+                                                            data-comment-id="${reply.commentID}"
+                                                            onclick="handleVote(this, -1)">
                                                         <i class="ti-angle-down"></i>
                                                     </button>
                                                 </div>
                                                 <div class="comment-actions">
-                                                    <button class="btn-update" onclick="toggleReplyForm(${reply.commentID}, '${reply.userFullName}')">
+                                                    <button class="btn-update"
+                                                            onclick="toggleReplyForm(${reply.commentID}, '${reply.userFullName}')">
                                                         <i class="ti-comment"></i> Reply
                                                     </button>
                                                     <c:if test="${user != null && user.userID != reply.userID}">
-                                                        <button type="button" class="btn-report" onclick="openReportModal(${comment.commentID})">
+                                                        <button type="button" class="btn-report"
+                                                                onclick="openReportModal(${comment.commentID})">
                                                             <i class="fas fa-flag"></i> Report
                                                         </button>
                                                     </c:if>
                                                 </div>
-                                                <div id="replyForm-${reply.commentID}" class="reply-form" style="display:none;">
+                                                <div id="replyForm-${reply.commentID}" class="reply-form"
+                                                     style="display:none;">
                                                     <form method="POST" action="postDetails">
-                                                        <textarea name="commentInput" rows="2" class="form-control" required>@${reply.userFullName} </textarea>
+                                                        <textarea name="commentInput" rows="2" class="form-control"
+                                                                  required>@${reply.userFullName} </textarea>
                                                         <input type="hidden" name="postID" value="${post.postID}">
                                                         <input type="hidden" name="parentID" value="${reply.commentID}">
                                                         <input type="hidden" name="action" value="addComment">
-                                                        <button type="submit" class="btn btn-primary btn-sm mt-2">Gửi</button>
+                                                        <button type="submit" class="btn btn-primary btn-sm mt-2">Gửi
+                                                        </button>
                                                     </form>
                                                 </div>
                                             </div>
@@ -523,7 +632,8 @@
                 <input type="hidden" id="edit-comment-id" name="commentID">
                 <input type="hidden" name="postID" value="${post.postID}">
                 <input type="hidden" name="action" value="editComment">
-                <textarea id="edit-comment-content" name="commentContent" rows="4" class="input-field" required></textarea>
+                <textarea id="edit-comment-content" name="commentContent" rows="4" class="input-field"
+                          required></textarea>
                 <button type="submit" class="submit-button">Lưu thay đổi</button>
             </form>
         </div>
@@ -531,7 +641,8 @@
 </div>
 
 <!-- Comment Report Modal -->
-<div class="modal fade" id="commentReportModal" tabindex="-1" aria-labelledby="commentReportModalLabel" aria-hidden="true">
+<div class="modal fade" id="commentReportModal" tabindex="-1" aria-labelledby="commentReportModalLabel"
+     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -544,7 +655,8 @@
                     <input type="hidden" id="modal-post-id" name="postID" value="${post.postID}">
                     <div class="mb-3">
                         <label for="commentReportReason" class="form-label">Reason for reporting:</label>
-                        <textarea class="form-control" id="commentReportReason" name="reason" rows="3" required></textarea>
+                        <textarea class="form-control" id="commentReportReason" name="reason" rows="3"
+                                  required></textarea>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -662,25 +774,25 @@
     }
 
     // ===== Post Functions =====
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
         const modal = document.getElementById("myModal");
         const btn = document.getElementById("openModalBtn");
         const span = document.getElementsByClassName("close")[0];
 
         if (btn) {
-            btn.onclick = function() {
+            btn.onclick = function () {
                 modal.style.display = "block";
             }
         }
 
         if (span) {
-            span.onclick = function() {
+            span.onclick = function () {
                 modal.style.display = "none";
             }
         }
 
         // Đóng modal khi click bên ngoài
-        window.addEventListener("click", function(event) {
+        window.addEventListener("click", function (event) {
             if (event.target == modal) {
                 modal.style.display = "none";
             }
@@ -695,7 +807,7 @@
         // Toggle dropdown options
         const moreOptions = document.getElementById("more-options");
         if (moreOptions) {
-            moreOptions.addEventListener("click", function(event) {
+            moreOptions.addEventListener("click", function (event) {
                 event.stopPropagation();
                 const dropdown = document.getElementById("dropdown-menu");
                 dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
@@ -705,7 +817,7 @@
         // Đóng modal edit comment
         const closeModalBtn = document.querySelector(".close-modal");
         if (closeModalBtn) {
-            closeModalBtn.onclick = function() {
+            closeModalBtn.onclick = function () {
                 document.getElementById("edit-comment-modal").style.display = "none";
             }
         }
@@ -713,7 +825,7 @@
         // Initialize comment report modal
         const commentReportModal = document.getElementById('commentReportModal');
         if (commentReportModal) {
-            commentReportModal.addEventListener('show.bs.modal', function(event) {
+            commentReportModal.addEventListener('show.bs.modal', function (event) {
                 const button = event.relatedTarget;
                 const commentID = button.getAttribute('data-commentid');
                 document.getElementById('modal-comment-id').value = commentID;
@@ -723,7 +835,7 @@
         // Handle report submission
         const submitReportBtn = document.getElementById('submit-report-btn');
         if (submitReportBtn) {
-            submitReportBtn.addEventListener('click', function() {
+            submitReportBtn.addEventListener('click', function () {
                 submitCommentReport();
             });
         }
@@ -749,7 +861,7 @@
                 reason: reason,
                 postID: postID
             },
-            success: function(response) {
+            success: function (response) {
                 if (response.success) {
                     alert("✅ Comment reported successfully!");
                     // Close the modal and reset form
@@ -762,7 +874,7 @@
                     alert("❌ Failed to submit report: " + (response.error || "Unknown error"));
                 }
             },
-            error: function(xhr, status, error) {
+            error: function (xhr, status, error) {
                 console.error("Report error:", status, error);
                 alert("⚠️ Error submitting report. Please try again later.");
             }
@@ -799,7 +911,7 @@
                 postID: document.querySelector('input[name="postID"]').value
             },
             dataType: "json",
-            success: function(response) {
+            success: function (response) {
                 if (response.success) {
                     scoreElement.textContent = response.score;
 
@@ -818,7 +930,7 @@
                     userVotes[commentId] = response.voteType;
                 }
             },
-            error: function(xhr, status, error) {
+            error: function (xhr, status, error) {
                 if (xhr.status === 401) {
                     alert("Vui lòng đăng nhập để vote!");
                 }
@@ -828,7 +940,7 @@
 
     // Load initial vote states
     if (isUserLoggedIn) {
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const commentElements = document.querySelectorAll('[data-comment-id]');
             const commentIDs = Array.from(commentElements).map(el => el.getAttribute('data-comment-id'));
 
@@ -842,7 +954,7 @@
                         postID: document.querySelector('input[name="postID"]').value
                     },
                     dataType: "json",
-                    success: function(userVoteData) {
+                    success: function (userVoteData) {
                         if (userVoteData) {
                             userVotes = userVoteData || {};
 
@@ -895,6 +1007,48 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
+<script src="./asset/tinymce/tinymce.min.js"></script>
+<script>
+    tinymce.init({
+        selector: 'textarea#default',
+        width: '100%',
+        height: 300,
+        plugins: [
+            'advlist', 'autolink', 'link', 'image', 'lists', 'charmap', 'prewiew', 'anchor', 'pagebreak',
+            'searchreplace', 'wordcount', 'visualblocks', 'code', 'fullscreen', 'insertdatetime', 'media',
+            'table', 'emoticons', 'template', 'codesample'
+        ],
+        toolbar: 'undo redo | styles | bold italic underline | alignleft aligncenter alignright alignjustify |' +
+            'bullist numlist outdent indent | link image | print preview media fullscreen | ' +
+            'forecolor backcolor emoticons',
+        menu: {
+            favs: { title: 'menu', items: 'code visualaid | searchreplace | emoticons' }
+        },
+        menubar: 'favs file edit view insert format tools table',
+        file_picker_types: 'image',
+        file_picker_callback: (cb, value, meta) => {
+            const input = document.createElement('input');
+            input.setAttribute('type', 'file');
+            input.setAttribute('accept', 'image/*');
 
+            input.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.addEventListener('load', () => {
+                    const id = 'blobid' + (new Date()).getTime();
+                    const blobCache = tinymce.activeEditor.editorUpload.blobCache;
+                    const base64 = reader.result.split(',')[1];
+                    const blobInfo = blobCache.create(id, file, base64);
+                    blobCache.add(blobInfo);
+                    cb(blobInfo.blobUri(), { title: file.name });
+                });
+                reader.readAsDataURL(file);
+            });
+
+            input.click();
+        },
+        content_style: 'body{font-family:Helvetica,Arial,sans-serif; font-size:16px}'
+    });
+</script>
 </body>
 </html>

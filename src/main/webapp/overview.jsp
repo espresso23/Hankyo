@@ -680,11 +680,6 @@
                                 </div>
                                 <p class="post-body">${post.content}</p>
 
-                                <c:if test="${not empty post.imgURL}">
-                                    <div class="post-image">
-                                        <img src="${post.imgURL}" alt="Ảnh bài đăng">
-                                    </div>
-                                </c:if>
 
                                 <div class="post-actions">
                                     <div class="action-item"><i class="far fa-comment"></i> ${post.commentCount} bình

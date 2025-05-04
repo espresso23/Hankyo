@@ -11,8 +11,8 @@ public class DBConnect {
     private static volatile DBConnect instance;
     private static HikariDataSource dataSource;
     private static final String USERNAME = "sa";
-    private static final String PASSWORD = "123";
-    private static final String DB_URL = "jdbc:sqlserver://localhost:1433;databaseName=Hankyo;encrypt=true;trustServerCertificate=true;useUnicode=true&characterEncoding=UTF-8";
+    private static final String PASSWORD = "30042003";
+    private static final String DB_URL = "jdbc:sqlserver://DESKTOP-G5AU876;databaseName=Hankyo;encrypt=true;trustServerCertificate=true;useUnicode=true&characterEncoding=UTF-8";
     private static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
     private static final Logger LOGGER = Logger.getLogger(DBConnect.class.getName());
     
@@ -23,7 +23,7 @@ public class DBConnect {
     private static final int CONNECTION_TIMEOUT = 60000; // 1 phút
     private static final int MAX_LIFETIME = 3600000; // 1 giờ
 
-    protected DBConnect() {
+    public DBConnect() {
         initializeConnectionPool();
     }
 
