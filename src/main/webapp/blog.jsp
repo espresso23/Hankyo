@@ -5,6 +5,7 @@
 <%@ page import="dao.UserDAO" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isELIgnored="false" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 <%
     User user = (User) session.getAttribute("user");
@@ -150,7 +151,7 @@
     /* Cập nhật phần card post */
     .card-post {
         border-radius: 12px;
-        margin-bottom: 18px;
+        margin-bottom: 25px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         background: #fff;
         display: flex;
@@ -160,12 +161,18 @@
         overflow: hidden; /* Quan trọng: ngăn nội dung tràn ra ngoài */
         width: 100%;
     }
+    
+    .post-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
 
     /* Header card */
     .card-post-author {
         display: flex;
         align-items: center;
-        padding: 14px 18px;
+        padding: 16px 20px;
         border-bottom: 1px solid #f0f2f5;
         background: none;
     }
@@ -204,7 +211,7 @@
 
     /* Body card */
     .card-body {
-        padding: 12px 18px;
+        padding: 20px;
         margin: 0;
         word-wrap: break-word; /* Đảm bảo text dài tự xuống dòng */
         overflow-wrap: break-word;
@@ -268,16 +275,81 @@
         color: #000 !important;
     }
 
-    /* Thu nhỏ ảnh trong bài post */
+    /* Image styling for all posts */
     .card-body img {
-        max-width: 320px;       /* Giới hạn chiều rộng */
-        max-height: 220px;      /* Giới hạn chiều cao */
-        width: auto;            /* Tự động điều chỉnh */
-        height: auto;           /* Tự động điều chỉnh */
-        border-radius: 10px;    /* Bo góc */
-        margin: 8px 0;          /* Khoảng cách */
-        object-fit: contain;    /* Giữ tỷ lệ ảnh */
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* Đổ bóng nhẹ */
+        max-width: 100%;
+        max-height: 400px;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        display: block;
+        margin: 25px auto;
+        border: 1px solid #eaeaea;
+        padding: 5px;
+        background-color: #fcfcfc;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    
+    /* Force image to proper display size */
+    .card-body img[src*="data:image"], 
+    .card-body img[src*="jpg"], 
+    .card-body img[src*="jpeg"], 
+    .card-body img[src*="png"],
+    .card-body img[src*="gif"] {
+        height: 400px !important;
+        width: auto !important;
+        object-fit: contain;
+    }
+    
+    /* Top rated posts image styling */
+    .top-rated-content img {
+        max-width: 100%;
+        height: 400px !important;
+        width: auto;
+        object-fit: contain;
+        display: block;
+        margin: 15px auto;
+        border: 1px solid #eaeaea;
+        padding: 5px;
+        background-color: #fcfcfc;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    /* Search results container - adjust card size */
+    .search-results-container .card-post {
+        margin-bottom: 30px;
+    }
+    
+    .search-results-container .card-body {
+        min-height: 450px;
+        padding: 20px;
+    }
+
+    /* Main posts - adjust card size */
+    .post-row .card-post .card-body {
+        min-height: 450px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .post-row .card-post .card-body img {
+        height: 400px !important;
+        object-fit: contain;
+        align-self: center;
+        margin: 10px auto;
+    }
+
+    /* Content limitations for better readability */
+    .card-text {
+        max-height: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 6;
+        -webkit-box-orient: vertical;
     }
 
     /* Responsive */
@@ -444,6 +516,10 @@
         box-shadow: 0 4px 18px rgba(160, 180, 200, 0.10);
         transition: all 0.25s;
         border: 1.5px solid #e0e9f0;
+        max-width: 32%;
+        display: flex;
+        flex-direction: column;
+        min-height: 600px;
     }
 
     .top-rated-card:hover {
@@ -457,6 +533,8 @@
         color: inherit;
         display: block;
         height: 100%;
+        display: flex;
+        flex-direction: column;
     }
 
     .top-rated-author {
@@ -465,31 +543,106 @@
         padding: 18px;
         background: linear-gradient(90deg, #e3f2fd 60%, #fce4ec 100%);
         border-bottom: 1px solid #eef5fb;
+        flex-shrink: 0;
     }
 
     .top-rated-content {
         padding: 18px;
+        overflow: auto;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .top-rated-content .image-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 15px 0;
+        flex: 1;
+        min-height: 200px;
     }
 
-    .top-rated-content h5 {
-        color: #4a5c6c;
-        font-size: 18px;
+    .top-rated-content img {
+        max-width: 100%;
+        max-height: 350px;
+        width: auto;
+        object-fit: contain;
+    }
+
+    /* Top rated posts honour title styling */
+    .top-rated-author .honour-title {
+        margin-left: 2px;
+        font-size: 0.75em;
+    }
+
+    /* Author Info Container */
+    .author-info {
+        display: flex;
+        flex-direction: column;
+        margin-left: 10px;
+    }
+
+    /* Gradient Name Styles */
+    .gradient-name {
         font-weight: 700;
-        margin-bottom: 12px;
-        line-height: 1.4;
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+        display: inline;
+        padding: 0;
     }
 
-    .top-rated-content p {
-        color: #7a8a99;
-        font-size: 15px;
-        line-height: 1.6;
-        margin-bottom: 16px;
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
+    /* Add VIP Crown Icon Styles */
+    .vip-crown {
+        display: inline-block;
+        margin-left: 5px;
+        color: gold;
+        font-size: 14px;
+        text-shadow: 0 0 2px rgba(0,0,0,0.5);
+        transform: translateY(-1px);
     }
 
+    .vip-crown-large {
+        font-size: 16px;
+        margin-left: 6px;
+    }
+
+    @keyframes glowing {
+        0% { text-shadow: 0 0 2px rgba(255, 215, 0, 0.5); }
+        50% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); }
+        100% { text-shadow: 0 0 2px rgba(255, 215, 0, 0.5); }
+    }
+
+    .vip-crown-animate {
+        animation: glowing 2s infinite;
+    }
+    
+    /* Honour Badge Styles */
+    .honour-badge {
+        margin-left: 5px;
+        height: 16px;
+        width: auto;
+        vertical-align: middle;
+        display: inline-block;
+    }
+    
+    /* Honour Title Styles */
+    .honour-title {
+        font-size: 0.8em;
+        color: #777;
+        font-style: italic;
+        display: block;
+        margin-top: 2px;
+        padding: 1px 6px;
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 10px;
+        text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        max-width: fit-content;
+    }
+    
+    /* Top rated score section */
     .top-rated-score {
         display: flex;
         align-items: center;
@@ -506,229 +659,41 @@
         color: #7a9cc6;
     }
 
-    /* Search Styles */
-    .app-search {
-        margin: 20px auto;
-        max-width: 700px;
-        padding: 0 20px;
-    }
-
-    .app-search .input-group {
-        box-shadow: 0 2px 8px rgba(255, 105, 180, 0.15);
-        border-radius: 24px;
+    /* Image container for all post sections */
+    .image-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 15px auto;
+        max-height: 400px;
         overflow: hidden;
-        transition: all 0.3s ease;
     }
-
-    .app-search .input-group:hover {
-        box-shadow: 0 4px 12px rgba(255, 105, 180, 0.2);
+    
+    /* Card body image styling */
+    .card-body .image-container {
+        flex: 1;
+        min-height: 200px;
     }
-
-    .app-search .form-control {
-        border: 1px solid #ffc0cb;
-        border-right: none;
-        padding: 10px 18px;
-        font-size: 15px;
-        color: #555;
-        background-color: #fff;
-        border-radius: 24px 0 0 24px;
-    }
-
-    .app-search .form-control:focus {
-        border-color: #e1becf;
-        box-shadow: none;
-        background-color: white;
-    }
-
-    .app-search .btn-primary {
-        background-color: #e472ad;
-        border-color: #806271;
-        border-radius: 0 24px 24px 0;
-        padding: 0 16px;
-        font-size: 14px;
-        transition: all 0.2s ease;
-    }
-
-    .app-search .btn-primary:hover {
-        background-color: #cc527b;
-        border-color: #ff4785;
-    }
-
-    .search-results-header {
-        background-color: #fff5f7;
-        padding: 12px 20px;
-        border-radius: 12px;
-        margin: 15px auto 20px;
-        max-width: 700px;
-        border-left: 4px solid #ff69b4;
-    }
-
-    .search-results-header h4 {
-        color: #ff4785;
-        font-weight: 600;
-        margin-bottom: 8px;
+    
+    /* Top rated content heading and paragraph */
+    .top-rated-content h5 {
+        color: #4a5c6c;
         font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 12px;
+        line-height: 1.4;
     }
 
-    .search-results-header p {
-        color: #666;
-        font-size: 14px;
-        margin: 0;
-    }
-
-    .search-results-container {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 20px;
-    }
-
-    /* Filter Section */
-    .filter-section {
-        margin-bottom: 20px;
-        display: flex;
-        justify-content: flex-end;
-    }
-
-    .dropdown-menu {
-        min-width: 150px;
-    }
-
-    /* No Posts Message */
-    .no-posts-message {
-        background: #fce4ec;
+    .top-rated-content p {
         color: #7a8a99;
-        border-radius: 18px;
-        padding: 32px 0;
-        text-align: center;
-        margin: 32px 0;
-        font-size: 20px;
-        font-weight: 600;
-        box-shadow: 0 2px 8px #e1bee7;
-    }
-
-    /* Modal Styles */
-    .modal {
-        z-index: 1050;
-        border-radius: 18px;
-    }
-
-    .modal-backdrop {
-        z-index: 1040;
-    }
-
-    #reportForm {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    #reportForm label {
-        font-weight: bold;
-    }
-
-    #reportForm textarea {
-        width: 100%;
-        border-radius: 12px;
-        border: 1px solid #e0e9f0;
-        padding: 10px;
-        background: #f8fbfd;
-        font-family: inherit;
-    }
-
-    #reportForm button {
-        align-self: flex-end;
-        background-color: #4169e1;
-        color: white;
-        border: none;
-        padding: 6px 14px;
-        border-radius: 4px;
-        font-weight: bold;
-        transition: background-color 0.2s ease;
-    }
-
-    #reportForm button:hover {
-        background-color: #2c4db1;
-    }
-
-    /* Responsive Adjustments */
-    @media (max-width: 992px) {
-        .top-rated-posts {
-            flex-wrap: wrap;
-        }
-
-        .top-rated-card {
-            flex: 0 0 calc(50% - 13px);
-        }
-
-        #content {
-            padding: 60px 8%;
-        }
-    }
-
-    @media (max-width: 768px) {
-        #page-info {
-            padding: 20px 15px;
-        }
-
-        .create-post-card {
-            padding: 12px 16px;
-        }
-
-        .create-post-avatar {
-            width: 44px;
-            height: 44px;
-            margin-right: 12px;
-        }
-
-        .create-post-input {
-            font-size: 15px;
-            padding: 10px 14px;
-        }
-
-        .card-body, .card-footer {
-            padding-left: 60px;
-            padding-right: 8px;
-        }
-
-        .card-post-author {
-            padding-left: 8px;
-            padding-right: 8px;
-        }
-
-        #content {
-            padding: 60px 5%;
-        }
-    }
-
-    @media (max-width: 576px) {
-        .top-rated-card {
-            flex: 0 0 100%;
-        }
-
-        .post-row {
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .card-body {
-            padding-left: 50px;
-        }
-
-        .card-footer {
-            padding-left: 50px;
-        }
-
-        .vote-controls {
-            margin-right: 8px;
-        }
-
-        .btn-comment, .btn-report {
-            font-size: 13px;
-            padding: 5px 10px;
-        }
+        font-size: 15px;
+        line-height: 1.6;
+        margin-bottom: 16px;
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        max-height: 96px; /* Approximately 4 lines */
     }
 </style>
 <body data-user-logged-in="${user != null}">
@@ -771,12 +736,43 @@
                             <img src="${post.getAvtUserImg() != null ? post.getAvtUserImg() : userDAO.getAvatarByUserId(post.getUserID())}"
                                  onerror="this.onerror=null;this.src='https://i.pinimg.com/564x/09/a9/2c/09a92c1cbe440f31d1818e4fe0bcf23a.jpg';"
                                  alt="Author Avatar" class="author-post-avatar"/>
-                            <div class="author-post-info">
-                                <span class="author-post-name">${post.getUserFullName()}</span>
+                            <div class="author-info">
+                                <span class="author-post-name">
+                                    <c:choose>
+                                        <c:when test="${not empty authorHonours[post.getUserID()]}">
+                                            <span class="gradient-name" style="background-image: linear-gradient(to right, ${authorHonours[post.getUserID()].gradientStart}, ${authorHonours[post.getUserID()].gradientEnd});">
+                                                ${post.getUserFullName()}
+                                            </span>
+                                            <img src="${authorHonours[post.getUserID()].image}" alt="Honour" class="honour-badge">
+                                            <c:if test="${authorVipMap[post.getUserID()]}">
+                                                <i class="fas fa-crown vip-crown vip-crown-animate"></i>
+                                            </c:if>
+                                        </c:when>
+                                        <c:otherwise>
+                                            ${post.getUserFullName()}
+                                            <c:if test="${authorVipMap[post.getUserID()]}">
+                                                <i class="fas fa-crown vip-crown vip-crown-animate"></i>
+                                            </c:if>
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <c:if test="${not empty authorHonours[post.getUserID()]}">
+                                        <span class="honour-title">${authorHonours[post.getUserID()].name}</span>
+                                    </c:if>
+                                </span>
                             </div>
                         </div>
                         <div class="card-body">
                             <h5 class="card-title card-title-post">${post.getHeading()}</h5>
+                            <div class="image-container">
+                                <c:set var="content" value="${post.getContent()}" />
+                                <c:if test="${fn:contains(content, '<img')}">
+                                    <c:set var="imgStart" value="${fn:indexOf(content, '<img')}" />
+                                    <c:set var="subContent" value="${fn:substring(content, imgStart, fn:length(content))}" />
+                                    <c:set var="imgEnd" value="${fn:indexOf(subContent, '>') + 1}" />
+                                    <c:set var="imgTag" value="${fn:substring(content, imgStart, imgStart + imgEnd)}" />
+                                    ${imgTag}
+                                </c:if>
+                            </div>
                             <p class="card-text">${post.getContent()}</p>
                         </div>
                     </a>
@@ -842,10 +838,43 @@
                             <img src="${topPost.getAvtUserImg() != null ? topPost.getAvtUserImg() : userDAO.getAvatarByUserId(topPost.getUserID())}"
                                  onerror="this.onerror=null;this.src='https://i.pinimg.com/564x/09/a9/2c/09a92c1cbe440f31d1818e4fe0bcf23a.jpg';"
                                  alt="Author Avatar" class="author-post-avatar"/>
-                            <span class="author-post-name">${topPost.getUserFullName()}</span>
+                            <div class="author-info">
+                                <span class="author-post-name">
+                                    <c:choose>
+                                        <c:when test="${not empty authorHonours[topPost.getUserID()]}">
+                                            <span class="gradient-name" style="background-image: linear-gradient(to right, ${authorHonours[topPost.getUserID()].gradientStart}, ${authorHonours[topPost.getUserID()].gradientEnd});">
+                                                ${topPost.getUserFullName()}
+                                            </span>
+                                            <img src="${authorHonours[topPost.getUserID()].image}" alt="Honour" class="honour-badge">
+                                            <c:if test="${topPostVipMap[topPost.getUserID()]}">
+                                                <i class="fas fa-crown vip-crown vip-crown-animate"></i>
+                                            </c:if>
+                                        </c:when>
+                                        <c:otherwise>
+                                            ${topPost.getUserFullName()}
+                                            <c:if test="${topPostVipMap[topPost.getUserID()]}">
+                                                <i class="fas fa-crown vip-crown vip-crown-animate"></i>
+                                            </c:if>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </span>
+                                <c:if test="${not empty authorHonours[topPost.getUserID()]}">
+                                    <span class="honour-title">${authorHonours[topPost.getUserID()].name}</span>
+                                </c:if>
+                            </div>
                         </div>
                         <div class="top-rated-content">
                             <h5>${topPost.getHeading()}</h5>
+                            <div class="image-container">
+                                <c:set var="content" value="${topPost.getContent()}" />
+                                <c:if test="${fn:contains(content, '<img')}">
+                                    <c:set var="imgStart" value="${fn:indexOf(content, '<img')}" />
+                                    <c:set var="subContent" value="${fn:substring(content, imgStart, fn:length(content))}" />
+                                    <c:set var="imgEnd" value="${fn:indexOf(subContent, '>') + 1}" />
+                                    <c:set var="imgTag" value="${fn:substring(content, imgStart, imgStart + imgEnd)}" />
+                                    ${imgTag}
+                                </c:if>
+                            </div>
                             <p>${topPost.getContent()}</p>
                             <div class="top-rated-score">
                                 <span>Score: ${topPost.getScore()}</span>
@@ -881,13 +910,44 @@
                                 <img src="${post.getAvtUserImg() != null ? post.getAvtUserImg() : userDAO.getAvatarByUserId(post.getUserID())}"
                                      onerror="this.onerror=null;this.src='https://i.pinimg.com/564x/09/a9/2c/09a92c1cbe440f31d1818e4fe0bcf23a.jpg';"
                                      alt="Author Avatar" class="author-post-avatar"/>
-                                <div class="author-post-info">
-                                    <span class="author-post-name">${post.getUserFullName()}</span>
+                                <div class="author-info">
+                                    <span class="author-post-name">
+                                        <c:choose>
+                                            <c:when test="${not empty authorHonours[post.getUserID()]}">
+                                                <span class="gradient-name" style="background-image: linear-gradient(to right, ${authorHonours[post.getUserID()].gradientStart}, ${authorHonours[post.getUserID()].gradientEnd});">
+                                                    ${post.getUserFullName()}
+                                                </span>
+                                                <img src="${authorHonours[post.getUserID()].image}" alt="Honour" class="honour-badge">
+                                                <c:if test="${authorVipMap[post.getUserID()]}">
+                                                    <i class="fas fa-crown vip-crown vip-crown-animate"></i>
+                                                </c:if>
+                                            </c:when>
+                                            <c:otherwise>
+                                                ${post.getUserFullName()}
+                                                <c:if test="${authorVipMap[post.getUserID()]}">
+                                                    <i class="fas fa-crown vip-crown vip-crown-animate"></i>
+                                                </c:if>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </span>
+                                    <c:if test="${not empty authorHonours[post.getUserID()]}">
+                                        <span class="honour-title">${authorHonours[post.getUserID()].name}</span>
+                                    </c:if>
                                 </div>
                             </div>
                             <a href="postDetails?postID=${post.getPostID()}" class="post-content-link" style="text-decoration: none;">
                                 <div class="card-body">
                                     <h5 class="card-title card-title-post">${post.getHeading()}</h5>
+                                    <div class="image-container">
+                                        <c:set var="content" value="${post.getContent()}" />
+                                        <c:if test="${fn:contains(content, '<img')}">
+                                            <c:set var="imgStart" value="${fn:indexOf(content, '<img')}" />
+                                            <c:set var="subContent" value="${fn:substring(content, imgStart, fn:length(content))}" />
+                                            <c:set var="imgEnd" value="${fn:indexOf(subContent, '>') + 1}" />
+                                            <c:set var="imgTag" value="${fn:substring(content, imgStart, imgStart + imgEnd)}" />
+                                            ${imgTag}
+                                        </c:if>
+                                    </div>
                                     <p class="card-text">${post.getContent()}</p>
                                 </div>
                             </a>

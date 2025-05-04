@@ -71,12 +71,14 @@
         }
 
         .comment-avt {
-            width: 40px;
-            height: 40px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             float: left;
             margin-right: 15px;
             object-fit: cover;
+            border: 2px solid #f0f0f0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         .comment-content {
@@ -314,6 +316,188 @@
                 margin-left: 20px;
             }
         }
+
+        /* Honour badge styling */
+        .author-details {
+            display: flex;
+            flex-direction: column;
+            margin-left: 15px;
+        }
+        
+        .author-name-container {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .author-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .honour-title-container {
+            margin-top: 3px;
+            margin-left: 28px; /* Căn lề với tên người dùng */
+        }
+        
+        .honour-badge {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+        }
+        
+        .honour-title {
+            font-size: 0.8em;
+            color: #777;
+            font-style: italic;
+        }
+
+        /* Comment author honour styling */
+        .comment-author-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .comment-author-name {
+            display: flex;
+            align-items: center;
+        }
+        
+        .comment-honour-badge {
+            width: 18px;
+            height: 18px;
+            margin-right: 5px;
+        }
+        
+        .comment-honour-title {
+            font-size: 0.75em;
+            color: #888;
+            font-style: italic;
+            margin-top: 2px;
+            margin-left: 23px; /* Căn lề với tên người dùng */
+        }
+
+        .author-honour-gradient {
+            color: #333;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 3px;
+            background: linear-gradient(45deg, #7209B7, #F72585);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .comment-honour-gradient {
+            font-weight: bold;
+            background: linear-gradient(45deg, #7209B7, #F72585);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .blog-content img {
+            max-width: 400px;
+            max-height: 400px;
+            width: auto;
+            height: auto;
+            display: block;
+            margin: 15px 0;
+            border-radius: 8px;
+            object-fit: contain;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .blog-header-section {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .blog-text-content {
+            line-height: 1.6;
+            margin-top: 20px;
+        }
+        
+        /* Tăng kích thước avatar */
+        .details-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #eee;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        /* Cấu trúc mới cho author details */
+        .author-details {
+            display: flex;
+            flex-direction: column;
+            margin-left: 15px;
+        }
+        
+        .author-name-container {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .author-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .honour-title-container {
+            margin-top: 3px;
+            margin-left: 28px; /* Căn lề với tên người dùng */
+        }
+        
+        .honour-badge {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+        }
+        
+        .honour-title {
+            font-size: 0.8em;
+            color: #777;
+            font-style: italic;
+        }
+        
+        .blog-details-title {
+            margin-top: 15px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .blog-details-title h2 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+            color: #333;
+        }
+
+        /* Crown Icon for VIP users */
+        .vip-crown {
+            display: inline-block;
+            margin-left: 5px;
+            color: gold;
+            font-size: 14px;
+            text-shadow: 0 0 2px rgba(0,0,0,0.5);
+            transform: translateY(-1px);
+        }
+        
+        .vip-crown-large {
+            font-size: 16px;
+            margin-left: 6px;
+        }
+        
+        @keyframes glowing {
+            0% { text-shadow: 0 0 2px rgba(255, 215, 0, 0.5); }
+            50% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); }
+            100% { text-shadow: 0 0 2px rgba(255, 215, 0, 0.5); }
+        }
+        
+        .vip-crown-animate {
+            animation: glowing 2s infinite;
+        }
     </style>
 </head>
 <body>
@@ -324,6 +508,42 @@
 <div id="blog-details">
     <c:if test="${not empty post}">
         <input type="hidden" name="postID" value="${post.postID}">
+        
+        <!-- Thay đổi cấu trúc: author info trước, title sau -->
+        <div class="blog-details-author">
+            <img src="${avatar}" alt="Author Avatar"
+                 onerror="this.onerror=null;this.src='https://i.pinimg.com/564x/09/a9/2c/09a92c1cbe440f31d1818e4fe0bcf23a.jpg';"
+                 class="details-avatar">
+            <div class="author-details">
+                <div class="author-name-container">
+                    <c:if test="${not empty authorHonourName}">
+                        <div class="author-info">
+                            <img src="${authorHonourImage}" alt="Honour Badge" class="honour-badge">
+                            <p class="details-name author-honour-gradient">
+                                ${fullName}
+                                <c:if test="${isAuthorVip}">
+                                    <i class="fas fa-crown vip-crown vip-crown-large vip-crown-animate"></i>
+                                </c:if>
+                            </p>
+                        </div>
+                        <div class="honour-title-container">
+                            <span class="honour-title">${authorHonourName}</span>
+                        </div>
+                    </c:if>
+                    <c:if test="${empty authorHonourName}">
+                        <p class="details-name">
+                            ${fullName}
+                            <c:if test="${isAuthorVip}">
+                                <i class="fas fa-crown vip-crown vip-crown-large vip-crown-animate"></i>
+                            </c:if>
+                        </p>
+                    </c:if>
+                </div>
+            </div>
+            <div class="blog-details-date">${post.createdDate}</div>
+        </div>
+        
+        <!-- Tiêu đề bài viết được đặt sau thông tin tác giả -->
         <div class="blog-details-title">
             <h2>${post.heading}</h2>
             <c:if test="${user != null && user.userID == post.userID}">
@@ -341,16 +561,17 @@
                 </form>
             </c:if>
         </div>
-        <div class="blog-details-author">
-            <img src="${avatar}" alt="Author Avatar"
-                 onerror="this.onerror=null;this.src='https://i.pinimg.com/564x/09/a9/2c/09a92c1cbe440f31d1818e4fe0bcf23a.jpg';"
-                 class="details-avatar">
-            <p class="details-name">${fullName}</p>
-            <div class="blog-details-date">${post.createdDate}</div>
-        </div>
+        
+        <!-- Updated blog content with constrained image size -->
         <div class="blog-content">
-            <img src="${post.imgURL}" alt="Post Image" class="blog-content-img">
-            <p>${post.content}</p>
+            <div class="blog-header-section">
+                <c:if test="${not empty post.imgURL}">
+                    <img src="${post.imgURL}" alt="Post Image" class="blog-content-img">
+                </c:if>
+            </div>
+            <div class="blog-text-content">
+                <p>${post.content}</p>
+            </div>
         </div>
     </c:if>
     <c:if test="${empty post}">
@@ -361,7 +582,7 @@
 <!-- COMMENT SECTION -->
 <div class="comment-container">
     <h2 style="color: #333; padding: 20px 0;">Bình luận</h2>
-
+    
     <!-- Comment input form -->
     <c:choose>
         <c:when test="${user != null}">
@@ -391,7 +612,23 @@
                     <div class="comment-content">
                         <div class="comment-header">
                             <div>
-                                <span class="comment-author">${comment.userFullName}</span>
+                                <c:if test="${not empty commentHonours[comment.commentID]}">
+                                    <div class="comment-author-info">
+                                        <div class="comment-author-name">
+                                            <img src="${commentHonours[comment.commentID].image}" alt="Honour" class="comment-honour-badge">
+                                            <span class="comment-author comment-honour-gradient">
+                                                ${comment.userFullName}
+                                                <c:if test="${commentUserVipMap[comment.commentID]}">
+                                                    <i class="fas fa-crown vip-crown"></i>
+                                                </c:if>
+                                            </span>
+                                        </div>
+                                        <span class="comment-honour-title">${commentHonours[comment.commentID].name}</span>
+                                    </div>
+                                </c:if>
+                                <c:if test="${empty commentHonours[comment.commentID]}">
+                                    <span class="comment-author">${comment.userFullName}</span>
+                                </c:if>
                                 <span class="comment-time">${comment.createdDate}</span>
                             </div>
                             <c:if test="${user != null}">
@@ -454,7 +691,23 @@
                                             <div class="comment-content">
                                                 <div class="comment-header">
                                                     <div>
-                                                        <span class="comment-author">${reply.userFullName}</span>
+                                                        <c:if test="${not empty commentHonours[reply.commentID]}">
+                                                            <div class="comment-author-info">
+                                                                <div class="comment-author-name">
+                                                                    <img src="${commentHonours[reply.commentID].image}" alt="Honour" class="comment-honour-badge">
+                                                                    <span class="comment-author comment-honour-gradient">
+                                                                        ${reply.userFullName}
+                                                                        <c:if test="${commentUserVipMap[reply.commentID]}">
+                                                                            <i class="fas fa-crown vip-crown"></i>
+                                                                        </c:if>
+                                                                    </span>
+                                                                </div>
+                                                                <span class="comment-honour-title">${commentHonours[reply.commentID].name}</span>
+                                                            </div>
+                                                        </c:if>
+                                                        <c:if test="${empty commentHonours[reply.commentID]}">
+                                                            <span class="comment-author">${reply.userFullName}</span>
+                                                        </c:if>
                                                         <span class="comment-time">${reply.createdDate}</span>
                                                     </div>
                                                     <c:if test="${user != null && (user.userID == reply.userID || user.userID == post.userID)}">

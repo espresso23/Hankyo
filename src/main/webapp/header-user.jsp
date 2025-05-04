@@ -382,6 +382,31 @@
     color: #333;
   }
 
+  /* Add VIP Crown Icon Styles */
+  .vip-crown {
+    display: inline-block;
+    margin-left: 5px;
+    color: gold;
+    font-size: 14px;
+    text-shadow: 0 0 2px rgba(0,0,0,0.5);
+    transform: translateY(-1px);
+  }
+
+  .vip-crown-large {
+    font-size: 16px;
+    margin-left: 6px;
+  }
+
+  @keyframes glowing {
+    0% { text-shadow: 0 0 2px rgba(255, 215, 0, 0.5); }
+    50% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); }
+    100% { text-shadow: 0 0 2px rgba(255, 215, 0, 0.5); }
+  }
+
+  .vip-crown-animate {
+    animation: glowing 2s infinite;
+  }
+
   .honour-name {
     font-size: 0.8em;
     color: #666;
@@ -654,6 +679,9 @@
         <span class="username <%= request.getAttribute("equippedGradientStart") != null ? "gradient" : "" %>"
               style="<%= request.getAttribute("equippedGradientStart") != null ? String.format("background-image: linear-gradient(45deg, %s, %s)", request.getAttribute("equippedGradientStart"), request.getAttribute("equippedGradientEnd")) : "" %>">
           Xin chào, <%= session.getAttribute("username") %>!
+          <% if (request.getAttribute("isUserVip") != null && (Boolean)request.getAttribute("isUserVip")) { %>
+            <i class="fas fa-crown vip-crown vip-crown-animate"></i>
+          <% } %>
         </span>
         <% if (request.getAttribute("equippedHonourName") != null && request.getAttribute("equippedHonourImage") != null) { %>
         <span class="honour-name"><%= request.getAttribute("equippedHonourName") %></span>

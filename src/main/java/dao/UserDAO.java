@@ -449,13 +449,15 @@ public class UserDAO {
 
     }
     // Lấy tên đầy đủ của người dùng theo UserID
-    public boolean isVipUser(int learnerId) throws Exception {
-        String sql = "SELECT 1 FROM Vip_User vu JOIN VipDetails vd ON vu.vipID = vd.vipID WHERE vu.learnerID = ? AND vu.vipStatus = 'active' AND vu.endDate >= GETDATE()";
+    public boolean isVipUser(int userID) throws Exception {
+        String sql = "SELECT 1 FROM Vip_User v " +
+                     "INNER JOIN Learner l ON v.learnerID = l.learnerID " +
+                     "WHERE l.userID = ? AND v.status = 'ACTIVE' AND v.endDate >= GETDATE()";
 
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setInt(1, learnerId);
+            stmt.setInt(1, userID);
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next();
             }

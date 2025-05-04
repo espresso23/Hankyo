@@ -153,13 +153,19 @@ public class DocumentaryDAO {
         return -1; // hoặc throw exception
     }
 
-    public boolean isLearnerVIP(int learnerID) throws SQLException {
-        String sql = "SELECT 1 FROM Vip_User WHERE learnerID = ? AND endDate >= GETDATE() AND vipStatus = 'active'";
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, learnerID);
-            ResultSet rs = stmt.executeQuery();
-            return rs.next();
+    public boolean isLearnerVIP(int learnerID) {
+        String sql = "SELECT 1 FROM Vip_User WHERE learnerID = ? AND endDate >= GETDATE() AND status = 'ACTIVE'";
+
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, learnerID);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            System.err.println("Error checking VIP status: " + e.getMessage());
+            e.printStackTrace();
+            return false;
         }
     }
 

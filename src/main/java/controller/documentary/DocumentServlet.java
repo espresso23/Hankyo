@@ -1,6 +1,7 @@
 package controller.documentary;
 
 import dao.DocumentaryDAO;
+import dao.VipUserDAO;
 import model.Documentary;
 import model.User;
 
@@ -85,8 +86,8 @@ public class DocumentServlet extends HttpServlet {
 
         try {
             int userID = user.getUserID();
-            int learnerID = documentaryDAO.getLearnerIdByUserId(userID);
-            return documentaryDAO.isLearnerVIP(learnerID);
+            VipUserDAO vipUserDAO = new VipUserDAO();
+            return vipUserDAO.isVipUser(userID);
         } catch (Exception e) {
             e.printStackTrace();
             return false;

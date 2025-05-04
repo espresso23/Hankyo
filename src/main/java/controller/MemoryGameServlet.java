@@ -2,9 +2,11 @@ package controller;
 
 import com.google.gson.Gson;
 import dao.QuizletDAO;
+import dao.VipUserDAO;
 import model.CustomFlashCard;
 import model.FavoriteFlashCard;
 import model.SystemFlashCard;
+import model.User;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -21,11 +23,13 @@ import java.util.List;
 public class MemoryGameServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private QuizletDAO quizletDAO;
+    private VipUserDAO vipUserDAO;
     private Gson gson;
 
     @Override
     public void init() throws ServletException {
         quizletDAO = new QuizletDAO();
+        vipUserDAO = new VipUserDAO();
         gson = new Gson();
     }
 
@@ -35,6 +39,28 @@ public class MemoryGameServlet extends HttpServlet {
         String type = request.getParameter("type");
         HttpSession session = request.getSession();
         Integer learnerID = (Integer) session.getAttribute("learnerID");
+        User user = (User) session.getAttribute("user");
+
+        // Kiểm tra xem người dùng đã đăng nhập chưa
+        if (user == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        // Kiểm tra xem người dùng có phải là VIP không
+        boolean isVIP = false;
+        try {
+            isVIP = vipUserDAO.isVipUser(user.getUserID());
+        } catch (Exception e) {
+            System.err.println("Error checking VIP status: " + e.getMessage());
+        }
+
+        // Nếu không phải VIP, chuyển hướng đến trang thông báo
+        if (!isVIP) {
+            request.setAttribute("vipRequired", true);
+            request.getRequestDispatcher("memory-game.jsp").forward(request, response);
+            return;
+        }
 
         if (topic == null || type == null) {
             request.setAttribute("error", "Missing topic or type parameter");

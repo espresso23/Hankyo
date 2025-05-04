@@ -212,10 +212,94 @@
             color: #2c3e50;
             box-shadow: 0 4px 16px rgba(255,215,0,0.18);
         }
+
+        /* VIP Modal Styles */
+        .vip-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .vip-modal {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            position: relative;
+        }
+
+        .vip-modal h2 {
+            color: #FFD700;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .vip-modal p {
+            margin-bottom: 20px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .vip-modal-btn {
+            background-color: #FFD700;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .vip-modal-btn:hover {
+            background-color: #f0c000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .vip-crown {
+            font-size: 30px;
+            color: #FFD700;
+            margin-bottom: 10px;
+            display: inline-block;
+            animation: shine 1.5s infinite alternate;
+        }
+
+        @keyframes shine {
+            from {
+                text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+            }
+            to {
+                text-shadow: 0 0 20px rgba(255, 215, 0, 1);
+            }
+        }
     </style>
 </head>
 <body>
 <jsp:include page="header.jsp"></jsp:include>
+
+<!-- VIP Modal Popup -->
+<c:if test="${vipRequired}">
+    <div class="vip-modal-overlay" id="vipModal">
+        <div class="vip-modal">
+            <div class="vip-crown">👑</div>
+            <h2>Tính năng chỉ dành cho thành viên VIP</h2>
+            <p>Trò chơi trí nhớ là tính năng đặc biệt chỉ dành cho thành viên VIP. Vui lòng nâng cấp tài khoản của bạn để truy cập tính năng này và nhiều ưu đãi đặc biệt khác.</p>
+            <button class="vip-modal-btn" onclick="redirectToVipPage()">Đăng ký VIP ngay</button>
+        </div>
+    </div>
+</c:if>
 
 <div class="game-wrapper">
     <div class="container">
@@ -250,8 +334,19 @@
     </div>
 
     <div class="controls">
-        <button class="btn btn-secondary" onclick="location.href='quizlet'"><span style="font-size:1.2em;">&#8592;</span> Quay lại chủ đề</button>
-        <button class="btn btn-primary" onclick="resetGame()"><span style="font-size:1.2em;">&#8635;</span> Chơi lại</button>
+        <button id="resetBtn" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+            </svg>
+            Chơi lại
+        </button>
+        <button id="backToQuizletBtn" class="btn btn-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+            </svg>
+            Quay lại Quizlet
+        </button>
     </div>
 </div>
 
@@ -446,6 +541,26 @@
                 revealAllCardsThenHide();
             };
         }
+    });
+
+    // For VIP Modal
+    function redirectToVipPage() {
+        window.location.href = 'bundles.jsp';
+    }
+
+    // Memory game logic
+    document.addEventListener('DOMContentLoaded', function () {
+        // ... existing memory game script ...
+        
+        // Back to Quizlet button
+        document.getElementById('backToQuizletBtn').addEventListener('click', function() {
+            window.location.href = 'quizlet.jsp';
+        });
+        
+        // Reset button
+        document.getElementById('resetBtn').addEventListener('click', function() {
+            window.location.reload();
+        });
     });
 </script>
 </body>
