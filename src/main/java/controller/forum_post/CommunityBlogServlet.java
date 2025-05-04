@@ -4,6 +4,10 @@ import com.google.gson.Gson;
 import dao.ReportDAO;
 import dao.UserDAO;
 import dao.PostDAO;
+import dao.HonourDAO;
+import dao.HonourOwnedDAO;
+import dao.VipUserDAO;
+import dao.LearnerDAO;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -21,18 +25,28 @@ import java.util.Map;
 import model.Post;
 import model.Report;
 import model.User;
+import model.Honour;
+import model.Learner;
 
 @WebServlet(name = "CommunityBlog", urlPatterns = {"/blog"})
 public class CommunityBlogServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private PostDAO postDAO;
     private UserDAO userDAO;
+    private HonourDAO honourDAO;
+    private HonourOwnedDAO honourOwnedDAO;
+    private VipUserDAO vipUserDAO;
+    private LearnerDAO learnerDAO;
 
     @Override
     public void init() throws ServletException {
         super.init();
         postDAO = new PostDAO();
         userDAO = new UserDAO();
+        honourDAO = new HonourDAO();
+        honourOwnedDAO = new HonourOwnedDAO();
+        vipUserDAO = new VipUserDAO();
+        learnerDAO = new LearnerDAO();
     }
 
     @Override
@@ -40,10 +54,10 @@ public class CommunityBlogServlet extends HttpServlet {
         try {
             String filter = request.getParameter("filter");
             String searchQuery = request.getParameter("searchQuery");
-            String id = request.getParameter("id");
+
             List<Post> postList;
 
-            // Lọc bài viết theo filter nếu có
+            // Lọc nếu có filter
             if (filter != null) {
                 switch (filter) {
                     case "newest":
@@ -63,44 +77,122 @@ public class CommunityBlogServlet extends HttpServlet {
                 postList = postDAO.getAllPostsHaveFullNameAndAvtImg();
             }
 
-            // Đếm comment cho từng bài viết
+            // Get honour information for each post author
+            Map<Integer, Map<String, String>> authorHonours = new HashMap<>();
+            // Add VIP status check for each post author
+            Map<Integer, Boolean> authorVipMap = new HashMap<>();
+            
+            for (Post post : postList) {
+                // Get honour info
+                Integer equippedHonourID = honourOwnedDAO.getEquippedHonourID(post.getUserID());
+                if (equippedHonourID != null) {
+                    Honour honour = honourDAO.getHonourById(equippedHonourID);
+                    if (honour != null) {
+                        Map<String, String> honourInfo = new HashMap<>();
+                        honourInfo.put("name", honour.getHonourName());
+                        honourInfo.put("gradientStart", honour.getGradientStart());
+                        honourInfo.put("gradientEnd", honour.getGradientEnd());
+                        honourInfo.put("image", honour.getHonourImg());
+                        authorHonours.put(post.getUserID(), honourInfo);
+                    }
+                }
+                
+                // Check VIP status
+                try {
+                    boolean isVip = vipUserDAO.isVipUser(post.getUserID());
+                    // Thêm log để debug
+                    System.out.println("DEBUG - User ID: " + post.getUserID() + ", VIP status: " + isVip + ", Name: " + post.getUserFullName());
+                    authorVipMap.put(post.getUserID(), isVip);
+                } catch (Exception e) {
+                    authorVipMap.put(post.getUserID(), false);
+                    System.err.println("Error checking VIP status for user ID " + post.getUserID() + ": " + e.getMessage());
+                }
+            }
+
+            // Đếm comment
             for (Post post : postList) {
                 int commentCount = postDAO.getCommentCount(post.getPostID());
                 post.setCommentCount(commentCount);
             }
 
-            // Lấy bài viết mới nhất
-//            User user = userDAO.getUserByID(id);
+            // Top rated
             Post newPost = postDAO.getLatestPost();
-            String fullNameNewPost = "";
-            String avatarURLNewPost = "";
-
-            if (newPost != null && newPost.getUserID() > 0) {
-                User postUser = userDAO.getUserByID(newPost.getUserID());
-                if (postUser != null) {
-                    fullNameNewPost = postUser.getFullName() != null ? postUser.getFullName() : "";
-                    avatarURLNewPost = postUser.getAvatar() != null ? postUser.getAvatar() : "";
+            String fullNameNewPost = (newPost != null) ? userDAO.getFullNameByUserId(newPost.getUserID()) : "";
+            String avatarURLNewPost = (newPost != null) ? userDAO.getAvatarByUserId(newPost.getUserID()) : "";
+            List<Post> topRatedPosts = postDAO.getPostsOrderedByScore();
+            
+            // Check VIP status for top rated posts
+            Map<Integer, Boolean> topPostVipMap = new HashMap<>();
+            for (Post topPost : topRatedPosts) {
+                // Also get honour info for top rated posts
+                Integer equippedHonourID = honourOwnedDAO.getEquippedHonourID(topPost.getUserID());
+                if (equippedHonourID != null) {
+                    Honour honour = honourDAO.getHonourById(equippedHonourID);
+                    if (honour != null) {
+                        Map<String, String> honourInfo = new HashMap<>();
+                        honourInfo.put("name", honour.getHonourName());
+                        honourInfo.put("gradientStart", honour.getGradientStart());
+                        honourInfo.put("gradientEnd", honour.getGradientEnd());
+                        honourInfo.put("image", honour.getHonourImg());
+                        authorHonours.put(topPost.getUserID(), honourInfo);
+                    }
+                }
+                
+                try {
+                    boolean isVip = vipUserDAO.isVipUser(topPost.getUserID());
+                    // Thêm log để debug
+                    System.out.println("DEBUG - TopPost User ID: " + topPost.getUserID() + ", VIP status: " + isVip + ", Name: " + topPost.getUserFullName());
+                    topPostVipMap.put(topPost.getUserID(), isVip);
+                } catch (Exception e) {
+                    topPostVipMap.put(topPost.getUserID(), false);
                 }
             }
 
-            // Top rated posts
-            List<Post> topRatedPosts = postDAO.getPostsOrderedByScore();
-
-            // Xử lý tìm kiếm nếu có
+            // Tìm kiếm nếu có
             if (searchQuery != null && !searchQuery.trim().isEmpty()) {
                 List<Post> searchResults = postDAO.searchPosts(searchQuery);
+                
+                // Add honour and VIP information for search results
+                for (Post searchPost : searchResults) {
+                    // Check if we already have honour info for this user
+                    if (!authorHonours.containsKey(searchPost.getUserID())) {
+                        Integer equippedHonourID = honourOwnedDAO.getEquippedHonourID(searchPost.getUserID());
+                        if (equippedHonourID != null) {
+                            Honour honour = honourDAO.getHonourById(equippedHonourID);
+                            if (honour != null) {
+                                Map<String, String> honourInfo = new HashMap<>();
+                                honourInfo.put("name", honour.getHonourName());
+                                honourInfo.put("gradientStart", honour.getGradientStart());
+                                honourInfo.put("gradientEnd", honour.getGradientEnd());
+                                honourInfo.put("image", honour.getHonourImg());
+                                authorHonours.put(searchPost.getUserID(), honourInfo);
+                            }
+                        }
+                    }
+                    
+                    // Check if we already have VIP info for this user
+                    if (!authorVipMap.containsKey(searchPost.getUserID())) {
+                        try {
+                            boolean isVip = vipUserDAO.isVipUser(searchPost.getUserID());
+                            authorVipMap.put(searchPost.getUserID(), isVip);
+                        } catch (Exception e) {
+                            authorVipMap.put(searchPost.getUserID(), false);
+                        }
+                    }
+                }
+                
                 request.setAttribute("searchResults", searchResults);
             }
 
-            // Set dữ liệu lên request để chuyển sang JSP
+            // Gửi lên JSP
             request.setAttribute("postList", postList);
+            request.setAttribute("authorHonours", authorHonours);
+            request.setAttribute("authorVipMap", authorVipMap);
             request.setAttribute("newPost", newPost);
             request.setAttribute("fullNameNewPost", fullNameNewPost);
             request.setAttribute("avatarURLNewPost", avatarURLNewPost);
             request.setAttribute("topRatedPosts", topRatedPosts);
-
-            // Forward tới blog.jsp
-
+            request.setAttribute("topPostVipMap", topPostVipMap);
             request.getRequestDispatcher("blog.jsp").forward(request, response);
 
         } catch (Exception e) {
@@ -302,7 +394,7 @@ public class CommunityBlogServlet extends HttpServlet {
             report.setReason(reason);
             report.setReportTypeID(3);
             report.setReporterID(user.getUserID());
-            report.setStatus("Pending");
+
             ReportDAO reportDAO = new ReportDAO();
             boolean success = reportDAO.createPostReport(report);
             response.getWriter().write("{\"success\": " + success + "}");

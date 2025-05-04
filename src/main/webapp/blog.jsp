@@ -4,6 +4,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="dao.UserDAO" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isELIgnored="false" %>
 
 <%
@@ -730,6 +731,86 @@
             padding: 5px 10px;
         }
     }
+
+    @keyframes typing {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+    }
+    .modal-dialog {
+        max-width: 800px;
+    }
+
+    /* Thêm style cho nội dung bot-message */
+    .bot-message strong { color: #007bff; }
+    .bot-message ul { margin: 8px 0 8px 20px; padding-left: 18px; }
+    .bot-message li { margin-bottom: 4px; }
+    .bot-message p { margin-bottom: 8px; }
+
+    /* Author Info Container */
+    .author-info {
+        display: flex;
+        flex-direction: column;
+        margin-left: 10px;
+    }
+
+    /* Gradient Name Styles */
+    .gradient-name {
+        font-weight: 700;
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+        display: inline;
+        padding: 0;
+    }
+
+    /* Add VIP Crown Icon Styles */
+    .vip-crown {
+        display: inline-block;
+        margin-left: 5px;
+        color: gold;
+        font-size: 14px;
+        text-shadow: 0 0 2px rgba(0,0,0,0.5);
+        transform: translateY(-1px);
+    }
+
+    .vip-crown-large {
+        font-size: 16px;
+        margin-left: 6px;
+    }
+
+    @keyframes glowing {
+        0% { text-shadow: 0 0 2px rgba(255, 215, 0, 0.5); }
+        50% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); }
+        100% { text-shadow: 0 0 2px rgba(255, 215, 0, 0.5); }
+    }
+
+    .vip-crown-animate {
+        animation: glowing 2s infinite;
+    }
+    
+    /* Honour Badge Styles */
+    .honour-badge {
+        margin-left: 5px;
+        height: 16px;
+        width: auto;
+        vertical-align: middle;
+        display: inline-block;
+    }
+    
+    /* Honour Title Styles */
+    .honour-title {
+        font-size: 0.8em;
+        color: #777;
+        font-style: italic;
+        display: block;
+        margin-top: 2px;
+        padding: 1px 6px;
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 10px;
+        text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        max-width: fit-content;
+    }
 </style>
 <body data-user-logged-in="${user != null}">
 <!-- HEADER -->
@@ -771,12 +852,43 @@
                             <img src="${post.getAvtUserImg() != null ? post.getAvtUserImg() : userDAO.getAvatarByUserId(post.getUserID())}"
                                  onerror="this.onerror=null;this.src='https://i.pinimg.com/564x/09/a9/2c/09a92c1cbe440f31d1818e4fe0bcf23a.jpg';"
                                  alt="Author Avatar" class="author-post-avatar"/>
-                            <div class="author-post-info">
-                                <span class="author-post-name">${post.getUserFullName()}</span>
+                            <div class="author-info">
+                                <span class="author-post-name">
+                                    <c:choose>
+                                        <c:when test="${not empty authorHonours[post.getUserID()]}">
+                                            <span class="gradient-name" style="background-image: linear-gradient(to right, ${authorHonours[post.getUserID()].gradientStart}, ${authorHonours[post.getUserID()].gradientEnd});">
+                                                ${post.getUserFullName()}
+                                            </span>
+                                            <img src="${authorHonours[post.getUserID()].image}" alt="Honour" class="honour-badge">
+                                            <c:if test="${authorVipMap[post.getUserID()]}">
+                                                <i class="fas fa-crown vip-crown vip-crown-animate"></i>
+                                            </c:if>
+                                        </c:when>
+                                        <c:otherwise>
+                                            ${post.getUserFullName()}
+                                            <c:if test="${authorVipMap[post.getUserID()]}">
+                                                <i class="fas fa-crown vip-crown vip-crown-animate"></i>
+                                            </c:if>
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <c:if test="${not empty authorHonours[post.getUserID()]}">
+                                        <span class="honour-title">${authorHonours[post.getUserID()].name}</span>
+                                    </c:if>
+                                </span>
                             </div>
                         </div>
                         <div class="card-body">
                             <h5 class="card-title card-title-post">${post.getHeading()}</h5>
+                            <div class="image-container">
+                                <c:set var="content" value="${post.getContent()}" />
+                                <c:if test="${fn:contains(content, '<img')}">
+                                    <c:set var="imgStart" value="${fn:indexOf(content, '<img')}" />
+                                    <c:set var="subContent" value="${fn:substring(content, imgStart, fn:length(content))}" />
+                                    <c:set var="imgEnd" value="${fn:indexOf(subContent, '>') + 1}" />
+                                    <c:set var="imgTag" value="${fn:substring(content, imgStart, imgStart + imgEnd)}" />
+                                    ${imgTag}
+                                </c:if>
+                            </div>
                             <p class="card-text">${post.getContent()}</p>
                         </div>
                     </a>
@@ -842,10 +954,43 @@
                             <img src="${topPost.getAvtUserImg() != null ? topPost.getAvtUserImg() : userDAO.getAvatarByUserId(topPost.getUserID())}"
                                  onerror="this.onerror=null;this.src='https://i.pinimg.com/564x/09/a9/2c/09a92c1cbe440f31d1818e4fe0bcf23a.jpg';"
                                  alt="Author Avatar" class="author-post-avatar"/>
-                            <span class="author-post-name">${topPost.getUserFullName()}</span>
+                            <div class="author-info">
+                                <span class="author-post-name">
+                                    <c:choose>
+                                        <c:when test="${not empty authorHonours[topPost.getUserID()]}">
+                                            <span class="gradient-name" style="background-image: linear-gradient(to right, ${authorHonours[topPost.getUserID()].gradientStart}, ${authorHonours[topPost.getUserID()].gradientEnd});">
+                                                ${topPost.getUserFullName()}
+                                            </span>
+                                            <img src="${authorHonours[topPost.getUserID()].image}" alt="Honour" class="honour-badge">
+                                            <c:if test="${topPostVipMap[topPost.getUserID()]}">
+                                                <i class="fas fa-crown vip-crown vip-crown-animate"></i>
+                                            </c:if>
+                                        </c:when>
+                                        <c:otherwise>
+                                            ${topPost.getUserFullName()}
+                                            <c:if test="${topPostVipMap[topPost.getUserID()]}">
+                                                <i class="fas fa-crown vip-crown vip-crown-animate"></i>
+                                            </c:if>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </span>
+                                <c:if test="${not empty authorHonours[topPost.getUserID()]}">
+                                    <span class="honour-title">${authorHonours[topPost.getUserID()].name}</span>
+                                </c:if>
+                            </div>
                         </div>
                         <div class="top-rated-content">
                             <h5>${topPost.getHeading()}</h5>
+                            <div class="image-container">
+                                <c:set var="content" value="${topPost.getContent()}" />
+                                <c:if test="${fn:contains(content, '<img')}">
+                                    <c:set var="imgStart" value="${fn:indexOf(content, '<img')}" />
+                                    <c:set var="subContent" value="${fn:substring(content, imgStart, fn:length(content))}" />
+                                    <c:set var="imgEnd" value="${fn:indexOf(subContent, '>') + 1}" />
+                                    <c:set var="imgTag" value="${fn:substring(content, imgStart, imgStart + imgEnd)}" />
+                                    ${imgTag}
+                                </c:if>
+                            </div>
                             <p>${topPost.getContent()}</p>
                             <div class="top-rated-score">
                                 <span>Score: ${topPost.getScore()}</span>
@@ -881,13 +1026,44 @@
                                 <img src="${post.getAvtUserImg() != null ? post.getAvtUserImg() : userDAO.getAvatarByUserId(post.getUserID())}"
                                      onerror="this.onerror=null;this.src='https://i.pinimg.com/564x/09/a9/2c/09a92c1cbe440f31d1818e4fe0bcf23a.jpg';"
                                      alt="Author Avatar" class="author-post-avatar"/>
-                                <div class="author-post-info">
-                                    <span class="author-post-name">${post.getUserFullName()}</span>
+                                <div class="author-info">
+                                    <span class="author-post-name">
+                                        <c:choose>
+                                            <c:when test="${not empty authorHonours[post.getUserID()]}">
+                                                <span class="gradient-name" style="background-image: linear-gradient(to right, ${authorHonours[post.getUserID()].gradientStart}, ${authorHonours[post.getUserID()].gradientEnd});">
+                                                    ${post.getUserFullName()}
+                                                </span>
+                                                <img src="${authorHonours[post.getUserID()].image}" alt="Honour" class="honour-badge">
+                                                <c:if test="${authorVipMap[post.getUserID()]}">
+                                                    <i class="fas fa-crown vip-crown vip-crown-animate"></i>
+                                                </c:if>
+                                            </c:when>
+                                            <c:otherwise>
+                                                ${post.getUserFullName()}
+                                                <c:if test="${authorVipMap[post.getUserID()]}">
+                                                    <i class="fas fa-crown vip-crown vip-crown-animate"></i>
+                                                </c:if>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </span>
+                                    <c:if test="${not empty authorHonours[post.getUserID()]}">
+                                        <span class="honour-title">${authorHonours[post.getUserID()].name}</span>
+                                    </c:if>
                                 </div>
                             </div>
                             <a href="postDetails?postID=${post.getPostID()}" class="post-content-link" style="text-decoration: none;">
                                 <div class="card-body">
                                     <h5 class="card-title card-title-post">${post.getHeading()}</h5>
+                                    <div class="image-container">
+                                        <c:set var="content" value="${post.getContent()}" />
+                                        <c:if test="${fn:contains(content, '<img')}">
+                                            <c:set var="imgStart" value="${fn:indexOf(content, '<img')}" />
+                                            <c:set var="subContent" value="${fn:substring(content, imgStart, fn:length(content))}" />
+                                            <c:set var="imgEnd" value="${fn:indexOf(subContent, '>') + 1}" />
+                                            <c:set var="imgTag" value="${fn:substring(content, imgStart, imgStart + imgEnd)}" />
+                                            ${imgTag}
+                                        </c:if>
+                                    </div>
                                     <p class="card-text">${post.getContent()}</p>
                                 </div>
                             </a>
@@ -1273,6 +1449,17 @@
         window.location.href = 'blog?searchQuery=' + encodeURIComponent(query);
     });
 
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Debug VIP status in browser console
+    console.log("Debug authorVipMap from JSP:");
+    <c:forEach var="post" items="${postList}">
+        console.log("User ID: ${post.getUserID()}, VIP status: ${authorVipMap[post.getUserID()]}, Name: ${post.getUserFullName()}");
+    </c:forEach>
+    
+    // original script content...
+});
 </script>
 </body>
 </html>
