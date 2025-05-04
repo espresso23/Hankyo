@@ -77,6 +77,69 @@ public class CourseDAO {
         }
         return courses;
     }
+    public List<Course> getCourseByExpertProfile(int expertID) throws SQLException {
+        List<Course> courses = new ArrayList<>();
+        String sql = "SELECT c.*," +
+                "(SELECT COUNT(*) FROM enrollments e WHERE e.courseID = c.courseID AND e.status = 'active') as student_count, " +
+                "(SELECT AVG(CAST(f.rating AS FLOAT)) FROM CourseFeedback f WHERE f.courseID = c.courseID) as avg_rating, " +
+                "(SELECT COUNT(*) FROM CourseFeedback f WHERE f.courseID = c.courseID) as rating_count, " +
+                "ct.categoryID, ct.categoryName, ct.description as category_description, " +
+                "u.fullName as expert_name, u.avatar as expert_avatar, e.certificate as expert_certificate " +
+                "FROM Course c " +
+                "LEFT JOIN Category ct ON c.categoryID = ct.categoryID " +
+                "LEFT JOIN Expert e ON c.expertID = e.expertID " +
+                "LEFT JOIN [User] u ON e.userID = u.userID " +
+                "WHERE c.expertID = ? AND c.status = 'active' OR c.status = 'Active' " +
+                "ORDER BY c.createdAt DESC";
+
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, expertID);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                Course course = new Course();
+
+                // Thông tin cơ bản của khóa học
+                course.setCourseID(rs.getInt("courseID"));
+                course.setCourseTitle(rs.getString("title"));
+                course.setCourseDescription(rs.getString("course_description"));
+                course.setCourseImg(rs.getString("course_img"));
+                course.setStatus(rs.getString("status"));
+                course.setPrice(BigDecimal.valueOf(rs.getDouble("price")));
+                course.setOriginalPrice(rs.getBigDecimal("original_price"));
+                course.setDateCreated(rs.getDate("createdAt"));
+                course.setLastUpdated(rs.getDate("updateAt"));
+                course.setExpertID(expertID);
+
+                // Thông tin danh mục
+                Category category = new Category();
+                category.setCategoryID(rs.getInt("categoryID"));
+                category.setCategoryName(rs.getString("categoryName"));
+                category.setDescription(rs.getString("category_description"));
+                course.setCategory(category);
+
+                // Thông tin chuyên gia
+                Expert expert = new Expert();
+                expert.setExpertID(expertID);
+                expert.setFullName(rs.getString("expert_name"));
+                expert.setAvatar(rs.getString("expert_avatar"));
+                expert.setCertificate(rs.getString("expert_certificate"));
+                course.setExpert(expert);
+
+                // Thông tin thống kê
+                course.setLearnersCount(rs.getInt("student_count"));
+                Double rating = rs.getObject("avg_rating") != null ? rs.getDouble("avg_rating") : 0.0;
+                course.setRating(rating);
+                course.setRatingCount(rs.getInt("rating_count"));
+
+                courses.add(course);
+            }
+        }
+        return courses;
+    }
+
 
     public void addCourse(Course course) {
         String sql = "INSERT INTO Course (title, course_description, course_img, status, price, original_price, createdAt, updateAt, expertID, categoryID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";

@@ -34,7 +34,12 @@
         </li>
         <li class="nav-item">
             <a class="nav-link ${param.active == 'posts' ? 'active' : ''}" href="media-manager">
-                <i class="bi bi-file-text me-2"></i>Quản lý nội dung
+                <i class="bi bi-file-text me-2"></i>Quản lý media
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link ${param.active == 'posts' ? 'active' : ''}" href="documents">
+                <i class="bi bi-file-text me-2"></i>Quản lý tài liệu
             </a>
         </li>
         <li class="nav-item">

@@ -1,6 +1,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ page import="java.util.*, model.Documentary" %>
+<%@ page import="model.User" %>
 <%
     List<Documentary> docs = (List<Documentary>) request.getAttribute("documents");
     int currentPage = request.getParameter("page") != null ? Integer.parseInt(request.getParameter("page")) : 1;
@@ -17,7 +18,6 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <link rel="icon" href="${pageContext.request.contextPath}/asset/png/icon/logo.jpg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tài liệu học tiếng Hàn | Hankyo</title>
@@ -297,6 +297,28 @@
 
 <div class="documents-container">
     <h1 class="page-title"><i class="fas fa-book"></i> Tài liệu học tiếng Hàn</h1>
+    <%
+        User currentUser = (User) session.getAttribute("user");
+        if (currentUser != null && "admin".equalsIgnoreCase(currentUser.getRole())) {
+    %>
+    <div style="text-align: right; margin-bottom: 20px;">
+        <a href="upload-document" style="
+            background: linear-gradient(135deg, #f9a8d4, #95b5ee);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            display: inline-block;
+        "
+           onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(0, 0, 0, 0.15)';"
+           onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 10px rgba(0, 0, 0, 0.1)';">
+            <i class="fas fa-plus-circle"></i> Thêm tài liệu
+        </a>
+    </div>
+    <% } %>
 
     <div class="filter-container">
         <form method="get" action="documents">

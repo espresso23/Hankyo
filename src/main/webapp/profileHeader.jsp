@@ -171,16 +171,14 @@
     <div class="cover-photo-container">
         <c:choose>
             <c:when test="${isOwnProfile}">
-                <!-- Khi xem profile chÃ­nh mÃ¬nh -->
                 <img class="cover-photo" id="coverPhoto"
                      src="${user.coverPhoto != null ? user.coverPhoto : 'https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'}"
                      alt="Cover Photo">
                 <button class="change-cover-btn" onclick="document.getElementById('coverInput').click()">
-                    <i class="fas fa-camera"></i> ThÃªm áº£nh bÃ¬a
+                    <i class="fas fa-camera"></i> Đổi ảnh bìa
                 </button>
             </c:when>
             <c:otherwise>
-                <!-- Khi xem profile ngÆ°á»i khÃ¡c -->
                 <img class="cover-photo" id="coverPhoto"
                      src="${profileUser.coverPhoto != null ? profileUser.coverPhoto : 'https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'}"
                      alt="Cover Photo">
@@ -197,7 +195,6 @@
         <div class="avatar-wrapper">
             <c:choose>
                 <c:when test="${isOwnProfile}">
-                    <!-- Khi xem profile chÃ­nh mÃ¬nh -->
                     <img class="profile-avatar" id="avatarImage"
                          src="${user.avatar != null ? user.avatar : 'https://dongvat.edu.vn/upload/2025/01/avatar-cho-hai-04.webp'}"
                          alt="User Avatar" onclick="viewImage(this.src)">
@@ -206,7 +203,6 @@
                     </div>
                 </c:when>
                 <c:otherwise>
-                    <!-- Khi xem profile ngÆ°á»i khÃ¡c -->
                     <img class="profile-avatar" id="avatarImage"
                          src="${profileUser.avatar != null ? profileUser.avatar : 'https://dongvat.edu.vn/upload/2025/01/avatar-cho-hai-04.webp'}"
                          alt="User Avatar" onclick="viewImage(this.src)">
@@ -237,20 +233,19 @@
 <!-- NAVIGATION TABS -->
 <div class="nav-tabs">
     <a href="profile?user=${profileUser.username}&tab=overview"
-       class="nav-tab ${tab == 'overview' ? 'active' : ''}">Tá»•ng quan</a>
+       class="nav-tab ${tab == 'overview' ? 'active' : ''}">Tổng quan</a>
     <a href="profile?user=${profileUser.username}&tab=posts"
-       class="nav-tab ${tab == 'posts' ? 'active' : ''}">BÃ i viáº¿t</a>
+       class="nav-tab ${tab == 'posts' ? 'active' : ''}">Bài viết</a>
     <a href="profile?user=${profileUser.username}&tab=comments"
-       class="nav-tab ${tab == 'comments' ? 'active' : ''}">BÃ¬nh luáº­n</a>
+       class="nav-tab ${tab == 'comments' ? 'active' : ''}">Bình luận</a>
 
-    <!-- Chá»‰ hiá»ƒn thá»‹ cÃ¡c tab nÃ y khi xem profile cá»§a chÃ­nh mÃ¬nh -->
     <c:if test="${isOwnProfile}">
         <a href="profile?user=${profileUser.username}&tab=upvoted"
            class="nav-tab ${tab == 'upvoted' ? 'active' : ''}">Upvoted</a>
         <a href="profile?user=${profileUser.username}&tab=downvoted"
            class="nav-tab ${tab == 'downvoted' ? 'active' : ''}">Downvoted</a>
         <a href="profile?user=${profileUser.username}&tab=reported"
-           class="nav-tab ${tab == 'reported' ? 'active' : ''}">BÃ¡o cÃ¡o</a>
+           class="nav-tab ${tab == 'reported' ? 'active' : ''}">Báo cáo</a>
     </c:if>
 
     <!-- Hiển thị tab Khóa học của tôi cho expert -->

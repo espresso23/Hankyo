@@ -178,7 +178,7 @@
                             <li><a class="dropdown-item" href="#">Thông tin cá nhân</a></li>
                             <li><a class="dropdown-item" href="#">Đổi mật khẩu</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#">Đăng xuất</a></li>
+                            <li><a class="dropdown-item" href="logout">Đăng xuất</a></li>
                         </ul>
                     </div>
                 </div>

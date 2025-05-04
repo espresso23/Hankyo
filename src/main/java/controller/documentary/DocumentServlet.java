@@ -2,6 +2,7 @@ package controller.documentary;
 
 import dao.DocumentaryDAO;
 import model.Documentary;
+import model.Learner;
 import model.User;
 
 import javax.servlet.ServletException;
@@ -80,12 +81,11 @@ public class DocumentServlet extends HttpServlet {
     }
 
     private boolean isUserVIP(HttpSession session) {
-        User user = (User) session.getAttribute("user");
-        if (user == null) return false;
+        Learner learner = (Learner) session.getAttribute("learner");
+        if (learner == null) return false;
 
         try {
-            int userID = user.getUserID();
-            int learnerID = documentaryDAO.getLearnerIdByUserId(userID);
+            int learnerID = documentaryDAO.getLearnerIdByUserId(learner.getLearnerID());
             return documentaryDAO.isLearnerVIP(learnerID);
         } catch (Exception e) {
             e.printStackTrace();

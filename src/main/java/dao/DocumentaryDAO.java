@@ -9,22 +9,11 @@ import java.util.*;
 public class DocumentaryDAO {
     private DBConnect dbContext;
 
-    public DocumentaryDAO() {
-        dbContext = DBConnect.getInstance();
-    }
-    public boolean checkConnection() throws Exception {
-        try (Connection conn = dbContext.getConnection()) {
-            return conn != null && !conn.isClosed();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
     public List<String> getAllDistinctTypes() {
         List<String> types = new ArrayList<>();
         String sql = "SELECT DISTINCT type FROM Documentary WHERE type IS NOT NULL ORDER BY type ASC";
 
-        try (Connection conn = dbContext.getConnection();
+         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
@@ -41,7 +30,7 @@ public class DocumentaryDAO {
     public List<Documentary> getAllDocuments() throws SQLException {
         List<Documentary> list = new ArrayList<>();
         String sql = "SELECT * FROM Documentary";
-        try (Connection conn = dbContext.getConnection();
+         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
@@ -62,7 +51,7 @@ public class DocumentaryDAO {
 
     public Documentary getDocumentById(int id) throws SQLException {
         String sql = "SELECT * FROM Documentary WHERE docID = ?";
-        try (Connection conn = dbContext.getConnection();
+         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
@@ -85,7 +74,7 @@ public class DocumentaryDAO {
     public void insertDocument(Documentary doc) throws SQLException {
         String sql = "INSERT INTO Documentary (title, author, source, doc_content, type, audioPath, thumbnail) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = dbContext.getConnection();
+         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, doc.getTitle());
@@ -102,7 +91,7 @@ public class DocumentaryDAO {
     public List<Documentary> getDocumentsByType(String type) throws SQLException {
         List<Documentary> list = new ArrayList<>();
         String sql = "SELECT * FROM Documentary WHERE type = ?";
-        try (Connection conn = dbContext.getConnection();
+         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, type);
@@ -127,7 +116,7 @@ public class DocumentaryDAO {
     public List<String> getAllDocumentTypes() throws SQLException {
         List<String> types = new ArrayList<>();
         String sql = "SELECT DISTINCT type FROM Documentary";
-        try (Connection conn = dbContext.getConnection();
+         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
@@ -140,11 +129,11 @@ public class DocumentaryDAO {
 
 
     //VIP Document
-    public int getLearnerIdByUserId(int userID) throws SQLException {
-        String sql = "SELECT learnerID FROM Learner WHERE userID = ?";
-        try (Connection conn = dbContext.getConnection();
+    public int getLearnerIdByUserId(int learnerID) throws SQLException {
+        String sql = "SELECT learnerID FROM Learner WHERE learnerID = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, userID);
+            stmt.setInt(1, learnerID);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 return rs.getInt("learnerID");
@@ -154,8 +143,8 @@ public class DocumentaryDAO {
     }
 
     public boolean isLearnerVIP(int learnerID) throws SQLException {
-        String sql = "SELECT 1 FROM Vip_User WHERE learnerID = ? AND endDate >= GETDATE() AND vipStatus = 'active'";
-        try (Connection conn = dbContext.getConnection();
+        String sql = "SELECT 1 FROM Vip_User WHERE learnerID = ? AND endDate >= GETDATE() AND status = 'ACTIVE'";
+         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, learnerID);
             ResultSet rs = stmt.executeQuery();

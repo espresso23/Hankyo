@@ -172,7 +172,7 @@ public class ProfileController extends HttpServlet {
             case "courses":
                 Expert expert = expertDAO.getExpertByUserID(profileUser.getUserID());
                 if (expert != null) {
-                    List<Course> courses = courseDAO.getCourseByExpert(expert.getExpertID());
+                    List<Course> courses = courseDAO.getCourseByExpertProfile(expert.getExpertID());
                     request.setAttribute("expertCourses", courses);
                     request.getRequestDispatcher("expert-courses.jsp").forward(request, response);
                 } else {

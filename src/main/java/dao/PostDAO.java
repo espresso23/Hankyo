@@ -22,10 +22,6 @@ public class PostDAO {
     UserDAO userDAO = new UserDAO();
     private DBConnect dbContext;
 
-    public PostDAO() {
-        dbContext = gitnew DBConnect();
-    }
-
     public boolean checkConnection() throws Exception {
         try (Connection conn = dbContext.getConnection()) {
             return conn != null && !conn.isClosed();
@@ -681,7 +677,7 @@ public class PostDAO {
         String updateSql = "UPDATE PostVotes SET VoteType = ? WHERE UserID = ? AND PostID = ?";
         String insertSql = "INSERT INTO PostVotes (UserID, PostID, VoteType) VALUES (?, ?, ?)";
 
-        try (Connection conn = dbContext.getConnection()) {
+        try (Connection conn = DBConnect.getInstance().getConnection()) {
             // Check existing vote
             int existingVote = 0;
             try (PreparedStatement ps = conn.prepareStatement(checkSql)) {

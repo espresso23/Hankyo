@@ -248,7 +248,7 @@
             max-width: 500px;">
       <h2 style="color: #f06595;"><i class="fas fa-lock"></i> Nội dung VIP</h2>
       <p>Bạn cần nâng cấp tài khoản để xem nội dung này.</p>
-      <a href="bundles.jsp" style="
+      <a href="bundles" style="
                 display: inline-block;
                 margin-top: 20px;
                 background-color: #48dbfb;
