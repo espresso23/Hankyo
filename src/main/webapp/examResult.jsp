@@ -303,7 +303,7 @@
                                     <strong>${answer.optionLabel}.</strong> ${answer.answerText}
                                     <c:if test="${result.answerLabel == answer.optionLabel}">
                                         <span class="student-choice">(Đáp án của bạn)</span>
-                                    </c:if>
+                                     </c:if>
                                     <c:if test="${answer.correct}">
                                         <span class="correct-mark">(Đáp án đúng)</span>
                                     </c:if>
