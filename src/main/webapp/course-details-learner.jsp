@@ -393,7 +393,8 @@
 
             <!-- Right Sidebar -->
             <div class="col-lg-4">
-                <div class="card sticky-top" style="top: 80px;">
+                <div class="card sticky-top" style="top: 80px;
+    width: 60vh;">
                     <div class="card-body">
                         <img src="${course.courseImg}" alt="Course Thumbnail" class="img-fluid rounded mb-3">
 

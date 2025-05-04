@@ -16,6 +16,8 @@ body {
     transition: all 0.2s ease;
     border: 1px solid rgba(0, 0, 0, 0.08);
     overflow: hidden;
+    z-index: 1000;
+    cursor: pointer;
 }
 
 .bg-secondary {
@@ -366,6 +368,7 @@ body {
     border: none;
     border-radius: 4px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    width: 100%;
 }
 
 .course-card:hover {
@@ -464,5 +467,29 @@ body {
 
 /* Riêng nút giỏ hàng vẫn nhận sự kiện */
 .card-body .add-to-cart {
+    pointer-events: auto;
+}
+
+/* Khoảng cách giữa các course card */
+
+.col {
+    margin-bottom: 0 !important; /* Đã có gap, không cần margin-bottom */
+}
+
+.course-card {
+    margin-bottom: 0 !important; /* Đã có gap, không cần margin-bottom */
+}
+.hoc-ngay{
+    background-color: #ffb4b4 !important;
+    cursor: pointer;
+    z-index: 200;
+}
+.hoc-ngay:hover{
+    background-color: #f68d8d !important;
+    cursor: pointer;
+    z-index: 3000;
+}
+
+.card-body .hoc-ngay {
     pointer-events: auto;
 }

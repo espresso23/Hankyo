@@ -547,3 +547,13 @@ body {
     }
 }
 
+.card.sticky-top .img-fluid {
+    max-height: 220px;
+    width: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+    display: block;
+    margin: 0 auto 12px auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+

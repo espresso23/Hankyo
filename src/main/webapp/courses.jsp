@@ -70,7 +70,7 @@ pageEncoding="UTF-8"%>
             </div>
 
             <!-- Course List -->
-            <div class="row row-cols-1 row-cols-md-4 g-4">
+            <div class="row row-cols-1 row-cols-md-3 g-4">
                 <c:forEach items="${courses}" var="course">
                     <div class="col">
                         <div class="card course-card h-100" data-id="${course.courseID}" onclick="window.location.href='course-details?courseID=${course.courseID}'">
@@ -123,7 +123,9 @@ pageEncoding="UTF-8"%>
                                         <c:choose>
                                             <c:when test="${not empty sessionScope.learner && course.purchased}">
                                                 <a href="course-details?courseID=${course.courseID}"
-                                                   class="btn btn-success btn-sm">Học ngay</a>
+                                                   class="btn btn-success btn-sm hoc-ngay">
+                                                    <i class="fas fa-play me-2"></i>Học ngay
+                                                </a>
                                             </c:when>
                                             <c:otherwise>
                                                 <button type="button"
@@ -182,10 +184,9 @@ pageEncoding="UTF-8"%>
                                 <c:choose>
                                     <c:when test="${not empty sessionScope.learner && course.purchased}">
                                         <a href="course-details?courseID=${course.courseID}"
-                                           class="tooltip-button start-learning">
-                                            <i class="fas fa-play-circle"></i>
-                                            Học ngay
-                                        </a>
+                                                   class="tooltip-button start-learning">
+                                                    <i class="fas fa-play me-2"></i>Học ngay
+                                                </a>
                                     </c:when>
                                     <c:otherwise>
                                         <button type="button"

@@ -874,6 +874,13 @@
             }
         }, 'json');
     }
+
+    // Reload trang khi đóng modal kết quả bài làm
+    $(document).ready(function() {
+        $('#assignmentResultModal').on('hidden.bs.modal', function () {
+            window.location.reload();
+        });
+    });
 </script>
 </body>
 </html> 

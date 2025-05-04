@@ -465,7 +465,9 @@
   .bot-message ul { margin: 8px 0 8px 20px; padding-left: 18px; }
   .bot-message li { margin-bottom: 4px; }
   .bot-message p { margin-bottom: 8px; }
-
+    #mobileMenuButton * {
+      pointer-events: none;
+    }
   /* Nút nổi bật mở chat bot */
   .floating-chat-btn {
     position: fixed;
@@ -586,6 +588,21 @@
     flex-shrink: 0;
     margin-top: 8px;
   }
+    #mobileMenuButton {
+      position: fixed;
+      right: 20px;
+      top: 10vh;
+      z-index: 1000;
+      cursor: grab;
+      width: 60px;
+      height: 60px;
+      background: #ffb4b4;
+      border-radius: 50%;
+      border: none;
+      box-shadow: 0 2px 8px #aaa;
+    }
+    #mobileMenuButton:active { cursor: grabbing; }
+    #mobileMenuButton * { pointer-events: none; }
 </style>
 
     <script src="${pageContext.request.contextPath}/asset/js/header.js" defer></script>
@@ -625,8 +642,10 @@
     </div>
     <!-- Thêm icon giỏ hàng vào đây -->
     <div class="navbarContent">
-      <a class="nav-link position-relative" href="cart">
-        <i class="fas fa-shopping-cart"></i>
+      <a class="nav-link position-relative" style="top: -3px;" href="cart">
+        <i class="fas fa-shopping-cart" style="
+    scale: 1.5;
+"></i>
         <span class="cart-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
               style="<%=(request.getAttribute("cartItemCount") != null && (Integer)request.getAttribute("cartItemCount") > 0) ? "display: block;" : "display: none;"%>">
           <%= request.getAttribute("cartItemCount") != null ? request.getAttribute("cartItemCount") : 0 %>
@@ -695,7 +714,6 @@
   <div class="mobile-menu-item"><a href="my-courses">Khóa Học Của Tôi</a></div>
   <div class="mobile-menu-item"><a href="dictionary">Từ điển</a></div>
   <div class="mobile-menu-item"><a href="listHonour">Danh Hiệu</a></div>
-  <div class="mobile-menu-item"><a href="chat">Chat</a></div>
 </div>
 
 <!-- Widget chat bot -->
@@ -795,134 +813,6 @@
     if (!isClickInsideMenu && !isClickOnMenuButton) {
       menu.style.display = 'none';
       menuBtn.classList.remove('active');
-    }
-  });
-
-  // Thêm code để xử lý kéo thả
-  document.addEventListener('DOMContentLoaded', function() {
-    const mobileMenuBtn = document.getElementById('mobileMenuButton');
-    const mobileMenu = document.getElementById('mobileVerticalMenu');
-    let isDragging = false;
-    let currentX = 0;
-    let currentY = 0;
-    let initialX = 0;
-    let initialY = 0;
-    let xOffset = 0;
-    let yOffset = 0;
-
-    mobileMenuBtn.addEventListener('mousedown', dragStart);
-    document.addEventListener('mousemove', drag);
-    document.addEventListener('mouseup', dragEnd);
-
-    function dragStart(e) {
-      initialX = e.clientX - xOffset;
-      initialY = e.clientY - yOffset;
-
-      if (e.target === mobileMenuBtn) {
-        isDragging = true;
-        mobileMenuBtn.classList.add('dragging');
-      }
-    }
-
-    function drag(e) {
-      if (isDragging) {
-        e.preventDefault();
-
-        currentX = e.clientX - initialX;
-        currentY = e.clientY - initialY;
-
-        xOffset = currentX;
-        yOffset = currentY;
-
-        mobileMenuBtn.style.left = currentX + 'px';
-        mobileMenuBtn.style.top = currentY + 'px';
-
-        if (mobileMenu.style.display === 'block') {
-          const btnRect = mobileMenuBtn.getBoundingClientRect();
-          const windowWidth = window.innerWidth;
-
-          // Kiểm tra vị trí của button
-          if (btnRect.left < 200) {
-            // Nếu button gần rìa trái, hiển thị menu bên phải
-            mobileMenu.style.left = (btnRect.left + 50) + 'px';
-          } else {
-            // Nếu không, hiển thị menu bên trái
-            mobileMenu.style.left = (btnRect.left - 180) + 'px';
-          }
-          mobileMenu.style.top = (btnRect.top + 25) + 'px';
-        }
-      }
-    }
-
-    function dragEnd(e) {
-      initialX = currentX;
-      initialY = currentY;
-      isDragging = false;
-      mobileMenuBtn.classList.remove('dragging');
-    }
-  });
-
-  // Thêm xử lý cho touch events
-  document.addEventListener('DOMContentLoaded', function() {
-    const mobileMenuBtn = document.getElementById('mobileMenuButton');
-    const mobileMenu = document.getElementById('mobileVerticalMenu');
-    let isDragging = false;
-    let currentX = 0;
-    let currentY = 0;
-    let initialX = 0;
-    let initialY = 0;
-    let xOffset = 0;
-    let yOffset = 0;
-
-    mobileMenuBtn.addEventListener('touchstart', dragStart);
-    document.addEventListener('touchmove', drag);
-    document.addEventListener('touchend', dragEnd);
-
-    function dragStart(e) {
-      initialX = e.touches[0].clientX - xOffset;
-      initialY = e.touches[0].clientY - yOffset;
-
-      if (e.target === mobileMenuBtn) {
-        isDragging = true;
-        mobileMenuBtn.classList.add('dragging');
-      }
-    }
-
-    function drag(e) {
-      if (isDragging) {
-        e.preventDefault();
-
-        currentX = e.touches[0].clientX - initialX;
-        currentY = e.touches[0].clientY - initialY;
-
-        xOffset = currentX;
-        yOffset = currentY;
-
-        mobileMenuBtn.style.left = currentX + 'px';
-        mobileMenuBtn.style.top = currentY + 'px';
-
-        if (mobileMenu.style.display === 'block') {
-          const btnRect = mobileMenuBtn.getBoundingClientRect();
-          const windowWidth = window.innerWidth;
-
-          // Kiểm tra vị trí của button
-          if (btnRect.left < 200) {
-            // Nếu button gần rìa trái, hiển thị menu bên phải
-            mobileMenu.style.left = (btnRect.left + 50) + 'px';
-          } else {
-            // Nếu không, hiển thị menu bên trái
-            mobileMenu.style.left = (btnRect.left - 180) + 'px';
-          }
-          mobileMenu.style.top = (btnRect.top + 25) + 'px';
-        }
-      }
-    }
-
-    function dragEnd(e) {
-      initialX = currentX;
-      initialY = currentY;
-      isDragging = false;
-      mobileMenuBtn.classList.remove('dragging');
     }
   });
 
@@ -1084,6 +974,128 @@
       // Sau 1-2 giây, fetch lại từ server để đồng bộ
       setTimeout(() => updateAIUsageInfo(true), 1200);
     }, 200);
+  });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('mobileMenuButton');
+    const menu = document.getElementById('mobileVerticalMenu');
+    let isDragging = false, startX = 0, startY = 0, offsetX = 0, offsetY = 0;
+
+    // Đặt lại vị trí nếu có lưu trước đó
+    let savedLeft = localStorage.getItem('mobileMenuBtnLeft');
+    let savedTop = localStorage.getItem('mobileMenuBtnTop');
+    if (savedLeft && savedTop) {
+      btn.style.left = savedLeft;
+      btn.style.top = savedTop;
+    }
+
+    function updateMenuPosition() {
+      const btnRect = btn.getBoundingClientRect();
+      const menuWidth = menu.offsetWidth || 220;
+      const winWidth = window.innerWidth;
+      // Nếu nút gần rìa phải thì menu hiện bên trái, ngược lại hiện bên phải
+      if (btnRect.left + btnRect.width / 2 < winWidth / 2) {
+        menu.style.left = (btnRect.right + 8) + 'px';
+        menu.style.right = '';
+      } else {
+        menu.style.left = (btnRect.left - menuWidth - 8) + 'px';
+        menu.style.right = '';
+      }
+      menu.style.top = btnRect.top + 'px';
+    }
+
+    // Kéo thả
+    btn.addEventListener('mousedown', function(e) {
+      if (e.button !== 0) return;
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      offsetX = btn.offsetLeft;
+      offsetY = btn.offsetTop;
+      document.body.style.userSelect = 'none';
+    });
+    document.addEventListener('mousemove', function(e) {
+      if (!isDragging) return;
+      let newLeft = offsetX + (e.clientX - startX);
+      let newTop = offsetY + (e.clientY - startY);
+      // Giới hạn trong màn hình
+      newLeft = Math.max(0, Math.min(window.innerWidth - btn.offsetWidth, newLeft));
+      newTop = Math.max(0, Math.min(window.innerHeight - btn.offsetHeight, newTop));
+      btn.style.left = newLeft + 'px';
+      btn.style.top = newTop + 'px';
+      updateMenuPosition();
+    });
+    document.addEventListener('mouseup', function(e) {
+      if (isDragging) {
+        isDragging = false;
+        localStorage.setItem('mobileMenuBtnLeft', btn.style.left);
+        localStorage.setItem('mobileMenuBtnTop', btn.style.top);
+        document.body.style.userSelect = '';
+      }
+    });
+    // Hỗ trợ cảm ứng
+    btn.addEventListener('touchstart', function(e) {
+      isDragging = true;
+      const touch = e.touches[0];
+      startX = touch.clientX;
+      startY = touch.clientY;
+      offsetX = btn.offsetLeft;
+      offsetY = btn.offsetTop;
+    });
+    document.addEventListener('touchmove', function(e) {
+      if (!isDragging) return;
+      const touch = e.touches[0];
+      let newLeft = offsetX + (touch.clientX - startX);
+      let newTop = offsetY + (touch.clientY - startY);
+      newLeft = Math.max(0, Math.min(window.innerWidth - btn.offsetWidth, newLeft));
+      newTop = Math.max(0, Math.min(window.innerHeight - btn.offsetHeight, newTop));
+      btn.style.left = newLeft + 'px';
+      btn.style.top = newTop + 'px';
+      updateMenuPosition();
+    });
+    document.addEventListener('touchend', function(e) {
+      if (isDragging) {
+        isDragging = false;
+        localStorage.setItem('mobileMenuBtnLeft', btn.style.left);
+        localStorage.setItem('mobileMenuBtnTop', btn.style.top);
+      }
+    });
+
+    // Hiển thị/ẩn menu khi click nút
+    let menuVisible = false;
+    btn.addEventListener('click', function(e) {
+      if (isDragging) return; // Không mở menu khi vừa kéo xong
+      menuVisible = !menuVisible;
+      if (menuVisible) {
+        menu.style.display = 'block';
+        updateMenuPosition();
+        setTimeout(() => {
+          document.addEventListener('mousedown', handleClickOutside);
+          document.addEventListener('touchstart', handleClickOutside);
+        }, 0);
+      } else {
+        menu.style.display = 'none';
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('touchstart', handleClickOutside);
+      }
+    });
+
+    function handleClickOutside(e) {
+      if (!menu.contains(e.target) && !btn.contains(e.target)) {
+        menu.style.display = 'none';
+        menuVisible = false;
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('touchstart', handleClickOutside);
+      }
+    }
+
+    // Cập nhật vị trí menu khi resize hoặc scroll
+    window.addEventListener('resize', function() {
+      if (menuVisible) updateMenuPosition();
+    });
+    window.addEventListener('scroll', function() {
+      if (menuVisible) updateMenuPosition();
+    });
   });
 </script>
 </body>
