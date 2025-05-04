@@ -2,6 +2,7 @@
 <html lang="en">
 @page {isErrorPage="true"}
 <head>
+    <link rel="icon" href="${pageContext.request.contextPath}/asset/png/icon/logo.jpg">
     <meta charset="UTF-8">
     <title>404 Page</title>
   <link rel="stylesheet" href="404.css">

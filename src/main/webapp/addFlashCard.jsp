@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
+    <link rel="icon" href="${pageContext.request.contextPath}/asset/png/icon/logo.jpg">
     <title>Thêm Flashcard Mới</title>
     <style>
         * {

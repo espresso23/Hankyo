@@ -2,6 +2,7 @@
 <%@ page import="java.util.*, model.Exam" %>
 <html>
 <head>
+    <link rel="icon" href="${pageContext.request.contextPath}/asset/png/icon/logo.jpg">
     <title>Thư viện đề thi</title>
     <style>
         :root {

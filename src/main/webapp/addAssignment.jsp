@@ -5,6 +5,7 @@
 %>
 <html>
 <head>
+    <link rel="icon" href="${pageContext.request.contextPath}/asset/png/icon/logo.jpg">
     <title>Add Assignment Questions</title>
 </head>
 <body>

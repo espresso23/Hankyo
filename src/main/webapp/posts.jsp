@@ -15,6 +15,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <link rel="icon" href="${pageContext.request.contextPath}/asset/png/icon/logo.jpg">
     <meta charset="UTF-8">
     <title>User Profile - Posts</title>
     <link rel="stylesheet" href="asset/css/sidebar.css">

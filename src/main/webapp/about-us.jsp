@@ -3,6 +3,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <link rel="icon" href="${pageContext.request.contextPath}/asset/png/icon/logo.jpg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -129,7 +130,7 @@
     <div class="container">
         <h2>Dùng thử miễn phí ngay</h2>
         <p>Khám phá ngay khóa học tiếng Hàn của chúng tôi và bắt đầu học mà không cần lo lắng về chi phí!</p>
-        <a href="#" class="cta-button">Bắt đầu ngay</a>
+        <a href="home.jsp" class="cta-button">Bắt đầu ngay</a>
 
     </div>
 </section>

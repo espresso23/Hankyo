@@ -2,9 +2,10 @@
 <%@ page isELIgnored="false" %>
 <html>
 <head>
-  <title>Title</title>
-  <link rel="stylesheet" href="asset/css/header.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" href="${pageContext.request.contextPath}/asset/png/icon/logo.jpg">
+    <title>Title</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/asset/css/header.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <script src="asset/js/header.js" defer></script>
   <meta charset="UTF-8">
   <style>
@@ -586,6 +587,7 @@
   }
 </style>
 
+    <script src="${pageContext.request.contextPath}/asset/js/header.js" defer></script>
 </head>
 <body>
 <header>
@@ -594,22 +596,18 @@
     <div class="button-box">
       <span class="button-elem">
         <svg viewBox="0 0 46 40" xmlns="http://www.w3.org/2000/svg">
-          <path
-                  d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"
-          ></path>
+          <path d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"></path>
         </svg>
       </span>
       <span class="button-elem">
         <svg viewBox="0 0 46 40">
-          <path
-                  d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"
-          ></path>
+          <path d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"></path>
         </svg>
       </span>
     </div>
   </button>
 
-  <img class="logo" src="${pageContext.request.contextPath}/asset/png/loginPage/logo.png" alt="Logo" onclick="window.location.href='courseHeader.jsp'">
+  <img class="logo" src="${pageContext.request.contextPath}/asset/png/loginPage/logo.png" alt="Logo" onclick="window.location.href='home.jsp'">
   <div class="navbarContainer">
     <div class="navbarContent"><a href="courses">Khóa Học</a></div>
     <div class="navbarContent"><a href="/about.html">Giảng Viên</a></div>
@@ -618,7 +616,7 @@
     <div class="navbarContent"><a href="listHonour">Danh Hiệu</a></div>
     <div class="navbarContent"><a href="addFlashCard">Tài Liệu</a></div>
     <div class="navbarContent"><a href="dictionary">Thi Thử</a></div>
-    <div class="navbarContent"><a href="/about-us.html">Về Chúng Tôi</a></div>
+    <div class="navbarContent"><a href="about-us.jsp">Về Chúng Tôi</a></div>
     <div class="navbarContent"><a href="${pageContext.request.contextPath}/chat/<%= session.getAttribute("userID") %>">Phòng Chat</a></div>
     <!-- Thêm nút chat bot -->
     <div class="navbarContent">
@@ -654,6 +652,10 @@
 
     <div class="user-info">
       <div class="user-info-text">
+        <span class="username <%= request.getAttribute("equippedGradientStart") != null ? "gradient" : "" %>"
+              style="<%= request.getAttribute("equippedGradientStart") != null ? String.format("background-image: linear-gradient(45deg, %s, %s)", request.getAttribute("equippedGradientStart"), request.getAttribute("equippedGradientEnd")) : "" %>">
+          Xin chào, <%= session.getAttribute("username") %>!
+        </span>
         <span class="username"
         <% if (request.getAttribute("equippedGradientStart") != null && request.getAttribute("equippedGradientEnd") != null) { %>
             style="color: transparent; background: linear-gradient(45deg, <%= request.getAttribute("equippedGradientStart") %>, <%= request.getAttribute("equippedGradientEnd") %>); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;"
@@ -669,7 +671,7 @@
       <%
         String avatar = (String) session.getAttribute("avatar");
       %>
-      <img class="avatar" src="${pageContext.request.contextPath}/<%= avatar != null ? avatar : "asset/png/avatar/monkey.jpg" %>"
+      <img class="user-avatar" src="${pageContext.request.contextPath}/<%= avatar != null ? avatar : "asset/png/avatar/monkey.jpg" %>"
            onclick="togglePopup()"
            onerror="this.src='${pageContext.request.contextPath}/asset/png/avatar/monkey.jpg'">
     </div>
@@ -680,7 +682,6 @@
 <div class="popupContainer" id="popupContainer">
   <div class="profile">
     <div class="profileContent"><a href="${pageContext.request.contextPath}/update-profile">Tài Khoản</a></div>
-
     <div class="profileContent">
       <form action="${pageContext.request.contextPath}/logout" method="post">
         <button type="submit" class="logout-btn">Đăng Xuất</button>
@@ -726,7 +727,7 @@
       </div>
       <form id="chatForm" class="mt-3">
         <div class="input-group">
-          <input type="text" id="userInput" class="form-control" 
+          <input type="text" id="userInput" class="form-control"
                  placeholder="Nhập câu hỏi của bạn..." required>
           <button type="submit" class="btn">
             <i class="fas fa-paper-plane"></i> Gửi
@@ -926,7 +927,6 @@
       isDragging = false;
       mobileMenuBtn.classList.remove('dragging');
     }
-  });
 
   // Thêm hàm mở chat bot (chỉ mở khi click nút AI Chat)
   function toggleChatWidget() {
@@ -940,10 +940,10 @@
   // Thêm xử lý form chat
   document.getElementById('chatForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
+
     const userInput = document.getElementById('userInput');
     const message = userInput.value.trim();
-    
+
     if (message) {
       // Hiển thị tin nhắn của người dùng
       appendMessage(message, 'user');
@@ -1042,6 +1042,13 @@
     userInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     userInput.focus();
   }
+    mobileMenuBtn.addEventListener('touchstart', dragStart, false);
+    mobileMenuBtn.addEventListener('mousedown', dragStart, false);
+    document.addEventListener('touchmove', drag, false);
+    document.addEventListener('mousemove', drag, false);
+    document.addEventListener('touchend', dragEnd, false);
+    document.addEventListener('mouseup', dragEnd, false);
+  });
 </script>
 </body>
 </html>

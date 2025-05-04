@@ -1,4 +1,4 @@
-body{
+body {
     overflow-x: hidden;
 }
 .container-fluid {
@@ -7,8 +7,19 @@ body{
     display: grid;
     grid-template-columns: repeat(12, 1fr);
 }
-.isHidden{
+.isHidden {
     visibility: hidden;
+}
+.isHidden.show {
+    visibility: visible;
+}
+.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
 }
 /* Form đăng ký */
 .signUp-form {
@@ -27,8 +38,7 @@ body{
     margin-left: auto;
     height: 80%;
 }
-
-.button{
+.button {
     margin-top: 10px;
     display: flex;
     justify-content: center;
@@ -53,10 +63,10 @@ body{
     margin-top: 2rem;
     grid-column: 2/7;
 }
-.loginGirl img{
+.loginGirl img {
     width: 90%;
 }
-.signUp-form h2{
+.signUp-form h2 {
     display: block;
     margin: 0 auto;
 }
@@ -74,21 +84,17 @@ body{
     transition: background 0.3s ease;
     align-self: center;
 }
-
 .signUp-form button:hover {
     background-color: #0056b3;
-
 }
-
 .gender-selection {
-    display: flex; /* Đặt các phần tử trên cùng một dòng */
-    gap: 20px; /* Khoảng cách giữa các radio */
-    align-items: center; /* Căn giữa theo chiều dọc */
+    display: flex;
+    gap: 20px;
+    align-items: center;
 }
-
 .gender-selection label {
     display: flex;
     align-items: flex-start;
-    gap: 5px; /* Khoảng cách giữa radio và chữ */
-    cursor: pointer; /* Biến con trỏ thành hình bàn tay khi hover */
+    gap: 5px;
+    cursor: pointer;
 }
