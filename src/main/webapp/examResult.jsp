@@ -434,11 +434,30 @@ $(document).ready(function() {
         currentPopover = popover;
         // Lấy dữ liệu câu hỏi
         const questionText = questionCard.find('p').first().text().replace(/^Câu \d+:\s*/, '');
-        const userAnswer = questionCard.find('span').eq(0).text().trim();
-        const correctAnswer = questionCard.find('.answer-correct').text().trim();
+        // Lấy các phương án trả lời
+        const answers = [];
+        questionCard.find('.answer-item').each(function() {
+            const label = $(this).find('strong').first().text().replace('.', '').trim();
+            const text = $(this).clone().children().remove().end().text().replace(/^\s*[A-Z]\./, '').trim();
+            answers.push({label, text});
+        });
+        // Lấy đáp án đúng
+        let correctAnswer = '';
+        questionCard.find('.answer-item').each(function() {
+            if($(this).hasClass('correct-answer')) {
+                correctAnswer = $(this).find('strong').first().text().replace('.', '').trim();
+            }
+        });
+        // Lấy đáp án của người dùng
+        let userAnswer = '';
+        questionCard.find('.answer-item').each(function() {
+            if($(this).find('.student-choice').length > 0) {
+                userAnswer = $(this).find('strong').first().text().replace('.', '').trim();
+            }
+        });
         const questionData = {
             questionText: questionText,
-            answers: [],
+            answers: answers,
             correctAnswer: correctAnswer,
             userAnswer: userAnswer
         };
