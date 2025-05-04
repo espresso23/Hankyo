@@ -32,7 +32,6 @@ header {
     transform: scale(1.1);
 }
 
-/* User avatar styles */
 .user-avatar {
     width: 40px;
     height: 40px;
@@ -43,6 +42,10 @@ header {
     border: 2px solid transparent;
 }
 
+.user-avatar:hover {
+    border: 2px solid #007BFF;
+    transform: scale(1.05);
+}
 .user-avatar:hover {
     border: 2px solid #007BFF;
     transform: scale(1.05);

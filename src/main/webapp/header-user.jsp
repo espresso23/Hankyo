@@ -6,7 +6,7 @@
     <title>Title</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/asset/css/header.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <script src="asset/js/header.js" defer></script>
+  <script src="asset/js/header.js"></script>
   <meta charset="UTF-8">
   <style>
     .button {
@@ -656,11 +656,6 @@
               style="<%= request.getAttribute("equippedGradientStart") != null ? String.format("background-image: linear-gradient(45deg, %s, %s)", request.getAttribute("equippedGradientStart"), request.getAttribute("equippedGradientEnd")) : "" %>">
           Xin chào, <%= session.getAttribute("username") %>!
         </span>
-        <span class="username"
-        <% if (request.getAttribute("equippedGradientStart") != null && request.getAttribute("equippedGradientEnd") != null) { %>
-            style="color: transparent; background: linear-gradient(45deg, <%= request.getAttribute("equippedGradientStart") %>, <%= request.getAttribute("equippedGradientEnd") %>); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;"
-        <% } %>
-        >Xin chào, <%= session.getAttribute("username") %>!</span>
         <% if (request.getAttribute("equippedHonourName") != null && request.getAttribute("equippedHonourImage") != null) { %>
         <span class="honour-name"><%= request.getAttribute("equippedHonourName") %></span>
         <% } %>
@@ -927,6 +922,7 @@
       isDragging = false;
       mobileMenuBtn.classList.remove('dragging');
     }
+  });
 
   // Thêm hàm mở chat bot (chỉ mở khi click nút AI Chat)
   function toggleChatWidget() {
@@ -1042,13 +1038,6 @@
     userInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     userInput.focus();
   }
-    mobileMenuBtn.addEventListener('touchstart', dragStart, false);
-    mobileMenuBtn.addEventListener('mousedown', dragStart, false);
-    document.addEventListener('touchmove', drag, false);
-    document.addEventListener('mousemove', drag, false);
-    document.addEventListener('touchend', dragEnd, false);
-    document.addEventListener('mouseup', dragEnd, false);
-  });
 </script>
 </body>
 </html>
