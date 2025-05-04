@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="asset/css/header.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <script src="asset/js/header.js" defer></script>
+  <meta charset="UTF-8">
   <style>
     .button {
       display: block;
@@ -378,15 +379,7 @@
 
   .username {
     font-weight: bold;
-  <% if (request.getAttribute("equippedGradientStart") != null && request.getAttribute("equippedGradientEnd") != null) { %>
-    color: transparent;
-    background: linear-gradient(45deg, <%= request.getAttribute("equippedGradientStart") %>, <%= request.getAttribute("equippedGradientEnd") %>);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  <% } else { %>
     color: #333;
-  <% } %>
   }
 
   .honour-name {
@@ -412,6 +405,184 @@
     height: 40px;
     border-radius: 50%;
     cursor: pointer;
+  }
+
+  /* Thêm style cho chat bot */
+  .chat-container {
+    overflow-y: auto;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    height: auto;
+  }
+  .message {
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    border-radius: 15px;
+    max-width: 80%;
+  }
+  .user-message {
+    background-color: #007bff;
+    color: white;
+    margin-left: auto;
+  }
+  .bot-message {
+    background-color: #e9ecef;
+    color: black;
+    margin-right: auto;
+  }
+  .typing-indicator {
+    display: none;
+    padding: 10px 15px;
+    background-color: #e9ecef;
+    border-radius: 15px;
+    margin-right: auto;
+    max-width: 80%;
+  }
+  .typing-indicator span {
+    height: 8px;
+    width: 8px;
+    background-color: #6c757d;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 3px;
+    animation: typing 1s infinite;
+  }
+  .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typing {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+  .modal-dialog {
+    max-width: 800px;
+  }
+
+  /* Thêm style cho nội dung bot-message */
+  .bot-message strong { color: #007bff; }
+  .bot-message ul { margin: 8px 0 8px 20px; padding-left: 18px; }
+  .bot-message li { margin-bottom: 4px; }
+  .bot-message p { margin-bottom: 8px; }
+
+  /* Nút nổi bật mở chat bot */
+  .floating-chat-btn {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    box-shadow: 0 4px 16px rgba(108,180,255,0.18);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .floating-chat-btn:hover {
+    box-shadow: 0 8px 24px rgba(255,143,163,0.25);
+    transform: translateY(-3px) scale(1.07);
+  }
+  .floating-chat-btn img {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #6cb4ff;
+    box-shadow: 0 2px 8px rgba(108,180,255,0.10);
+  }
+  /* Widget chat bot nhỏ gọn & hiệu ứng mượt */
+  #chatBotWidget {
+    overflow: hidden;
+    position: fixed;
+    bottom: 100px;
+    right: 30px;
+    width: 400px;
+    max-width: 188vw;
+    height: 480px;
+    max-height: 70vh;
+    background: #f8f9fa;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(108, 180, 255, 0.10);
+    z-index: 3000;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transform: scale(0.8) translateY(40px);
+    pointer-events: none;
+    transition: opacity 0.25s cubic-bezier(.4,0,.2,1), transform 0.25s cubic-bezier(.4,0,.2,1);
+  }
+  #chatBotWidget.open {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    pointer-events: auto;
+  }
+  @media (max-width: 600px) {
+    #chatBotWidget {
+      width: 95vw;
+      height: 60vh;
+      right: 2vw;
+      bottom: 2vh;
+      min-width: 0;
+      max-width: 100vw;
+      max-height: 90vh;
+    }
+  }
+  #chatBotWidget .chatbot-header {
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: linear-gradient(90deg, #a8edea 0%, #fed6e3 100%);
+    border-radius: 24px 24px 0 0;
+    padding: 18px 18px 8px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-height: 25vh;
+  }
+  #chatBotWidget .close-btn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    color: #888;
+    cursor: pointer;
+  }
+  #chatBotWidget .modal-body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    padding: 0 18px 18px 18px;
+    overflow: hidden;
+    height: 100%;
+    max-height: 100%;
+  }
+  .chat-widget-body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    height: 100%;
+    max-height: 100%;
+  }
+  .chat-container {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    min-height: 0;
+    background-color: #fff;
+    border-radius: 16px;
+    margin-bottom: 0;
+    box-shadow: 0 2px 8px rgba(108,180,255,0.06);
+    padding: 18px;
+  }
+  #chatForm {
+    flex-shrink: 0;
+    margin-top: 8px;
   }
 </style>
 
@@ -442,21 +613,26 @@
   <div class="navbarContainer">
     <div class="navbarContent"><a href="courses">Khóa Học</a></div>
     <div class="navbarContent"><a href="/about.html">Giảng Viên</a></div>
-    <div class="navbarContent"><a href="quizlet">Cộng Đồng</a></div>
-    <div class="navbarContent"><a href="library">Đề thi</a></div>
-    <div class="navbarContent"><a href="entranceTest">Test Level</a></div>
+    <div class="navbarContent"><a href="blog">Cộng Đồng</a></div>
+    <div class="navbarContent"><a href="exam">Đề thi</a></div>
     <div class="navbarContent"><a href="listHonour">Danh Hiệu</a></div>
     <div class="navbarContent"><a href="addFlashCard">Tài Liệu</a></div>
     <div class="navbarContent"><a href="dictionary">Thi Thử</a></div>
     <div class="navbarContent"><a href="/about-us.html">Về Chúng Tôi</a></div>
     <div class="navbarContent"><a href="${pageContext.request.contextPath}/chat/<%= session.getAttribute("userID") %>">Phòng Chat</a></div>
+    <!-- Thêm nút chat bot -->
+    <div class="navbarContent">
+      <button class="floating-chat-btn" onclick="toggleChatWidget()" title="Chat với AI">
+        <img src="asset/png/icon/chat-logo.png" alt="Chat Bot">
+      </button>
+    </div>
     <!-- Thêm icon giỏ hàng vào đây -->
     <div class="navbarContent">
       <a class="nav-link position-relative" href="cart">
         <i class="fas fa-shopping-cart"></i>
         <span class="cart-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-              style="display: ${cartItemCount > 0 ? 'block' : 'none'}">
-          ${cartItemCount}
+              style="<%=(request.getAttribute("cartItemCount") != null && (Integer)request.getAttribute("cartItemCount") > 0) ? "display: block;" : "display: none;"%>">
+          <%= request.getAttribute("cartItemCount") != null ? request.getAttribute("cartItemCount") : 0 %>
         </span>
       </a>
     </div>
@@ -478,7 +654,11 @@
 
     <div class="user-info">
       <div class="user-info-text">
-        <span class="username">Xin chào, <%= session.getAttribute("username") %>!</span>
+        <span class="username"
+        <% if (request.getAttribute("equippedGradientStart") != null && request.getAttribute("equippedGradientEnd") != null) { %>
+            style="color: transparent; background: linear-gradient(45deg, <%= request.getAttribute("equippedGradientStart") %>, <%= request.getAttribute("equippedGradientEnd") %>); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;"
+        <% } %>
+        >Xin chào, <%= session.getAttribute("username") %>!</span>
         <% if (request.getAttribute("equippedHonourName") != null && request.getAttribute("equippedHonourImage") != null) { %>
         <span class="honour-name"><%= request.getAttribute("equippedHonourName") %></span>
         <% } %>
@@ -520,6 +700,41 @@
   <div class="mobile-menu-item"><a href="my-courses">Khóa Học Của Tôi</a></div>
   <div class="mobile-menu-item"><a href="dictionary">Từ điển</a></div>
   <div class="mobile-menu-item"><a href="chat">Chat</a></div>
+</div>
+
+<!-- Widget chat bot -->
+<div id="chatBotWidget">
+  <div class="chatbot-header">
+    <img src="asset/png/icon/chat-logo.png" class="chatbot-avatar" alt="Chat Bot" style="width: 20%; ">
+    <div>
+      <div class="chatbot-greeting">Hi, <%= session.getAttribute("username") != null ? session.getAttribute("username") : "bạn" %>!</div>
+      <div class="chatbot-sub">Tôi có thể giúp gì cho bạn?</div>
+    </div>
+    <button class="close-btn" onclick="toggleChatWidget()">&times;</button>
+  </div>
+  <div class="modal-body">
+    <div class="chat-widget-body">
+      <div class="chat-container" id="chatContainer">
+        <div class="message bot-message">
+          Xin chào! Tôi là trợ lý AI của Hankyo. Tôi có thể giúp gì cho bạn?
+        </div>
+        <div class="typing-indicator" id="typingIndicator">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+      <form id="chatForm" class="mt-3">
+        <div class="input-group">
+          <input type="text" id="userInput" class="form-control" 
+                 placeholder="Nhập câu hỏi của bạn..." required>
+          <button type="submit" class="btn">
+            <i class="fas fa-paper-plane"></i> Gửi
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -713,11 +928,120 @@
     }
   });
 
-  // Debug request attributes
-  console.log("equippedGradientStart: <%= request.getAttribute("equippedGradientStart") %>");
-  console.log("equippedGradientEnd: <%= request.getAttribute("equippedGradientEnd") %>");
-  console.log("equippedHonourName: <%= request.getAttribute("equippedHonourName") %>");
-  console.log("equippedHonourImage: <%= request.getAttribute("equippedHonourImage") %>");
+  // Thêm hàm mở chat bot (chỉ mở khi click nút AI Chat)
+  function toggleChatWidget() {
+    const widget = document.getElementById('chatBotWidget');
+    widget.classList.toggle('open');
+  }
+
+  // Lấy contextPath từ JSP để fetch đúng đường dẫn
+  var contextPath = '<%= request.getContextPath() %>';
+
+  // Thêm xử lý form chat
+  document.getElementById('chatForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const userInput = document.getElementById('userInput');
+    const message = userInput.value.trim();
+    
+    if (message) {
+      // Hiển thị tin nhắn của người dùng
+      appendMessage(message, 'user');
+      userInput.value = '';
+
+      // Hiển thị indicator đang gõ
+      showTypingIndicator();
+
+      try {
+        // Gọi API Gemini bằng POST
+        const response = await fetch(contextPath + '/gemini/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: 'message=' + encodeURIComponent(message)
+        });
+
+        const data = await response.json();
+
+        // Ẩn indicator đang gõ
+        hideTypingIndicator();
+
+        // Hiển thị phản hồi từ bot hoặc lỗi
+        if (data.response) {
+          appendMessage(data.response, 'bot');
+        } else if (data.error) {
+          appendMessage('Lỗi: ' + data.error, 'bot');
+        } else {
+          appendMessage('Không nhận được phản hồi từ AI.', 'bot');
+        }
+
+      } catch (error) {
+        hideTypingIndicator();
+        appendMessage('Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại sau.', 'bot');
+        console.error('Error:', error);
+      }
+    }
+  });
+
+  // Format markdown đơn giản sang HTML cho bot
+  function formatAIMessage(text, sender) {
+    if (sender !== 'bot') return text;
+    let html = text;
+    // In đậm **text**
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    // Danh sách bullet: * đầu dòng
+    html = html.replace(/(^|<br>|\n)\* (.+?)(?=<br>|$)/g, '$1<li>$2</li>');
+    // Nếu có <li> thì bọc bằng <ul>
+    if (html.includes('<li>')) {
+      html = html.replace(/((<li>.*?<\/li>\s*)+)/g, '<ul>$1</ul>');
+    }
+    // Xuống dòng kép thành đoạn
+    html = html.replace(/(\r?\n){2,}/g, '</p><p>');
+    // Xuống dòng đơn thành <br>
+    html = html.replace(/(\r?\n)/g, '<br>');
+    // Bọc toàn bộ bằng <p>
+    html = '<p>' + html + '</p>';
+    return html;
+  }
+
+  function scrollChatToBottom() {
+    const chatContainer = document.getElementById('chatContainer');
+    if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+
+  function appendMessage(text, sender) {
+    const chatContainer = document.getElementById('chatContainer');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message ' + sender + '-message';
+    messageDiv.innerHTML = formatAIMessage(text, sender);
+    const typingDiv = document.getElementById('typingIndicator');
+    if (typingDiv && typingDiv.style.display !== 'none') {
+      chatContainer.insertBefore(messageDiv, typingDiv);
+    } else {
+      chatContainer.appendChild(messageDiv);
+    }
+    scrollChatToBottom();
+    const userInput = document.getElementById('userInput');
+    userInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    userInput.focus();
+  }
+
+  function showTypingIndicator() {
+    const chatContainer = document.getElementById('chatContainer');
+    const typingDiv = document.getElementById('typingIndicator');
+    chatContainer.appendChild(typingDiv); // Đảm bảo luôn ở cuối
+    typingDiv.style.display = 'block';
+    scrollChatToBottom();
+  }
+
+  function hideTypingIndicator() {
+    document.getElementById('typingIndicator').style.display = 'none';
+    scrollChatToBottom();
+    const userInput = document.getElementById('userInput');
+    userInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    userInput.focus();
+  }
 </script>
 </body>
 </html>

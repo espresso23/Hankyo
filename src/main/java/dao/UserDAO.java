@@ -137,7 +137,7 @@ public class UserDAO {
 
     public boolean saveUserSocialMedia(User user) {
         String checkEmailQuery = "SELECT COUNT(*) FROM [User] WHERE gmail = ?";
-        String saveUserQuery = "INSERT INTO [User] (fullName, gmail, socialID, role, dateCreate, avatar, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String saveUserQuery = "INSERT INTO [User] (fullName, gmail, socialID, role, dateCreate, avatar, status) VALUES (?, ?, ?, ?, GETDATE(), ?, ?)";
         String insertLearnerQuery = "INSERT INTO Learner (userID, hankyoPoint, honour_ownedID) VALUES (?, ?, ?)";
 
         try (Connection con = DBConnect.getInstance().getConnection()) {
@@ -160,9 +160,8 @@ public class UserDAO {
                 ps.setString(2, user.getGmail());
                 ps.setString(3, user.getSocialID());
                 ps.setString(4, "Learner");
-                ps.setDate(5, new Date(new java.util.Date().getTime()));
-                ps.setString(6, user.getAvatar());
-                ps.setString(7, "active");
+                ps.setString(5, user.getAvatar());
+                ps.setString(6, "active");
                 
                 if (ps.executeUpdate() == 0) {
                     throw new SQLException("Creating user failed, no rows affected.");

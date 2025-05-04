@@ -295,6 +295,129 @@
                 min-width: 0;
             }
         }
+
+        /* Thêm CSS cho AI Help */
+        .ai-help-btn {
+            background: lightpink !important;
+            color: white !important;
+            border: none !important;
+            padding: 6px 12px !important;
+            border-radius: 6px !important;
+            font-size: 0.9rem !important;
+            transition: all 0.2s !important;
+        }
+        .ai-help-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(108, 180, 255, 0.2);
+        }
+        
+        .ai-help-btn i {
+            margin-right: 4px;
+        }
+        
+        .ai-analysis {
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+        
+        .analysis-content {
+            line-height: 1.6;
+            color: #343a40;
+        }
+        
+        .analysis-content p {
+            margin-bottom: 12px;
+        }
+        
+        #aiHelpModal .modal-content {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        #aiHelpModal .modal-header {
+            background: linear-gradient(90deg, #ff8fa3, #6cb4ff);
+            color: white;
+            border-radius: 12px 12px 0 0;
+            padding: 16px 20px;
+        }
+        
+        #aiHelpModal .modal-body {
+            padding: 20px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading-spinner i {
+            font-size: 24px;
+            color: #ff8fa3;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* AI Help Popover */
+        .ai-help-popover {
+            position: absolute;
+            z-index: 1050;
+            min-width: 320px;
+            max-width: 60%;
+            background: #fff;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            padding: 18px 20px 14px 20px;
+            animation: fadeInPop 0.25s cubic-bezier(.4,0,.2,1);
+            transition: opacity 0.2s;
+            color: #333;
+        }
+        @keyframes fadeInPop {
+            from { opacity: 0; transform: translateY(10px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .ai-help-popover .ai-help-title {
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .ai-help-popover .ai-help-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: #aaa;
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            cursor: pointer;
+            transition: color 0.15s;
+        }
+        .ai-help-popover .ai-help-close:hover {
+            color: #ff8fa3;
+        }
+        .ai-help-popover .ai-help-content {
+            min-height: 40px;
+            font-size: 0.98rem;
+            line-height: 1.6;
+        }
+        .ai-help-popover .ai-help-loading {
+            text-align: center;
+            color: #aaa;
+            padding: 18px 0 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -449,5 +572,99 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Thêm nút AI Help vào mỗi câu hỏi
+    $('.question-header').each(function() {
+        const questionNumber = $(this).closest('.question-card').find('.quest-text').text();
+        $(this).append(`
+            <button class="btn btn-sm ai-help-btn" data-question-number="${questionNumber}">
+                <img src="asset/png/icon/explain-ai.png" alt="AI Help" style="width:20px;height:20px;margin-right:4px;vertical-align:middle;">Xem gợi ý AI
+            </button>
+        `);
+    });
+    // Xóa modal AI Help cũ nếu có
+    $('#aiHelpModal').remove();
+    // Đảm bảo chỉ có một popover AI Help trên trang
+    let currentPopover = null;
+    let currentBtn = null;
+    $(document).on('click', '.ai-help-btn', function(e) {
+        e.preventDefault();
+        // Đóng popover cũ nếu đang mở
+        if(currentPopover) { currentPopover.remove(); currentPopover = null; }
+        if(currentBtn === this) { currentBtn = null; return; }
+        currentBtn = this;
+        const btn = $(this);
+        const questionCard = btn.closest('.question-card');
+        // Tạo popover
+        const popover = $(`
+            <div class="ai-help-popover">
+                <div class="ai-help-title">
+                    <img src='asset/png/icon/explain-ai.png' style='width:22px;height:22px;'>
+                    Gợi ý từ AI
+                </div>
+                <button class="ai-help-close" title="Đóng">&times;</button>
+                <div class="ai-help-content ai-help-loading">
+                    <i class="fas fa-spinner fa-spin"></i> Đang tạo gợi ý...
+                </div>
+            </div>
+        `);
+        // Đóng khi bấm nút close
+        popover.find('.ai-help-close').click(function(){ popover.remove(); currentPopover = null; currentBtn = null; });
+        // Đóng khi click ngoài popover
+        setTimeout(()=>{
+            $(document).on('mousedown.aihelp', function(ev){
+                if(!popover.is(ev.target) && popover.has(ev.target).length === 0 && !btn.is(ev.target)) {
+                    popover.remove();
+                    $(document).off('mousedown.aihelp');
+                    currentPopover = null;
+                    currentBtn = null;
+                }
+            });
+        }, 10);
+        // Thêm popover vào DOM
+        $('body').append(popover);
+        // Định vị popover cạnh nút
+        const btnOffset = btn.offset();
+        const btnHeight = btn.outerHeight();
+        const popW = popover.outerWidth();
+        const popH = popover.outerHeight();
+        let top = btnOffset.top + btnHeight + 6;
+        let left = btnOffset.left;
+        // Nếu vượt phải màn hình thì dịch sang trái
+        if(left + popW > $(window).width() - 12) left = $(window).width() - popW - 12;
+        // Nếu vượt dưới màn hình thì hiển thị lên trên
+        if(top + popH > $(window).scrollTop() + $(window).height() - 12) top = btnOffset.top - popH - 8;
+        popover.css({top: top, left: left, position:'absolute'});
+        currentPopover = popover;
+        // Lấy dữ liệu câu hỏi
+        const questionData = {
+            questionText: questionCard.find('.question-text p').text(),
+            answers: [],
+            correctAnswer: questionCard.find('.correct-answer .answer-label').text().replace('.', ''),
+            userAnswer: questionCard.find('.user-answer .answer-label').text().replace('.', '')
+        };
+        // Lấy các phương án trả lời
+        questionCard.find('.answer-options .list-group-item').each(function() {
+            const label = $(this).find('.answer-label').text().replace('.', '');
+            const text = $(this).find('.answer-text').text();
+            questionData.answers.push({label, text});
+        });
+        // Gọi API lấy gợi ý
+        $.ajax({
+            url: 'ai-assignment-help',
+            method: 'POST',
+            data: JSON.stringify(questionData),
+            contentType: 'application/json',
+            success: function(response) {
+                popover.find('.ai-help-content').removeClass('ai-help-loading').html(response);
+            },
+            error: function() {
+                popover.find('.ai-help-content').removeClass('ai-help-loading').html('<div class="alert alert-danger">Không thể tạo gợi ý lúc này. Vui lòng thử lại sau.</div>');
+            }
+        });
+    });
+});
+</script>
 </body>
 </html> 
