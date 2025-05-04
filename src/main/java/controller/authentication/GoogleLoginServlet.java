@@ -60,6 +60,7 @@ public class GoogleLoginServlet extends HttpServlet {
         session.setAttribute("userID", user.getUserID());
         session.setAttribute("username", user.getFullName());
         session.setAttribute("email", user.getGmail());
+        session.setAttribute("fullName", user.getFullName());
         session.setAttribute("phone", user.getPhone());
         session.setAttribute("avatar", user.getAvatar());
         Learner learner = learnerDAO.getLearnerById(user.getUserID());
