@@ -2,6 +2,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" isELIgnored="false" %>
 <html lang="vi">
 <head>
+    <link rel="icon" href="${pageContext.request.contextPath}/asset/png/icon/logo.jpg">
     <meta charset="utf-8">
     <title>Từ điển</title>
     <link href="asset/css/StyleHomePage.css" rel="stylesheet" type="text/css">

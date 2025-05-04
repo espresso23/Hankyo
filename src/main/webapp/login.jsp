@@ -3,6 +3,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" href="${pageContext.request.contextPath}/asset/png/icon/logo.jpg">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/asset/css/login.css">
     <title>Login Page</title>
 

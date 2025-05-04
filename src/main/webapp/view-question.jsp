@@ -11,6 +11,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <link rel="icon" href="${pageContext.request.contextPath}/asset/png/icon/logo.jpg">
   <meta charset="UTF-8">
   <title>${question.title} - Forum</title>
   <link rel="stylesheet" href="css/style.css">

@@ -239,12 +239,12 @@ public class QuizletDAO {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 CustomFlashCard card = new CustomFlashCard(
-                    rs.getInt("CFCID"),
-                    rs.getInt("learnerID"),
-                    rs.getString("word"),
-                    rs.getString("mean"),
-                    rs.getString("topic"),
-                    rs.getBoolean("isPublic")
+                        rs.getInt("CFCID"),
+                        rs.getInt("learnerID"),
+                        rs.getString("word"),
+                        rs.getString("mean"),
+                        rs.getString("topic"),
+                        rs.getBoolean("isPublic")
                 );
                 flashCards.add(card);
             }
@@ -362,12 +362,12 @@ public class QuizletDAO {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 CustomFlashCard card = new CustomFlashCard(
-                    rs.getInt("CFCID"),
-                    rs.getInt("learnerID"),
-                    rs.getString("word"),
-                    rs.getString("mean"),
-                    rs.getString("topic"),
-                    rs.getBoolean("isPublic")
+                        rs.getInt("CFCID"),
+                        rs.getInt("learnerID"),
+                        rs.getString("word"),
+                        rs.getString("mean"),
+                        rs.getString("topic"),
+                        rs.getBoolean("isPublic")
                 );
                 list.add(card);
             }
@@ -429,12 +429,12 @@ public class QuizletDAO {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 CustomFlashCard card = new CustomFlashCard(
-                    rs.getInt("CFCID"),
-                    rs.getInt("learnerID"),
-                    rs.getString("word"),
-                    rs.getString("mean"),
-                    rs.getString("topic"),
-                    rs.getBoolean("isPublic")
+                        rs.getInt("CFCID"),
+                        rs.getInt("learnerID"),
+                        rs.getString("word"),
+                        rs.getString("mean"),
+                        rs.getString("topic"),
+                        rs.getBoolean("isPublic")
                 );
                 list.add(card);
             }
@@ -471,12 +471,12 @@ public class QuizletDAO {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 CustomFlashCard card = new CustomFlashCard(
-                    rs.getInt("CFCID"),
-                    rs.getInt("learnerID"),
-                    rs.getString("word"),
-                    rs.getString("mean"),
-                    rs.getString("topic"),
-                    rs.getBoolean("isPublic")
+                        rs.getInt("CFCID"),
+                        rs.getInt("learnerID"),
+                        rs.getString("word"),
+                        rs.getString("mean"),
+                        rs.getString("topic"),
+                        rs.getBoolean("isPublic")
                 );
                 list.add(card);
             }
@@ -494,12 +494,12 @@ public class QuizletDAO {
             try (ResultSet rs = statement.executeQuery()) {
                 if (rs.next()) {
                     return new CustomFlashCard(
-                        rs.getInt("CFCID"),
-                        rs.getInt("learnerID"),
-                        rs.getString("word"),
-                        rs.getString("mean"),
-                        rs.getString("topic"),
-                        rs.getBoolean("isPublic")
+                            rs.getInt("CFCID"),
+                            rs.getInt("learnerID"),
+                            rs.getString("word"),
+                            rs.getString("mean"),
+                            rs.getString("topic"),
+                            rs.getBoolean("isPublic")
                     );
                 }
             }

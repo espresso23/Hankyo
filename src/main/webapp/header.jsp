@@ -9,6 +9,7 @@
 <html>
 <head>
     <title>Header</title>
+    <link rel="icon" href="${pageContext.request.contextPath}/asset/png/icon/logo.jpg">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/asset/css/header.css">
 </head>
 <body>  

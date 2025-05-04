@@ -93,12 +93,12 @@
             margin-bottom: 0;
             box-shadow: 0 2px 8px rgba(180,235,230,0.18);
             cursor: pointer;
-            transition: 
-                background 0.3s,
-                color 0.3s,
-                width 0.25s cubic-bezier(.4,2,.6,1),
-                font-size 0.18s,
-                box-shadow 0.18s;
+            transition:
+                    background 0.3s,
+                    color 0.3s,
+                    width 0.25s cubic-bezier(.4,2,.6,1),
+                    font-size 0.18s,
+                    box-shadow 0.18s;
             position: relative;
             z-index: 11;
             overflow: hidden;
@@ -360,13 +360,24 @@
             <h2>System Flashcards</h2>
             <div class="topics-scroll-container">
                 <div class="topics-scroll">
-                    <c:forEach var="item" items="${systemTopics}" varStatus="status">
-                        <div class="topic-box" data-topic="${item}" data-type="system">
-                            <span class="file-icon">🗂️</span>
-                            <a href="flashCard?topic=${item}&type=system">${item}</a>
-                            <span class="topic-count">0 từ</span>
-                        </div>
-                    </c:forEach>
+                    <c:choose>
+                        <c:when test="${empty systemTopics}">
+                            <div class="empty-state">
+                                <i class="fas fa-folder-open"></i>
+                                <p>Chưa có flashcard hệ thống nào.</p>
+                                <p class="empty-state-sub">Hãy quay lại sau khi chúng tôi cập nhật thêm nội dung.</p>
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <c:forEach var="item" items="${systemTopics}" varStatus="status">
+                                <div class="topic-box" data-topic="${item}" data-type="system">
+                                    <span class="file-icon">🗂️</span>
+                                    <a href="flashCard?topic=${item}&type=system">${item}</a>
+                                    <span class="topic-count">0 từ</span>
+                                </div>
+                            </c:forEach>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </div>
             <c:if test="${not empty systemError}">
@@ -379,15 +390,26 @@
             <h2>Custom Flashcards</h2>
             <div class="topics-scroll-container">
                 <div class="topics-scroll">
-                    <c:forEach var="item" items="${customTopics}" varStatus="status">
-                        <div class="topic-box" data-topic="${item}" data-type="custom">
-                            <span class="file-icon">🗂️</span>
-                            <a href="flashCard?topic=${item}&type=custom">${item}</a>
-                            <span class="topic-count">
-                                <c:out value="${customTopicCounts[item]}"/> từ
-                            </span>
-                        </div>
-                    </c:forEach>
+                    <c:choose>
+                        <c:when test="${empty customTopics}">
+                            <div class="empty-state">
+                                <i class="fas fa-folder-plus"></i>
+                                <p>Bạn chưa tạo flashcard tùy chỉnh nào.</p>
+                                <p class="empty-state-sub">Hãy tạo flashcard mới bằng cách nhấn vào tab "Add Flashcard".</p>
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <c:forEach var="item" items="${customTopics}" varStatus="status">
+                                <div class="topic-box" data-topic="${item}" data-type="custom">
+                                    <span class="file-icon">🗂️</span>
+                                    <a href="flashCard?topic=${item}&type=custom">${item}</a>
+                                    <span class="topic-count">
+                                        <c:out value="${customTopicCounts[item]}"/> từ
+                                    </span>
+                                </div>
+                            </c:forEach>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </div>
             <c:if test="${not empty customError}">
@@ -400,13 +422,24 @@
             <h2>Favorite Flashcards</h2>
             <div class="topics-scroll-container">
                 <div class="topics-scroll">
-                    <c:forEach var="item" items="${favoriteTopics}" varStatus="status">
-                        <div class="topic-box" data-topic="${item}" data-type="favorite">
-                            <span class="file-icon">🗂️</span>
-                            <a href="flashCard?topic=${item}&type=favorite">${item}</a>
-                            <span class="topic-count">0 từ</span>
-                        </div>
-                    </c:forEach>
+                    <c:choose>
+                        <c:when test="${empty favoriteTopics}">
+                            <div class="empty-state">
+                                <i class="fas fa-star"></i>
+                                <p>Bạn chưa có flashcard yêu thích nào.</p>
+                                <p class="empty-state-sub">Hãy thêm flashcard vào mục yêu thích để xem chúng ở đây.</p>
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <c:forEach var="item" items="${favoriteTopics}" varStatus="status">
+                                <div class="topic-box" data-topic="${item}" data-type="favorite">
+                                    <span class="file-icon">🗂️</span>
+                                    <a href="flashCard?topic=${item}&type=favorite">${item}</a>
+                                    <span class="topic-count">0 từ</span>
+                                </div>
+                            </c:forEach>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </div>
             <c:if test="${not empty favoriteError}">
@@ -419,14 +452,25 @@
             <h2>Public Flashcards</h2>
             <div class="topics-scroll-container">
                 <div class="topics-scroll">
-                    <c:forEach var="card" items="${publicFlashCards}">
-                        <div class="topic-box" data-topic="${card.topic}" data-type="public">
-                            <span class="file-icon">🌐</span>
-                            <a href="flashCard?topic=${card.topic}&type=custom&learnerID=${card.learnerID}">${card.topic}</a>
-                            <div style="color:#888;font-size:14px;">${card.mean}</div>
-                            <div style="font-size:12px;">By User: <c:out value="${publicLearnerNames[card.learnerID]}"/></div>
-                        </div>
-                    </c:forEach>
+                    <c:choose>
+                        <c:when test="${empty publicFlashCards}">
+                            <div class="empty-state">
+                                <i class="fas fa-users"></i>
+                                <p>Chưa có flashcard công khai nào.</p>
+                                <p class="empty-state-sub">Hãy quay lại sau để xem các flashcard được chia sẻ từ cộng đồng.</p>
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <c:forEach var="card" items="${publicFlashCards}">
+                                <div class="topic-box" data-topic="${card.topic}" data-type="public">
+                                    <span class="file-icon">🌐</span>
+                                    <a href="flashCard?topic=${card.topic}&type=custom&learnerID=${card.learnerID}">${card.topic}</a>
+                                    <div style="color:#888;font-size:14px;">${card.mean}</div>
+                                    <div style="font-size:12px;">By User: <c:out value="${publicLearnerNames[card.learnerID]}"/></div>
+                                </div>
+                            </c:forEach>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </div>
             <c:if test="${not empty publicError}">

@@ -308,40 +308,40 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to handle toggle public button
     function handleTogglePublic(flashcardId, isPublic) {
         const url = `/Quizlet/toggle-public?flashcardId=${flashcardId}&isPublic=${!isPublic}`;
-        
+
         fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             }
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                // Update the button state
-                const button = document.querySelector(`.toggle-public-btn[data-flashcard-id="${flashcardId}"]`);
-                if (button) {
-                    button.setAttribute('data-public', !isPublic);
-                    const label = button.querySelector('.toggle-label');
-                    if (label) {
-                        label.textContent = !isPublic ? 'Public' : 'Private';
-                    }
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
                 }
-                // Show success message
-                showToast('Successfully updated flashcard visibility');
-            } else {
-                showToast('Failed to update flashcard visibility', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('An error occurred while updating flashcard visibility', 'error');
-        });
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Update the button state
+                    const button = document.querySelector(`.toggle-public-btn[data-flashcard-id="${flashcardId}"]`);
+                    if (button) {
+                        button.setAttribute('data-public', !isPublic);
+                        const label = button.querySelector('.toggle-label');
+                        if (label) {
+                            label.textContent = !isPublic ? 'Public' : 'Private';
+                        }
+                    }
+                    // Show success message
+                    showToast('Successfully updated flashcard visibility');
+                } else {
+                    showToast('Failed to update flashcard visibility', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('An error occurred while updating flashcard visibility', 'error');
+            });
     }
 
     // Initialize toggle buttons
@@ -349,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
     toggleButtons.forEach(button => {
         const flashcardId = button.getAttribute('data-flashcard-id');
         const isPublic = button.getAttribute('data-public') === 'true';
-        
+
         button.addEventListener('click', function(e) {
             e.preventDefault();
             handleTogglePublic(flashcardId, isPublic);

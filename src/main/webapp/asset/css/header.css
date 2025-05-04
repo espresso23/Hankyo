@@ -17,26 +17,425 @@ header {
     align-items: center;
     background-color: #f8f8f8;
     padding: 10px 5px;
-    z-index: 1000;
+    z-index: 100;
 }
 
+/* Logo styles */
 .logo {
     grid-column: 2 / 3;
     justify-self: start;
     width: 50px;
+    transition: transform 0.3s ease;
 }
 
+.logo:hover {
+    transform: scale(1.1);
+}
+
+/* User avatar styles */
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.user-avatar:hover {
+    border: 2px solid #007BFF;
+    transform: scale(1.05);
+}
+
+/* Honour image styles */
+.honour-image {
+    width: 50px;
+    height: 50px;
+    margin: 0 8px;
+    vertical-align: middle;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.honour-image:hover {
+    transform: scale(1.1);
+}
+
+/* User info section */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.user-info-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-right: 5px;
+}
+
+.username {
+    font-weight: bold;
+    color: #333;
+}
+
+.username.gradient {
+    color: transparent;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.honour-name {
+    font-size: 0.8em;
+    color: #666;
+    margin-top: 2px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.8), 0 0 10px rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Back button styles */
+.button {
+    display: block;
+    position: relative;
+    width: 56px;
+    height: 56px;
+    margin: 0;
+    overflow: hidden;
+    outline: none;
+    background-color: transparent;
+    cursor: pointer;
+    border: 0;
+}
+
+.button:before,
+.button:after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    inset: 7px;
+}
+
+.button:before {
+    border: 4px solid #96daf0;
+    transition: opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1) 80ms,
+    transform 0.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) 80ms;
+}
+
+.button:after {
+    border: 4px solid #F2EB80;
+    transform: scale(1.3);
+    transition: opacity 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
+    transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    opacity: 0;
+}
+
+.button:hover:before,
+.button:focus:before {
+    opacity: 0;
+    transform: scale(0.7);
+    transition: opacity 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
+    transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.button:hover:after,
+.button:focus:after {
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1) 80ms,
+    transform 0.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) 80ms;
+}
+
+.button-box {
+    display: flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.button-elem {
+    display: block;
+    width: 20px;
+    height: 20px;
+    margin: 17px 18px 0 18px;
+    transform: rotate(180deg);
+    fill: #8AACFF;
+}
+
+.button:hover .button-box,
+.button:focus .button-box {
+    transition: 0.4s;
+    transform: translateX(-56px);
+}
+
+/* Notification styles */
+.notification-bell {
+    position: relative;
+    cursor: pointer;
+    margin-right: 20px;
+    z-index: 1000;
+}
+
+.notification-bell i {
+    font-size: 24px;
+    color: #333;
+    transition: color 0.3s ease;
+}
+
+.notification-bell:hover i {
+    color: #007bff;
+}
+
+.notification-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #ff4444;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 12px;
+    font-weight: bold;
+    min-width: 18px;
+    text-align: center;
+}
+
+.notification-dropdown {
+    display: none;
+    position: absolute;
+    top: 40px;
+    right: -10px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    width: 360px;
+    max-height: 600px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    background-color: #fff;
+    z-index: 1;
+}
+
+.notification-header span {
+    font-weight: 600;
+    color: #1c1e21;
+    font-size: 24px;
+}
+
+.mark-all-read {
+    background: none;
+    border: none;
+    color: #1877f2;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.mark-all-read:hover {
+    background-color: #e7f3ff;
+}
+
+.notification-item {
+    padding: 12px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item.unread {
+    background-color: #e7f3ff;
+}
+
+.notification-item:hover {
+    background-color: #f5f6f7;
+}
+
+.notification-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #e4e6eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.notification-icon i {
+    font-size: 16px;
+    color: #1877f2;
+}
+
+.notification-content {
+    flex-grow: 1;
+    font-size: 15px;
+    color: #1c1e21;
+    line-height: 1.3333;
+}
+
+.notification-time {
+    font-size: 13px;
+    color: #65676b;
+    margin-top: 4px;
+}
+
+.empty-notifications {
+    text-align: center;
+    color: #65676b;
+    padding: 32px 16px;
+    font-size: 15px;
+}
+
+.notification-dropdown.show {
+    display: block;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mobile menu styles */
+.mobile-menu-btn {
+    position: fixed;
+    top: 12%;
+    right: 5%;
+    z-index: 1000;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(317deg, #ffc676, #eb8be6);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
+    outline: none;
+    user-select: none;
+}
+
+.mobile-menu-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.mobile-menu-btn:active {
+    transform: translateY(1px);
+}
+
+.mobile-menu-line {
+    width: 24px;
+    height: 2px;
+    background-color: white;
+    margin: 3px 0;
+    transition: all 0.3s ease;
+    transform-origin: center;
+}
+
+.mobile-menu-btn.active .mobile-menu-line:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+}
+
+.mobile-menu-btn.active .mobile-menu-line:nth-child(2) {
+    opacity: 0;
+}
+
+.mobile-menu-btn.active .mobile-menu-line:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
+}
+
+.mobile-vertical-menu {
+    position: fixed;
+    top: 15%;
+    right: 10%;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    padding: 15px 0;
+    z-index: 999;
+    width: 220px;
+    display: none;
+}
+
+.mobile-vertical-menu.show {
+    display: block;
+}
+
+.mobile-menu-item {
+    padding: 12px 20px;
+    transition: all 0.2s ease;
+}
+
+.mobile-menu-item:hover {
+    background-color: #f8f9fa;
+}
+
+.mobile-menu-item a {
+    color: #333;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+}
+
+.mobile-menu-item a:before {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: linear-gradient(135deg, #6e8efb, #a777e3);
+    border-radius: 50%;
+    margin-right: 12px;
+    transition: all 0.2s ease;
+}
+
+.mobile-menu-item:hover a:before {
+    transform: scale(1.5);
+}
+
+/* Navigation container */
 .navbarContainer {
     padding-top: 5px;
     grid-column: 4 / 12;
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-.navbarContainer span {
-    text-decoration: Highlight;
-
 }
 
 .navbarContent a {
@@ -46,54 +445,11 @@ header {
     transition: 0.3s;
 }
 
-/*.navbarContainer img {*/
-/*    transition: border 0.3s ease-in-out;*/
-/*    width: 5%;*/
-/*    border-radius: 100%;*/
-/*    cursor: pointer;*/
-/*}*/
-
-.navbarContainer img:hover {
-    border: 5px solid black;
-}
-
 .navbarContent a:hover {
     color: #007BFF;
 }
 
-.loginBtn, .registerBtn {
-    padding: 8px 20px;
-    border-radius: 20px;
-    transition: all 0.3s;
-}
-
-.loginBtn {
-    background-color: transparent;
-    border: 2px solid #8EC5FC;
-    color: #8EC5FC;
-}
-
-.registerBtn {
-    background-color: #8EC5FC;
-    border: 2px solid #8EC5FC;
-    color: white;
-}
-
-.loginBtn:hover {
-    background-color: #8EC5FC;
-    color: white;
-}
-
-.registerBtn:hover {
-    background-color: #7ab4e6;
-    border-color: #7ab4e6;
-}
-
-/* Ensure content doesn't hide behind fixed header */
-body {
-    padding-top: 80px;
-}
-
+/* Popup container */
 .popupContainer {
     display: none;
     position: absolute;
@@ -197,4 +553,11 @@ body {
 
 .menu-item a:hover {
     background-color: #f0f0f0;
+}
+
+/* Add spacing for content below header */
+body {
+    padding-top: 80px; /* Add padding equal to header height */
+    min-height: 100vh;
+    position: relative;
 }

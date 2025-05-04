@@ -1,4 +1,4 @@
-<%--
+﻿<%--
   Created by IntelliJ IDEA.
   User: bearx
   Date: 3/5/2025
@@ -131,7 +131,7 @@
 </style>
 
 <header>
-    <!-- Nút Quay lại với SVG -->
+    <!-- NÃºt Quay láº¡i vá»›i SVG -->
     <button class="button" onclick="history.back()">
         <div class="button-box">
       <span class="button-elem">
@@ -152,14 +152,14 @@
     </button>
     <img class="logo" src="${pageContext.request.contextPath}/asset/png/loginPage/logo.png" alt="Logo" onclick="window.location.href='courseHeader.jsp'">
     <div class="navbarContainer">
-        <div class="navbarContent"><a href="/index.html">Khóa Học</a></div>
-        <div class="navbarContent"><a href="/about.html">Giảng Viên</a></div>
-        <div class="navbarContent"><a href="listHonour">Cộng Đồng</a></div>
-        <div class="navbarContent"><a href="addFlashCard">Tài Liệu</a></div>
-        <div class="navbarContent"><a href="dictionary">Thi Thử</a></div>
-        <div class="navbarContent"><a href="/about-us.html">Về Chúng Tôi</a></div>
-        <div class="navbarContent"><a href="${pageContext.request.contextPath}/chat/<%= session.getAttribute("userID") %>">Phòng Chat</a></div>
-        <!-- Thêm icon giỏ hàng vào đây -->
+        <div class="navbarContent"><a href="/index.html">KhÃ³a Há»c</a></div>
+        <div class="navbarContent"><a href="/about.html">Giáº£ng ViÃªn</a></div>
+        <div class="navbarContent"><a href="listHonour">Cá»™ng Äá»“ng</a></div>
+        <div class="navbarContent"><a href="addFlashCard">TÃ i Liá»‡u</a></div>
+        <div class="navbarContent"><a href="dictionary">Thi Thá»­</a></div>
+        <div class="navbarContent"><a href="/about-us.html">Vá» ChÃºng TÃ´i</a></div>
+        <div class="navbarContent"><a href="${pageContext.request.contextPath}/chat/<%= session.getAttribute("userID") %>">PhÃ²ng Chat</a></div>
+        <!-- ThÃªm icon giá» hÃ ng vÃ o Ä‘Ã¢y -->
         <div class="navbarContent">
             <a class="nav-link position-relative" href="cart">
                 <i class="fas fa-shopping-cart"></i>
@@ -170,7 +170,7 @@
             </a>
         </div>
         <div class="user-info">
-            <span class="username">Xin chào, <%= session.getAttribute("username") %>!</span>
+            <span class="username">Xin chÃ o, <%= session.getAttribute("username") %>!</span>
             <% if (request.getAttribute("equippedHonourName") != null) { %>
             <span class="honour-name"><%= request.getAttribute("equippedHonourName") %></span>
             <% } %>
@@ -188,10 +188,10 @@
 <!-- Popup Container -->
 <div class="popupContainer" id="popupContainer">
     <div class="profile">
-        <div class="profileContent"><a href="${pageContext.request.contextPath}/update-profile">Tài Khoản</a></div>
+        <div class="profileContent"><a href="${pageContext.request.contextPath}/update-profile">TÃ i Khoáº£n</a></div>
         <div class="profileContent">
             <form action="${pageContext.request.contextPath}/logout" method="post">
-                <button type="submit" class="logout-btn">Đăng Xuất</button>
+                <button type="submit" class="logout-btn">ÄÄƒng Xuáº¥t</button>
             </form>
         </div>
     </div>
@@ -201,7 +201,7 @@
 <button class="menu-btn" onclick="toggleMenu()">Menu</button>
 <div class="vertical-menu" id="verticalMenu">
     <div class="menu-item"><a href="quizlet">Flashcard</a></div>
-    <div class="menu-item"><a href="dictionary">Từ điển</a></div>
+    <div class="menu-item"><a href="dictionary">Tá»« Ä‘iá»ƒn</a></div>
     <div class="menu-item"><a href="chat">Chat</a></div>
 </div>
 
@@ -238,3 +238,6 @@
     console.log("equippedGradientEnd: <%= request.getAttribute("equippedGradientEnd") %>");
     console.log("equippedHonourName: <%= request.getAttribute("equippedHonourName") %>");
 </script>
+
+
+

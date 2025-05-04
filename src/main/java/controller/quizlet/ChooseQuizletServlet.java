@@ -1,4 +1,4 @@
-package controller.quizlet;
+package controller;
 
 import com.google.gson.Gson;
 import dao.DictionaryDAO;
@@ -94,7 +94,7 @@ public class ChooseQuizletServlet extends HttpServlet {
 
             // Lấy tên của các learner
             Map<Integer, String> learnerNames = quizletDAO.getLearnerFullNameMap(flashCards);
-            
+
             request.setAttribute("learnerNames", learnerNames);
             String flashCardsJson = gson.toJson(flashCards);
             request.setAttribute("flashCardsJson", flashCardsJson);
@@ -194,7 +194,7 @@ public class ChooseQuizletServlet extends HttpServlet {
                     try {
                         int cfcid = Integer.parseInt(cfcidStr);
                         boolean isPublic = Boolean.parseBoolean(isPublicStr);
-                        
+
                         // Verify ownership
                         CustomFlashCard flashcard = dao.getCustomFlashCardById(cfcid);
                         if (flashcard != null && flashcard.getLearnerID().equals(learnerID)) {

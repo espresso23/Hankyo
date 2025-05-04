@@ -94,3 +94,36 @@ h1 {
 .topics-scroll::-webkit-scrollbar-thumb:hover {
     background-color: #555;
 }
+/* Empty State Styles */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+    color: #666;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 12px;
+    margin: 20px auto;
+    max-width: 400px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.empty-state i {
+    font-size: 48px;
+    color: #b4ebe6;
+    margin-bottom: 16px;
+}
+
+.empty-state p {
+    font-size: 18px;
+    margin: 8px 0;
+    color: #333;
+}
+
+.empty-state-sub {
+    font-size: 14px;
+    color: #888;
+    margin-top: 8px;
+}
