@@ -16,6 +16,7 @@
     String filterType = request.getParameter("filterType");
 
     User currentUser = (User) session.getAttribute("user");
+    boolean isVIP = (boolean) request.getAttribute("isVIP");
 %>
 
 <!DOCTYPE html>
@@ -208,6 +209,15 @@
             background-color: rgba(40, 167, 69, 0.1);
         }
 
+        .doc-actions .vip-download-btn {
+            color: #ffc107;
+            cursor: pointer;
+        }
+
+        .doc-actions .vip-download-btn:hover {
+            background-color: rgba(255, 193, 7, 0.1);
+        }
+
         /* Empty state */
         .no-documents {
             grid-column: span 4;
@@ -313,6 +323,61 @@
                 height: 30px;
             }
         }
+
+        .vip-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            text-align: center;
+            max-width: 400px;
+            display: none;
+        }
+
+        .vip-message h3 {
+            color: #ffc107;
+            margin-bottom: 1rem;
+        }
+
+        .vip-message p {
+            margin-bottom: 1.5rem;
+            color: #666;
+        }
+
+        .vip-message .btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .vip-message .btn-primary {
+            background: linear-gradient(135deg, #ffc107, #ff9800);
+            color: white;
+        }
+
+        .vip-message .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .vip-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -394,9 +459,21 @@
                 </div>
             </a>
             <div class="doc-actions">
-                <a href="<%= doc.getSource() %>" download>
-                    <i class="fas fa-download"></i> Tải xuống
-                </a>
+                <% if ("VIP Documents".equalsIgnoreCase(doc.getType())) { %>
+                    <% if (currentUser != null && ("admin".equalsIgnoreCase(currentUser.getRole()) || isVIP)) { %>
+                    <a href="<%= doc.getSource() %>" download>
+                        <i class="fas fa-download"></i> Tải xuống
+                    </a>
+                    <% } else { %>
+                    <a href="#" onclick="showVIPMessage()" class="vip-download-btn">
+                        <i class="fas fa-lock"></i> VIP Download
+                    </a>
+                    <% } %>
+                <% } else { %>
+                    <a href="<%= doc.getSource() %>" download>
+                        <i class="fas fa-download"></i> Tải xuống
+                    </a>
+                <% } %>
                 <% if (currentUser != null && "admin".equalsIgnoreCase(currentUser.getRole())) { %>
                 <a href="edit-document?docID=<%= doc.getDocID() %>" class="edit-btn">
                     <i class="fas fa-edit"></i> Sửa
@@ -453,7 +530,27 @@
     <% } %>
 </div>
 
+<div id="vip-message" class="vip-message">
+    <h3><i class="fas fa-crown"></i> Nội dung VIP</h3>
+    <p>Để tải xuống tài liệu này, bạn cần nâng cấp lên tài khoản VIP.</p>
+    <div class="btn-group">
+        <button class="btn btn-secondary" onclick="closeVIPMessage()">Đóng</button>
+        <a href="vip-package" class="btn btn-primary">Nâng cấp VIP</a>
+    </div>
+</div>
+<div id="vip-overlay" class="vip-overlay" onclick="closeVIPMessage()"></div>
+
 <script>
+function showVIPMessage() {
+    document.getElementById('vip-message').style.display = 'block';
+    document.getElementById('vip-overlay').style.display = 'block';
+}
+
+function closeVIPMessage() {
+    document.getElementById('vip-message').style.display = 'none';
+    document.getElementById('vip-overlay').style.display = 'none';
+}
+
 function confirmDelete(docID) {
     if (confirm('Bạn có chắc chắn muốn xóa tài liệu này?')) {
         window.location.href = 'delete-document?docID=' + docID;

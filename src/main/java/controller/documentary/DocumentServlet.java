@@ -68,6 +68,7 @@ public class DocumentServlet extends HttpServlet {
             }
 
             request.setAttribute("documents", docs);
+            request.setAttribute("isVIP", isVIP);
             request.getRequestDispatcher("document-list.jsp").forward(request, response);
 
         } catch (NumberFormatException | SQLException e) {
