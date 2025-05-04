@@ -19,42 +19,42 @@
         </li>
         <li class="nav-item">
             <a class="nav-link ${param.active == 'users' ? 'active' : ''}" href="admin-users">
-                <i class="bi bi-people me-2"></i>Quáº£n lÃ½ ngÆ°á»i dÃ¹ng
+                <i class="bi bi-people me-2"></i>Quản lý người dùng
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link ${param.active == 'courses' ? 'active' : ''}" href="admin-courses">
-                <i class="bi bi-book me-2"></i>Quáº£n lÃ½ khÃ³a há»c
+                <i class="bi bi-book me-2"></i>Quản lý khóa học
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link ${param.active == 'payments' ? 'active' : ''}" href="admin-payments">
-                <i class="bi bi-cash me-2"></i>Quáº£n lÃ½ thanh toÃ¡n
+                <i class="bi bi-cash me-2"></i>Quản lý thanh toán
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link ${param.active == 'posts' ? 'active' : ''}" href="admin-posts">
-                <i class="bi bi-file-text me-2"></i>Quáº£n lÃ½ ná»™i dung
+            <a class="nav-link ${param.active == 'posts' ? 'active' : ''}" href="media-manager">
+                <i class="bi bi-file-text me-2"></i>Quản lý nội dung
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link ${param.active == 'experts' ? 'active' : ''}" href="admin-experts">
-                <i class="bi bi-person-badge me-2"></i>Quáº£n lÃ½ expert
+                <i class="bi bi-person-badge me-2"></i>Quản lý Expert
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link ${param.active == 'reports' ? 'active' : ''}" href="admin-reports">
-                <i class="bi bi-flag me-2"></i>Quáº£n lÃ½ bÃ¡o cÃ¡o
+                <i class="bi bi-flag me-2"></i>Quản lý báo cáo
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link ${param.active == 'categories' ? 'active' : ''}" href="admin-categories">
-                <i class="bi bi-tags me-2"></i>Quáº£n lÃ½ danh má»¥c
+                <i class="bi bi-tags me-2"></i>Quản lý danh mục
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link ${param.active == 'vip' ? 'active' : ''}" href="admin-vip">
-                <i class="bi bi-star me-2"></i>Quáº£n lÃ½ VIP
+                <i class="bi bi-star me-2"></i>Quản lý VIP
             </a>
         </li>
     </ul>
