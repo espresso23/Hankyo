@@ -157,4 +157,95 @@ public class GeminiService {
                        "đồng thời đưa ra cách sửa:\n" + sentence;
         return generateResponse(prompt);
     }
+
+    /**
+     * Tìm kiếm và dịch từ điển Việt-Hàn với ví dụ
+     * @param word Từ cần tìm kiếm
+     * @param fromLang Ngôn ngữ nguồn (vi/han)
+     * @param toLang Ngôn ngữ đích (vi/han)
+     * @return Kết quả tìm kiếm bao gồm nghĩa và ví dụ
+     */
+    public String searchAndTranslateDictionary(String word, String fromLang, String toLang) throws IOException {
+        String prompt = String.format(
+            "Hãy tìm kiếm và dịch từ '%s' từ %s sang %s. " +
+            "Trả về kết quả theo định dạng JSON sau:\n" +
+            "{\n" +
+            "  \"word\": \"từ gốc\",\n" +
+            "  \"translation\": \"nghĩa dịch\",\n" +
+            "  \"type\": \"loại từ (noun/verb/adjective/adverb)\",\n" +
+            "  \"definition\": \"định nghĩa chi tiết\",\n" +
+            "  \"examples\": [\n" +
+            "    {\"vi\": \"câu ví dụ tiếng Việt\", \"han\": \"câu ví dụ tiếng Hàn\"}\n" +
+            "  ]\n" +
+            "}", 
+            word, fromLang, toLang
+        );
+        return generateResponse(prompt);
+    }
+
+    /**
+     * Tạo ví dụ cho từ điển
+     * @param word Từ cần tạo ví dụ
+     * @param type Loại từ
+     * @return Danh sách ví dụ
+     */
+    public String generateDictionaryExamples(String word, String type) throws IOException {
+        String prompt = String.format(
+            "Hãy tạo 3 ví dụ cho từ '%s' (loại từ: %s). " +
+            "Trả về kết quả theo định dạng JSON sau:\n" +
+            "{\n" +
+            "  \"examples\": [\n" +
+            "    {\"vi\": \"câu ví dụ tiếng Việt\", \"han\": \"câu ví dụ tiếng Hàn\"}\n" +
+            "  ]\n" +
+            "}", 
+            word, type
+        );
+        return generateResponse(prompt);
+    }
+
+    /**
+     * Phân tích ngữ pháp và giải thích chi tiết
+     * @param sentence Câu cần phân tích
+     * @return Phân tích ngữ pháp
+     */
+    public String analyzeGrammar(String sentence) throws IOException {
+        String prompt = String.format(
+            "Hãy phân tích ngữ pháp và giải thích chi tiết câu sau:\n%s\n" +
+            "Trả về kết quả theo định dạng JSON sau:\n" +
+            "{\n" +
+            "  \"analysis\": \"phân tích ngữ pháp\",\n" +
+            "  \"explanation\": \"giải thích chi tiết\",\n" +
+            "  \"structure\": \"cấu trúc câu\"\n" +
+            "}", 
+            sentence
+        );
+        return generateResponse(prompt);
+    }
+
+    // Hàm tiện ích: Lấy JSON thuần từ response Gemini (loại bỏ markdown code block)
+    public static String extractJsonFromGeminiResponse(String response) {
+        if (response == null) return null;
+        response = response.trim();
+        // 1. Tìm tất cả các block code markdown ```...```
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("```[a-zA-Z]*[\\s\\S]*?```", java.util.regex.Pattern.MULTILINE);
+        java.util.regex.Matcher matcher = pattern.matcher(response);
+        while (matcher.find()) {
+            String block = matcher.group();
+            block = block.replaceFirst("^```[a-zA-Z]*[\\r\\n\\s]*", "");
+            block = block.replaceFirst("```[\\r\\n\\s]*$", "");
+            block = block.trim();
+            if (block.startsWith("{") && block.endsWith("}")) {
+                return block;
+            }
+        }
+        // 2. Nếu không có block code, thử lấy đoạn JSON đầu tiên trong toàn bộ response
+        int start = response.indexOf('{');
+        int end = response.lastIndexOf('}');
+        if (start != -1 && end != -1 && end > start) {
+            String json = response.substring(start, end + 1);
+            return json;
+        }
+        // 3. Không tìm thấy JSON, trả về nguyên response để debug
+        return response;
+    }
 } 

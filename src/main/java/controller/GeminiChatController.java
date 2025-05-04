@@ -51,7 +51,8 @@ public class GeminiChatController extends HttpServlet {
             // Tạo prompt phù hợp cho chat
             String prompt = String.format("Bạn là một trợ lý AI chuyên về tiếng Hàn. Hãy trả lời câu hỏi sau một cách thân thiện và hữu ích: %s", message);
             String response = geminiService.generateResponse(prompt);
-            result.put("response", response);
+            String json = service.GeminiService.extractJsonFromGeminiResponse(response);
+            result.put("response", json);
             // Tăng số lần sử dụng AI nếu không phải VIP
             if (!vipUserDAO.isVipUser(learnerID)) {
                 vipUserDAO.incrementTodayUsage(learnerID);

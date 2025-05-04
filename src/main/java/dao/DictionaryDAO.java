@@ -14,6 +14,8 @@ import java.util.List;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DictionaryDAO {
 
@@ -398,6 +400,59 @@ public class DictionaryDAO {
                 System.out.println("  LearnerID: " + card.getLearner().getLearnerID());
                 System.out.println("----------------------");
             }
+        }
+    }
+
+    public boolean addDictionaryExample(int wordID, String vietnameseExample, String koreanExample) {
+        String query = "INSERT INTO dictionary_examples (wordID, vietnameseExample, koreanExample) VALUES (?, ?, ?)";
+        
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, wordID);
+            stmt.setString(2, vietnameseExample);
+            stmt.setString(3, koreanExample);
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public List<Map<String, String>> getDictionaryExamples(int wordID) {
+        List<Map<String, String>> examples = new ArrayList<>();
+        String query = "SELECT vietnameseExample, koreanExample FROM dictionary_examples WHERE wordID = ?";
+        
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, wordID);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, String> example = new HashMap<>();
+                    example.put("vi", rs.getString("vietnameseExample"));
+                    example.put("han", rs.getString("koreanExample"));
+                    examples.add(example);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return examples;
+    }
+
+    public boolean updateDictionaryWithAI(int wordID, String definition, String type) {
+        String query = "UPDATE dictionary SET definition = ?, type = ? WHERE wordID = ?";
+        
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, definition);
+            stmt.setString(2, type);
+            stmt.setInt(3, wordID);
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }

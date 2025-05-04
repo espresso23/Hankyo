@@ -57,8 +57,9 @@ public class GeminiController extends HttpServlet {
             if (!vipUserDAO.isVipUser(learnerID)) {
                 vipUserDAO.incrementTodayUsage(learnerID);
             }
+            String json = GeminiService.extractJsonFromGeminiResponse(response);
             resp.setContentType("application/json");
-            resp.getWriter().write("{\"response\": \"" + response + "\"}");
+            resp.getWriter().write(json);
         } catch (Exception e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().write("{\"error\": \"" + e.getMessage() + "\"}");

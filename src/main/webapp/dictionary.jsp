@@ -348,6 +348,79 @@
                 font-size: 14px;
             }
         }
+
+        /* Style cho tìm kiếm AI */
+        .ai-search-form {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .ai-search-form h4 {
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            gap: 10px;
+        }
+
+        #aiSearchResult {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .word-info {
+            margin-bottom: 20px;
+        }
+
+        .word-info h4 {
+            color: #007bff;
+            margin-bottom: 15px;
+        }
+
+        .examples {
+            border-top: 1px solid #dee2e6;
+            padding-top: 15px;
+        }
+
+        .example-item {
+            background-color: #f8f9fa;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .example-item .korean {
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+
+        .example-item .vietnamese {
+            color: #6c757d;
+        }
+
+        /* Style cho ví dụ từ điển */
+        .examples-container {
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .examples-container h6 {
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+
+        .examples-list .example-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -381,6 +454,35 @@
             </div>
             <button type="submit" class="btn btn-primary">🔍 Tìm kiếm</button>
         </form>
+        
+        <!-- Form tìm kiếm AI -->
+        <div class="ai-search-form mt-3">
+            <h4>Tìm kiếm nâng cao với Hankyo Translator</h4>
+            <div class="input-group">
+                <input type="text" id="aiSearchInput" class="form-control" placeholder="Nhập từ cần tìm kiếm...">
+                <select id="fromLang" class="form-control">
+                    <option value="vi">Tiếng Việt</option>
+                    <option value="han">Tiếng Hàn</option>
+                </select>
+                <select id="toLang" class="form-control">
+                    <option value="han">Tiếng Hàn</option>
+                    <option value="vi">Tiếng Việt</option>
+                </select>
+                <button type="button" id="aiSearchBtn" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Tìm kiếm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kết quả tìm kiếm AI -->
+    <div id="aiSearchResult" class="mt-4" style="display: none;">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Kết quả tìm kiếm AI</h5>
+                <div id="aiResultContent"></div>
+            </div>
+        </div>
     </div>
 
     <table>
@@ -399,6 +501,15 @@
                 <td>${word.mean}</td>
                 <td>
                     <span class="add-toggle" data-wordid="${word.wordID}">+</span>
+                </td>
+            </tr>
+            <!-- Ví dụ từ điển -->
+            <tr class="examples-row" style="display: none;">
+                <td colspan="5">
+                    <div class="examples-container" data-wordid="${word.wordID}">
+                        <h6>Ví dụ:</h6>
+                        <div class="examples-list"></div>
+                    </div>
                 </td>
             </tr>
         </c:forEach>
@@ -550,6 +661,170 @@
                     $('#addToListBtn').prop('disabled', false).html('💖 Thêm vào');
                 }
             });
+        }
+
+        // Xử lý tìm kiếm AI
+        $('#aiSearchBtn').click(function() {
+            const word = $('#aiSearchInput').val().trim();
+            const fromLang = $('#fromLang').val();
+            const toLang = $('#toLang').val();
+
+            if (!word) {
+                alert('Vui lòng nhập từ cần tìm kiếm!');
+                return;
+            }
+
+            $.ajax({
+                url: 'dictionary',
+                type: 'POST',
+                data: {
+                    action: 'searchAI',
+                    word: word,
+                    fromLang: fromLang,
+                    toLang: toLang
+                },
+                success: function(response) {
+                    try {
+                        if (typeof response === 'object') {
+                            displayAIResult(response);
+                            return;
+                        }
+                        var result = extractJsonFromGeminiResponse(response);
+                        if (!result) throw new Error('Không tìm thấy JSON hợp lệ trong phản hồi AI!');
+                        displayAIResult(result);
+                    } catch (e) {
+                        console.error('Error parsing response:', e, response);
+                        alert('Có lỗi xảy ra khi xử lý kết quả!\nBạn có thể copy response này gửi cho kỹ thuật: ' + response);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX error:', error);
+                    alert('Có lỗi xảy ra khi tìm kiếm!');
+                }
+            });
+        });
+
+        // Hàm chuyên lấy object JSON từ response Gemini (trả về object, không trả về chuỗi)
+        function extractJsonFromGeminiResponse(response) {
+            if (typeof response !== 'string') return null;
+            response = response.trim();
+
+            // 1. Tìm tất cả các block code markdown ```...```
+            var codeBlocks = response.match(/```[a-z]*[\s\S]*?```/gi);
+            if (codeBlocks && codeBlocks.length > 0) {
+                for (var i = 0; i < codeBlocks.length; i++) {
+                    var block = codeBlocks[i]
+                        .replace(/^```[a-z]*[\r\n\s]*/i, '')
+                        .replace(/```[\r\n\s]*$/i, '')
+                        .trim();
+                    // Thử parse block này
+                    try {
+                        var obj = JSON.parse(block);
+                        return obj;
+                    } catch (e) {
+                        // Không parse được, thử block tiếp theo
+                    }
+                }
+            }
+            // 2. Nếu không có block code, thử parse đoạn JSON đầu tiên trong toàn bộ response
+            var jsonMatch = response.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                try {
+                    return JSON.parse(jsonMatch[0]);
+                } catch (e) {}
+            }
+            // 3. Thử loại bỏ hết dấu ``` và parse toàn bộ response
+            var cleaned = response.replace(/```[a-z]*[\r\n\s]*/gi, '').replace(/```/g, '').trim();
+            try {
+                return JSON.parse(cleaned);
+            } catch (e) {}
+            // 4. Không tìm thấy JSON
+            return null;
+        }
+
+        // Hiển thị kết quả tìm kiếm AI
+        function displayAIResult(result) {
+            var container = $('#aiResultContent');
+            var html = '';
+            html += '<div class="word-info">';
+            html += '<h4>' + result.word + '</h4>';
+            html += '<p><strong>Nghĩa:</strong> ' + result.translation + '</p>';
+            html += '<p><strong>Loại từ:</strong> ' + result.type + '</p>';
+            html += '<p><strong>Định nghĩa:</strong> ' + result.definition + '</p>';
+            html += '</div>';
+            html += '<div class="examples">';
+            html += '<h5>Ví dụ:</h5>';
+            if (result.examples && result.examples.length > 0) {
+                for (var i = 0; i < result.examples.length; i++) {
+                    html += '<div class="example-item">';
+                    html += '<p class="korean">' + result.examples[i].han + '</p>';
+                    html += '<p class="vietnamese">' + result.examples[i].vi + '</p>';
+                    html += '</div>';
+                }
+            }
+            html += '</div>';
+            container.html(html);
+            $('#aiSearchResult').show();
+        }
+
+        // Xử lý hiển thị ví dụ
+        $('.add-toggle').click(function() {
+            const wordID = $(this).data('wordid');
+            const examplesRow = $(this).closest('tr').next('.examples-row');
+            const examplesContainer = examplesRow.find('.examples-container');
+            
+            if (examplesRow.is(':visible')) {
+                examplesRow.hide();
+                return;
+            }
+
+            // Ẩn tất cả các hàng ví dụ khác
+            $('.examples-row').hide();
+
+            // Kiểm tra xem đã có ví dụ chưa
+            if (examplesContainer.find('.examples-list').children().length === 0) {
+                // Lấy ví dụ từ server
+                $.ajax({
+                    url: 'dictionary',
+                    type: 'POST',
+                    data: {
+                        action: 'getExamples',
+                        wordID: wordID
+                    },
+                    success: function(response) {
+                        try {
+                            const examples = JSON.parse(response);
+                            displayExamples(examplesContainer, examples);
+                        } catch (e) {
+                            console.error('Error parsing examples:', e);
+                            examplesContainer.html('<p class="text-muted">Không có ví dụ</p>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX error:', error);
+                        examplesContainer.html('<p class="text-danger">Lỗi khi tải ví dụ</p>');
+                    }
+                });
+            }
+
+            examplesRow.show();
+        });
+
+        // Hiển thị ví dụ
+        function displayExamples(container, examples) {
+            if (examples.length === 0) {
+                container.html('<p class="text-muted">Không có ví dụ</p>');
+                return;
+            }
+            var examplesList = container.find('.examples-list');
+            var html = '';
+            for (var i = 0; i < examples.length; i++) {
+                html += '<div class="example-item">';
+                html += '<p class="korean">' + examples[i].han + '</p>';
+                html += '<p class="vietnamese">' + examples[i].vi + '</p>';
+                html += '</div>';
+            }
+            examplesList.html(html);
         }
     });
 </script>

@@ -4,6 +4,8 @@ import dao.DictionaryDAO;
 import model.Dictionary;
 import model.FavoriteFlashCard;
 import model.Learner;
+import service.GeminiService;
+import com.google.gson.Gson;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -14,6 +16,7 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Map;
 
 @WebServlet(name = "DictionaryServlet", urlPatterns = {"/dictionary"})
 public class DictionaryServlet extends HttpServlet {
@@ -75,52 +78,120 @@ public class DictionaryServlet extends HttpServlet {
         }
 
         String action = request.getParameter("action");
-        String wordIDStr = request.getParameter("wordID");
-        String nameOfList = request.getParameter("nameOfList");
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();
 
-        if (wordIDStr == null || action == null) {
-            out.print("{\"success\": false, \"error\": \"Missing parameters\"}");
+        try {
+            switch (action) {
+                case "searchAI":
+                    handleAISearch(request, response);
+                    break;
+                case "addExample":
+                    handleAddExample(request, response);
+                    break;
+                case "getExamples":
+                    handleGetExamples(request, response);
+                    break;
+                case "addFavoriteFlashCard":
+                    String wordIDStr = request.getParameter("wordID");
+                    String nameOfList = request.getParameter("nameOfList");
+                    if (wordIDStr == null || nameOfList == null || nameOfList.trim().isEmpty()) {
+                        out.print("{\"success\": false, \"error\": \"Missing parameters\"}");
+                        out.flush();
+                        return;
+                    }
+                    int wordID = Integer.parseInt(wordIDStr);
+                    Dictionary dictionary = dictionaryDAO.getDictionaryByWordID(wordID);
+                    if (dictionary != null) {
+                        FavoriteFlashCard fc = new FavoriteFlashCard(dictionary, learner);
+                        fc.setNameOfList(nameOfList.trim());
+                        boolean success = dictionaryDAO.addFavoriteFlashCard(fc);
+                        out.print("{\"success\": " + success + "}");
+                    } else {
+                        out.print("{\"success\": false, \"error\": \"Word not found\"}");
+                    }
+                    break;
+                case "removeFavoriteFlashCard":
+                    String wordIDStrToRemove = request.getParameter("wordID");
+                    String nameOfListToRemove = request.getParameter("nameOfList");
+                    if (wordIDStrToRemove == null || nameOfListToRemove == null || nameOfListToRemove.trim().isEmpty()) {
+                        out.print("{\"success\": false, \"error\": \"Missing parameters\"}");
+                        out.flush();
+                        return;
+                    }
+                    int wordIDToRemove = Integer.parseInt(wordIDStrToRemove);
+                    boolean success = dictionaryDAO.removeFavoriteFlashCard(learnerID, wordIDToRemove, nameOfListToRemove.trim());
+                    out.print("{\"success\": " + success + "}");
+                    break;
+                default:
+                    out.print("{\"success\": false, \"error\": \"Invalid action\"}");
+            }
+        } catch (Exception e) {
+            out.print("{\"success\": false, \"error\": \"" + e.getMessage() + "\"}");
+        } finally {
             out.flush();
+        }
+    }
+
+    private void handleAISearch(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String word = request.getParameter("word");
+        String fromLang = request.getParameter("fromLang");
+        String toLang = request.getParameter("toLang");
+
+        if (word == null || fromLang == null || toLang == null) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"success\": false, \"error\": \"Missing parameters\"}");
+            return;
+        }
+
+        try {
+            GeminiService geminiService = new GeminiService();
+            String result = geminiService.searchAndTranslateDictionary(word, fromLang, toLang);
+            String json = GeminiService.extractJsonFromGeminiResponse(result);
+            response.getWriter().write(json);
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"success\": false, \"error\": \"" + e.getMessage() + "\"}");
+        }
+    }
+
+    private void handleAddExample(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String wordIDStr = request.getParameter("wordID");
+        String vietnameseExample = request.getParameter("vietnameseExample");
+        String koreanExample = request.getParameter("koreanExample");
+
+        if (wordIDStr == null || vietnameseExample == null || koreanExample == null) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"success\": false, \"error\": \"Missing parameters\"}");
             return;
         }
 
         try {
             int wordID = Integer.parseInt(wordIDStr);
-
-            if ("addFavoriteFlashCard".equals(action)) {
-                if (nameOfList == null || nameOfList.trim().isEmpty()) {
-                    out.print("{\"success\": false, \"error\": \"List name is required\"}");
-                    out.flush();
-                    return;
-                }
-                Dictionary dictionary = dictionaryDAO.getDictionaryByWordID(wordID);
-                if (dictionary != null) {
-                    FavoriteFlashCard fc = new FavoriteFlashCard(dictionary, learner);
-                    fc.setNameOfList(nameOfList.trim());
-                    boolean success = dictionaryDAO.addFavoriteFlashCard(fc);
-                    out.print("{\"success\": " + success + "}");
-                } else {
-                    out.print("{\"success\": false, \"error\": \"Word not found\"}");
-                }
-            } else if ("removeFavoriteFlashCard".equals(action)) {
-                if (nameOfList == null || nameOfList.trim().isEmpty()) {
-                    out.print("{\"success\": false, \"error\": \"List name is required\"}");
-                    out.flush();
-                    return;
-                }
-                boolean success = dictionaryDAO.removeFavoriteFlashCard(learnerID, wordID, nameOfList.trim());
-                out.print("{\"success\": " + success + "}");
-            } else {
-                out.print("{\"success\": false, \"error\": \"Invalid action\"}");
-            }
-        } catch (NumberFormatException e) {
-            out.print("{\"success\": false, \"error\": \"Invalid wordID\"}");
+            boolean success = dictionaryDAO.addDictionaryExample(wordID, vietnameseExample, koreanExample);
+            response.getWriter().write("{\"success\": " + success + "}");
         } catch (Exception e) {
-            out.print("{\"success\": false, \"error\": \"Server error: " + e.getMessage() + "\"}");
-        } finally {
-            out.flush();
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"success\": false, \"error\": \"" + e.getMessage() + "\"}");
+        }
+    }
+
+    private void handleGetExamples(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String wordIDStr = request.getParameter("wordID");
+
+        if (wordIDStr == null) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"success\": false, \"error\": \"Missing wordID parameter\"}");
+            return;
+        }
+
+        try {
+            int wordID = Integer.parseInt(wordIDStr);
+            List<Map<String, String>> examples = dictionaryDAO.getDictionaryExamples(wordID);
+            response.getWriter().write(new Gson().toJson(examples));
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"success\": false, \"error\": \"" + e.getMessage() + "\"}");
         }
     }
 }
