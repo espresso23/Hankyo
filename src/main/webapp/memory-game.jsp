@@ -312,10 +312,130 @@
             background: var(--main-pink);
             color: #fff;
         }
+
+        /* VIP check modal */
+        #vipCheckModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .vip-modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            border: 1px solid #f0f0f0;
+            animation: popupAppear 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .vip-modal-content h2 {
+            color: #333;
+            font-family: 'Comfortaa', sans-serif;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .vip-modal-content h2::before {
+            content: "⭐";
+            color: gold;
+            margin-right: 10px;
+            display: inline-block;
+            animation: shimmer 2s infinite;
+        }
+
+        .vip-modal-content p {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .vip-modal-btn {
+            padding: 12px 30px;
+            border-radius: 30px;
+            background: linear-gradient(to right, #FFD700, #FFC107);
+            color: #333;
+            font-size: 1.1em;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Comfortaa', sans-serif;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .vip-modal-btn:hover {
+            background: linear-gradient(to right, #FFC107, #FFD700);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(255, 193, 7, 0.4);
+        }
+
+        .vip-modal-btn::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            transform: rotate(30deg);
+            animation: shineEffect 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { opacity: 0.8; text-shadow: 0 0 5px rgba(255, 215, 0, 0.3); }
+            50% { opacity: 1; text-shadow: 0 0 15px rgba(255, 215, 0, 0.7), 0 0 30px rgba(255, 215, 0, 0.4); }
+            100% { opacity: 0.8; text-shadow: 0 0 5px rgba(255, 215, 0, 0.3); }
+        }
+
+        @keyframes shineEffect {
+            0% { transform: translateX(-300%) rotate(30deg); }
+            100% { transform: translateX(300%) rotate(30deg); }
+        }
+
+        @keyframes popupAppear {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
     </style>
 </head>
 <body>
 <jsp:include page="header.jsp"></jsp:include>
+
+<c:if test="${isUserVip != true}">
+    <div id="vipCheckModal">
+        <div class="vip-modal-content">
+            <h2>Tính năng chỉ dành cho thành viên VIP</h2>
+            <p>Trò chơi trí nhớ là tính năng đặc biệt chỉ dành cho thành viên VIP. Vui lòng nâng cấp tài khoản của bạn để truy cập tính năng này và nhiều ưu đãi đặc biệt khác.</p>
+            <button class="vip-modal-btn" onclick="redirectToVipPackages()">Đăng ký VIP ngay</button>
+        </div>
+    </div>
+</c:if>
 
 <div class="game-wrapper">
     <div class="container">
@@ -363,15 +483,32 @@
     let moveCount = 0;
     let canFlip = true;
 
-    document.querySelectorAll('.card').forEach(card => {
-        card.addEventListener('click', () => {
-            if (!canFlip || card.classList.contains('flipped') || card.classList.contains('matched')) {
-                return;
-            }
+    // Redirect to VIP packages page
+    function redirectToVipPackages() {
+        window.location.href = "bundles";
+    }
 
-            flipCard(card);
+    // Disable game if user is not VIP
+    let isVip = false;
+    <c:if test="${isUserVip == true}">
+        isVip = true;
+    </c:if>
+    
+    if (!isVip) {
+        document.querySelectorAll('.card').forEach(card => {
+            card.style.pointerEvents = 'none';
         });
-    });
+    } else {
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', () => {
+                if (!canFlip || card.classList.contains('flipped') || card.classList.contains('matched')) {
+                    return;
+                }
+
+                flipCard(card);
+            });
+        });
+    }
 
     function flipCard(card) {
         card.classList.add('flipped');
@@ -581,7 +718,7 @@
 
     window.addEventListener('DOMContentLoaded', function() {
         // First visit popup
-        if (!sessionStorage.getItem('firstVisitMemory')) {
+        if (!sessionStorage.getItem('firstVisitMemory') && isVip) {
             const popup = document.createElement('div');
             popup.id = 'guide-popup';
             popup.innerHTML = `<div style="

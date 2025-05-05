@@ -603,6 +603,25 @@
     }
     #mobileMenuButton:active { cursor: grabbing; }
     #mobileMenuButton * { pointer-events: none; }
+
+    /* VIP Crown Animation */
+    @keyframes glowing {
+      0% { text-shadow: 0 0 2px rgba(255, 215, 0, 0.5); }
+      50% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); }
+      100% { text-shadow: 0 0 2px rgba(255, 215, 0, 0.5); }
+    }
+
+    .vip-crown {
+      display: inline-block;
+      margin-left: 5px;
+      color: gold;
+      font-size: 14px;
+      text-shadow: 0 0 2px rgba(0,0,0,0.5);
+    }
+
+    .vip-crown-animate {
+      animation: glowing 2s infinite;
+    }
 </style>
 
     <script src="${pageContext.request.contextPath}/asset/js/header.js" defer></script>
@@ -673,6 +692,9 @@
         <span class="username <%= request.getAttribute("equippedGradientStart") != null ? "gradient" : "" %>"
               style="<%= request.getAttribute("equippedGradientStart") != null ? String.format("background-image: linear-gradient(45deg, %s, %s)", request.getAttribute("equippedGradientStart"), request.getAttribute("equippedGradientEnd")) : "" %>">
           Xin chào, <%= session.getAttribute("username") %>!
+          <% if (request.getAttribute("isUserVip") != null && (boolean)request.getAttribute("isUserVip")) { %>
+          <i class="fas fa-crown vip-crown vip-crown-animate" style="color: gold; margin-left: 5px; animation: glowing 2s infinite;"></i>
+          <% } %>
         </span>
         <% if (request.getAttribute("equippedHonourName") != null && request.getAttribute("equippedHonourImage") != null) { %>
         <span class="honour-name"><%= request.getAttribute("equippedHonourName") %></span>
@@ -694,7 +716,7 @@
 <!-- Popup Container -->
 <div class="popupContainer" id="popupContainer">
   <div class="profile">
-    <div class="profileContent"><a href="${pageContext.request.contextPath}/update-profile">Tài Khoản</a></div>
+    <div class="profileContent"><a href="${pageContext.request.contextPath}/profile">Tài Khoản</a></div>
     <div class="profileContent">
       <form action="${pageContext.request.contextPath}/logout" method="post">
         <button type="submit" class="logout-btn">Đăng Xuất</button>

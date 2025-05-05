@@ -2,6 +2,7 @@ package controller;
 
 import com.google.gson.Gson;
 import dao.QuizletDAO;
+import dao.VipUserDAO;
 import model.CustomFlashCard;
 import model.FavoriteFlashCard;
 import model.SystemFlashCard;
@@ -21,11 +22,13 @@ import java.util.List;
 public class MemoryGameServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private QuizletDAO quizletDAO;
+    private VipUserDAO vipUserDAO;
     private Gson gson;
 
     @Override
     public void init() throws ServletException {
         quizletDAO = new QuizletDAO();
+        vipUserDAO = new VipUserDAO();
         gson = new Gson();
     }
 
@@ -35,6 +38,18 @@ public class MemoryGameServlet extends HttpServlet {
         String type = request.getParameter("type");
         HttpSession session = request.getSession();
         Integer learnerID = (Integer) session.getAttribute("learnerID");
+        Integer userID = (Integer) session.getAttribute("userID");
+
+        // Check if user is VIP
+        boolean isUserVip = false;
+        if (userID != null) {
+            try {
+                isUserVip = vipUserDAO.isVipUser(userID);
+            } catch (Exception e) {
+                System.err.println("Error checking VIP status: " + e.getMessage());
+            }
+        }
+        request.setAttribute("isUserVip", isUserVip);
 
         if (topic == null || type == null) {
             request.setAttribute("error", "Missing topic or type parameter");

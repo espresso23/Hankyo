@@ -1,0 +1,174 @@
+<!-- Phần CSS (thêm vào phần style trong quizlet.jsp) -->
+<style>
+    /* Input modes display */
+    .manual-input, .individual-input {
+        display: none;
+    }
+
+    .manual-input.active, .individual-input.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+</style>
+
+<!-- Phần HTML (thay thế toàn bộ phần tab "Add") -->
+<div class="tab-content" id="add">
+    <div class="add-flashcard-form">
+        <h2>Thêm Thẻ Ghi Nhớ Mới</h2>
+
+        <c:if test="${not empty successMessages}">
+            <div class="alert alert-success">
+                <p><i class="fas fa-check-circle"></i> Thành công:</p>
+                <ul>
+                    <c:forEach var="msg" items="${successMessages}">
+                        <li>${msg}</li>
+                    </c:forEach>
+                </ul>
+            </div>
+        </c:if>
+
+        <c:if test="${not empty errorMessages}">
+            <div class="alert alert-danger">
+                <p><i class="fas fa-exclamation-circle"></i> Lỗi:</p>
+                <ul>
+                    <c:forEach var="msg" items="${errorMessages}">
+                        <li>${msg}</li>
+                    </c:forEach>
+                </ul>
+            </div>
+        </c:if>
+
+        <div class="input-mode-toggle">
+            <button type="button" class="input-mode-btn active" data-mode="manual">
+                <i class="fas fa-bolt"></i> Nhập Nhanh
+            </button>
+            <button type="button" class="input-mode-btn" data-mode="individual">
+                <i class="fas fa-keyboard"></i> Nhập Đơn Lẻ
+            </button>
+        </div>
+
+        <form id="flashcardForm" method="post" action="${pageContext.request.contextPath}/add-flashcards">
+            <input type="hidden" id="inputMode" name="inputMode" value="manual">
+
+            <div class="manual-input active">
+                <div class="form-group">
+                    <label for="manualTopic"><i class="fas fa-tag"></i> Chủ Đề</label>
+                    <input type="text" id="manualTopic" name="topic" class="form-control" placeholder="Nhập tên chủ đề" required>
+                </div>
+                <div class="form-group">
+                    <label for="manualFlashCards"><i class="fas fa-list"></i> Thẻ Ghi Nhớ (cặp từ:nghĩa)</label>
+                    <textarea id="manualFlashCards" name="flashcards" class="form-control" placeholder="Nhập theo định dạng từ:nghĩa, ngăn cách bằng dấu chấm phẩy (;). Ví dụ: hello:xin chào;good:tốt" required></textarea>
+                </div>
+            </div>
+
+            <div class="individual-input">
+                <div class="form-group">
+                    <label for="individualTopic"><i class="fas fa-tag"></i> Chủ Đề</label>
+                    <input type="text" id="individualTopic" name="topic" class="form-control" placeholder="Nhập tên chủ đề" required>
+                </div>
+                <div class="form-group">
+                    <label for="word"><i class="fas fa-font"></i> Từ</label>
+                    <input type="text" id="word" name="word" class="form-control" placeholder="Nhập từ mới" required>
+                </div>
+                <div class="form-group">
+                    <label for="mean"><i class="fas fa-comment"></i> Nghĩa</label>
+                    <input type="text" id="mean" name="mean" class="form-control" placeholder="Nhập nghĩa của từ" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-block">
+                <i class="fas fa-plus-circle"></i> Thêm Thẻ Ghi Nhớ
+            </button>
+        </form>
+
+        <div style="margin-top:20px;font-size:14px;color:#666;text-align:center;">
+            <p><i class="fas fa-info-circle"></i> Đối với nhập nhanh, ngăn cách nhiều thẻ bằng dấu chấm phẩy (;) và định dạng mỗi cặp theo dạng "từ:nghĩa"</p>
+        </div>
+    </div>
+</div>
+
+<!-- Phần JavaScript (thay thế phần xử lý input mode toggle) -->
+<script>
+    // Xử lý chuyển đổi giữa các chế độ nhập
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tab switching functionality (phần code hiện tại)
+        
+        // Input mode toggle mới
+        const modeBtns = document.querySelectorAll('.input-mode-btn');
+        const manualInput = document.querySelector('.manual-input');
+        const individualInput = document.querySelector('.individual-input');
+        const inputModeField = document.getElementById('inputMode');
+
+        modeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const mode = btn.getAttribute('data-mode');
+                inputModeField.value = mode;
+                
+                if (mode === 'manual') {
+                    manualInput.classList.add('active');
+                    individualInput.classList.remove('active');
+                } else {
+                    manualInput.classList.remove('active');
+                    individualInput.classList.add('active');
+                }
+            });
+        });
+
+        // Form validation
+        const flashcardForm = document.getElementById('flashcardForm');
+        flashcardForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const activeMode = document.querySelector('.input-mode-btn.active').getAttribute('data-mode');
+            let isValid = true;
+            let errorMessage = '';
+            
+            if (activeMode === 'manual') {
+                const topic = document.getElementById('manualTopic').value.trim();
+                const flashcards = document.getElementById('manualFlashCards').value.trim();
+                
+                if (!topic) {
+                    errorMessage += 'Chủ đề không được để trống.\n';
+                    isValid = false;
+                }
+                
+                if (!flashcards) {
+                    errorMessage += 'Bạn chưa nhập từ vựng.\n';
+                    isValid = false;
+                } else if (!flashcards.includes(':')) {
+                    errorMessage += 'Định dạng không hợp lệ. Sử dụng định dạng "từ:nghĩa" phân cách bằng dấu chấm phẩy.\n';
+                    isValid = false;
+                }
+            } else {
+                const topic = document.getElementById('individualTopic').value.trim();
+                const word = document.getElementById('word').value.trim();
+                const mean = document.getElementById('mean').value.trim();
+                
+                if (!topic) {
+                    errorMessage += 'Chủ đề không được để trống.\n';
+                    isValid = false;
+                }
+                
+                if (!word) {
+                    errorMessage += 'Từ không được để trống.\n';
+                    isValid = false;
+                }
+                
+                if (!mean) {
+                    errorMessage += 'Nghĩa không được để trống.\n';
+                    isValid = false;
+                }
+            }
+            
+            if (isValid) {
+                // Submit the form
+                this.submit();
+            } else {
+                alert(errorMessage);
+            }
+        });
+    });
+</script> 

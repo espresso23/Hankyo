@@ -6,25 +6,43 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import util.DBConnect;
+import model.Learner;
 
 public class VipUserDAO {
     private Connection conn = null;
     private PreparedStatement ps = null;
     private ResultSet rs = null;
 
-    public boolean isVipUser(int userId) throws Exception {
-        String sql = "SELECT 1 FROM Vip_User vu JOIN Vip vd ON vu.vipID = vd.vipID WHERE vu.learnerID = ? AND vu.status = 'active' AND vu.endDate >= GETDATE()";
+    public boolean isVipUser(int userID) throws Exception {
+        // Đầu tiên, chuyển đổi từ userID sang learnerID
+        Learner learner = null;
+        String learnerQuery = "SELECT learnerID FROM Learner WHERE userID = ?";
+        int learnerID = -1;
+        
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(learnerQuery)) {
+            ps.setInt(1, userID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    learnerID = rs.getInt("learnerID");
+                } else {
+                    // User không phải learner, không thể là VIP
+                    return false;
+                }
+            }
+        }
+        
+        // Sau đó kiểm tra VIP với learnerID
+        String sql = "SELECT 1 FROM Vip_User WHERE learnerID = ? AND status = 'ACTIVE' AND endDate >= GETDATE()";
 
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setInt(1, userId);
+            stmt.setInt(1, learnerID);
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next();
             }
         }
-
-
     }
 
     /**
@@ -75,7 +93,25 @@ public class VipUserDAO {
      * Kiểm tra learner có thể dùng AI không (VIP thì luôn true, thường thì tối đa 20 lần/ngày)
      */
     public boolean canUseAI(int learnerID) throws Exception {
-        if (isVipUser(learnerID)) return true;
-        return getTodayUsageCount(learnerID) < 20;
+        // Cần chuyển đổi từ userID sang learnerID nếu cần
+        int learnerIDToCheck = learnerID;
+        if (learnerID > 1000) { // Giả sử một ngưỡng để phân biệt userID và learnerID
+            // Nếu đây là userID, cần lấy learnerID tương ứng
+            String query = "SELECT learnerID FROM Learner WHERE userID = ?";
+            try (Connection conn = DBConnect.getInstance().getConnection();
+                 PreparedStatement ps = conn.prepareStatement(query)) {
+                ps.setInt(1, learnerID);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        learnerIDToCheck = rs.getInt("learnerID");
+                    } else {
+                        return false; // Không phải learner
+                    }
+                }
+            }
+        }
+        
+        if (isVipUser(learnerIDToCheck)) return true;
+        return getTodayUsageCount(learnerIDToCheck) < 20;
     }
 }

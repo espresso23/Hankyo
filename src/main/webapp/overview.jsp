@@ -40,7 +40,10 @@
         background-color: rgba(255, 159, 243, 0.1);
         color: var(--primary-pink);
     }
-
+.post-content img{
+    max-width: 400px;
+    max-height: 600px;
+}
     .dropdown-options {
         display: none;
         position: absolute;
@@ -679,7 +682,8 @@
                                     <fmt:formatDate value="${post.createdDate}" pattern="dd/MM/yyyy"/>
                                     - ${post.commentCount} bình luận
                                 </div>
-                                <p class="post-body">${post.content}</p>
+                                <p class="post-body">${post.content}
+                                </p>
 
 
                                 <div class="post-actions">

@@ -348,32 +348,37 @@
         /* Input Mode Toggle */
         .input-mode-toggle {
             display: flex;
+            justify-content: center;
             margin-bottom: 20px;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            gap: 10px;
         }
 
         .input-mode-btn {
-            flex: 1;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.7);
+            padding: 10px 20px;
             border: none;
-            cursor: pointer;
+            background: var(--blue-light);
+            color: var(--text-dark);
             font-weight: 600;
+            cursor: pointer;
+            border-radius: 50px;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            justify-content: center;
+            font-size: 14px;
         }
 
         .input-mode-btn i {
             margin-right: 8px;
         }
 
+        .input-mode-btn:hover {
+            background: var(--blue-medium);
+        }
+
         .input-mode-btn.active {
             background: linear-gradient(135deg, var(--pink-medium) 0%, var(--blue-medium) 100%);
             color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         /* Responsive Adjustments */
@@ -418,6 +423,16 @@
             .header-title i {
                 font-size: 28px;
             }
+        }
+
+        /* Input modes display */
+        .manual-input, .individual-input {
+            display: none;
+        }
+
+        .manual-input.active, .individual-input.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
         }
     </style>
 </head>
@@ -545,7 +560,8 @@
                     </button>
                 </div>
 
-                <form id="flashcardForm" method="post">
+                <form id="flashcardForm" method="post" action="${pageContext.request.contextPath}/addFlashCard">
+                    <input type="hidden" id="mode" name="mode" value="manual">
                     <div class="manual-input active">
                         <div class="form-group">
                             <label for="manualTopic"><i class="fas fa-tag"></i> Topic Name</label>
@@ -612,6 +628,7 @@
         const modeBtns = document.querySelectorAll('.input-mode-btn');
         const manualInput = document.querySelector('.manual-input');
         const individualInput = document.querySelector('.individual-input');
+        const modeField = document.getElementById('mode');
 
         modeBtns.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -619,6 +636,8 @@
                 btn.classList.add('active');
 
                 const mode = btn.getAttribute('data-mode');
+                modeField.value = mode;
+                
                 if (mode === 'manual') {
                     manualInput.classList.add('active');
                     individualInput.classList.remove('active');
@@ -640,6 +659,58 @@
                 card.style.opacity = '1';
                 card.style.transform = 'translateY(0)';
             }, index * 100);
+        });
+        
+        // Form validation and submission handling
+        const flashcardForm = document.getElementById('flashcardForm');
+        flashcardForm.addEventListener('submit', function(e) {
+            const activeMode = document.querySelector('.input-mode-btn.active').getAttribute('data-mode');
+            document.getElementById('mode').value = activeMode;
+            
+            let isValid = true;
+            let errorMessage = '';
+            
+            if (activeMode === 'manual') {
+                const topic = document.getElementById('manualTopic').value.trim();
+                const flashcards = document.getElementById('manualFlashCards').value.trim();
+                
+                if (!topic) {
+                    errorMessage += 'Topic cannot be empty.\n';
+                    isValid = false;
+                }
+                
+                if (!flashcards) {
+                    errorMessage += 'You have not entered any flashcards.\n';
+                    isValid = false;
+                } else if (!flashcards.includes(':')) {
+                    errorMessage += 'Invalid format. Use "word:meaning" format separated by semicolons.\n';
+                    isValid = false;
+                }
+            } else {
+                const topic = document.getElementById('individualTopic').value.trim();
+                const word = document.getElementById('word').value.trim();
+                const mean = document.getElementById('mean').value.trim();
+                
+                if (!topic) {
+                    errorMessage += 'Topic cannot be empty.\n';
+                    isValid = false;
+                }
+                
+                if (!word) {
+                    errorMessage += 'Word cannot be empty.\n';
+                    isValid = false;
+                }
+                
+                if (!mean) {
+                    errorMessage += 'Meaning cannot be empty.\n';
+                    isValid = false;
+                }
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert(errorMessage);
+            }
         });
     });
 </script>

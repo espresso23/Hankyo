@@ -120,21 +120,11 @@ public class CustomFlashCardServlet extends HttpServlet {
             errorMessages.add("Dữ liệu không hợp lệ.");
         }
 
-        response.setContentType("application/json;charset=UTF-8");
-        PrintWriter out = response.getWriter();
-        JSONObject jsonResponse = new JSONObject();
-        jsonResponse.put("success", !successMessages.isEmpty());
-        jsonResponse.put("flashcards", successMessages.stream()
-                .map(msg -> {
-                    String[] parts = msg.split(" - Nghĩa: ");
-                    JSONObject card = new JSONObject();
-                    card.put("word", parts[0].replace("Từ vựng: ", ""));
-                    card.put("mean", parts[1]);
-                    return card;
-                })
-                .collect(Collectors.toList()));
-        jsonResponse.put("errorMessages", errorMessages);
-        out.print(jsonResponse.toString());
-        out.flush();
+        // Store messages in session for display after redirect
+        request.getSession().setAttribute("successMessages", successMessages);
+        request.getSession().setAttribute("errorMessages", errorMessages);
+        
+        // Redirect back to quizlet.jsp
+        response.sendRedirect("quizlet");
     }
 }

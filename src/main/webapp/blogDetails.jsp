@@ -73,12 +73,14 @@
         }
 
         .comment-avt {
-            width: 40px;
-            height: 40px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             float: left;
             margin-right: 15px;
             object-fit: cover;
+            border: 2px solid #f0f0f0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         .comment-content {
@@ -324,11 +326,12 @@
         }
 
         .details-avatar {
-            width: 44px;
-            height: 44px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid #eee;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         .details-name {
@@ -348,6 +351,130 @@
             line-height: 1.7;
             color: #333;
             margin-top: 20px;
+        }
+
+        /* Honour badge styling */
+        .author-details {
+            display: flex;
+            flex-direction: column;
+            margin-left: 15px;
+        }
+
+        .author-name-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .author-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .honour-title-container {
+            margin-top: 3px;
+            margin-left: 28px; /* Căn lề với tên người dùng */
+        }
+
+        .honour-badge {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+        }
+
+        .honour-title {
+            font-size: 0.8em;
+            color: #777;
+            font-style: italic;
+        }
+
+        /* Comment author honour styling */
+        .comment-author-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .comment-author-name {
+            display: flex;
+            align-items: center;
+        }
+
+        .comment-honour-badge {
+            width: 18px;
+            height: 18px;
+            margin-right: 5px;
+        }
+
+        .comment-honour-title {
+            font-size: 0.75em;
+            color: #888;
+            font-style: italic;
+            margin-top: 2px;
+            margin-left: 23px; /* Căn lề với tên người dùng */
+        }
+
+        .author-honour-gradient {
+            color: #333;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 3px;
+            background: linear-gradient(45deg, #7209B7, #F72585);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .comment-honour-gradient {
+            font-weight: bold;
+            background: linear-gradient(45deg, #7209B7, #F72585);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .blog-content img {
+            max-width: 400px;
+            max-height: 400px;
+            width: auto;
+            height: auto;
+            display: block;
+            margin: 15px 0;
+            border-radius: 8px;
+            object-fit: contain;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .blog-header-section {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .blog-text-content {
+            line-height: 1.6;
+            margin-top: 20px;
+        }
+
+        /* Crown Icon for VIP users */
+        .vip-crown {
+            display: inline-block;
+            margin-left: 5px;
+            color: gold;
+            font-size: 14px;
+            text-shadow: 0 0 2px rgba(0,0,0,0.5);
+            transform: translateY(-1px);
+        }
+
+        .vip-crown-large {
+            font-size: 16px;
+            margin-left: 6px;
+        }
+
+        @keyframes glowing {
+            0% { text-shadow: 0 0 2px rgba(255, 215, 0, 0.5); }
+            50% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); }
+            100% { text-shadow: 0 0 2px rgba(255, 215, 0, 0.5); }
+        }
+
+        .vip-crown-animate {
+            animation: glowing 2s infinite;
         }
 
         /* Responsive */
@@ -377,6 +504,42 @@
 <div id="blog-details">
     <c:if test="${not empty post}">
         <input type="hidden" name="postID" value="${post.postID}">
+
+        <!-- Thay đổi cấu trúc: author info trước, title sau -->
+        <div class="blog-details-author">
+            <img src="${avatar}" alt="Author Avatar"
+                 onerror="this.onerror=null;this.src='https://i.pinimg.com/564x/09/a9/2c/09a92c1cbe440f31d1818e4fe0bcf23a.jpg';"
+                 class="details-avatar">
+            <div class="author-details">
+                <div class="author-name-container">
+                    <c:if test="${not empty authorHonourName}">
+                        <div class="author-info">
+                            <img src="${authorHonourImage}" alt="Honour Badge" class="honour-badge">
+                            <p class="details-name author-honour-gradient">
+                                ${fullName}
+                                <c:if test="${isAuthorVip}">
+                                    <i class="fas fa-crown vip-crown vip-crown-large vip-crown-animate"></i>
+                                </c:if>
+                            </p>
+                        </div>
+                        <div class="honour-title-container">
+                            <span class="honour-title">${authorHonourName}</span>
+                        </div>
+                    </c:if>
+                    <c:if test="${empty authorHonourName}">
+                        <p class="details-name">
+                            ${fullName}
+                            <c:if test="${isAuthorVip}">
+                                <i class="fas fa-crown vip-crown vip-crown-large vip-crown-animate"></i>
+                            </c:if>
+                        </p>
+                    </c:if>
+                </div>
+            </div>
+            <div class="blog-details-date">${post.createdDate}</div>
+        </div>
+
+        <!-- Tiêu đề bài viết được đặt sau thông tin tác giả -->
         <div class="blog-details-title">
             <h2>${post.heading}</h2>
             <c:if test="${user != null && user.userID == post.userID}">
@@ -384,8 +547,7 @@
                     <i class="ti-more-alt" id="more-options"></i>
                     <div class="dropdown-menu" id="dropdown-menu" style="display:none;">
                         <a id="openModalBtn"><i class="ti-pencil"> Edit</i></a>
-                        <a href="#" id="delete" onclick="confirmDelete(${post.getPostID()})"><i class="ti-trash">
-                            Delete</i></a>
+                        <a href="#" id="delete" onclick="confirmDelete(${post.getPostID()})"><i class="ti-trash"> Delete</i></a>
                     </div>
                 </div>
                 <!-- Hidden form for deletion -->
@@ -395,42 +557,17 @@
                 </form>
             </c:if>
         </div>
-        <div class="blog-details-author">
-            <a href="profile?user=${post.getUserName()}">
-                <img src="${avatar}" alt="Author Avatar"
-                     class="details-avatar"
-                     onerror="this.onerror=null;this.src='https://i.pinimg.com/564x/09/a9/2c/09a92c1cbe440f31d1818e4fe0bcf23a.jpg';"/>
-            </a>
-            <div style="display: flex; flex-direction: column; justify-content: center;">
-                <p class="details-name" style="margin: 0;">
-                    <a href="profile?user=${post.getUserName()}"
-                       style="color: inherit; text-decoration: none;">${fullName}</a>
-                </p>
-                <!-- Honour Badge -->
-                <c:if test="${not empty equippedHonourImage}">
-                    <div style="margin-top: 6px; display: inline-flex; align-items: center; gap: 6px;">
-                        <span style="
-                                font-weight: bold;
-                                font-size: 13px;
-                                background: linear-gradient(to right, ${equippedGradientStart}, ${equippedGradientEnd});
-                                -webkit-background-clip: text;
-                                -webkit-text-fill-color: transparent;
-                                background-clip: text;
-                                text-fill-color: transparent;
-                                ">
-                                ${equippedHonourName}
-                        </span>
-                        <img src="${equippedHonourImage}" alt="Badge" style="width: 20px; height: 20px;"/>
-                    </div>
-                </c:if>
 
-
-                <div class="blog-details-date" style="margin-top: 4px;">${post.createdDate}</div>
-            </div>
-        </div>
-
+        <!-- Updated blog content with constrained image size -->
         <div class="blog-content">
-            <p>${post.content}</p>
+            <div class="blog-header-section">
+                <c:if test="${not empty post.imgURL}">
+                    <img src="${post.imgURL}" alt="Post Image" class="blog-content-img">
+                </c:if>
+            </div>
+            <div class="blog-text-content">
+                <p>${post.content}</p>
+            </div>
         </div>
     </c:if>
     <c:if test="${empty post}">
@@ -467,17 +604,28 @@
         <c:if test="${not empty comments}">
             <c:forEach var="comment" items="${comments}">
                 <div class="comment-section" id="comment-${comment.commentID}">
-                    <a href="profile?user=${comment.username}">
-                        <img src="${comment.userAvtURL}" alt="Avatar" class="comment-avt"
-                             onerror="this.onerror=null;this.src='https://i.pinimg.com/564x/09/a9/2c/09a92c1cbe440f31d1818e4fe0bcf23a.jpg';">
-                    </a>
+                    <img src="${comment.userAvtURL}" alt="Avatar" class="comment-avt"
+                         onerror="this.onerror=null;this.src='https://i.pinimg.com/564x/09/a9/2c/09a92c1cbe440f31d1818e4fe0bcf23a.jpg';">
                     <div class="comment-content">
                         <div class="comment-header">
                             <div>
-<span class="comment-author">
-    <a href="profile?user=${comment.username}"
-       style="color: #365899; text-decoration: none;">${comment.userFullName}</a>
-</span>
+                                <c:if test="${not empty commentHonours[comment.commentID]}">
+                                    <div class="comment-author-info">
+                                        <div class="comment-author-name">
+                                            <img src="${commentHonours[comment.commentID].image}" alt="Honour" class="comment-honour-badge">
+                                            <span class="comment-author comment-honour-gradient">
+                                                ${comment.userFullName}
+                                                <c:if test="${commentUserVipMap[comment.commentID]}">
+                                                    <i class="fas fa-crown vip-crown"></i>
+                                                </c:if>
+                                            </span>
+                                        </div>
+                                        <span class="comment-honour-title">${commentHonours[comment.commentID].name}</span>
+                                    </div>
+                                </c:if>
+                                <c:if test="${empty commentHonours[comment.commentID]}">
+                                    <span class="comment-author">${comment.userFullName}</span>
+                                </c:if>
                                 <span class="comment-time">${comment.createdDate}</span>
                             </div>
                             <c:if test="${user != null}">
@@ -497,30 +645,25 @@
                         </div>
                         <div class="comment-text">${comment.content}</div>
                         <div class="vote-controls">
-                            <button type="button" class="vote-btn upvote-btn" data-comment-id="${comment.commentID}"
-                                    onclick="handleVote(this, 1)">
+                            <button type="button" class="vote-btn upvote-btn" data-comment-id="${comment.commentID}" onclick="handleVote(this, 1)">
                                 <i class="ti-angle-up"></i>
                             </button>
                             <span class="vote-score" id="score-${comment.commentID}">${comment.score}</span>
-                            <button type="button" class="vote-btn downvote-btn" data-comment-id="${comment.commentID}"
-                                    onclick="handleVote(this, -1)">
+                            <button type="button" class="vote-btn downvote-btn" data-comment-id="${comment.commentID}" onclick="handleVote(this, -1)">
                                 <i class="ti-angle-down"></i>
                             </button>
                         </div>
                         <div class="comment-actions">
-                            <button class="btn-update"
-                                    onclick="toggleReplyForm(${comment.commentID}, '${comment.userFullName}')">
+                            <button class="btn-update" onclick="toggleReplyForm(${comment.commentID}, '${comment.userFullName}')">
                                 <i class="ti-comment"></i> Reply
                             </button>
                             <c:if test="${not empty replyMap[comment.commentID]}">
-                                <button class="view-reply-button" id="view-reply-button-${comment.commentID}"
-                                        onclick="showReplies(${comment.commentID})">
+                                <button class="view-reply-button" id="view-reply-button-${comment.commentID}" onclick="showReplies(${comment.commentID})">
                                     View reply (${fn:length(replyMap[comment.commentID])})
                                 </button>
                             </c:if>
                             <c:if test="${user != null && user.userID != comment.userID}">
-                                <button type="button" class="btn-report"
-                                        onclick="openReportModal(${comment.commentID})">
+                                <button type="button" class="btn-report" onclick="openReportModal(${comment.commentID})">
                                     <i class="fas fa-flag"></i> Report
                                 </button>
                             </c:if>
@@ -528,8 +671,7 @@
 
                         <div id="replyForm-${comment.commentID}" class="reply-form" style="display:none;">
                             <form method="POST" action="postDetails">
-                                <textarea name="commentInput" rows="2" class="form-control"
-                                          required>@${comment.userFullName} </textarea>
+                                <textarea name="commentInput" rows="2" class="form-control" required>@${comment.userFullName} </textarea>
                                 <input type="hidden" name="postID" value="${post.postID}">
                                 <input type="hidden" name="parentID" value="${comment.commentID}">
                                 <input type="hidden" name="action" value="addComment">
@@ -546,14 +688,23 @@
                                             <div class="comment-content">
                                                 <div class="comment-header">
                                                     <div>
-                                                       <span class="comment-author">
-    <a href="profile?user=${reply.username}" style="color: #365899; text-decoration: none;">${reply.userFullName}</a>
-</span>
-                                                        <a href="profile?user=${reply.username}">
-                                                            <img src="${reply.userAvtURL}" alt="Avatar" class="comment-avt"
-                                                                 onerror="this.onerror=null;this.src='https://i.pinimg.com/564x/09/a9/2c/09a92c1cbe440f31d1818e4fe0bcf23a.jpg';">
-                                                        </a>
-
+                                                        <c:if test="${not empty commentHonours[reply.commentID]}">
+                                                            <div class="comment-author-info">
+                                                                <div class="comment-author-name">
+                                                                    <img src="${commentHonours[reply.commentID].image}" alt="Honour" class="comment-honour-badge">
+                                                                    <span class="comment-author comment-honour-gradient">
+                                                                        ${reply.userFullName}
+                                                                        <c:if test="${commentUserVipMap[reply.commentID]}">
+                                                                            <i class="fas fa-crown vip-crown"></i>
+                                                                        </c:if>
+                                                                    </span>
+                                                                </div>
+                                                                <span class="comment-honour-title">${commentHonours[reply.commentID].name}</span>
+                                                            </div>
+                                                        </c:if>
+                                                        <c:if test="${empty commentHonours[reply.commentID]}">
+                                                            <span class="comment-author">${reply.userFullName}</span>
+                                                        </c:if>
                                                         <span class="comment-time">${reply.createdDate}</span>
                                                     </div>
                                                     <c:if test="${user != null && (user.userID == reply.userID || user.userID == post.userID)}">
@@ -571,41 +722,31 @@
                                                 </div>
                                                 <div class="comment-text">${reply.content}</div>
                                                 <div class="vote-controls">
-                                                    <button type="button" class="vote-btn upvote-btn"
-                                                            data-comment-id="${reply.commentID}"
-                                                            onclick="handleVote(this, 1)">
+                                                    <button type="button" class="vote-btn upvote-btn" data-comment-id="${reply.commentID}" onclick="handleVote(this, 1)">
                                                         <i class="ti-angle-up"></i>
                                                     </button>
-                                                    <span class="vote-score"
-                                                          id="score-${reply.commentID}">${reply.score}</span>
-                                                    <button type="button" class="vote-btn downvote-btn"
-                                                            data-comment-id="${reply.commentID}"
-                                                            onclick="handleVote(this, -1)">
+                                                    <span class="vote-score" id="score-${reply.commentID}">${reply.score}</span>
+                                                    <button type="button" class="vote-btn downvote-btn" data-comment-id="${reply.commentID}" onclick="handleVote(this, -1)">
                                                         <i class="ti-angle-down"></i>
                                                     </button>
                                                 </div>
                                                 <div class="comment-actions">
-                                                    <button class="btn-update"
-                                                            onclick="toggleReplyForm(${reply.commentID}, '${reply.userFullName}')">
+                                                    <button class="btn-update" onclick="toggleReplyForm(${reply.commentID}, '${reply.userFullName}')">
                                                         <i class="ti-comment"></i> Reply
                                                     </button>
                                                     <c:if test="${user != null && user.userID != reply.userID}">
-                                                        <button type="button" class="btn-report"
-                                                                onclick="openReportModal(${comment.commentID})">
+                                                        <button type="button" class="btn-report" onclick="openReportModal(${comment.commentID})">
                                                             <i class="fas fa-flag"></i> Report
                                                         </button>
                                                     </c:if>
                                                 </div>
-                                                <div id="replyForm-${reply.commentID}" class="reply-form"
-                                                     style="display:none;">
+                                                <div id="replyForm-${reply.commentID}" class="reply-form" style="display:none;">
                                                     <form method="POST" action="postDetails">
-                                                        <textarea name="commentInput" rows="2" class="form-control"
-                                                                  required>@${reply.userFullName} </textarea>
+                                                        <textarea name="commentInput" rows="2" class="form-control" required>@${reply.userFullName} </textarea>
                                                         <input type="hidden" name="postID" value="${post.postID}">
                                                         <input type="hidden" name="parentID" value="${reply.commentID}">
                                                         <input type="hidden" name="action" value="addComment">
-                                                        <button type="submit" class="btn btn-primary btn-sm mt-2">Gửi
-                                                        </button>
+                                                        <button type="submit" class="btn btn-primary btn-sm mt-2">Gửi</button>
                                                     </form>
                                                 </div>
                                             </div>

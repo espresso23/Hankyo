@@ -7,6 +7,10 @@ import dao.ReportDAO;
 import dao.UserDAO;
 import dao.CommentDAO;
 import dao.PostDAO;
+import dao.HonourDAO;
+import dao.HonourOwnedDAO;
+import dao.VipUserDAO;
+import dao.LearnerDAO;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -26,6 +30,8 @@ import model.Comment;
 import model.Post;
 import model.Report;
 import model.User;
+import model.Honour;
+import model.Learner;
 
 
 @WebServlet(name = "PostDetailsServlet", urlPatterns = {"/postDetails"})
@@ -37,6 +43,10 @@ public class PostDetailsServlet extends HttpServlet {
     private PostDAO postDAO = new PostDAO();
     private CommentDAO commentDAO = new CommentDAO();
     private UserDAO userDAO = new UserDAO();
+    private HonourDAO honourDAO = new HonourDAO();
+    private HonourOwnedDAO honourOwnedDAO = new HonourOwnedDAO();
+    private VipUserDAO vipUserDAO = new VipUserDAO();
+    private LearnerDAO learnerDAO = new LearnerDAO();
     private static final String SAVE_DIR = "blogImg";
 
     private Cloudinary cloudinary;
@@ -62,25 +72,83 @@ public class PostDetailsServlet extends HttpServlet {
                     String fullName = postDAO.getFullNameByPostId(postId);
                     String avtURL = postDAO.getAvatarByPostId(postId);
 
+                    // Get honour information for post author
+                    Integer equippedHonourID = honourOwnedDAO.getEquippedHonourID(post.getUserID());
+                    if (equippedHonourID != null) {
+                        Honour honour = honourDAO.getHonourById(equippedHonourID);
+                        if (honour != null) {
+                            request.setAttribute("authorHonourName", honour.getHonourName());
+                            request.setAttribute("authorGradientStart", honour.getGradientStart());
+                            request.setAttribute("authorGradientEnd", honour.getGradientEnd());
+                            request.setAttribute("authorHonourImage", honour.getHonourImg());
+                        }
+                    }
+
+                    // Kiểm tra VIP cho tác giả bài viết
+                    try {
+                        boolean isAuthorVip = vipUserDAO.isVipUser(post.getUserID());
+                        System.out.println("DEBUG - Post Author VIP check for userID: " + post.getUserID() + ", VIP status: " + isAuthorVip);
+                        request.setAttribute("isAuthorVip", isAuthorVip);
+                    } catch (Exception e) {
+                        System.err.println("Error checking VIP status for author: " + e.getMessage());
+                        request.setAttribute("isAuthorVip", false);
+                    }
+
                     int commentID = 0;
                     List<Comment> comments = commentDAO.getCommentsByPostID(postId);
                     Map<Integer, List<Comment>> replyMap = new HashMap<>();
-                    for (Comment comment: comments ) {
+                    
+                    // Get honour information for all commenters
+                    Map<Integer, Map<String, String>> commentHonours = new HashMap<>();
+                    
+                    // Kiểm tra VIP cho từng người comment
+                    Map<Integer, Boolean> commentUserVipMap = new HashMap<>();
+                    
+                    // First process main comments
+                    for (Comment comment: comments) {
                         commentID = comment.getCommentID();
-                        if(commentID != 0){
+                        if(commentID != 0) {
                             List<Comment> replyList = commentDAO.getAllRepliesRecursive(commentID);
                             replyMap.put(commentID, replyList);
+                            
+                            // Get honour for the main comment author
+                            processCommentHonour(comment, commentHonours);
+                            
+                            // Kiểm tra VIP cho từng người comment
+                            try {
+                                boolean isCommentUserVip = vipUserDAO.isVipUser(comment.getUserID());
+                                System.out.println("DEBUG - Comment VIP check for commentID: " + comment.getCommentID() + ", userID: " + comment.getUserID() + ", VIP status: " + isCommentUserVip);
+                                commentUserVipMap.put(comment.getCommentID(), isCommentUserVip);
+                            } catch (Exception e) {
+                                System.err.println("Error checking VIP status for comment " + comment.getCommentID() + ": " + e.getMessage());
+                                commentUserVipMap.put(comment.getCommentID(), false);
+                            }
+                            
+                            // Process honours for all replies
+                            for (Comment reply : replyList) {
+                                processCommentHonour(reply, commentHonours);
+                                
+                                // Kiểm tra VIP cho từng người reply
+                                try {
+                                    boolean isReplyUserVip = vipUserDAO.isVipUser(reply.getUserID());
+                                    System.out.println("DEBUG - Reply VIP check for commentID: " + reply.getCommentID() + ", userID: " + reply.getUserID() + ", VIP status: " + isReplyUserVip);
+                                    commentUserVipMap.put(reply.getCommentID(), isReplyUserVip);
+                                } catch (Exception e) {
+                                    System.err.println("Error checking VIP status for reply " + reply.getCommentID() + ": " + e.getMessage());
+                                    commentUserVipMap.put(reply.getCommentID(), false);
+                                }
+                            }
                         }
-
                     }
+                    
+                    request.setAttribute("commentHonours", commentHonours);
                     request.setAttribute("replyMap", replyMap);
                     request.setAttribute("postID", postIdParam);
                     request.setAttribute("post", post);
                     request.setAttribute("fullName", fullName);
                     request.setAttribute("avatar", avtURL);
-
-
                     request.setAttribute("comments", comments);
+                    request.setAttribute("commentUserVipMap", commentUserVipMap);
 
                     request.getRequestDispatcher("blogDetails.jsp").forward(request, response);
                 } else {
@@ -94,6 +162,22 @@ public class PostDetailsServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error occurred");
+        }
+    }
+    
+    // Helper method to process honour for a comment
+    private void processCommentHonour(Comment comment, Map<Integer, Map<String, String>> commentHonours) {
+        Integer equippedHonourID = honourOwnedDAO.getEquippedHonourID(comment.getUserID());
+        if (equippedHonourID != null) {
+            Honour honour = honourDAO.getHonourById(equippedHonourID);
+            if (honour != null) {
+                Map<String, String> honourInfo = new HashMap<>();
+                honourInfo.put("name", honour.getHonourName());
+                honourInfo.put("gradientStart", honour.getGradientStart());
+                honourInfo.put("gradientEnd", honour.getGradientEnd());
+                honourInfo.put("image", honour.getHonourImg());
+                commentHonours.put(comment.getCommentID(), honourInfo);
+            }
         }
     }
 
