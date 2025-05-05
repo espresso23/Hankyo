@@ -427,6 +427,8 @@
 <jsp:include page="header.jsp"></jsp:include>
 <div class="mainContainer">
     <h2>Từ điển Hàn - Việt </h2>
+    <div id="ai-usage-info"
+         style="font-size:12px;color:#d483ce;text-align:right;margin-bottom: 8px; font-weight: 700;"></div>
     <c:set var="itemsPerPage" value="50" />
     <c:set var="currentPage" value="${param.page != null ? param.page : 1}" />
     <c:set var="startIndex" value="${(currentPage - 1) * itemsPerPage}" />
@@ -474,6 +476,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Thông báo lỗi AI -->
+    <div id="ai-error-message" style="display:none; color:#d8000c; background:#fff4f4; border:1px solid #f5c6cb; border-radius:8px; padding:12px; margin:16px 0; font-weight:600; text-align:center;"></div>
 
     <!-- Kết quả tìm kiếm AI -->
     <div id="aiSearchResult" class="mt-4" style="display: none;">
@@ -684,6 +689,7 @@
                     toLang: toLang
                 },
                 success: function(response) {
+                    $('#ai-error-message').hide();
                     try {
                         if (typeof response === 'object') {
                             displayAIResult(response);
@@ -694,12 +700,15 @@
                         displayAIResult(result);
                     } catch (e) {
                         console.error('Error parsing response:', e, response);
-                        alert('Có lỗi xảy ra khi xử lý kết quả!\nBạn có thể copy response này gửi cho kỹ thuật: ' + response);
+                        $('#ai-error-message').text('Có lỗi xảy ra khi xử lý kết quả! Bạn có thể copy response này gửi cho kỹ thuật: ' + response).show();
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error('AJAX error:', error);
-                    alert('Có lỗi xảy ra khi tìm kiếm!');
+                    if (xhr.status === 403 && xhr.responseText && xhr.responseText.includes('hết lượt')) {
+                        $('#ai-error-message').text('Bạn đã hết lượt sử dụng AI miễn phí hôm nay! Hãy nâng cấp VIP để sử dụng không giới hạn.').show();
+                    } else {
+                        $('#ai-error-message').text('Có lỗi xảy ra khi tìm kiếm!').show();
+                    }
                 }
             });
         });
@@ -851,6 +860,38 @@
             }
             examplesList.html(html);
         }
+    });
+
+    // --- Quota AI giống header-user.jsp ---
+    window.aiUsageCache = window.aiUsageCache || {isVip: false, used: 0, left: 20};
+
+    function updateAIUsageInfo(forceFetch = false) {
+        // Nếu không force, ưu tiên dùng cache để cập nhật nhanh
+        if (!forceFetch && window.aiUsageCache) {
+            renderAIUsageInfo(window.aiUsageCache);
+        }
+        // Luôn fetch lại để đồng bộ số liệu mới nhất
+        fetch('ai-usage-info')
+          .then(res => res.json())
+          .then(data => {
+            window.aiUsageCache = data;
+            renderAIUsageInfo(data);
+          });
+    }
+
+    function renderAIUsageInfo(data) {
+        let msg = '';
+        if (data.isVip) msg = 'AI: Không giới hạn';
+        else msg = 'AI: Đã dùng ' + data.used + '/20 lượt hôm nay. Còn lại: ' + data.left;
+        if (!data.isVip && data.left <= 3 && data.left > 0) msg += ' <b>(Sắp hết lượt!)</b>';
+        if (!data.isVip && data.left === 0) msg += ' <b>(Đã hết lượt miễn phí!)</b>';
+        document.querySelectorAll('#ai-usage-info').forEach(function(el) {
+          el.innerHTML = msg;
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        updateAIUsageInfo(true);
     });
 </script>
 

@@ -6,6 +6,7 @@ import model.FavoriteFlashCard;
 import model.Learner;
 import service.GeminiService;
 import com.google.gson.Gson;
+import dao.VipUserDAO;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -22,6 +23,7 @@ import java.util.Map;
 public class DictionaryServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private DictionaryDAO dictionaryDAO;
+    private final VipUserDAO vipUserDAO = new VipUserDAO();
 
     @Override
     public void init() throws ServletException {
@@ -134,6 +136,23 @@ public class DictionaryServlet extends HttpServlet {
     }
 
     private void handleAISearch(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession();
+        Learner learner = (Learner) session.getAttribute("learner");
+        Integer learnerID = learner.getLearnerID();
+
+        // Kiểm tra quota AI
+        try {
+            if (!vipUserDAO.canUseAI(learnerID)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("{\"success\": false, \"error\": \"Bạn đã hết lượt sử dụng AI miễn phí hôm nay!\"}");
+                return;
+            }
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"success\": false, \"error\": \"Lỗi kiểm tra quota AI: " + e.getMessage() + "\"}");
+            return;
+        }
+
         String word = request.getParameter("word");
         String fromLang = request.getParameter("fromLang");
         String toLang = request.getParameter("toLang");
@@ -149,6 +168,15 @@ public class DictionaryServlet extends HttpServlet {
             String result = geminiService.searchAndTranslateDictionary(word, fromLang, toLang);
             String json = GeminiService.extractJsonFromGeminiResponse(result);
             response.getWriter().write(json);
+            // Tăng số lần sử dụng AI nếu không phải VIP
+            try {
+                if (!vipUserDAO.isVipUser(learnerID)) {
+                    vipUserDAO.incrementTodayUsage(learnerID);
+                }
+            } catch (Exception e) {
+                // Không chặn trả kết quả, chỉ log lỗi tăng quota nếu có
+                e.printStackTrace();
+            }
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write("{\"success\": false, \"error\": \"" + e.getMessage() + "\"}");
