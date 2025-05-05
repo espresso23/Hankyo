@@ -15,7 +15,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="icon" href="${pageContext.request.contextPath}/asset/png/icon/logo.jpg">
     <meta charset="UTF-8">
     <title>User Profile - Posts</title>
     <link rel="stylesheet" href="asset/css/sidebar.css">
@@ -33,10 +32,7 @@
         --text-dark: #2d3436;
         --text-light: #636e72;
     }
-    .post-content img{
-        max-width: 400px;
-        max-height: 600px;
-    }
+
     body {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         background-color: var(--light-bg);
@@ -393,7 +389,10 @@
         background-color: rgba(255, 159, 243, 0.1);
         color: var(--primary-pink);
     }
-
+ .post-content{
+     max-width:400px;
+     max-height: 600px;
+ }
     .post-content {
         padding: 16px;
     }
@@ -522,12 +521,10 @@
             <c:choose>
                 <c:when test="${not empty userPosts}">
                     <c:forEach var="post" items="${userPosts}">
-                        <div class="post-card" >
+                        <div class="post-card">
                             <div class="post-header">
                                 <div class="post-user-info">
-                                    <!-- Use post author's avatar instead of current user's avatar -->
                                     <img class="post-avatar" src="${not empty post.avtUserImg ? post.avtUserImg : 'https://dongvat.edu.vn/upload/2025/01/avatar-cho-hai-04.webp'}" alt="User Avatar">
-                                    <!-- Use post author's name instead of current user's name -->
                                     <span class="post-username">${post.userFullName}</span>
                                 </div>
 
@@ -542,19 +539,20 @@
                                 </c:if>
                             </div>
 
-                            <div class="post-content">
-                                <h4 class="post-title">${post.heading}</h4>
-                                <div class="post-meta">
-                                    <fmt:formatDate value="${post.createdDate}" pattern="dd/MM/yyyy" /> - ${post.commentCount} bình luận
-                                </div>
-                                <p class="post-body">${post.content}</p>
+                            <a href="postDetails?postID=${post.postID}" style="text-decoration: none; color: inherit;">
+                                <div class="post-content">
+                                    <h4 class="post-title">${post.heading}</h4>
+                                    <div class="post-meta">
+                                        <fmt:formatDate value="${post.createdDate}" pattern="dd/MM/yyyy" /> - ${post.commentCount} bình luận
+                                    </div>
+                                    <p class="post-body">${post.content}</p>
 
-
-                                <div class="post-actions">
-                                    <div class="action-item"><i class="far fa-comment"></i> ${post.commentCount} bình luận</div>
-                                    <div class="action-item"><i class="far fa-heart"></i> Thích</div>
+                                    <div class="post-actions">
+                                        <div class="action-item"><i class="far fa-comment"></i> ${post.commentCount} bình luận</div>
+                                        <div class="action-item"><i class="far fa-heart"></i> Thích</div>
+                                    </div>
                                 </div>
-                            </div>
+                            </a>
                         </div>
                     </c:forEach>
                 </c:when>
