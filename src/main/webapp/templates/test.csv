@@ -1,0 +1,13 @@
+questionType,questionText,questionMark,questionImg,audioFile,answer1,isCorrect1,answer2,isCorrect2,answer3,isCorrect3,answer4,isCorrect4
+multiple_choice,Đây là câu hỏi mẫu?,1,https://example.com/image1.jpg,https://example.com/audio1.mp3,Đáp án A,1,Đáp án B,0,Đáp án C,0,Đáp án D,0
+multiple_choice,Câu hỏi thứ hai?,0.5,,,Lựa chọn 1,0,Lựa chọn 2,1,Lựa chọn 3,0,Lựa chọn 4,0
+multiple_choice,다음 중 '안녕하세요'의 의미로 알맞은 것을 고르십시오.,1,,,Xin chào,1,Tạm biệt,0,Cảm ơn,0,Xin lỗi,0
+multiple_choice,한국어로 '감사합니다'는 무슨 뜻입니까?,1,,,Xin chào,0,Tạm biệt,0,Cảm ơn,1,Xin lỗi,0
+multiple_choice,'저는 베트남 사람입니다.'의 뜻으로 알맞은 것을 고르십시오.,1,,,Tôi là người Việt Nam,1,Anh ấy là người Hàn Quốc,0,Cô ấy là người Nhật,0,Họ là người Mỹ,0
+multiple_choice,다음 중 숫자 '삼십'(30)을 고르십시오.,1,,,10,0,20,0,30,1,40,0
+multiple_choice,'학교'의 뜻으로 알맞은 것을 고르십시오.,1,,,Nhà,0,Trường học,1,Bệnh viện,0,Công ty,0
+multiple_choice,한국어로 '주말'은 무슨 뜻입니까?,1,,,Buổi sáng,0,Buổi tối,0,Cuối tuần,1,Ngày thường,0
+multiple_choice,'-습니다'는 어떤 종결어미입니까?,1,,,Kính ngữ,1,Thân mật,0,Không trang trọng,0,Mệnh lệnh,0
+multiple_choice,'이것'의 반대말로 알맞은 것을 고르십시오.,1,,,저기,0,거기,0,그것,0,저것,1
+multiple_choice,한국의 전통 옷은 무엇입니까?,1,,,기모노,0,치파오,0,한복,1,아오자이,0
+multiple_choice,한국의 수도는 어디입니까?,1,,,부산,0,서울,1,인천,0,대구,0

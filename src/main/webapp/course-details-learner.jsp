@@ -278,7 +278,7 @@
                              onerror="this.src='https://ui-avatars.com/api/?name=Expert&background=eee&color=888&size=128'">
                         <div class="instructor-details">
                             <h5>${course.expert.fullName}</h5>
-                            <span class="certificate">${course.expert.certificate}</span>
+<%--                            <span class="certificate">${course.expert.certificate}</span>--%>
                         </div>
                     </div>
                 </div>
