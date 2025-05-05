@@ -771,9 +771,13 @@
                                     <c:set var="imgEnd" value="${fn:indexOf(subContent, '>') + 1}" />
                                     <c:set var="imgTag" value="${fn:substring(content, imgStart, imgStart + imgEnd)}" />
                                     ${imgTag}
+                                    <c:set var="contentWithoutImg" value="${fn:replace(content, imgTag, '')}" />
+                                </c:if>
+                                <c:if test="${!fn:contains(content, '<img')}">
+                                    <c:set var="contentWithoutImg" value="${content}" />
                                 </c:if>
                             </div>
-                            <p class="card-text">${post.getContent()}</p>
+                            <p class="card-text">${contentWithoutImg}</p>
                         </div>
                     </a>
                 </div>
@@ -873,9 +877,13 @@
                                     <c:set var="imgEnd" value="${fn:indexOf(subContent, '>') + 1}" />
                                     <c:set var="imgTag" value="${fn:substring(content, imgStart, imgStart + imgEnd)}" />
                                     ${imgTag}
+                                    <c:set var="contentWithoutImg" value="${fn:replace(content, imgTag, '')}" />
+                                </c:if>
+                                <c:if test="${!fn:contains(content, '<img')}">
+                                    <c:set var="contentWithoutImg" value="${content}" />
                                 </c:if>
                             </div>
-                            <p>${topPost.getContent()}</p>
+                            <p>${contentWithoutImg}</p>
                             <div class="top-rated-score">
                                 <span>Score: ${topPost.getScore()}</span>
                             </div>
@@ -946,9 +954,13 @@
                                             <c:set var="imgEnd" value="${fn:indexOf(subContent, '>') + 1}" />
                                             <c:set var="imgTag" value="${fn:substring(content, imgStart, imgStart + imgEnd)}" />
                                             ${imgTag}
+                                            <c:set var="contentWithoutImg" value="${fn:replace(content, imgTag, '')}" />
+                                        </c:if>
+                                        <c:if test="${!fn:contains(content, '<img')}">
+                                            <c:set var="contentWithoutImg" value="${content}" />
                                         </c:if>
                                     </div>
-                                    <p class="card-text">${post.getContent()}</p>
+                                    <p class="card-text">${contentWithoutImg}</p>
                                 </div>
                             </a>
                         </div>

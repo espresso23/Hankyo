@@ -12,7 +12,7 @@ public class DBConnect {
     private static HikariDataSource dataSource;
     private static final String USERNAME = "sa";
     private static final String PASSWORD = "123";
-    private static final String DB_URL = "jdbc:sqlserver://BEARXAM\\MSSQLSERVER01:1433;databaseName=Hankyo;encrypt=true;trustServerCertificate=true";
+    private static final String DB_URL = "jdbc:sqlserver://localhost:1433;databaseName=Hankyo;encrypt=true;trustServerCertificate=true";
     private static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
     private static final Logger LOGGER = Logger.getLogger(DBConnect.class.getName());
     
