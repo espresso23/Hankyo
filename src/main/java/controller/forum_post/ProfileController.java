@@ -1,4 +1,4 @@
-package controller;
+package controller.forum_post;
 
 import cloud.CloudinaryConfig;
 import dao.*;

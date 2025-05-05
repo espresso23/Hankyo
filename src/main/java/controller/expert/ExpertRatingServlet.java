@@ -1,4 +1,4 @@
-package controller;
+package controller.expert;
 
 import dao.ExpertRatingDAO;
 import model.ExpertRating;

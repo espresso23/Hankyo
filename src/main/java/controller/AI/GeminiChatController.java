@@ -1,4 +1,4 @@
-package controller;
+package controller.AI;
 
 import service.GeminiService;
 import com.google.gson.Gson;

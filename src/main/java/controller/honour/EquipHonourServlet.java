@@ -1,4 +1,4 @@
-package controller;
+package controller.honour;
 
 import dao.HonourOwnedDAO;
 import model.Learner;

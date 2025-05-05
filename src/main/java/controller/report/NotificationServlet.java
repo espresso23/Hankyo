@@ -1,4 +1,4 @@
-package controller;
+package controller.report;
 
 import com.google.gson.Gson;
 import dao.NotificationDAO;

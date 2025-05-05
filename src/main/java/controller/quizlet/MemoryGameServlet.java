@@ -1,4 +1,4 @@
-package controller;
+package controller.quizlet;
 
 import com.google.gson.Gson;
 import dao.QuizletDAO;

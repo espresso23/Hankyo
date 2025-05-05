@@ -1,4 +1,4 @@
-package controller;
+package controller.AI;
 
 import service.GeminiService;
 import javax.servlet.ServletException;
