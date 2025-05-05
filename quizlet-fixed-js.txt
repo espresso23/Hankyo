@@ -1,0 +1,185 @@
+<!-- CSS to add to your style section -->
+<style>
+    /* Input modes display */
+    .manual-input, .individual-input {
+        display: none;
+    }
+
+    .manual-input.active, .individual-input.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+</style>
+
+<!-- Replace the current form element with this one -->
+<form id="flashcardForm" method="post" action="${pageContext.request.contextPath}/add-flashcards">
+    <input type="hidden" id="inputMode" name="inputMode" value="manual">
+    
+    <div class="manual-input active">
+        <div class="form-group">
+            <label for="manualTopic"><i class="fas fa-tag"></i> Topic Name</label>
+            <input type="text" id="manualTopic" name="topic" class="form-control" placeholder="Enter topic name" required>
+        </div>
+        <div class="form-group">
+            <label for="manualFlashCards"><i class="fas fa-list"></i> Flashcards (word:meaning pairs)</label>
+            <textarea id="manualFlashCards" name="flashcards" class="form-control" placeholder="Enter word:meaning pairs (e.g. hello:xin chào;good:tốt)" required></textarea>
+        </div>
+    </div>
+
+    <div class="individual-input">
+        <div class="form-group">
+            <label for="individualTopic"><i class="fas fa-tag"></i> Topic Name</label>
+            <input type="text" id="individualTopic" name="topic" class="form-control" placeholder="Enter topic name" required>
+        </div>
+        <div class="form-group">
+            <label for="word"><i class="fas fa-font"></i> Word</label>
+            <input type="text" id="word" name="word" class="form-control" placeholder="Enter word" required>
+        </div>
+        <div class="form-group">
+            <label for="mean"><i class="fas fa-comment"></i> Meaning</label>
+            <input type="text" id="mean" name="mean" class="form-control" placeholder="Enter meaning" required>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-block">
+        <i class="fas fa-plus-circle"></i> Add Flashcards
+    </button>
+</form>
+
+<!-- Replace the current script with this one -->
+<script>
+    window.contextPath = '${pageContext.request.contextPath}';
+
+    // Tab switching functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        // Activate the appropriate tab based on URL parameter or use default (system)
+        function activateTabFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            
+            if (tabParam) {
+                const targetBtn = document.querySelector(`.tab-btn[data-tab="${tabParam}"]`);
+                if (targetBtn) {
+                    targetBtn.click();
+                }
+            }
+        }
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all tabs and contents
+                tabBtns.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+
+                // Add active class to clicked tab
+                btn.classList.add('active');
+
+                // Show corresponding content
+                const tabId = btn.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+                
+                // Update URL without reloading
+                const url = new URL(window.location);
+                url.searchParams.set('tab', tabId);
+                window.history.pushState({}, '', url);
+            });
+        });
+
+        // Activate initial tab
+        activateTabFromUrl();
+
+        // Fix Input mode toggle
+        const modeBtns = document.querySelectorAll('.input-mode-btn');
+        const manualInput = document.querySelector('.manual-input');
+        const individualInput = document.querySelector('.individual-input');
+        const inputModeField = document.getElementById('inputMode');
+
+        modeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const mode = btn.getAttribute('data-mode');
+                inputModeField.value = mode;
+                
+                if (mode === 'manual') {
+                    manualInput.classList.add('active');
+                    individualInput.classList.remove('active');
+                } else {
+                    manualInput.classList.remove('active');
+                    individualInput.classList.add('active');
+                }
+            });
+        });
+
+        // Form validation
+        const flashcardForm = document.getElementById('flashcardForm');
+        flashcardForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const activeMode = document.querySelector('.input-mode-btn.active').getAttribute('data-mode');
+            let isValid = true;
+            let errorMessage = '';
+            
+            if (activeMode === 'manual') {
+                const topic = document.getElementById('manualTopic').value.trim();
+                const flashcards = document.getElementById('manualFlashCards').value.trim();
+                
+                if (!topic) {
+                    errorMessage += 'Topic name is required.\n';
+                    isValid = false;
+                }
+                
+                if (!flashcards) {
+                    errorMessage += 'Please enter at least one flashcard pair.\n';
+                    isValid = false;
+                } else if (!flashcards.includes(':')) {
+                    errorMessage += 'Invalid format. Use "word:meaning" format separated by semicolons.\n';
+                    isValid = false;
+                }
+            } else {
+                const topic = document.getElementById('individualTopic').value.trim();
+                const word = document.getElementById('word').value.trim();
+                const mean = document.getElementById('mean').value.trim();
+                
+                if (!topic) {
+                    errorMessage += 'Topic name is required.\n';
+                    isValid = false;
+                }
+                
+                if (!word) {
+                    errorMessage += 'Word is required.\n';
+                    isValid = false;
+                }
+                
+                if (!mean) {
+                    errorMessage += 'Meaning is required.\n';
+                    isValid = false;
+                }
+            }
+            
+            if (isValid) {
+                // Submit the form
+                this.submit();
+            } else {
+                alert(errorMessage);
+            }
+        });
+
+        // Animate cards on load
+        const cards = document.querySelectorAll('.topic-card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    });
+</script> 
