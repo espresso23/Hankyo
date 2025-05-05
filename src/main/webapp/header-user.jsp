@@ -647,7 +647,7 @@
   <img class="logo" src="${pageContext.request.contextPath}/asset/png/loginPage/logo.png" alt="Logo" onclick="window.location.href='home.jsp'">
   <div class="navbarContainer">
     <div class="navbarContent"><a href="courses">Khóa Học</a></div>
-    <div class="navbarContent"><a href="/about.html">Giảng Viên</a></div>
+    <div class="navbarContent"><a href="/about.html">Đăng ký làm Giảng Viên</a></div>
     <div class="navbarContent"><a href="blog">Cộng Đồng</a></div>
     <div class="navbarContent"><a href="exam">Đề thi</a></div>
     <div class="navbarContent"><a href="documents">Tài Liệu</a></div>
@@ -716,7 +716,7 @@
 <!-- Popup Container -->
 <div class="popupContainer" id="popupContainer">
   <div class="profile">
-    <div class="profileContent"><a href="${pageContext.request.contextPath}/update-profile">Tài Khoản</a></div>
+    <div class="profileContent"><a href="${pageContext.request.contextPath}/profile">Tài Khoản</a></div>
     <div class="profileContent">
       <form action="${pageContext.request.contextPath}/logout" method="post">
         <button type="submit" class="logout-btn">Đăng Xuất</button>

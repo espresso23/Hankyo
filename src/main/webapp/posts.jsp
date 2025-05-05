@@ -33,7 +33,10 @@
         --text-dark: #2d3436;
         --text-light: #636e72;
     }
-
+    .post-content img{
+        max-width: 400px;
+        max-height: 600px;
+    }
     body {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         background-color: var(--light-bg);
@@ -519,7 +522,7 @@
             <c:choose>
                 <c:when test="${not empty userPosts}">
                     <c:forEach var="post" items="${userPosts}">
-                        <div class="post-card">
+                        <div class="post-card" >
                             <div class="post-header">
                                 <div class="post-user-info">
                                     <!-- Use post author's avatar instead of current user's avatar -->

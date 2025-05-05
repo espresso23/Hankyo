@@ -504,7 +504,7 @@
 <div id="blog-details">
     <c:if test="${not empty post}">
         <input type="hidden" name="postID" value="${post.postID}">
-        
+
         <!-- Thay đổi cấu trúc: author info trước, title sau -->
         <div class="blog-details-author">
             <img src="${avatar}" alt="Author Avatar"
@@ -538,7 +538,7 @@
             </div>
             <div class="blog-details-date">${post.createdDate}</div>
         </div>
-        
+
         <!-- Tiêu đề bài viết được đặt sau thông tin tác giả -->
         <div class="blog-details-title">
             <h2>${post.heading}</h2>
@@ -557,7 +557,7 @@
                 </form>
             </c:if>
         </div>
-        
+
         <!-- Updated blog content with constrained image size -->
         <div class="blog-content">
             <div class="blog-header-section">
