@@ -170,6 +170,9 @@ public class CourseController extends HttpServlet {
         CategoryDAO categoryDAO = new CategoryDAO();
         List<Category> categories = categoryDAO.getAllCategories();
         System.out.println("Number of categories: " + categories.size()); // Debug log
+        for (Category category : categories) {
+            System.out.println("Category: " + category.toString()); // Debug log
+        }
         request.setAttribute("categories", categories);
         request.getRequestDispatcher("addCourse.jsp").forward(request, response);
     }

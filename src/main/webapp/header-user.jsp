@@ -508,7 +508,7 @@
       width: 400px;
       max-width: 188vw;
       height: 480px;
-      max-height: 70vh;
+      max-height: 80vh;
       background: #f8f9fa;
       border-radius: 20px;
       box-shadow: 0 8px 32px rgba(108, 180, 255, 0.10);
@@ -628,7 +628,7 @@
   <img class="logo" src="${pageContext.request.contextPath}/asset/png/loginPage/logo.png" alt="Logo" onclick="window.location.href='home.jsp'">
   <div class="navbarContainer">
     <div class="navbarContent"><a href="courses">Khóa Học</a></div>
-    <div class="navbarContent"><a href="/about.html">Giảng Viên</a></div>
+    <div class="navbarContent"><a href="expert-register">Giảng Viên</a></div>
     <div class="navbarContent"><a href="blog">Cộng Đồng</a></div>
     <div class="navbarContent"><a href="exam">Đề thi</a></div>
     <div class="navbarContent"><a href="documents">Tài Liệu</a></div>
