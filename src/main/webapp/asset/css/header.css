@@ -438,7 +438,9 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-right: 15vh;
 }
+
 
 .navbarContent a {
     text-decoration: none;

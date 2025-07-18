@@ -1,0 +1,64 @@
+package com.example.model;
+
+import jakarta.validation.constraints.*;
+import java.time.LocalDate;
+
+public class UserDTO {
+
+    @NotBlank(message = "Email không được để trống")
+    @Email(message = "Email sai định dạng")
+    private String email;
+
+    @NotBlank(message = "Mật khẩu không được để trống")
+    @Size(min = 6, message = "Mật khẩu ít nhất 6 ký tự")
+    private String password;
+
+    @NotNull(message = "Ngày sinh không được để trống")
+    @Past(message = "Ngày sinh phải là quá khứ")
+    private LocalDate birthDate;
+
+    @NotBlank(message = "SĐT không được để trống")
+    @Pattern(regexp = "^(0\\d{9})$", message = "SĐT phải có 10 số, bắt đầu bằng 0")
+    private String phoneNumber;
+
+    // Getters và Setters
+}
+@PostMapping("/register")
+public String register(@Valid @ModelAttribute("user") UserDTO user,
+                       BindingResult result, Model model) {
+    if (result.hasErrors()) {
+        return "register";
+    }
+
+    // Xử lý tiếp
+    return "success";
+}
+
+<script>
+  document.getElementById("birthDate").addEventListener("change", function () {
+    const inputDate = new Date(this.value);
+    const today = new Date();
+    const age = today.getFullYear() - inputDate.getFullYear();
+    const m = today.getMonth() - inputDate.getMonth();
+    
+    if (m < 0 || (m === 0 && today.getDate() < inputDate.getDate())) {
+      age--;
+    }
+
+    if (age < 18) {
+      alert("Bạn phải đủ 18 tuổi.");
+      this.value = "";  // Xóa giá trị
+    }
+  });
+</script>
+@Past(message = "Ngày sinh phải trong quá khứ")
+private LocalDate birthDate;
+<form th:action="@{/register}" th:object="${user}" method="post">
+    <input type="text" th:field="*{name}" placeholder="Tên" />
+    <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+
+    <input type="email" th:field="*{email}" placeholder="Email" />
+    <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+
+    <button type="submit">Đăng ký</button>
+</form>

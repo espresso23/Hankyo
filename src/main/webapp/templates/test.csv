@@ -2,7 +2,7 @@ questionType,questionText,questionMark,questionImg,audioFile,answer1,isCorrect1,
 multiple_choice,Đây là câu hỏi mẫu?,1,https://example.com/image1.jpg,https://example.com/audio1.mp3,Đáp án A,1,Đáp án B,0,Đáp án C,0,Đáp án D,0
 multiple_choice,Câu hỏi thứ hai?,0.5,,,Lựa chọn 1,0,Lựa chọn 2,1,Lựa chọn 3,0,Lựa chọn 4,0
 multiple_choice,다음 중 '안녕하세요'의 의미로 알맞은 것을 고르십시오.,1,,,Xin chào,1,Tạm biệt,0,Cảm ơn,0,Xin lỗi,0
-multiple_choice,한국어로 '감사합니다'는 무슨 뜻입니까?,1,,,Xin chào,0,Tạm biệt,0,Cảm ơn,1,Xin lỗi,0
+multiple_choice,한국어로 '감사합니다'는 무슨 뜻입니까?,1,https://res.cloudinary.com/dchi76opz/image/upload/v1746408784/courses/courses/1746408783204_494820988_1026568382758748_784803949937652519_n.png.png,,Xin chào,0,Tạm biệt,0,Cảm ơn,1,Xin lỗi,0
 multiple_choice,'저는 베트남 사람입니다.'의 뜻으로 알맞은 것을 고르십시오.,1,,,Tôi là người Việt Nam,1,Anh ấy là người Hàn Quốc,0,Cô ấy là người Nhật,0,Họ là người Mỹ,0
 multiple_choice,다음 중 숫자 '삼십'(30)을 고르십시오.,1,,,10,0,20,0,30,1,40,0
 multiple_choice,'학교'의 뜻으로 알맞은 것을 고르십시오.,1,,,Nhà,0,Trường học,1,Bệnh viện,0,Công ty,0
