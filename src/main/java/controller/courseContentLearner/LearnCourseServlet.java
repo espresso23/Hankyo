@@ -18,8 +18,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-@WebServlet(name = "CourseContentServlet", value = "/learn-course")
-public class CourseContentServlet extends HttpServlet {
+@WebServlet("/learn-course")
+public class LearnCourseServlet extends HttpServlet {
     private CourseContentDAO courseContentDAO;
     private ProgressService progressService;
     private CourseService courseService;
