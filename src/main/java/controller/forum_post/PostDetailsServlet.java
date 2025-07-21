@@ -63,6 +63,14 @@ public class PostDetailsServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
+            String action = request.getParameter("action");
+            
+            // Handle getPostID action
+            if ("getPostID".equals(action)) {
+                handleGetPostID(request, response);
+                return;
+            }
+
             String postIdParam = request.getParameter("postID");
             if (postIdParam != null) {
                 int postId = Integer.parseInt(postIdParam);
@@ -223,10 +231,14 @@ public class PostDetailsServlet extends HttpServlet {
             case "reportComment":
                 handleReportComment(request, response);
                 break;
+            case "getPostID":
+                handleGetPostID(request, response);
+                break;
             default:
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid action");
         }
     }
+
     private void handleReportComment(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         try {
@@ -360,8 +372,12 @@ public class PostDetailsServlet extends HttpServlet {
                 return;
             }
 
-            // Lấy danh sách commentID
+            // Get commentIDs from either format
             String[] commentIdStrings = request.getParameterValues("commentIDs[]");
+            if (commentIdStrings == null) {
+                commentIdStrings = request.getParameterValues("commentIDs");
+            }
+            
             if (commentIdStrings == null || commentIdStrings.length == 0) {
                 response.setContentType("application/json");
                 response.getWriter().write("{}");
@@ -386,11 +402,11 @@ public class PostDetailsServlet extends HttpServlet {
             response.setCharacterEncoding("UTF-8");
             response.getWriter().write(userVotesJSON);
         } catch (Exception e) {
+            response.setContentType("application/json");
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write("{\"error\": \"Server error\"}");
         }
     }
-
 
     private void handleAddComment(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -664,6 +680,23 @@ public class PostDetailsServlet extends HttpServlet {
             e.printStackTrace();
             request.setAttribute("error", "An error occurred while processing your request.");
             request.getRequestDispatcher("blog.jsp").forward(request, response);
+        }
+    }
+
+    private void handleGetPostID(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        try {
+            int commentID = Integer.parseInt(request.getParameter("commentID"));
+            Comment comment = commentDAO.getCommentByID(commentID);
+            
+            response.setContentType("application/json");
+            if (comment != null) {
+                response.getWriter().write("{\"postID\": " + comment.getPostID() + "}");
+            } else {
+                response.getWriter().write("{\"error\": \"Comment not found\"}");
+            }
+        } catch (Exception e) {
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"Server error\"}");
         }
     }
 

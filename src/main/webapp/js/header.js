@@ -41,16 +41,47 @@ function formatTime(dateString) {
 }
 
 function getNotificationLink(notification) {
+    const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf("/", 1));
     switch (notification.typeName) {
         case 'Forum':
-            return `post-details?id=${notification.sourceID}`;
-        case 'Comment':
-            return `post-details?id=${notification.sourceID}#comment-${notification.sourceID}`;
+            return `${contextPath}/postDetails?postID=${notification.sourceID}`;
         case 'Course':
-            return `course-details?id=${notification.sourceID}`;
+            return `${contextPath}/course-details?postID=${notification.sourceID}`;
         default:
             return '#';
     }
+}
+
+function handleCommentNotification(notification) {
+    const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf("/", 1));
+    const url = `${contextPath}/CommentServlet?action=getComment&commentID=${notification.sourceID}`;
+    console.log('Fetching comment post info from:', url);
+
+    return fetch(url, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success && data.postID) {
+            window.location.href = `${contextPath}/postDetails?postID=${data.postID}`;
+        } else {
+            throw new Error(data.message || 'Failed to get post information');
+        }
+    })
+    .catch(error => {
+        console.error('Error getting post for comment:', error);
+        // Redirect to home page or show error message
+        window.location.href = contextPath;
+    });
 }
 
 function renderNotifications(notifications) {
@@ -77,7 +108,7 @@ function renderNotifications(notifications) {
         notificationDiv.className = `notification-item ${notification.isRead === 0 ? 'unread' : ''}`;
         
         const link = document.createElement('a');
-        link.href = getNotificationLink(notification);
+        link.href = '#';
         link.style.textDecoration = 'none';
         link.style.color = 'inherit';
         link.style.display = 'flex';
@@ -112,11 +143,30 @@ function renderNotifications(notifications) {
         notificationDiv.appendChild(link);
         
         notificationDiv.onclick = (e) => {
+            e.preventDefault();
+            const handleClick = () => {
+                if (notification.typeName === 'Comment') {
+                    handleCommentNotification(notification)
+                        .then(url => {
+                            window.location.href = url;
+                        })
+                        .catch(error => {
+                            console.error('Error handling comment notification:', error);
+                        });
+                } else {
+                    window.location.href = getNotificationLink(notification);
+                }
+            };
+
             if (!notification.isRead) {
-                e.preventDefault();
-                markAsRead(notification.significationID, notificationDiv).then(() => {
-                    window.location.href = link.href;
-                });
+                markAsRead(notification.significationID, notificationDiv)
+                    .then(handleClick)
+                    .catch(error => {
+                        console.error('Error marking notification as read:', error);
+                        handleClick();
+                    });
+            } else {
+                handleClick();
             }
         };
         
@@ -138,6 +188,71 @@ function toggleNotifications(event) {
     
     if (dropdown.classList.contains('show')) {
         loadNotifications();
+    }
+}
+
+function handleNotificationClick(notification) {
+    console.log('Handling notification click:', notification);
+    
+    // Get the context path
+    const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf("/", 1));
+    console.log('Context path:', contextPath);
+    
+    switch(notification.typeName) {
+        case 'Comment':
+            const url = `${contextPath}/getCommentPost?commentID=${notification.sourceID}`;
+            console.log('Fetching from URL:', url);
+            
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return response.text().then(text => {
+                    console.log('Raw response:', text);
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        console.error('Failed to parse JSON:', e);
+                        throw new Error('Invalid JSON response');
+                    }
+                });
+            })
+            .then(data => {
+                console.log('Parsed response data:', data);
+                if (data.success && data.postID) {
+                    const redirectUrl = `${contextPath}/postDetails?postID=${data.postID}#comment-${notification.sourceID}`;
+                    console.log('Redirecting to:', redirectUrl);
+                    window.location.href = redirectUrl;
+                } else {
+                    console.error('Invalid response data:', data);
+                }
+            })
+            .catch(error => {
+                console.error('Error details:', {
+                    message: error.message,
+                    stack: error.stack,
+                    notification: notification
+                });
+            });
+            break;
+        case 'Forum':
+            window.location.href = `${contextPath}/postDetails?postID=${notification.sourceID}`;
+            break;
+        case 'Course':
+            window.location.href = `${contextPath}/course-details?postID=${notification.sourceID}`;
+            break;
+        default:
+            console.log('Unknown notification type:', notification.typeName);
     }
 }
 

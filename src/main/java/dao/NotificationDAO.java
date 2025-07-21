@@ -11,12 +11,12 @@ public class NotificationDAO {
     public NotificationDAO() {
     }
 
-    public List<Notification> getUnreadNotifications(int userID) {
+    public List<Notification> getAllNotifications(int userID) {
         List<Notification> notifications = new ArrayList<>();
         String sql = "SELECT s.*, st.typeName " +
                 "FROM Notification s " +
                 "JOIN NotificationType st ON s.typeID = st.typeID " +
-                "WHERE s.userID = ? AND s.isRead = 0 " +
+                "WHERE s.userID = ? " +
                 "ORDER BY s.dateGiven DESC";
 
         try (Connection conn = DBConnect.getInstance().getConnection();
@@ -32,7 +32,7 @@ public class NotificationDAO {
                     notification.setDescription(rs.getString("description"));
                     notification.setDateGiven(rs.getTimestamp("dateGiven"));
                     notification.setTypeName(rs.getString("typeName"));
-                    // We'll handle sourceTitle separately
+                    notification.setRead(rs.getBoolean("isRead"));
                     notifications.add(notification);
                 }
             }
@@ -40,7 +40,7 @@ public class NotificationDAO {
             e.printStackTrace();
         }
 
-        // Now let's fetch the source titles separately for each notification
+        // Fetch source titles as before
         for (Notification notification : notifications) {
             try (Connection conn = DBConnect.getInstance().getConnection()) {
                 String titleSql = "";
@@ -70,7 +70,6 @@ public class NotificationDAO {
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-                // If we fail to get the source title, just continue with the next notification
             }
         }
         return notifications;
@@ -105,6 +104,17 @@ public class NotificationDAO {
 
     public void markAllAsRead(int userID) {
         String sql = "UPDATE Notification SET isRead = 1 WHERE userID = ?";
+        try (Connection conn = DBConnect.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userID);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteAllNotifications(int userID) {
+        String sql = "DELETE FROM Notification WHERE userID = ?";
         try (Connection conn = DBConnect.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userID);
@@ -167,6 +177,16 @@ public class NotificationDAO {
         notification.setUserID(postOwnerID);
         notification.setTypeID(1); // Assuming 1 is for Forum/Post type
         notification.setSourceID(postID);
+        notification.setDescription(description);
+        addNotification(notification);
+    }
+
+    public void addHonourNotification(int userID, int honourID, String honourName) {
+        String description = "You have earned the " + honourName + " honour!";
+        Notification notification = new Notification();
+        notification.setUserID(userID);
+        notification.setTypeID(4); // Assuming 4 is for Honour type
+        notification.setSourceID(honourID);
         notification.setDescription(description);
         addNotification(notification);
     }

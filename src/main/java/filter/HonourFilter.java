@@ -2,10 +2,10 @@ package filter;
 
 import dao.HonourDAO;
 import dao.HonourOwnedDAO;
+import dao.NotificationDAO;
 import model.Honour;
 import model.HonourOwned;
 import model.Learner;
-import model.User;
 import util.DBConnect;
 
 import javax.servlet.*;
@@ -19,11 +19,13 @@ import java.util.Date;
 public class HonourFilter implements Filter {
     private HonourDAO honourDAO;
     private HonourOwnedDAO honourOwnedDAO;
+    private NotificationDAO notificationDAO;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         honourDAO = new HonourDAO();
         honourOwnedDAO = new HonourOwnedDAO();
+        notificationDAO = new NotificationDAO();
     }
 
     @Override
@@ -33,18 +35,7 @@ public class HonourFilter implements Filter {
         HttpSession session = httpRequest.getSession(false);
 
         if (session != null) {
-            Object userIDObj = session.getAttribute("userID");
-            Integer userID = null;
-            if (userIDObj instanceof String) {
-                try {
-                    userID = Integer.parseInt((String) userIDObj);
-                } catch (NumberFormatException e) {
-                    userID = null;
-                }
-            } else if (userIDObj instanceof Integer) {
-                userID = (Integer) userIDObj;
-            }
-            User user = (User) session.getAttribute("user");
+            Integer userID = (Integer) session.getAttribute("userID");
             if (userID != null) {
                 // Fetch equipped honour details using userID
                 Integer equippedHonourID = honourOwnedDAO.getEquippedHonourID(userID);
@@ -75,17 +66,7 @@ public class HonourFilter implements Filter {
             }
 
             // Award honours using learnerID and userID from session
-            Object learnerIDObj = session.getAttribute("learnerID");
-            Integer learnerID = null;
-            if (learnerIDObj instanceof String) {
-                try {
-                    learnerID = Integer.parseInt((String) learnerIDObj);
-                } catch (NumberFormatException e) {
-                    learnerID = null;
-                }
-            } else if (learnerIDObj instanceof Integer) {
-                learnerID = (Integer) learnerIDObj;
-            }
+            Integer learnerID = (Integer) session.getAttribute("learnerID");
             if (learnerID != null && userID != null) {
                 checkAndAwardHonours(learnerID, userID, session);
             }
@@ -101,7 +82,7 @@ public class HonourFilter implements Filter {
 
     private void checkAndAwardHonours(int learnerID, int userID, HttpSession session) {
         // Check for 10 custom flashcards honour (ID 26)
-        check10CustomFlashcardsHonour(learnerID);
+        check10CustomFlashcardsHonour(learnerID, userID);
         // Check for 100 comments honour (ID 10)
         check100CommentsHonour(learnerID, userID, session);
         // Check for 10 upvotes honour (ID 15)
@@ -109,7 +90,7 @@ public class HonourFilter implements Filter {
         // Bỏ check7DayLoginHonour vì đã xử lý trong LoginDayFilter
     }
 
-    private void check10CustomFlashcardsHonour(int learnerID) {
+    private void check10CustomFlashcardsHonour(int learnerID, int userID) {
         int honourID = 26;
 
         if (honourOwnedDAO.hasHonour(learnerID, honourID)) {
@@ -117,14 +98,20 @@ public class HonourFilter implements Filter {
         }
 
         if (honourDAO.if10CustomFlashCard(learnerID)) {
-            HonourOwned honourOwned = new HonourOwned();
-            honourOwned.setHonour(honourDAO.getHonourById(honourID));
-            Learner learner = new Learner();
-            learner.setLearnerID(learnerID);
-            honourOwned.setLearner(learner);
-            honourOwned.setDateAdded(new Date());
-            honourOwned.setEquipped(false);
-            honourOwnedDAO.addHonour(honourOwned);
+            Honour honour = honourDAO.getHonourById(honourID);
+            if (honour != null) {
+                HonourOwned honourOwned = new HonourOwned();
+                honourOwned.setHonour(honour);
+                Learner learner = new Learner();
+                learner.setLearnerID(learnerID);
+                honourOwned.setLearner(learner);
+                honourOwned.setDateAdded(new Date());
+                honourOwned.setEquipped(false);
+                honourOwnedDAO.addHonour(honourOwned);
+                
+                // Create notification for the honor
+                notificationDAO.addHonourNotification(userID, honourID, honour.getHonourName());
+            }
         }
     }
 
@@ -136,14 +123,20 @@ public class HonourFilter implements Filter {
         }
 
         if (honourDAO.if100Comments(userID)) {
-            HonourOwned honourOwned = new HonourOwned();
-            honourOwned.setHonour(honourDAO.getHonourById(honourID));
-            Learner learner = new Learner();
-            learner.setLearnerID(learnerID);
-            honourOwned.setLearner(learner);
-            honourOwned.setDateAdded(new Date());
-            honourOwned.setEquipped(false);
-            honourOwnedDAO.addHonour(honourOwned);
+            Honour honour = honourDAO.getHonourById(honourID);
+            if (honour != null) {
+                HonourOwned honourOwned = new HonourOwned();
+                honourOwned.setHonour(honour);
+                Learner learner = new Learner();
+                learner.setLearnerID(learnerID);
+                honourOwned.setLearner(learner);
+                honourOwned.setDateAdded(new Date());
+                honourOwned.setEquipped(false);
+                honourOwnedDAO.addHonour(honourOwned);
+                
+                // Create notification for the honor
+                notificationDAO.addHonourNotification(userID, honourID, honour.getHonourName());
+            }
         }
     }
 
@@ -155,14 +148,20 @@ public class HonourFilter implements Filter {
         }
 
         if (honourDAO.if10UpVote(userID)) {
-            HonourOwned honourOwned = new HonourOwned();
-            honourOwned.setHonour(honourDAO.getHonourById(honourID));
-            Learner learner = new Learner();
-            learner.setLearnerID(learnerID);
-            honourOwned.setLearner(learner);
-            honourOwned.setDateAdded(new Date());
-            honourOwned.setEquipped(false);
-            honourOwnedDAO.addHonour(honourOwned);
+            Honour honour = honourDAO.getHonourById(honourID);
+            if (honour != null) {
+                HonourOwned honourOwned = new HonourOwned();
+                honourOwned.setHonour(honour);
+                Learner learner = new Learner();
+                learner.setLearnerID(learnerID);
+                honourOwned.setLearner(learner);
+                honourOwned.setDateAdded(new Date());
+                honourOwned.setEquipped(false);
+                honourOwnedDAO.addHonour(honourOwned);
+                
+                // Create notification for the honor
+                notificationDAO.addHonourNotification(userID, honourID, honour.getHonourName());
+            }
         }
     }
 
