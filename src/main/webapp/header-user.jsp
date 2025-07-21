@@ -622,6 +622,63 @@
     .vip-crown-animate {
       animation: glowing 2s infinite;
     }
+.popupContainer {
+    position: fixed !important;
+    top: 80px;
+    right: 40px;
+    z-index: 3000;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(108,180,255,0.18), 0 2px 8px rgba(255,155,179,0.10);
+    min-width: 220px;
+    padding: 0;
+    display: none;
+    animation: fadeIn 0.2s;
+    font-family: 'Poppins', Arial, sans-serif;
+}
+.popupContainer .profile {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px 0;
+}
+.popupContainer .profileContent {
+    padding: 14px 32px;
+    font-size: 1.08rem;
+    color: #222;
+    font-weight: 500;
+    text-align: left;
+    transition: background 0.2s, color 0.2s;
+    cursor: pointer;
+}
+.popupContainer .profileContent:not(:last-child) {
+    border-bottom: 1px solid #f0f0f0;
+}
+.popupContainer .profileContent a {
+    color: #222;
+    text-decoration: none;
+    display: block;
+    width: 100%;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+}
+.popupContainer .profileContent:hover, .popupContainer .profileContent a:hover, .popupContainer .logout-btn:hover {
+    background: #f8f9fa;
+    color: #007bff;
+}
+.popupContainer .logout-btn {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    font-size: 1.08rem;
+    font-weight: 500;
+    width: 100%;
+    text-align: left;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    transition: color 0.2s;
+}
 </style>
 
     <script src="${pageContext.request.contextPath}/asset/js/header.js" defer></script>
@@ -779,7 +836,11 @@
   // Toggle Popup Container
   function togglePopup() {
     const popup = document.getElementById('popupContainer');
-    popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
+    if (popup.classList.contains('show')) {
+      popup.classList.remove('show');
+    } else {
+      popup.classList.add('show');
+    }
   }
 
   // Toggle mobile menu

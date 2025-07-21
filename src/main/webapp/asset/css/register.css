@@ -1,6 +1,7 @@
 body {
     overflow-x: hidden;
 }
+
 /* Xóa hoặc sửa thành */
 .show {
     visibility: visible;
@@ -40,7 +41,7 @@ body {
     border: 1px solid #ccc;
     box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
     margin-left: auto;
-    height: 80%;
+    height: 90%;
 }
 .button {
     margin-top: 10px;
@@ -51,17 +52,48 @@ body {
 /* Định dạng input */
 .signUp-form .input {
     width: 100%;
-    margin-bottom: 5px;
+    margin-bottom: 18px;
+    position: relative;
 }
-.signUp-form input {
+.signUp-form input[type="text"],
+.signUp-form input[type="email"],
+.signUp-form input[type="password"],
+.signUp-form input[type="tel"] {
     width: 100%;
+    padding: 14px 18px;
+    border: 1.5px solid #e1f5fe;
+    border-radius: 16px;
+    font-size: 1.08rem;
+    background: #f9fafd;
+    color: #222;
+    box-shadow: 0 2px 8px rgba(137,196,244,0.07);
+    transition: border 0.3s, box-shadow 0.3s, background 0.3s;
+    outline: none;
     margin-top: 0.5rem;
-    padding: 0.5rem 4rem 0.5rem 5px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 16px;
-    background-color: #fff;
+}
+.signUp-form input[type="text"]::placeholder,
+.signUp-form input[type="email"]::placeholder,
+.signUp-form input[type="password"]::placeholder,
+.signUp-form input[type="tel"]::placeholder {
+    color: #b0b8c1;
+    font-size: 1rem;
+    opacity: 1;
+}
+.signUp-form input[type="text"]:focus,
+.signUp-form input[type="email"]:focus,
+.signUp-form input[type="password"]:focus,
+.signUp-form input[type="tel"]:focus {
+    border: 2px solid #89c4f4;
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(137,196,244,0.13);
+}
+.signUp-form label {
+    font-weight: 500;
     color: #333;
+    margin-bottom: 6px;
+    display: block;
+    font-size: 1rem;
+    letter-spacing: 0.01em;
 }
 .loginGirl {
     margin-top: 2rem;
@@ -91,14 +123,51 @@ body {
 .signUp-form button:hover {
     background-color: #0056b3;
 }
+
+
+.buttonRegister button {
+    min-width: 150px;
+    width: 100%;
+    max-width: 320px;
+    padding: 14px 40px;
+    font-size: 1.15rem;
+    border-radius: 25px;
+    background: linear-gradient(90deg, #ff99b1, #89c4f4);
+    color: white;
+    border: none;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(137,196,244,0.15);
+    cursor: pointer;
+    transition: background 0.3s, box-shadow 0.3s, transform 0.25s;
+    white-space: nowrap;
+    display: block;
+    margin: 0 auto;
+}
+.buttonRegister button:hover {
+    background: linear-gradient(90deg, #ff5e7e, #4b97e8);
+    box-shadow: 0 8px 24px rgba(255, 155, 179, 0.25);
+    color: #fff;
+    transform: scale(1.06);
+    transition: background 0.3s, box-shadow 0.3s, transform 0.25s;
+}
 .gender-selection {
     display: flex;
-    gap: 20px;
+    gap: 32px;
     align-items: center;
 }
 .gender-selection label {
     display: flex;
-    align-items: flex-start;
-    gap: 5px;
+    align-items: center;
+    gap: 8px;
     cursor: pointer;
+    font-size: 1.08rem;
+    font-weight: 500;
+    color: #333;
+}
+.gender-selection input[type="radio"] {
+    accent-color: #89c4f4;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    vertical-align: middle;
 }

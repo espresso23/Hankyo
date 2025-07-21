@@ -18,8 +18,8 @@
     <img class="logo" src="${pageContext.request.contextPath}/asset/png/loginPage/logo.png" alt="Logo">
     <div class="navbarContainer">
         <div class="navbarContent"><a href="courses">Khóa Học</a></div>
-        <div class="navbarContent"><a href="/about.html">Giảng Viên</a></div>
-        <div class="navbarContent"><a href="/community.html">Cộng Đồng</a></div>
+        <div class="navbarContent"><a href="expert-register">Giảng Viên</a></div>
+        <div class="navbarContent"><a href="blog">Cộng Đồng</a></div>
         <div class="navbarContent"><a href="/exam">Đề thi</a></div>
         <div class="navbarContent"><a href="/entranceTest.jsp">Test Level</a></div>
         <div class="navbarContent"><a href="/about-us.html">Về Chúng Tôi</a></div>

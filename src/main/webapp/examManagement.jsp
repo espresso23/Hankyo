@@ -1,6 +1,14 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.*, model.Exam" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%
+    // Kiểm tra session user
+    Object user = session.getAttribute("user");
+    if (user == null) {
+        response.sendRedirect("login.jsp");
+        return;
+    }
+%>
 <html>
 <head>
     <link rel="icon" href="${pageContext.request.contextPath}/asset/png/icon/logo.jpg">
@@ -384,9 +392,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
+<form action="logout" method="post" style="position: absolute; top: 24px; right: 40px; z-index: 1001;">
+    <button type="submit" class="btn btn-delete" style="padding: 8px 18px; margin-top: 25px;
+">Đăng xuất</button>
+</form>
 <div class="container">
     <div class="management-header">
-        <h1>Quản lý đề thi</h1>
+        <h1 style="margin: 0;">Quản lý đề thi</h1>
         <button class="btn-create-exam" onclick="openCreateExamModal()">
             <i class="fas fa-plus"></i> Tạo đề thi mới
         </button>

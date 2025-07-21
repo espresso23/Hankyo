@@ -72,7 +72,7 @@
                     </label>
                 </div>
                 <a href="${pageContext.request.contextPath}/login" style="margin-left: 5px;">Already have an account?</a>
-                <div class="button">
+                <div class="buttonRegister" style="display: flex; justify-content: center; margin-top: 18px;">
                     <button type="submit">Sign Up</button>
                 </div>
             </form>
